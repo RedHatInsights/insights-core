@@ -1,7 +1,9 @@
 """
 Custom datasources related to ``httpd``
 """
+import glob
 import json
+import os
 
 from insights.combiners.ps import Ps
 from insights.core.context import HostContext
@@ -54,4 +56,104 @@ def httpd_on_nfs(broker):
             result_dict = {"http_ids": httpd_pids, "nfs_mounts": nfs_mounts, "open_nfs_files": open_nfs_files}
             relative_path = 'insights_commands/httpd_open_nfsV4_files'
             return DatasourceProvider(content=json.dumps(result_dict), relative_path=relative_path)
+    raise SkipComponent
+
+
+def _get_all_include_conf(root, glob_path):
+    includes = glob_path
+    # In case $ServerRoot in included in the 'glob_path'
+    if not glob_path.startswith(root):
+        includes = os.path.join(root, glob_path)
+    _paths = set()
+    try:
+        for conf in glob.glob(includes):
+            if os.path.isfile(conf):
+                _paths.add(conf)
+                with open(conf) as cfp:
+                    _includes = None
+                    for line in cfp.readlines():
+                        if line.strip().startswith("Include"):
+                            _includes = line.split()[-1].strip('"\'')
+                            _paths.update(_get_all_include_conf(root, _includes))
+            if os.path.isdir(conf):
+                _includes = os.path.join(conf, "*")
+                _paths.update(_get_all_include_conf(root, _includes))
+        return _paths
+    except Exception:
+        pass
+    return _paths
+
+
+def get_httpd_configuration_files(httpd_root):
+    main_httpd_conf = os.path.join(httpd_root, "conf/httpd.conf")
+    all_paths = set()
+    try:
+        with open(main_httpd_conf) as cfp:
+            server_root = httpd_root
+            # Add it only when it exists
+            all_paths.add(main_httpd_conf)
+            for line in cfp.readlines():
+                if line.strip().startswith("ServerRoot"):
+                    server_root = line.strip().split()[-1].strip().strip('"\'')
+                elif line.strip().startswith("Include"):
+                    includes = line.strip().split()[-1].strip('"\'')
+                    # For multiple "Include" directives, all of them will be included
+                    all_paths.update(_get_all_include_conf(server_root, includes))
+    except Exception:
+        # Skip the datasource when no such "<root path>/httpd.conf" file
+        raise SkipComponent
+    return all_paths
+
+
+@datasource(HostContext)
+def httpd_configuration_files(broker):
+    """
+    This datasource returns the all of httpd configuration files' path.
+
+    Returns:
+        list: the file path of httpd configuration files
+
+    Raises:
+        SkipComponent: there is no httpd configuration file
+    """
+    httpd_root = '/etc/httpd'
+    all_paths = get_httpd_configuration_files(httpd_root)
+    if all_paths:
+        return all_paths
+    raise SkipComponent
+
+
+@datasource(HostContext)
+def httpd24_scl_configuration_files(broker):
+    """
+    This datasource returns the all of httpd24 slc configuration files' path.
+
+    Returns:
+        list: the file path of httpd24 slc configuration files
+
+    Raises:
+        SkipComponent: there is no httpd24 slc configuration file
+    """
+    httpd_root = '/opt/rh/httpd24/root/etc/httpd'
+    all_paths = get_httpd_configuration_files(httpd_root)
+    if all_paths:
+        return all_paths
+    raise SkipComponent
+
+
+@datasource(HostContext)
+def httpd24_scl_jbcs_configuration_files(broker):
+    """
+    This datasource returns the all of httpd24 slc jbcs configuration files' path.
+
+    Returns:
+        list: the file path of httpd24 slc jbcs configuration files
+
+    Raises:
+        SkipComponent: there is no httpd24 slc jbcs configuration file
+    """
+    httpd_root = '/opt/rh/jbcs-httpd24/root/etc/httpd'
+    all_paths = get_httpd_configuration_files(httpd_root)
+    if all_paths:
+        return all_paths
     raise SkipComponent
