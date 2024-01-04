@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.0) (2024-01-04)
+
+- fix: Fix issue with mount parsers mount option parsing ([PR 3984](https://github.com/RedHatInsights/insights-core/pull/3984))
+- INSPEC-443: new spec and parser for bootc status ([PR 3982](https://github.com/RedHatInsights/insights-core/pull/3982))
+- fixes: Fix a bug about spec "modinfo_filtered_modules" ([PR 3981](https://github.com/RedHatInsights/insights-core/pull/3981))
+- fix: enhance "include" of httpd_conf spec ([PR 3977](https://github.com/RedHatInsights/insights-core/pull/3977))
+- chore: remove planned deprecations - 3.3.0 ([PR 3978](https://github.com/RedHatInsights/insights-core/pull/3978))
+
 # [insights-core-3.2.27](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.27) (2023-12-14)
 
 - INSPEC-432: collect convert2rhel.facts ([PR 3972](https://github.com/RedHatInsights/insights-core/pull/3972))
