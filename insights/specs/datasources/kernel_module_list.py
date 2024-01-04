@@ -23,6 +23,6 @@ def kernel_module_filters(broker):
             if module_list:
                 loaded_modules.extend(module_list)
         if loaded_modules:
-            return ' '.join(loaded_modules)
+            return str(' '.join(loaded_modules))
         raise SkipComponent
     raise SkipComponent
