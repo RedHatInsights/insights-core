@@ -232,7 +232,7 @@ class Cleaner(object):
             # we will add the root domain for an FQDN as well.
             if self.domain is not None:
                 self.dn_db[self.obfuscated_domain] = self.domain
-                logger.warning("Obfuscated Domain Created - %s -> %s" % (self.domain, self.obfuscated_domain))
+                logger.debug("Obfuscated Domain Created - %s -> %s" % (self.domain, self.obfuscated_domain))
 
             self.domain_count = len(self.dn_db)
             return True

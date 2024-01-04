@@ -334,24 +334,21 @@ def collect(config):
     """
     All the heavy lifting done here
     """
-    branch_info = get_branch_info(config)
     pc = InsightsUploadConf(config)
-
-    rm_conf = pc.get_rm_conf()
-    blacklist_report = pc.create_report()
-    if rm_conf:
-        logger.warn("WARNING: Will exclude data from files")
-
     archive = InsightsArchive(config)
 
-    hostname = determine_hostname(config.display_name)
     if config.core_collect:
         dc = CoreCollector(config, archive)
     else:
         dc = DataCollector(config, archive, spec_conf=pc.get_conf_file())
 
-    logger.info('Starting to collect Insights data for %s', hostname)
-    dc.run_collection(rm_conf, branch_info, blacklist_report)
+    logger.info('Starting to collect Insights data for %s',
+                determine_hostname(config.display_name))
+
+    dc.run_collection(pc.get_rm_conf(),
+                      get_branch_info(config),
+                      pc.create_report())
+
     return dc.done()
 
 

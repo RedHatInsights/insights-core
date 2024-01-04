@@ -320,17 +320,21 @@ def apply_blacklist(cfg):
         if not _check_and_skip_component(b):
             blacklist.add_command('^' + b + '$')
 
-    for b in cfg.get("patterns", []):
-        blacklist.add_pattern(b)
-
-    for b in cfg.get("keywords", []):
-        blacklist.add_keyword(b)
-
     for component in cfg.get('components', []):
         if not dr.get_component_by_name(component):
             log.warning('WARNING: Unknown component in blacklist: %s' % component)
         else:
             _skip_component(component)
+
+    if cfg.get('patterns'):
+        log.warning("WARNING: Excluding patterns defined in blacklist configuration")
+        for b in cfg.get("patterns"):
+            blacklist.add_pattern(b)
+
+    if cfg.get('keywords'):
+        log.warning("WARNING: Replacing keywords defined in blacklist configuration")
+        for b in cfg.get("keywords"):
+            blacklist.add_keyword(b)
 
 
 def create_context(ctx):
