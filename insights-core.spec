@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.27
+Version:        3.3.0
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,16 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jan 04 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.0-1
+- fix: Fix issue with mount parsers mount option parsing (#3984)
+  (20520336+bfahr@users.noreply.github.com)
+- INSPEC-443: new spec and parser for bootc status (#3982)
+  (xiangceliu@redhat.com)
+- fixes: Fix a bug about spec "modinfo_filtered_modules" (#3981)
+  (44796653+huali027@users.noreply.github.com)
+- fix: enhance "include" of httpd_conf spec (#3977) (jiazhang@redhat.com)
+- chore: remove planned deprecations - 3.3.0 (#3978) (xiangceliu@redhat.com)
+
 * Thu Dec 14 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.27-1
 - INSPEC-432: collect convert2rhel.facts (#3972) (xiangceliu@redhat.com)
 - fix: Remove pruning client code from rpm (#3976) (rblakley@redhat.com)
