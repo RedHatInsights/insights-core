@@ -43,7 +43,7 @@ import os
 from insights.core import CommandParser
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
-from insights.parsers import get_active_lines, keyword_search, optlist_to_dict
+from insights.parsers import get_active_lines, keyword_search
 from insights.specs import Specs
 
 
@@ -267,7 +267,7 @@ class Mount(MountedFileSystems):
             mount['mount_point'] = line_sp[0]
             mount['mount_type'] = line_sp[1].split()[0]
             line_sp = _customized_split(raw=line, l=mnt_pt_sp[1], sep=None, check=False)
-            mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[0].strip('()')))
+            mount['mount_options'] = MountOpts(_parse_mount_options(line_sp[0].strip('()')))
             if len(line_sp) == 2:
                 mount['mount_label'] = line_sp[1]
 
@@ -333,7 +333,7 @@ class ProcMounts(MountedFileSystems):
             line_sp = _customized_split(raw=line, l=line_sp[1], num=3, reverse=True)
             mount['mount_label'] = line_sp[-2:]
             line_sp = _customized_split(raw=line, l=line_sp[0], reverse=True)
-            mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[1]))
+            mount['mount_options'] = MountOpts(_parse_mount_options(line_sp[1]))
             line_sp = _customized_split(raw=line, l=line_sp[0], reverse=True)
             mount['mount_type'] = mount['filesystem_type'] = line_sp[1]
             mount['mount_point'] = line_sp[0]
@@ -400,7 +400,7 @@ class MountInfo(MountedFileSystems):
             optional_fields = line_left_sp[5].split()[1] if ' ' in line_left_sp[5] else ''
             mntopt = line_left_sp[5].split()[0] if ' ' in line_left_sp[5] else line_left_sp[5]
             unioned_options = ','.join([mntopt, line_right_sp[2]])
-            mount['mount_options'] = MountOpts(optlist_to_dict(unioned_options))
+            mount['mount_options'] = MountOpts(_parse_mount_options(unioned_options))
             mount['mount_addtlinfo'] = MountAddtlInfo({
                     'mount_id': line_left_sp[0],
                     'parent_id': line_left_sp[1],
@@ -412,6 +412,43 @@ class MountInfo(MountedFileSystems):
             rows.append(entry)
         self.rows = rows
         self.mounts = dict([mnt['mount_point'], rows[idx]] for idx, mnt in enumerate(rows))
+
+
+def _parse_mount_options(mount_options):
+    """
+    Parse mount options including quoted values with embedded commas.
+
+    Args:
+        mount_options (str): String of comma separated mount options and values
+
+    Returns:
+        dict: Dictionary of mount options
+
+    """
+    opts = dict()
+    sp_opts = mount_options.split(',')
+    start_ndx = 0
+    for i, opt in enumerate(sp_opts):
+        # Look for option="... start of quoted value
+        if '="' in opt:
+            start_ndx = i
+
+        # Look for closing quote of option="..." and if found recombine value
+        elif '"' in opt:
+            last_ndx = i
+            comb_opt = ','.join(sp_opts[start_ndx:last_ndx + 1])
+            opt_name, opt_value = comb_opt.split('=', 1)
+            # Remove leading and trailing quotes
+            opts[opt_name] = opt_value[1:-1]
+
+        # Else just a normal option or option=value
+        else:
+            if '=' in opt:
+                opt_name, opt_value = opt.split('=', 1)
+                opts[opt_name] = opt_value
+            else:
+                opts[opt] = True
+    return opts
 
 
 def _customized_split(raw, l, sep=None, num=2, reverse=False, check=True):
