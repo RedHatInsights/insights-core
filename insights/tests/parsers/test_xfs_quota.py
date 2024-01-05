@@ -69,12 +69,12 @@ Realtime Blocks grace time: [7 days]
 def test_repquota():
     results = XFSQuotaState(context_wrap(XFSQUOTASTATE))
     assert len(results.group_quota) == 3
-    assert results.group_quota[0]['device'] == '/dev/sdd'
-    assert results.group_quota[0]['accounting'] == 'OFF'
-    assert results.group_quota[0]['blocks_grace_time'] is None
+    assert results.group_quota['/dev/sdd']['device'] == '/dev/sdd'
+    assert results.group_quota['/dev/sdd']['accounting'] == 'OFF'
+    assert results.group_quota['/dev/sdd']['blocks_grace_time'] is None
     assert len(results.user_quota) == 3
-    assert results.group_quota[-1]['accounting'] == 'ON'
-    assert results.user_quota[-1] == {'device': '/dev/sdc', 'accounting': 'ON', 'enforcement': 'ON', 'inode': '#131 (2 blocks, 2 extents)', 'blocks_grace_time': '7 days', 'blocks_max_warnings': '20', 'inodes_grace_time': '7 days', 'inodes_max_warnings': '5', 'realtime_blocks_grace_time': '7 days'}
+    assert results.group_quota['/dev/sdc']['accounting'] == 'ON'
+    assert results.user_quota['/dev/sdc'] == {'device': '/dev/sdc', 'accounting': 'ON', 'enforcement': 'ON', 'inode': '#131 (2 blocks, 2 extents)', 'blocks_grace_time': '7 days', 'blocks_max_warnings': '20', 'inodes_grace_time': '7 days', 'inodes_max_warnings': '5', 'realtime_blocks_grace_time': '7 days'}
 
 
 def test_repquota_err():
