@@ -218,6 +218,11 @@ count
 2
 """.strip()
 
+SATELLITE_REVOKED_CERT_COUNT = """
+count
+0
+""".strip()
+
 SATELLITE_IGNORE_SOURCE_RPMS_REPOS = """
 id,name
 4,Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8
@@ -236,6 +241,7 @@ def test_HTL_doc_examples():
     param_settings = satellite_postgresql_query.SatelliteProvisionParamSettings(context_wrap(SATELLITE_PROVISION_PARAMETERS_HIT_1))
     logs_table = satellite_postgresql_query.SatelliteLogsTableSize(context_wrap(SATELLITE_LOGS_TABLE_SIZE1))
     rhv_hosts = satellite_postgresql_query.SatelliteRHVHostsCount(context_wrap(SATELLITE_RHV_HOSTS_COUNT))
+    revoked_certs = satellite_postgresql_query.SatelliteRevokedCertCount(context_wrap(SATELLITE_REVOKED_CERT_COUNT))
     ignore_srpm_repos = satellite_postgresql_query.SatelliteIgnoreSourceRpmsRepos(context_wrap(SATELLITE_IGNORE_SOURCE_RPMS_REPOS))
     globs = {
         'table': settings,
@@ -248,6 +254,7 @@ def test_HTL_doc_examples():
         'param_settings': param_settings,
         'logs_table': logs_table,
         'rhv_hosts': rhv_hosts,
+        'revoked_certs': revoked_certs,
         'i_srpm_repos': ignore_srpm_repos
     }
     failed, _ = doctest.testmod(satellite_postgresql_query, globs=globs)
@@ -380,6 +387,12 @@ def test_satelite_rhv_hosts():
     rhv_hosts = satellite_postgresql_query.SatelliteRHVHostsCount(context_wrap(SATELLITE_RHV_HOSTS_COUNT))
     assert len(rhv_hosts) == 1
     assert int(rhv_hosts[0]['count']) == 2
+
+
+def test_satelite_revoked_certs():
+    revoked_certs = satellite_postgresql_query.SatelliteRevokedCertCount(context_wrap(SATELLITE_REVOKED_CERT_COUNT))
+    assert len(revoked_certs) == 1
+    assert int(revoked_certs[0]['count']) == 0
 
 
 def test_satellite_logs_table_size_except():
