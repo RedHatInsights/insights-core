@@ -5,7 +5,7 @@ xfs_quota Commands
 Parser contains in this module is:
 
 XFSQuotaState - command ``/sbin/xfs_quota -x -c 'state -gu'``
---------------------------------------------------------------
+-------------------------------------------------------------
 """
 
 from insights.core import CommandParser
@@ -21,8 +21,8 @@ class XFSQuotaState(CommandParser):
     xfs quota devices.
 
     Attributes:
-        group_quota (list): List of information for each group quota
-        user_quota (list): List of information for each user quota
+        group_quota (dict): Dictionary of information for each group quota
+        user_quota (dict): Dictionary of information for each user quota
 
     Sample directory list collected::
 
