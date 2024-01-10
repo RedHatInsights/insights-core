@@ -441,7 +441,7 @@ def _parse_mount_options(mount_options):
             comb_opt = ','.join(sp_opts[start_ndx:last_ndx + 1])
             opt_name, opt_value = comb_opt.split('=', 1)
             # Remove leading and trailing quotes
-            opts[opt_name] = opt_value[1:-1]
+            opts[opt_name] = opt_value.strip('"')
             in_quote = False
 
         # Else just a normal option or option=value
