@@ -445,14 +445,11 @@ def _parse_mount_options(mount_options):
             in_quote = False
 
         # Else just a normal option or option=value
-        else:
+        elif not in_quote:
             if '=' in opt:
                 opt_name, opt_value = opt.split('=', 1)
-                # Check for quoted values and remove quotes if present
-                if not (opt_value.startswith('"') and opt_value.endswith('"')):
-                    opts[opt_name] = opt_value
-                else:
-                    opts[opt_name] = opt_value[1:-1]
+                # Remove quotes if present
+                opts[opt_name] = opt_value.strip('"')
             else:
                 opts[opt] = True
     return opts

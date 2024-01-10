@@ -62,6 +62,7 @@ PROC_MOUNT_QUOTES = """
 /dev/mapper/rootvg-rootlv / ext4 rw,relatime,barrier=1,data=ordered 0 0
 tmpfs /var/lib/containers/storage/overlay-containers/ff7e79fc09c/userdata/shm tmpfs rw,nosuid,nodev,noexec,relatime,context="system_u:object_r:container_file_t:s0:c184,c371",size=64000k 0 0
 tmpfs /var/lib/containers/storage/overlay-containers/aa7e79fc09c/userdata/shm tmpfs rw,nosuid,nodev,noexec,relatime,context="system_u:object_r:container_file_t:s0",size=64000k 0 0
+tmpfs /var/lib/containers/storage/overlay-containers/bb7e79fc09c/userdata/shm tmpfs rw,nosuid,nodev,noexec,relatime,context="system_u:object_r:container_file_t:s0:c184,c371,c381,c391",size=64000k 0 0
 """
 
 PROCMOUNT_ERR_DATA = """
@@ -275,11 +276,13 @@ def test_proc_mount():
 def test_proc_mount_quotes():
     results = ProcMounts(context_wrap(PROC_MOUNT_QUOTES))
     assert results is not None
-    assert len(results) == 3
+    assert len(results) == 4
     device = results['/var/lib/containers/storage/overlay-containers/ff7e79fc09c/userdata/shm']
     assert device.mount_options.context == "system_u:object_r:container_file_t:s0:c184,c371"
     device = results['/var/lib/containers/storage/overlay-containers/aa7e79fc09c/userdata/shm']
     assert device.mount_options.context == "system_u:object_r:container_file_t:s0"
+    device = results['/var/lib/containers/storage/overlay-containers/bb7e79fc09c/userdata/shm']
+    assert device.mount_options.context == "system_u:object_r:container_file_t:s0:c184,c371,c381,c391"
 
 
 def test_proc_mount_exception1():
