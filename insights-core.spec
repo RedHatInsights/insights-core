@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.0
+Version:        3.3.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jan 11 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.1-1
+- Chore: Update data structure of xfs_quota to fix taking too long to run
+  (#3989) (986222045@qq.com)
+- feat: Add "systemd" to the spec "rpm -V" (#3990)
+  (44796653+huali027@users.noreply.github.com)
+- feat: New spec to get the count of revoked certificates on satellite (#3988)
+  (44796653+huali027@users.noreply.github.com)
+- Add spec "/var/log/candlepin/candlepin.log" back (#3987)
+  (44796653+huali027@users.noreply.github.com)
+- fix: Fix problem parsing mnt opt quotes (#3985)
+  (20520336+bfahr@users.noreply.github.com)
+- Update readthedocs to version 2 (#3986)
+  (20520336+bfahr@users.noreply.github.com)
+
 * Thu Jan 04 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.0-1
 - fix: Fix issue with mount parsers mount option parsing (#3984)
   (20520336+bfahr@users.noreply.github.com)
