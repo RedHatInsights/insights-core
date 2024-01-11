@@ -428,24 +428,28 @@ def _parse_mount_options(mount_options):
     opts = dict()
     sp_opts = mount_options.split(',')
     start_ndx = 0
+    in_quote = False
     for i, opt in enumerate(sp_opts):
-        # Look for option="... start of quoted value
-        if '="' in opt:
+        # Look for option="... start of quoted value, and no end quote
+        if '="' in opt and not opt.endswith('"'):
             start_ndx = i
+            in_quote = True
 
         # Look for closing quote of option="..." and if found recombine value
-        elif '"' in opt:
+        elif in_quote and opt.endswith('"'):
             last_ndx = i
             comb_opt = ','.join(sp_opts[start_ndx:last_ndx + 1])
             opt_name, opt_value = comb_opt.split('=', 1)
             # Remove leading and trailing quotes
-            opts[opt_name] = opt_value[1:-1]
+            opts[opt_name] = opt_value.strip('"')
+            in_quote = False
 
         # Else just a normal option or option=value
-        else:
+        elif not in_quote:
             if '=' in opt:
                 opt_name, opt_value = opt.split('=', 1)
-                opts[opt_name] = opt_value
+                # Remove quotes if present
+                opts[opt_name] = opt_value.strip('"')
             else:
                 opts[opt] = True
     return opts
