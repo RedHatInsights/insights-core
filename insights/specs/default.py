@@ -557,6 +557,10 @@ class DefaultSpecs(Specs):
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL\" --csv",
         deps=[IsSatellite]
     )
+    satellite_revoked_cert_count = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d candlepin -c \"select count(cp_certificate.id) from cp_cert_serial inner join cp_certificate on cp_certificate.serial_id = cp_cert_serial.id where cp_cert_serial.revoked = 't'\" --csv",
+        deps=[IsSatellite]
+    )
     satellite_rhv_hosts_count = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select count(*) from hosts where \"compute_resource_id\" in (select id from compute_resources where type='Foreman::Model::Ovirt')\" --csv",
         deps=[IsSatellite]
