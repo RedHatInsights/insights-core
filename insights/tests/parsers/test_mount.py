@@ -58,10 +58,13 @@ sunrpc /var/lib/nfs/rpc_pipefs rpc_pipefs rw,relatime 0 0
 /etc/auto.misc /misc autofs rw,relatime,fd=7,pgrp=1936,timeout=300,minproto=5,maxproto=5,indirect 0 0
 """.strip()
 
-PROC_MOUNT_QUOTES = """
+PROC_MOUNT_QUOTES = '''
 /dev/mapper/rootvg-rootlv / ext4 rw,relatime,barrier=1,data=ordered 0 0
 tmpfs /var/lib/containers/storage/overlay-containers/ff7e79fc09c/userdata/shm tmpfs rw,nosuid,nodev,noexec,relatime,context="system_u:object_r:container_file_t:s0:c184,c371",size=64000k 0 0
-"""
+tmpfs /var/lib/containers/storage/overlay-containers/aa7e79fc09c/userdata/shm tmpfs rw,nosuid,nodev,noexec,relatime,context="system_u:object_r:container_file_t:s0",size=64000k 0 0
+tmpfs /var/lib/containers/storage/overlay-containers/bb7e79fc09c/userdata/shm tmpfs rw,nosuid,nodev,noexec,relatime,context="system_u:object_r:container_file_t:s0:c184,c371,c381,c391",size=64000k 0 0
+tmpfs /var/lib/containers/storage/overlay-containers/cc7e79fc09c/userdata/shm tmpfs rw,nosuid,nodev,noexec,relatime,context="system_u:object_r:container_file_t:s0:c184,c371,c381,c391" 0 0
+'''
 
 PROCMOUNT_ERR_DATA = """
 rootfs / rootfs rw 0 0
@@ -274,9 +277,20 @@ def test_proc_mount():
 def test_proc_mount_quotes():
     results = ProcMounts(context_wrap(PROC_MOUNT_QUOTES))
     assert results is not None
-    assert len(results) == 2
+    assert len(results) == 5
     device = results['/var/lib/containers/storage/overlay-containers/ff7e79fc09c/userdata/shm']
     assert device.mount_options.context == "system_u:object_r:container_file_t:s0:c184,c371"
+    device = results['/var/lib/containers/storage/overlay-containers/aa7e79fc09c/userdata/shm']
+    assert device.mount_options.context == "system_u:object_r:container_file_t:s0"
+    device = results['/var/lib/containers/storage/overlay-containers/bb7e79fc09c/userdata/shm']
+    assert device.mount_options.context == "system_u:object_r:container_file_t:s0:c184,c371,c381,c391"
+    assert not hasattr(device.mount_options, "c391")
+    assert not hasattr(device.mount_options, "c381")
+    assert not hasattr(device.mount_options, "c371")
+    assert device.mount_options.relatime
+    assert device.mount_options.size == "64000k"
+    device = results['/var/lib/containers/storage/overlay-containers/cc7e79fc09c/userdata/shm']
+    assert device.mount_options.context == "system_u:object_r:container_file_t:s0:c184,c371,c381,c391"
 
 
 def test_proc_mount_exception1():
