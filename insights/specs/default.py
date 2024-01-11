@@ -127,6 +127,7 @@ class DefaultSpecs(Specs):
     bootc_status = simple_command("/usr/bin/bootc status --json")
     buddyinfo = simple_file("/proc/buddyinfo")
     brctl_show = simple_command("/usr/sbin/brctl show")
+    candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
     cciss = glob_file("/proc/driver/cciss/cciss*")
     cdc_wdm = simple_file("/sys/bus/usb/drivers/cdc_wdm/module/refcnt")
     ceph_conf = first_file(["/var/lib/config-data/puppet-generated/ceph/etc/ceph/ceph.conf", "/etc/ceph/ceph.conf"])
