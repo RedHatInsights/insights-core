@@ -5,7 +5,7 @@ xfs_quota Commands
 Parser contains in this module is:
 
 XFSQuotaState - command ``/sbin/xfs_quota -x -c 'state -gu'``
---------------------------------------------------------------
+-------------------------------------------------------------
 """
 
 from insights.core import CommandParser
@@ -21,8 +21,8 @@ class XFSQuotaState(CommandParser):
     xfs quota devices.
 
     Attributes:
-        group_quota (list): List of information for each group quota
-        user_quota (list): List of information for each user quota
+        group_quota (dict): Dictionary of information for each group quota
+        user_quota (dict): Dictionary of information for each user quota
 
     Sample directory list collected::
 
@@ -68,14 +68,15 @@ class XFSQuotaState(CommandParser):
         <class 'insights.parsers.xfs_quota.XFSQuotaState'>
         >>> len(quota_state.user_quota)
         3
-        >>> quota_state.user_quota[0] == {'device': '/dev/sdd', 'accounting': 'ON', 'enforcement': 'ON', 'inode': '#131 (1 blocks, 1 extents)', 'blocks_grace_time': '7 days', 'blocks_max_warnings': '5', 'inodes_grace_time': '7 days', 'inodes_max_warnings': '5', 'realtime_blocks_grace_time': '7 days'}
+        >>> quota_state.user_quota['/dev/sdd'] == {'device': '/dev/sdd', 'accounting': 'ON', 'enforcement': 'ON', 'inode': '#131 (1 blocks, 1 extents)', 'blocks_grace_time': '7 days', 'blocks_max_warnings': '5', 'inodes_grace_time': '7 days', 'inodes_max_warnings': '5', 'realtime_blocks_grace_time': '7 days'}
         True
     """
 
     def parse_content(self, content):
-        self.user_quota = []
-        self.group_quota = []
+        self.user_quota = {}
+        self.group_quota = {}
         data = None
+        device = None
         for line in content:
             if not line.strip():
                 continue
@@ -85,11 +86,11 @@ class XFSQuotaState(CommandParser):
                 data = self.group_quota
                 if 'User ' in line:
                     data = self.user_quota
-                data.append({'device': device})
+                data[device] = data.get(device, dict(device=device))
 
-            elif ': ' in line:
+            elif ': ' in line and device:
                 key, value = line.split(':', 1)
-                data[-1]['_'.join(key.strip().lower().split())] = value.strip().lstrip('[').rstrip(']') if '-' not in value else None
+                data[device]['_'.join(key.strip().lower().split())] = value.strip().lstrip('[').rstrip(']') if '-' not in value else None
 
         if not self.user_quota and not self.group_quota:
             raise SkipComponent("Empty result")
