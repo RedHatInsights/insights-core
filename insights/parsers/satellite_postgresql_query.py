@@ -22,6 +22,8 @@ SatelliteQualifiedCapsules - command ``psql -d foreman -c "select name from smar
 ---------------------------------------------------------------------------------------------------------------------------------------
 SatelliteQualifiedKatelloRepos - command ``psql -d foreman -c "select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL" --csv``
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SatelliteRevokedCertCount - command ``psql -d candlepin -c \"select count(cp_certificate.id) from cp_cert_serial inner join cp_certificate on cp_certificate.serial_id = cp_cert_serial.id where cp_cert_serial.revoked = 't'\" --csv``
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteRHVHostsCount - command ``psql -d foreman -c "select count(*) from hosts where \"compute_resource_id\" in (select id from compute_resources where type='Foreman::Model::Ovirt')" --csv``
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteSCAStatus - command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``
@@ -374,6 +376,25 @@ class SatelliteRHVHostsCount(SatellitePostgreSQLQuery):
         <class 'insights.parsers.satellite_postgresql_query.SatelliteRHVHostsCount'>
         >>> rhv_hosts[0]['count']
         '2'
+    """
+    columns = ['count']
+
+
+@parser(Specs.satellite_revoked_cert_count)
+class SatelliteRevokedCertCount(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d candlepin -c "select count(cp_certificate.id) from cp_cert_serial inner join cp_certificate on cp_certificate.serial_id = cp_cert_serial.id where cp_cert_serial.revoked = 't'\" --csv``.
+
+    Sample output::
+
+        count
+        0
+
+    Examples:
+        >>> type(revoked_certs)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteRevokedCertCount'>
+        >>> revoked_certs[0]['count']
+        '0'
     """
     columns = ['count']
 

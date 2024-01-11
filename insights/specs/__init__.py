@@ -658,6 +658,7 @@ class Specs(SpecSet):
     satellite_provision_param_settings = RegistryPoint()
     satellite_qualified_capsules = RegistryPoint()
     satellite_qualified_katello_repos = RegistryPoint()
+    satellite_revoked_cert_count = RegistryPoint()
     satellite_rhv_hosts_count = RegistryPoint()
     satellite_sca_status = RegistryPoint()
     satellite_settings = RegistryPoint()
