@@ -67,7 +67,7 @@ def _make_rpm_formatter(fmt=None):
 _etc_and_sub_dirs = sorted(
     [
         "/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
-        "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
+        "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sssd", "/etc/sysconfig",
         "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d", "/etc/selinux/targeted/policy",
         "/etc/watchdog.d/"
     ])
