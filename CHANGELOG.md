@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.1) (2024-01-11)
+
+- Chore: Update data structure of xfs_quota to fix taking too long to run ([PR 3989](https://github.com/RedHatInsights/insights-core/pull/3989))
+- feat: Add "systemd" to the spec "rpm -V" ([PR 3990](https://github.com/RedHatInsights/insights-core/pull/3990))
+- feat: New spec to get the count of revoked certificates on satellite ([PR 3988](https://github.com/RedHatInsights/insights-core/pull/3988))
+- Add spec "/var/log/candlepin/candlepin.log" back ([PR 3987](https://github.com/RedHatInsights/insights-core/pull/3987))
+- fix: Fix problem parsing mnt opt quotes ([PR 3985](https://github.com/RedHatInsights/insights-core/pull/3985))
+- Update readthedocs to version 2 ([PR 3986](https://github.com/RedHatInsights/insights-core/pull/3986))
+
 # [insights-core-3.3.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.0) (2024-01-04)
 
 - fix: Fix issue with mount parsers mount option parsing ([PR 3984](https://github.com/RedHatInsights/insights-core/pull/3984))
