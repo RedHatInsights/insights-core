@@ -75,15 +75,20 @@ class CryptoPoliciesOpensshserver(Parser):
     a dictionary of options. It also provides the ``options`` property as a helper
     to retrieve the ``CRYPTO_POLICY`` variable.
 
-    Sample Input::
+    Sample Input on RHEL8::
 
         CRYPTO_POLICY='-oCiphers=aes256-gcm@openssh.com,3des-cbc -oMACs=umac-128-etm@openssh.com'
+
+    Sample Input on RHEL9::
+
+        Ciphers aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes128-gcm@openssh.com,aes128-ctr
+        MACs hmac-sha2-256-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256,hmac-sha1,umac-128@openssh.com,hmac-sha2-512
 
     Examples:
         >>> 'CRYPTO_POLICY' in cp_os.data
         True
         >>> cp_os.options
-        {"Ciphers": "aes256-gcm@openssh.com,3des-cbc -oMACs=umac-128-etm@openssh.com"}
+        {'Ciphers': 'aes256-gcm@openssh.com,3des-cbc', 'MACs': 'umac-128-etm@openssh.com'}
     """
     def parse_content(self, content):
         if not content:
