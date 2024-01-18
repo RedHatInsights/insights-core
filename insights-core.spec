@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.1
+Version:        3.3.2
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,9 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jan 18 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.2-1
+- Enhance crypto_policies_opensshserver for rhel9 (#3994) (jiazhang@redhat.com)
+
 * Thu Jan 11 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.1-1
 - Chore: Update data structure of xfs_quota to fix taking too long to run
   (#3989) (986222045@qq.com)
