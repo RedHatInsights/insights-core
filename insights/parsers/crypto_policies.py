@@ -18,7 +18,7 @@ CryptoPoliciesOpensshserver - file ``/etc/crypto-policies/back-ends/opensshserve
 CryptoPoliciesBind - file ``/etc/crypto-policies/back-ends/bind.config``
 ------------------------------------------------------------------------
 """
-from insights.core import Parser, SysconfigOptions
+from insights.core import Parser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
@@ -68,27 +68,52 @@ class CryptoPoliciesStateCurrent(Parser):
 
 
 @parser(Specs.crypto_policies_opensshserver)
-class CryptoPoliciesOpensshserver(SysconfigOptions):
+class CryptoPoliciesOpensshserver(Parser, dict):
     """
-    This parser reads the ``/etc/crypto-policies/back-ends/opensshserver.config``
-    file.  It uses the ``SysconfigOptions`` parser class to convert the file into
-    a dictionary of options. It also provides the ``options`` property as a helper
-    to retrieve the ``CRYPTO_POLICY`` variable.
+    This parser reads the ``/etc/crypto-policies/back-ends/opensshserver.config`` file.
 
-    Sample Input::
+    Sample Input on RHEL8::
 
         CRYPTO_POLICY='-oCiphers=aes256-gcm@openssh.com,3des-cbc -oMACs=umac-128-etm@openssh.com'
+
+    Sample Input on RHEL9::
+
+        Ciphers aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes128-gcm@openssh.com,aes128-ctr
+        MACs hmac-sha2-256-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256,hmac-sha1,umac-128@openssh.com,hmac-sha2-512
 
     Examples:
         >>> 'CRYPTO_POLICY' in cp_os
         True
         >>> cp_os.options
-        '-oCiphers=aes256-gcm@openssh.com,3des-cbc -oMACs=umac-128-etm@openssh.com'
+        {'Ciphers': 'aes256-gcm@openssh.com,3des-cbc', 'MACs': 'umac-128-etm@openssh.com'}
     """
+    def parse_content(self, content):
+        if not content:
+            raise SkipComponent("/etc/crypto-policies/back-ends/opensshserver.config is empty")
+
+        result = {}
+        for line in get_active_lines(content):
+            if "=" in line:
+                key, value = line.split('=', 1)
+                result[key.strip()] = value.strip("' ")
+            elif line[0].isupper():
+                key, value = line.split(' ', 1)
+                result[key.strip()] = value.strip()
+        self.update(result)
+
     @property
     def options(self):
-        """ (union[str, None]): The value of the ``CRYPTO_POLICY`` variable if it exists, else None."""
-        return self.data.get('CRYPTO_POLICY', None)
+        """return the configuratios as dict format"""
+        whole_configuration = self.get('CRYPTO_POLICY', None)
+        if whole_configuration and whole_configuration.startswith("-o"):
+            result = {}
+            configurations = whole_configuration.split("-o")
+            for item in configurations[1:]:
+                key, value = item.split("=", 1)
+                result[key.strip()] = value.strip()
+            return result
+        else:
+            return self
 
 
 @parser(Specs.crypto_policies_bind)
