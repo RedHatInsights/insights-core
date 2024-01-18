@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.2) (2024-01-18)
+
+- Enhance crypto_policies_opensshserver for rhel9 ([PR 3994](https://github.com/RedHatInsights/insights-core/pull/3994))
+
 # [insights-core-3.3.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.1) (2024-01-11)
 
 - Chore: Update data structure of xfs_quota to fix taking too long to run ([PR 3989](https://github.com/RedHatInsights/insights-core/pull/3989))
