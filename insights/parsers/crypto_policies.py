@@ -70,10 +70,7 @@ class CryptoPoliciesStateCurrent(Parser):
 @parser(Specs.crypto_policies_opensshserver)
 class CryptoPoliciesOpensshserver(Parser, dict):
     """
-    This parser reads the ``/etc/crypto-policies/back-ends/opensshserver.config``
-    file.  It uses the ``SysconfigOptions`` parser class to convert the file into
-    a dictionary of options. It also provides the ``options`` property as a helper
-    to retrieve the ``CRYPTO_POLICY`` variable.
+    This parser reads the ``/etc/crypto-policies/back-ends/opensshserver.config`` file.
 
     Sample Input on RHEL8::
 
