@@ -68,7 +68,7 @@ class CryptoPoliciesStateCurrent(Parser):
 
 
 @parser(Specs.crypto_policies_opensshserver)
-class CryptoPoliciesOpensshserver(Parser):
+class CryptoPoliciesOpensshserver(Parser, dict):
     """
     This parser reads the ``/etc/crypto-policies/back-ends/opensshserver.config``
     file.  It uses the ``SysconfigOptions`` parser class to convert the file into
@@ -85,7 +85,7 @@ class CryptoPoliciesOpensshserver(Parser):
         MACs hmac-sha2-256-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256,hmac-sha1,umac-128@openssh.com,hmac-sha2-512
 
     Examples:
-        >>> 'CRYPTO_POLICY' in cp_os.data
+        >>> 'CRYPTO_POLICY' in cp_os
         True
         >>> cp_os.options
         {'Ciphers': 'aes256-gcm@openssh.com,3des-cbc', 'MACs': 'umac-128-etm@openssh.com'}
@@ -102,12 +102,12 @@ class CryptoPoliciesOpensshserver(Parser):
             elif line[0].isupper():
                 key, value = line.split(' ', 1)
                 result[key.strip()] = value.strip()
-        self.data = result
+        self.update(result)
 
     @property
     def options(self):
         """return the configuratios as dict format"""
-        whole_configuration = self.data.get('CRYPTO_POLICY', None)
+        whole_configuration = self.get('CRYPTO_POLICY', None)
         if whole_configuration and whole_configuration.startswith("-o"):
             result = {}
             configurations = whole_configuration.split("-o")
@@ -116,7 +116,7 @@ class CryptoPoliciesOpensshserver(Parser):
                 result[key.strip()] = value.strip()
             return result
         else:
-            return self.data
+            return self
 
 
 @parser(Specs.crypto_policies_bind)
