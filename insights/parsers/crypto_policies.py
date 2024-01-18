@@ -95,7 +95,7 @@ class CryptoPoliciesOpensshserver(Parser, dict):
         for line in get_active_lines(content):
             if "=" in line:
                 key, value = line.split('=', 1)
-                result[key.strip()] = value.strip().replace("'", "")
+                result[key.strip()] = value.strip("' ")
             elif line[0].isupper():
                 key, value = line.split(' ', 1)
                 result[key.strip()] = value.strip()
