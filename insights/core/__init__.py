@@ -79,9 +79,10 @@ class Parser(object):
     def __init__(self, context):
         self.file_path = os.path.join("/", context.relative_path) if context.relative_path is not None else None
         """str: Full context path of the input file."""
-        self.file_name = os.path.basename(context.path) \
-            if context.path is not None else None
+        self.file_name = os.path.basename(context.path) if context.path is not None else None
         """str: Filename portion of the input file."""
+        self.save_as = getattr(context, 'save_as', None)
+        """str: "Save As" path specified by collector of the input file."""
         if hasattr(context, "last_client_run"):
             self.last_client_run = context.last_client_run
         else:
@@ -395,7 +396,9 @@ class ConfigCombiner(ConfigComponent):
         self.doc = Entry(children=flatten(self.main.doc.children, include_finder))
 
     def find_matches(self, confs, pattern):
-        results = [c for c in confs if fnmatch(c.file_path, pattern)]
+        results = [c for c in confs if fnmatch(
+            c.file_path.replace(c.save_as, '') if c.save_as else c.file_path, pattern)
+        ]
         return sorted(results, key=operator.attrgetter("file_name"))
 
     def find_main(self, name):
