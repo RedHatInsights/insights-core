@@ -53,6 +53,7 @@ Examples:
 from collections import namedtuple
 from .. import Parser, parser, get_active_lines
 from insights.specs import Specs
+from insights.util import deprecated
 import re
 
 # optional whitespace, at least one non-whitespace (the keyword), at least one whitespace (space), a plus literal, anything
@@ -61,7 +62,12 @@ PLUS_PATTERN = re.compile(r'^\s*\S+\s+\+.*$')
 
 @parser(Specs.sshd_config)
 class SshDConfig(Parser):
-    """Parsing for ``/etc/ssh/sshd_config`` file.
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.6.0.
+        Please use the :class:`insights.parsers.sshd_test_mode.SshdTestMode` instead.
+
+    Parsing for ``/etc/ssh/sshd_config`` file.
 
     Properties:
         lines (list): List of `KeyValue` namedtupules for each line in
@@ -83,6 +89,10 @@ class SshDConfig(Parser):
     # Re: BZ#1697477
     # Config lines may also be delimited by `=`, and values may be quoted
     # with `"`. Here it is assumed that config lines are well-formed.
+    def __init__(self, *args, **kwargs):
+        deprecated(SshDConfig, "Please use the :class:`insights.parsers.sshd_test_mode.SshdTestMode` instead.", "3.6.0")
+        super(SshDConfig, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         self.lines = []
         for line in get_active_lines(content):
