@@ -22,7 +22,7 @@ def test_sshd_test_mode():
     sshd_mode = sshd_test_mode.SshdTestMode(context_wrap(SSHD_TEST_MODE))
     assert len(sshd_mode) == 10
     assert sshd_mode.get("listenaddress") == ["[::]:22", "0.0.0.0:22"]
-    assert sshd_mode.get("ciphers") == "aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes128-gcm@openssh.com,aes128-ctr"
+    assert sshd_mode.get("ciphers") == ["aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes128-gcm@openssh.com,aes128-ctr"]
     assert ('addressfamily' in sshd_mode) is True
     assert ('test' in sshd_mode) is False
 

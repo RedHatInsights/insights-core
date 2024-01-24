@@ -33,20 +33,17 @@ class SshdTestMode(Parser, dict):
     Examples:
         >>> len(sshd_test_mode)
         10
-        >>> sshd_test_mode.get("addressfamily")
-        'any'
+        >>> sshd_test_mode.get("listenaddress")
+        ['[::]:22', '0.0.0.0:22']
         >>> sshd_test_mode.get("ciphers")
-        'aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes128-gcm@openssh.com,aes128-ctr'
+        ['aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes128-gcm@openssh.com,aes128-ctr']
     """
     def parse_content(self, content):
         result = {}
         for line in get_active_lines(content):
             key, value = line.split(" ", 1)
             if key in result:
-                if isinstance(result[key], list):
-                    result[key].append(value)
-                else:
-                    result[key] = [result[key], value]
+                result[key].append(value)
             else:
-                result[key] = value
+                result[key] = [value]
         self.update(result)
