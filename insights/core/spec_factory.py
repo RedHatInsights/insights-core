@@ -52,6 +52,7 @@ class ContentProvider(object):
         self.rc = None
         self.root = None
         self.relative_path = None
+        self.save_as = None
         self.loaded = False
         self._content = None
         self._exception = None
@@ -100,9 +101,10 @@ class ContentProvider(object):
 
 
 class DatasourceProvider(ContentProvider):
-    def __init__(self, content, relative_path, root='/', ds=None, ctx=None):
+    def __init__(self, content, relative_path, root='/', save_as=None, ds=None, ctx=None):
         super(DatasourceProvider, self).__init__()
-        self.relative_path = relative_path
+        self.relative_path = relative_path.lstrip("/")
+        self.save_as = save_as
         self._content = content if isinstance(content, list) else content.splitlines()
         self.root = root
         self.ds = ds
@@ -127,12 +129,13 @@ class DatasourceProvider(ContentProvider):
 
 
 class FileProvider(ContentProvider):
-    def __init__(self, relative_path, root="/", ds=None, ctx=None):
+    def __init__(self, relative_path, root="/", save_as=None, ds=None, ctx=None):
         super(FileProvider, self).__init__()
         self.ds = ds
         self.ctx = ctx
         self._set_root(root)
         self.relative_path = relative_path.lstrip("/")
+        self.save_as = save_as
         self.file_name = os.path.basename(self.path)
 
         self.validate()
@@ -321,11 +324,12 @@ class CommandOutputProvider(ContentProvider):
     """
     Class used in datasources to return output from commands.
     """
-    def __init__(self, cmd, ctx, root="insights_commands", args=None, split=True, keep_rc=False, ds=None, timeout=None,
+    def __init__(self, cmd, ctx, root="insights_commands", save_as=None, args=None, split=True, keep_rc=False, ds=None, timeout=None,
                  inherit_env=None, override_env=None, signum=None):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
         self.root = root
+        self.save_as = save_as
         self.ctx = ctx
         self.args = args  # already interpolated into cmd - stored here for context.
         self.split = split
@@ -616,7 +620,13 @@ class simple_file(object):
     Creates a datasource that reads the file at path when evaluated.
 
     Args:
-        path (str): path to the file to read
+        path (str): path to the file to collect.
+        save_as (str or None): path to save the collected file as.
+            - It should be a relative path and any starting '/' will be removed.
+            - If it's a path which ending with '/', the collected file will be
+            stored to the "save_as" directory,
+            - If it's a path which not ending with '/', the collected file will
+            be renamed to the file with "save_as" as the full path.
         context (ExecutionContext): the context under which the datasource
             should run.
         kind (FileProvider): One of TextFileProvider or RawFileProvider.
@@ -624,8 +634,10 @@ class simple_file(object):
     Returns:
         function: A datasource that reads all files matching the glob patterns.
     """
-    def __init__(self, path, context=None, deps=[], kind=TextFileProvider, **kwargs):
+    def __init__(self, path, save_as=None, context=None, deps=[],
+                 kind=TextFileProvider, **kwargs):
         self.path = path
+        self.save_as = save_as.lstrip("/") if save_as else None
         self.context = context or FSRoots
         self.kind = kind
         self.raw = kind is RawFileProvider
@@ -634,7 +646,8 @@ class simple_file(object):
 
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)
-        return self.kind(ctx.locate_path(self.path), root=ctx.root, ds=self, ctx=ctx)
+        return self.kind(ctx.locate_path(self.path), root=ctx.root,
+                         save_as=self.save_as, ds=self, ctx=ctx)
 
 
 class glob_file(object):
@@ -642,7 +655,10 @@ class glob_file(object):
     Creates a datasource that reads all files matching the glob pattern(s).
 
     Args:
-        patterns (str or [str]): glob pattern(s) of paths to read.
+        patterns (str or [str]): glob pattern(s) of paths to collect.
+        save_as (str or None): directory path to save the collected files as.
+            - It should be a relative path and any starting '/' will be removed
+            and an ending '/' will be added.
         ignore (regex): a regular expression that is used to filter the paths
             matched by pattern(s).
         context (ExecutionContext): the context under which the datasource
@@ -653,11 +669,13 @@ class glob_file(object):
     Returns:
         function: A datasource that reads all files matching the glob patterns.
     """
-    def __init__(self, patterns, ignore=None, context=None, deps=[], kind=TextFileProvider, max_files=1000, **kwargs):
+    def __init__(self, patterns, save_as=None, ignore=None, context=None,
+                 deps=[], kind=TextFileProvider, max_files=1000, **kwargs):
         if not isinstance(patterns, (list, set)):
             patterns = [patterns]
         self.patterns = patterns
         self.ignore = ignore
+        self.save_as = os.path.join(save_as.lstrip("/"), '') if save_as else None
         self.ignore_func = re.compile(ignore).search if ignore else lambda x: False
         self.context = context or FSRoots
         self.kind = kind
@@ -676,7 +694,9 @@ class glob_file(object):
                 if self.ignore_func(path) or os.path.isdir(path):
                     continue
                 try:
-                    results.append(self.kind(path[len(root):], root=root, ds=self, ctx=ctx))
+                    results.append(self.kind(
+                        path[len(root):], root=root, save_as=self.save_as,
+                        ds=self, ctx=ctx))
                 except:
                     log.debug(traceback.format_exc())
         if results:
@@ -709,7 +729,13 @@ class first_file(object):
     files.
 
     Args:
-        files (str): list of paths to find and read
+        paths (str): list of paths to find and collect.
+        save_as (str or None): path to save the collected file as.
+            - It should be a relative path and any starting '/' will be removed.
+            - If it's a path which ending with '/', the collected file will be
+            stored to the "save_as" directory,
+            - If it's a path which not ending with '/', the collected file will
+            be renamed to the file with "save_as" as the full path.
         context (ExecutionContext): the context under which the datasource
             should run.
         kind (FileProvider): One of TextFileProvider or RawFileProvider.
@@ -719,8 +745,10 @@ class first_file(object):
             and is readable
     """
 
-    def __init__(self, paths, context=None, deps=[], kind=TextFileProvider, **kwargs):
+    def __init__(self, paths, save_as=None, context=None, deps=[],
+                 kind=TextFileProvider, **kwargs):
         self.paths = paths
+        self.save_as = save_as.lstrip("/") if save_as else None
         self.context = context or FSRoots
         self.kind = kind
         self.raw = kind is RawFileProvider
@@ -732,7 +760,9 @@ class first_file(object):
         root = ctx.root
         for p in self.paths:
             try:
-                return self.kind(ctx.locate_path(p), root=root, ds=self, ctx=ctx)
+                return self.kind(
+                        ctx.locate_path(p), root=root, save_as=self.save_as,
+                        ds=self, ctx=ctx)
             except:
                 pass
         raise ContentException("None of [%s] found." % ', '.join(self.paths))
@@ -808,6 +838,12 @@ class simple_command(object):
             string that might contain multiple commands separated by a pipe,
             getting them ready for subproc operations.
             IE. A command with filters applied
+        save_as (str or None): path to save the collected file as.
+            - It should be a relative path and any starting '/' will be removed.
+            - If it's a path which ending with '/', the collected file will be
+            stored to the "save_as" directory,
+            - If it's a path which not ending with '/', the collected file will
+            be renamed to the file with "save_as" as the full path.
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -828,11 +864,13 @@ class simple_command(object):
         function: A datasource that returns the output of a command that takes
             no arguments
     """
-    def __init__(self, cmd, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None, inherit_env=None,
+    def __init__(self, cmd, save_as=None, context=HostContext, deps=None,
+                 split=True, keep_rc=False, timeout=None, inherit_env=None,
                  override_env=None, signum=None, **kwargs):
         deps = deps if deps is not None else []
         self.cmd = cmd
         self.context = context
+        self.save_as = save_as.lstrip("/") if save_as else None
         self.split = split
         self.raw = not split
         self.keep_rc = keep_rc
@@ -845,9 +883,11 @@ class simple_command(object):
 
     def __call__(self, broker):
         ctx = broker[self.context]
-        return CommandOutputProvider(self.cmd, ctx, split=self.split, keep_rc=self.keep_rc, ds=self,
-                                     timeout=self.timeout, inherit_env=self.inherit_env, override_env=self.override_env,
-                                     signum=self.signum)
+        return CommandOutputProvider(
+                self.cmd, ctx, save_as=self.save_as, split=self.split,
+                keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
+                inherit_env=self.inherit_env, override_env=self.override_env,
+                signum=self.signum)
 
 
 class command_with_args(object):
@@ -858,6 +898,9 @@ class command_with_args(object):
         cmd (str): the command to execute. Breaking apart a command
             string that might require arguments.
         provider (str or tuple): argument string or a tuple of argument strings.
+        save_as (str or None): directory path to save the collected files as.
+            - It should be a relative path and any starting '/' will be removed
+            and an ending '/' will be added.
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -878,11 +921,12 @@ class command_with_args(object):
         function: A datasource that returns the output of a command that takes
             specified arguments passed by the provider.
     """
-    def __init__(self, cmd, provider, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None,
+    def __init__(self, cmd, provider, save_as=None, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None,
                  inherit_env=None, override_env=None, signum=None, **kwargs):
         deps = deps if deps is not None else []
         self.cmd = cmd
         self.provider = provider
+        self.save_as = os.path.join(save_as.lstrip("/"), '') if save_as else None
         self.context = context
         self.split = split
         self.raw = not split
@@ -902,9 +946,11 @@ class command_with_args(object):
                                    source)
         try:
             self.cmd = self.cmd % source
-            return CommandOutputProvider(self.cmd, ctx, split=self.split, keep_rc=self.keep_rc, ds=self,
-                                         timeout=self.timeout, inherit_env=self.inherit_env,
-                                         override_env=self.override_env, signum=self.signum)
+            return CommandOutputProvider(
+                    self.cmd, ctx, save_as=self.save_as, split=self.split,
+                    keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
+                    inherit_env=self.inherit_env,
+                    override_env=self.override_env, signum=self.signum)
         except ContentException as ce:
             log.debug(ce)
         except Exception:
@@ -925,6 +971,9 @@ class foreach_execute(object):
             apart a command string that might contain multiple commands
             separated by a pipe, getting them ready for subproc operations.
             IE. A command with filters applied
+        save_as (str or None): directory path to save the collected files as.
+            - It should be a relative path and any starting '/' will be removed
+            and an ending '/' will be added.
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -945,12 +994,14 @@ class foreach_execute(object):
         function: A datasource that returns a list of outputs for each command
             created by substituting each element of provider into the cmd template.
     """
-    def __init__(self, provider, cmd, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None,
+    def __init__(self, provider, cmd, save_as=None, context=HostContext,
+                 deps=None, split=True, keep_rc=False, timeout=None,
                  inherit_env=None, override_env=None, signum=None, **kwargs):
         deps = deps if deps is not None else []
         self.provider = provider
         self.cmd = cmd
         self.context = context
+        self.save_as = os.path.join(save_as.lstrip("/"), '') if save_as else None
         self.split = split
         self.raw = not split
         self.keep_rc = keep_rc
@@ -972,9 +1023,11 @@ class foreach_execute(object):
         for e in source:
             try:
                 the_cmd = self.cmd % e
-                cop = CommandOutputProvider(the_cmd, ctx, args=e, split=self.split, keep_rc=self.keep_rc, ds=self,
-                                            timeout=self.timeout, inherit_env=self.inherit_env,
-                                            override_env=self.override_env, signum=self.signum)
+                cop = CommandOutputProvider(
+                        the_cmd, ctx, args=e, save_as=self.save_as,
+                        split=self.split, keep_rc=self.keep_rc, ds=self,
+                        timeout=self.timeout, inherit_env=self.inherit_env,
+                        override_env=self.override_env, signum=self.signum)
                 result.append(cop)
             except ContentException as ce:
                 log.debug(ce)
@@ -992,6 +1045,9 @@ class foreach_collect(object):
 
     Args:
         provider (list): a list of elements or tuples.
+        save_as (str or None): directory path to save the collected files as.
+            - It should be a relative path and any starting '/' will be removed
+            and an ending '/' will be added.
         path (str): a path template with substitution parameters.
         context (ExecutionContext): the context under which the datasource
             should run.
@@ -1002,9 +1058,11 @@ class foreach_collect(object):
             substituting each element of provider into the path template.
     """
 
-    def __init__(self, provider, path, ignore=None, context=HostContext, deps=[], kind=TextFileProvider, **kwargs):
+    def __init__(self, provider, path, save_as=None, ignore=None,
+                 context=HostContext, deps=[], kind=TextFileProvider, **kwargs):
         self.provider = provider
         self.path = path
+        self.save_as = os.path.join(save_as.lstrip("/"), '') if save_as else None
         self.ignore = ignore
         self.ignore_func = re.compile(ignore).search if ignore else lambda x: False
         self.context = context
@@ -1028,7 +1086,9 @@ class foreach_collect(object):
                 if self.ignore_func(p) or os.path.isdir(p):
                     continue
                 try:
-                    result.append(self.kind(p[len(root):], root=root, ds=self, ctx=ctx))
+                    result.append(self.kind(
+                        p[len(root):], root=root, save_as=self.save_as,
+                        ds=self, ctx=ctx))
                 except:
                     log.debug(traceback.format_exc())
         if result:
@@ -1053,6 +1113,9 @@ class container_execute(foreach_execute):
             apart a command string that might contain multiple commands
             separated by a pipe, getting them ready for subproc operations.
             IE. A command with filters applied
+        save_as (str or None): directory path to save the collected files as.
+            - It should be a relative path and any starting '/' will be removed
+            and an ending '/' will be added.
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -1108,6 +1171,9 @@ class container_collect(foreach_execute):
         path (str): the file path template with substitution parameters.  The
             path can also be passed via the provider when it's variable per
             cases, in that case, the `path` should be None.
+        save_as (str or None): directory path to save the collected files as.
+            - It should be a relative path and any starting '/' will be removed
+            and an ending '/' will be added.
         context (ExecutionContext): the context under which the datasource
             should run.
         keep_rc (bool): whether to return the error code returned by the
@@ -1122,10 +1188,12 @@ class container_collect(foreach_execute):
         function: A datasource that returns a list of file contents created by
             substituting each element of provider into the path template.
     """
-    def __init__(self, provider, path=None, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None,
+    def __init__(self, provider, path=None, save_as=None, context=HostContext,
+                 deps=None, split=True, keep_rc=False, timeout=None,
                  inherit_env=None, override_env=None, signum=None, **kwargs):
-        super(container_collect, self).__init__(provider, path, context, deps, split, keep_rc, timeout, inherit_env,
-                                                override_env, signum, **kwargs)
+        super(container_collect, self).__init__(
+              provider, path, save_as, context, deps, split, keep_rc, timeout,
+              inherit_env, override_env, signum, **kwargs)
 
     def __call__(self, broker):
         result = []
@@ -1148,10 +1216,11 @@ class container_collect(foreach_execute):
                 # e       = (<podman|docker>, container_id)
                 # the_cmd = <podman|docker> exec container_id cat path
                 the_cmd = ("/usr/bin/%s exec %s cat " % e) + path
-                cfp = ContainerFileProvider(the_cmd, ctx, image=image, args=None, split=self.split,
-                                            keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
-                                            inherit_env=self.inherit_env, override_env=self.override_env,
-                                            signum=self.signum)
+                cfp = ContainerFileProvider(
+                        the_cmd, ctx, save_as=self.save_as, image=image,
+                        args=None, split=self.split, keep_rc=self.keep_rc,
+                        ds=self, timeout=self.timeout, inherit_env=self.inherit_env,
+                        override_env=self.override_env, signum=self.signum)
                 result.append(cfp)
             except:
                 log.debug(traceback.format_exc())
@@ -1247,13 +1316,18 @@ class find(object):
 
 @serializer(CommandOutputProvider)
 def serialize_command_output(obj, root):
-    rel = os.path.join("insights_commands", mangle_command(obj.cmd))
+    rel = os.path.join("insights_commands", obj.relative_path)
+    if obj.save_as:
+        rel = os.path.join("insights_commands", obj.save_as)
+        if obj.save_as.endswith('/'):
+            rel = os.path.join("insights_commands", obj.save_as, obj.relative_path)
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
         "rc": rc,
         "cmd": obj.cmd,
         "args": obj.args,
+        "save_as": obj.save_as,
         "relative_path": rel
     }
 
@@ -1262,7 +1336,7 @@ def serialize_command_output(obj, root):
 def deserialize_command_output(_type, data, root):
     rel = data["relative_path"]
 
-    res = SerializedOutputProvider(rel, root)
+    res = SerializedOutputProvider(rel, root=root, save_as=data.get("save_as"))
 
     res.rc = data["rc"]
     res.cmd = data["cmd"]
@@ -1272,10 +1346,16 @@ def deserialize_command_output(_type, data, root):
 
 @serializer(TextFileProvider)
 def serialize_text_file_provider(obj, root):
-    dst = os.path.join(root, obj.relative_path)
+    rel = obj.relative_path
+    if obj.save_as:
+        rel = obj.save_as
+        if obj.save_as.endswith('/'):
+            rel = os.path.join(obj.save_as, obj.relative_path)
+    dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
-        "relative_path": obj.relative_path,
+        "save_as": obj.save_as,
+        "relative_path": rel,
         "rc": rc,
     }
 
@@ -1283,17 +1363,23 @@ def serialize_text_file_provider(obj, root):
 @deserializer(TextFileProvider)
 def deserialize_text_provider(_type, data, root):
     rel = data["relative_path"]
-    res = SerializedOutputProvider(rel, root)
+    res = SerializedOutputProvider(rel, root=root, save_as=data.get("save_as"))
     res.rc = data["rc"]
     return res
 
 
 @serializer(RawFileProvider)
 def serialize_raw_file_provider(obj, root):
-    dst = os.path.join(root, obj.relative_path)
+    rel = obj.relative_path
+    if obj.save_as:
+        rel = obj.save_as
+        if obj.save_as.endswith('/'):
+            rel = os.path.join(obj.save_as, obj.relative_path)
+    dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
-        "relative_path": obj.relative_path,
+        "save_as": obj.save_as,
+        "relative_path": rel,
         "rc": rc,
     }
 
@@ -1301,47 +1387,64 @@ def serialize_raw_file_provider(obj, root):
 @deserializer(RawFileProvider)
 def deserialize_raw_file_provider(_type, data, root):
     rel = data["relative_path"]
-    res = SerializedRawOutputProvider(rel, root)
+    res = SerializedRawOutputProvider(rel, root=root, save_as=data.get("save_as"))
     res.rc = data["rc"]
     return res
 
 
 @serializer(DatasourceProvider)
 def serialize_datasource_provider(obj, root):
-    dst = os.path.join(root, obj.relative_path.lstrip("/"))
-    fs.ensure_path(os.path.dirname(dst))
+    rel = obj.relative_path
+    if obj.save_as:
+        rel = obj.save_as
+        if obj.save_as.endswith('/'):
+            rel = os.path.join(obj.save_as, obj.relative_path)
+    dst = os.path.join(root, rel)
     obj.write(dst)
-    return {"relative_path": obj.relative_path}
+    return {"relative_path": rel, "save_as": obj.save_as}
 
 
 @deserializer(DatasourceProvider)
 def deserialize_datasource_provider(_type, data, root):
-    return SerializedOutputProvider(data["relative_path"], root)
+    res = SerializedRawOutputProvider(data["relative_path"], root=root,
+                                      save_as=data.get("save_as"))
+    return res
 
 
 @serializer(MetadataProvider)
 def serialize_metadata_provider(obj, root):
     # Built-in metadata files are put in the root instead of '/data'
     root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
-    dst = os.path.join(root, obj.relative_path.lstrip("/"))
-    fs.ensure_path(os.path.dirname(dst))
+    rel = obj.relative_path
+    if obj.save_as:
+        rel = obj.save_as
+        if obj.save_as.endswith('/'):
+            rel = os.path.join(obj.save_as, obj.relative_path)
+    dst = os.path.join(root, obj.relative_path)
     obj.write(dst)
-    return {"relative_path": obj.relative_path}
+    return {"relative_path": rel, "save_as": obj.save_as}
 
 
 @deserializer(MetadataProvider)
 def deserialize_metadata_provider(_type, data, root):
     # Built-in metadata files are put in the root instead of '/data'
     root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
-    return SerializedOutputProvider(data["relative_path"], root)
+    res = SerializedRawOutputProvider(data["relative_path"], root=root,
+                                      save_as=data.get("save_as"))
+    return res
 
 
 @serializer(ContainerFileProvider)
 def serialize_container_file_output(obj, root):
     rel = os.path.join("insights_containers", obj.relative_path)
+    if obj.save_as:
+        rel = os.path.join("insights_containers", obj.save_as)
+        if obj.save_as.endswith('/'):
+            rel = os.path.join("insights_containers", obj.save_as, obj.relative_path)
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
+        "save_as": obj.save_as,
         "relative_path": rel,
         "rc": rc,
         "image": obj.image,
@@ -1353,7 +1456,7 @@ def serialize_container_file_output(obj, root):
 @deserializer(ContainerFileProvider)
 def deserialize_container_file(_type, data, root):
     rel = data["relative_path"]
-    res = SerializedOutputProvider(rel, root)
+    res = SerializedOutputProvider(rel, root=root, save_as=data.get("save_as"))
     res.rc = data["rc"]
     res.image = data["image"]
     res.engine = data["engine"]
@@ -1364,12 +1467,17 @@ def deserialize_container_file(_type, data, root):
 @serializer(ContainerCommandProvider)
 def serialize_container_command(obj, root):
     rel = os.path.join("insights_containers", obj.relative_path)
+    if obj.save_as:
+        rel = os.path.join("insights_containers", obj.save_as)
+        if obj.save_as.endswith('/'):
+            rel = os.path.join("insights_containers", obj.save_as, obj.relative_path)
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
         "rc": rc,
         "cmd": obj.cmd,
         "args": obj.args,
+        "save_as": obj.save_as,
         "relative_path": rel,
         "image": obj.image,
         "engine": obj.engine,
@@ -1380,7 +1488,7 @@ def serialize_container_command(obj, root):
 @deserializer(ContainerCommandProvider)
 def deserialize_container_command(_type, data, root):
     rel = data["relative_path"]
-    res = SerializedOutputProvider(rel, root)
+    res = SerializedOutputProvider(rel, root=root, save_as=data.get("save_as"))
     res.rc = data["rc"]
     res.cmd = data["cmd"]
     res.args = data["args"]
