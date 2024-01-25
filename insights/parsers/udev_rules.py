@@ -13,7 +13,7 @@ UdevRules40Redhat - files ``/etc/udev/rules.d/40-redhat.rules``, ``/run/udev/rul
 UdevRulesOracleASM - file ``/etc/udev/rules.d/*asm*.rules``
 -----------------------------------------------------------
 
-UdevRules66MD - files ``/etc/udev/rules.d/66-md-auto-re-add.rules``, ``/usr/lib/udev/rules.d/66-md-auto-re-add.rules``
+UdevRules66MD - files ``/etc/udev/rules.d/66-md-auto-readd.rules``, ``/usr/lib/udev/rules.d/66-md-auto-readd.rules``
 ----------------------------------------------------------------------------------------------------------------------
 """
 from insights import parser
@@ -112,7 +112,7 @@ class UdevRulesOracleASM(LogFileOutput):
 @parser(Specs.udev_66_md_rules)
 class UdevRules66MD(LogFileOutput):
     """
-    Read the content of ``66-md-auto-re-add.rules`` file.
+    Read the content of ``66-md-auto-readd.rules`` file.
 
     .. note::
 
