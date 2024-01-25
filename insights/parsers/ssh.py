@@ -35,23 +35,6 @@ class SshDConfig(Parser):
     Sample input is provided in the *Examples*.
 
     Examples:
-        >>> sshd_config_input = '''
-        ... #	$OpenBSD: sshd_config,v 1.93 2014/01/10 05:59:19 djm Exp $
-        ...
-        ... Port 22
-        ... #AddressFamily any
-        ... ListenAddress 10.110.0.1
-        ... Port 22
-        ... ListenAddress 10.110.1.1
-        ... #ListenAddress ::
-        ...
-        ... # The default requires explicit activation of protocol 1
-        ... #Protocol 2
-        ... Protocol 1
-        ... '''.strip()
-        >>> from insights.tests import context_wrap
-        >>> shared = {SshDConfig: SshDConfig(context_wrap(sshd_config_input))}
-        >>> sshd_config = shared[SshDConfig]
         >>> 'Port' in sshd_config
         True
         >>> 'PORT' in sshd_config
@@ -63,7 +46,7 @@ class SshDConfig(Parser):
         >>> sshd_config['Protocol']
         ['1']
         >>> [line for line in sshd_config if line.keyword == 'Port']
-        [KeyValue(keyword='Port', value='22', kw_lower='port'), KeyValue(keyword='Port', value='22', kw_lower='port')]
+        [KeyValue(keyword='Port', value='22', kw_lower='port', line='Port 22'), KeyValue(keyword='Port', value='22', kw_lower='port', line='Port 22')]
         >>> sshd_config.last('ListenAddress')
         '10.110.1.1'
         >>> sshd_config.get_line('ListenAddress')
