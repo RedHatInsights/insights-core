@@ -89,7 +89,7 @@ class Stuff(Specs):
     @datasource(HostContext)
     def files(broker):
         """ Return a list of directories from the spec filter """
-        return [this_file, "/etc/os-release"]
+        return [this_file, here + "/__init__.py"]
 
     many_foreach = foreach_collect(files, "%s", save_as=SAVE_AS_MAP['many_foreach'][0])
     smpl_cmd = simple_command("/usr/bin/uptime", save_as=SAVE_AS_MAP['smpl_cmd'][0])
