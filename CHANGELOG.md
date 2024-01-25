@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.3) (2024-01-25)
+
+- feat: new 'Save As' feature to core collection ([PR 3992](https://github.com/RedHatInsights/insights-core/pull/3992))
+- Add parser sshd_test_mode ([PR 3996](https://github.com/RedHatInsights/insights-core/pull/3996))
+- fix: wrong spec file path of UdevRules66MD ([PR 3995](https://github.com/RedHatInsights/insights-core/pull/3995))
+
 # [insights-core-3.3.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.2) (2024-01-18)
 
 - Enhance crypto_policies_opensshserver for rhel9 ([PR 3994](https://github.com/RedHatInsights/insights-core/pull/3994))

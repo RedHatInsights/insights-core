@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.2
+Version:        3.3.3
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jan 25 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.3-1
+- feat: new 'Save As' feature to core collection (#3992)
+  (xiangceliu@redhat.com)
+- Add parser sshd_test_mode (#3996) (jiazhang@redhat.com)
+- fix: wrong spec file path of UdevRules66MD (#3995) (xiaoxwan@redhat.com)
+
 * Thu Jan 18 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.2-1
 - Enhance crypto_policies_opensshserver for rhel9 (#3994) (jiazhang@redhat.com)
 
