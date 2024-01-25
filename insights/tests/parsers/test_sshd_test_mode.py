@@ -1,6 +1,6 @@
 import doctest
 
-from insights.parsers import sshd_test_mode
+from insights.parsers import ssh
 from insights.tests import context_wrap
 
 SSHD_TEST_MODE = """
@@ -19,7 +19,7 @@ macs hmac-sha2-256-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-128-etm@openss
 
 
 def test_sshd_test_mode():
-    sshd_mode = sshd_test_mode.SshdTestMode(context_wrap(SSHD_TEST_MODE))
+    sshd_mode = ssh.SshdTestMode(context_wrap(SSHD_TEST_MODE))
     assert len(sshd_mode) == 10
     assert sshd_mode.get("listenaddress") == ["[::]:22", "0.0.0.0:22"]
     assert sshd_mode.get("ciphers") == ["aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes128-gcm@openssh.com,aes128-ctr"]
@@ -29,7 +29,7 @@ def test_sshd_test_mode():
 
 def test_sshd_test_mode_docs():
     env = {
-        'sshd_test_mode': sshd_test_mode.SshdTestMode(context_wrap(SSHD_TEST_MODE)),
+        'sshd_test_mode': ssh.SshdTestMode(context_wrap(SSHD_TEST_MODE)),
     }
-    failed, total = doctest.testmod(sshd_test_mode, globs=env)
+    failed, total = doctest.testmod(ssh, globs=env)
     assert failed == 0
