@@ -1,58 +1,17 @@
 """
+Parsers for SSH configuration
+=============================
+
 SshDConfig - file ``/etc/ssh/sshd_config``
-==========================================
+------------------------------------------
 
-The ``ssh`` module provides parsing for the ``sshd_config``
-file.  The ``SshDConfig`` class implements the parsing and
-provides a ``list`` of all configuration lines present in
-the file.
-
-Sample input is provided in the *Examples*.
-
-Examples:
-    >>> sshd_config_input = '''
-    ... #	$OpenBSD: sshd_config,v 1.93 2014/01/10 05:59:19 djm Exp $
-    ...
-    ... Port 22
-    ... #AddressFamily any
-    ... ListenAddress 10.110.0.1
-    ... Port 22
-    ... ListenAddress 10.110.1.1
-    ... #ListenAddress ::
-    ...
-    ... # The default requires explicit activation of protocol 1
-    ... #Protocol 2
-    ... Protocol 1
-    ... '''.strip()
-    >>> from insights.tests import context_wrap
-    >>> shared = {SshDConfig: SshDConfig(context_wrap(sshd_config_input))}
-    >>> sshd_config = shared[SshDConfig]
-    >>> 'Port' in sshd_config
-    True
-    >>> 'PORT' in sshd_config
-    True
-    >>> 'AddressFamily' in sshd_config
-    False
-    >>> sshd_config['port']
-    ['22', '22']
-    >>> sshd_config['Protocol']
-    ['1']
-    >>> [line for line in sshd_config if line.keyword == 'Port']
-    [KeyValue(keyword='Port', value='22', kw_lower='port'), KeyValue(keyword='Port', value='22', kw_lower='port')]
-    >>> sshd_config.last('ListenAddress')
-    '10.110.1.1'
-    >>> sshd_config.get_line('ListenAddress')
-    'ListenAddress 10.110.1.1'
-    >>> sshd_config.get_values('ListenAddress')
-    ['10.110.0.1', '10.110.1.1']
-    >>> sshd_config.get_values('ListenAddress', default='0.0.0.0')
-    ['10.110.0.1', '10.110.1.1']
-    >>> sshd_config.get_values('ListenAddress', join_with=',')
-    '10.110.0.1,10.110.1.1'
+SshdTestMode - command ``sshd -T``
+----------------------------------
 """
 from collections import namedtuple
 from .. import Parser, parser, get_active_lines
 from insights.specs import Specs
+from insights.util import deprecated
 import re
 
 # optional whitespace, at least one non-whitespace (the keyword), at least one whitespace (space), a plus literal, anything
@@ -61,7 +20,43 @@ PLUS_PATTERN = re.compile(r'^\s*\S+\s+\+.*$')
 
 @parser(Specs.sshd_config)
 class SshDConfig(Parser):
-    """Parsing for ``/etc/ssh/sshd_config`` file.
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.6.0.
+        Please use the :class:`insights.parsers.sshd_test_mode.SshdTestMode` instead.
+
+    Parsing for ``/etc/ssh/sshd_config`` file.
+
+    The ``ssh`` module provides parsing for the ``sshd_config``
+    file.  The ``SshDConfig`` class implements the parsing and
+    provides a ``list`` of all configuration lines present in
+    the file.
+
+    Sample input is provided in the *Examples*.
+
+    Examples:
+        >>> 'Port' in sshd_config
+        True
+        >>> 'PORT' in sshd_config
+        True
+        >>> 'AddressFamily' in sshd_config
+        False
+        >>> sshd_config['port']
+        ['22', '22']
+        >>> sshd_config['Protocol']
+        ['1']
+        >>> [line for line in sshd_config if line.keyword == 'Port']
+        [KeyValue(keyword='Port', value='22', kw_lower='port', line='Port 22'), KeyValue(keyword='Port', value='22', kw_lower='port', line='Port 22')]
+        >>> sshd_config.last('ListenAddress')
+        '10.110.1.1'
+        >>> sshd_config.get_line('ListenAddress')
+        'ListenAddress 10.110.1.1'
+        >>> sshd_config.get_values('ListenAddress')
+        ['10.110.0.1', '10.110.1.1']
+        >>> sshd_config.get_values('ListenAddress', default='0.0.0.0')
+        ['10.110.0.1', '10.110.1.1']
+        >>> sshd_config.get_values('ListenAddress', join_with=',')
+        '10.110.0.1,10.110.1.1'
 
     Properties:
         lines (list): List of `KeyValue` namedtupules for each line in
@@ -83,6 +78,10 @@ class SshDConfig(Parser):
     # Re: BZ#1697477
     # Config lines may also be delimited by `=`, and values may be quoted
     # with `"`. Here it is assumed that config lines are well-formed.
+    def __init__(self, *args, **kwargs):
+        deprecated(SshDConfig, "Please use the :class:`insights.parsers.sshd_test_mode.SshdTestMode` instead.", "3.6.0")
+        super(SshDConfig, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         self.lines = []
         for line in get_active_lines(content):
@@ -240,3 +239,41 @@ class SshDConfig(Parser):
             return entries[-1]
         else:
             return default
+
+
+@parser(Specs.sshd_test_mode)
+class SshdTestMode(Parser, dict):
+    """
+    This parser reads the output of "/usr/sbin/sshd -T" command.
+
+    Sample output::
+
+        port 22
+        addressfamily any
+        listenaddress [::]:22
+        listenaddress 0.0.0.0:22
+        usepam yes
+        logingracetime 120
+        x11displayoffset 10
+        x11maxdisplays 1000
+        maxauthtries 6
+        ciphers aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes128-gcm@openssh.com,aes128-ctr
+        macs hmac-sha2-256-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256,hmac-sha1,umac-128@openssh.com,hmac-sha2-512
+
+    Examples:
+        >>> len(sshd_test_mode)
+        10
+        >>> sshd_test_mode.get("listenaddress")
+        ['[::]:22', '0.0.0.0:22']
+        >>> sshd_test_mode.get("ciphers")
+        ['aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes128-gcm@openssh.com,aes128-ctr']
+    """
+    def parse_content(self, content):
+        result = {}
+        for line in get_active_lines(content):
+            key, value = line.split(" ", 1)
+            if key in result:
+                result[key].append(value)
+            else:
+                result[key] = [value]
+        self.update(result)

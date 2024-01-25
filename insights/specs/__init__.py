@@ -700,6 +700,7 @@ class Specs(SpecSet):
     ssh_foreman_proxy_config = RegistryPoint(filterable=True)
     sshd_config = RegistryPoint(filterable=True)
     sshd_config_perms = RegistryPoint()
+    sshd_test_mode = RegistryPoint(filterable=True)
     sssd_config = RegistryPoint()
     sssd_logs = RegistryPoint(multi_output=True, filterable=True)
     sys_block_queue_stable_writes = RegistryPoint(multi_output=True)
