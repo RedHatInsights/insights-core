@@ -839,11 +839,9 @@ class simple_command(object):
             getting them ready for subproc operations.
             IE. A command with filters applied
         save_as (str or None): path to save the collected file as.
-            - It should be a relative path and any starting '/' will be removed.
-            - If it's a path which ending with '/', the collected file will be
-            stored to the "save_as" directory,
-            - If it's a path which not ending with '/', the collected file will
-            be renamed to the file with "save_as" as the full path.
+            - It should be a relative path in which any starting and ending
+            '/' will be removed, the collected file will be renamed to
+            "save_as" as the full path.
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -870,7 +868,7 @@ class simple_command(object):
         deps = deps if deps is not None else []
         self.cmd = cmd
         self.context = context
-        self.save_as = save_as.lstrip("/") if save_as else None
+        self.save_as = save_as.strip("/") if save_as else None  # strip as a relative file path
         self.split = split
         self.raw = not split
         self.keep_rc = keep_rc
@@ -971,9 +969,6 @@ class foreach_execute(object):
             apart a command string that might contain multiple commands
             separated by a pipe, getting them ready for subproc operations.
             IE. A command with filters applied
-        save_as (str or None): directory path to save the collected files as.
-            - It should be a relative path and any starting '/' will be removed
-            and an ending '/' will be added.
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -994,14 +989,13 @@ class foreach_execute(object):
         function: A datasource that returns a list of outputs for each command
             created by substituting each element of provider into the cmd template.
     """
-    def __init__(self, provider, cmd, save_as=None, context=HostContext,
-                 deps=None, split=True, keep_rc=False, timeout=None,
-                 inherit_env=None, override_env=None, signum=None, **kwargs):
+    def __init__(self, provider, cmd, context=HostContext, deps=None,
+                 split=True, keep_rc=False, timeout=None, inherit_env=None,
+                 override_env=None, signum=None, **kwargs):
         deps = deps if deps is not None else []
         self.provider = provider
         self.cmd = cmd
         self.context = context
-        self.save_as = os.path.join(save_as.lstrip("/"), '') if save_as else None
         self.split = split
         self.raw = not split
         self.keep_rc = keep_rc
@@ -1024,9 +1018,9 @@ class foreach_execute(object):
             try:
                 the_cmd = self.cmd % e
                 cop = CommandOutputProvider(
-                        the_cmd, ctx, args=e, save_as=self.save_as,
-                        split=self.split, keep_rc=self.keep_rc, ds=self,
-                        timeout=self.timeout, inherit_env=self.inherit_env,
+                        the_cmd, ctx, args=e, split=self.split,
+                        keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
+                        inherit_env=self.inherit_env,
                         override_env=self.override_env, signum=self.signum)
                 result.append(cop)
             except ContentException as ce:
@@ -1113,9 +1107,6 @@ class container_execute(foreach_execute):
             apart a command string that might contain multiple commands
             separated by a pipe, getting them ready for subproc operations.
             IE. A command with filters applied
-        save_as (str or None): directory path to save the collected files as.
-            - It should be a relative path and any starting '/' will be removed
-            and an ending '/' will be added.
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -1171,9 +1162,6 @@ class container_collect(foreach_execute):
         path (str): the file path template with substitution parameters.  The
             path can also be passed via the provider when it's variable per
             cases, in that case, the `path` should be None.
-        save_as (str or None): directory path to save the collected files as.
-            - It should be a relative path and any starting '/' will be removed
-            and an ending '/' will be added.
         context (ExecutionContext): the context under which the datasource
             should run.
         keep_rc (bool): whether to return the error code returned by the
@@ -1188,11 +1176,11 @@ class container_collect(foreach_execute):
         function: A datasource that returns a list of file contents created by
             substituting each element of provider into the path template.
     """
-    def __init__(self, provider, path=None, save_as=None, context=HostContext,
-                 deps=None, split=True, keep_rc=False, timeout=None,
-                 inherit_env=None, override_env=None, signum=None, **kwargs):
+    def __init__(self, provider, path=None, context=HostContext, deps=None,
+                 split=True, keep_rc=False, timeout=None, inherit_env=None,
+                 override_env=None, signum=None, **kwargs):
         super(container_collect, self).__init__(
-              provider, path, save_as, context, deps, split, keep_rc, timeout,
+              provider, path, context, deps, split, keep_rc, timeout,
               inherit_env, override_env, signum, **kwargs)
 
     def __call__(self, broker):
@@ -1217,9 +1205,9 @@ class container_collect(foreach_execute):
                 # the_cmd = <podman|docker> exec container_id cat path
                 the_cmd = ("/usr/bin/%s exec %s cat " % e) + path
                 cfp = ContainerFileProvider(
-                        the_cmd, ctx, save_as=self.save_as, image=image,
-                        args=None, split=self.split, keep_rc=self.keep_rc,
-                        ds=self, timeout=self.timeout, inherit_env=self.inherit_env,
+                        the_cmd, ctx, image=image, args=None,
+                        split=self.split, keep_rc=self.keep_rc, ds=self,
+                        timeout=self.timeout, inherit_env=self.inherit_env,
                         override_env=self.override_env, signum=self.signum)
                 result.append(cfp)
             except:
@@ -1319,15 +1307,13 @@ def serialize_command_output(obj, root):
     rel = os.path.join("insights_commands", obj.relative_path)
     if obj.save_as:
         rel = os.path.join("insights_commands", obj.save_as)
-        if obj.save_as.endswith('/'):
-            rel = os.path.join("insights_commands", obj.save_as, obj.relative_path)
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
         "rc": rc,
         "cmd": obj.cmd,
         "args": obj.args,
-        "save_as": obj.save_as,
+        "save_as": True,
         "relative_path": rel
     }
 
@@ -1336,7 +1322,7 @@ def serialize_command_output(obj, root):
 def deserialize_command_output(_type, data, root):
     rel = data["relative_path"]
 
-    res = SerializedOutputProvider(rel, root=root, save_as=data.get("save_as"))
+    res = SerializedOutputProvider(rel, root=root)
 
     res.rc = data["rc"]
     res.cmd = data["cmd"]
@@ -1349,12 +1335,10 @@ def serialize_text_file_provider(obj, root):
     rel = obj.relative_path
     if obj.save_as:
         rel = obj.save_as
-        if obj.save_as.endswith('/'):
-            rel = os.path.join(obj.save_as, obj.relative_path)
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
-        "save_as": obj.save_as,
+        "save_as": True,
         "relative_path": rel,
         "rc": rc,
     }
@@ -1363,7 +1347,7 @@ def serialize_text_file_provider(obj, root):
 @deserializer(TextFileProvider)
 def deserialize_text_provider(_type, data, root):
     rel = data["relative_path"]
-    res = SerializedOutputProvider(rel, root=root, save_as=data.get("save_as"))
+    res = SerializedOutputProvider(rel, root=root)
     res.rc = data["rc"]
     return res
 
@@ -1373,12 +1357,10 @@ def serialize_raw_file_provider(obj, root):
     rel = obj.relative_path
     if obj.save_as:
         rel = obj.save_as
-        if obj.save_as.endswith('/'):
-            rel = os.path.join(obj.save_as, obj.relative_path)
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
-        "save_as": obj.save_as,
+        "save_as": True,
         "relative_path": rel,
         "rc": rc,
     }
@@ -1387,7 +1369,7 @@ def serialize_raw_file_provider(obj, root):
 @deserializer(RawFileProvider)
 def deserialize_raw_file_provider(_type, data, root):
     rel = data["relative_path"]
-    res = SerializedRawOutputProvider(rel, root=root, save_as=data.get("save_as"))
+    res = SerializedRawOutputProvider(rel, root=root)
     res.rc = data["rc"]
     return res
 
@@ -1397,8 +1379,6 @@ def serialize_datasource_provider(obj, root):
     rel = obj.relative_path
     if obj.save_as:
         rel = obj.save_as
-        if obj.save_as.endswith('/'):
-            rel = os.path.join(obj.save_as, obj.relative_path)
     dst = os.path.join(root, rel)
     obj.write(dst)
     return {"relative_path": rel, "save_as": obj.save_as}
@@ -1406,8 +1386,7 @@ def serialize_datasource_provider(obj, root):
 
 @deserializer(DatasourceProvider)
 def deserialize_datasource_provider(_type, data, root):
-    res = SerializedRawOutputProvider(data["relative_path"], root=root,
-                                      save_as=data.get("save_as"))
+    res = SerializedRawOutputProvider(data["relative_path"], root=root)
     return res
 
 
@@ -1418,8 +1397,6 @@ def serialize_metadata_provider(obj, root):
     rel = obj.relative_path
     if obj.save_as:
         rel = obj.save_as
-        if obj.save_as.endswith('/'):
-            rel = os.path.join(obj.save_as, obj.relative_path)
     dst = os.path.join(root, obj.relative_path)
     obj.write(dst)
     return {"relative_path": rel, "save_as": obj.save_as}
@@ -1429,8 +1406,7 @@ def serialize_metadata_provider(obj, root):
 def deserialize_metadata_provider(_type, data, root):
     # Built-in metadata files are put in the root instead of '/data'
     root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
-    res = SerializedRawOutputProvider(data["relative_path"], root=root,
-                                      save_as=data.get("save_as"))
+    res = SerializedRawOutputProvider(data["relative_path"], root=root)
     return res
 
 
@@ -1439,12 +1415,10 @@ def serialize_container_file_output(obj, root):
     rel = os.path.join("insights_containers", obj.relative_path)
     if obj.save_as:
         rel = os.path.join("insights_containers", obj.save_as)
-        if obj.save_as.endswith('/'):
-            rel = os.path.join("insights_containers", obj.save_as, obj.relative_path)
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
-        "save_as": obj.save_as,
+        "save_as": True,
         "relative_path": rel,
         "rc": rc,
         "image": obj.image,
@@ -1456,7 +1430,7 @@ def serialize_container_file_output(obj, root):
 @deserializer(ContainerFileProvider)
 def deserialize_container_file(_type, data, root):
     rel = data["relative_path"]
-    res = SerializedOutputProvider(rel, root=root, save_as=data.get("save_as"))
+    res = SerializedOutputProvider(rel, root=root)
     res.rc = data["rc"]
     res.image = data["image"]
     res.engine = data["engine"]
@@ -1469,15 +1443,13 @@ def serialize_container_command(obj, root):
     rel = os.path.join("insights_containers", obj.relative_path)
     if obj.save_as:
         rel = os.path.join("insights_containers", obj.save_as)
-        if obj.save_as.endswith('/'):
-            rel = os.path.join("insights_containers", obj.save_as, obj.relative_path)
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
         "rc": rc,
         "cmd": obj.cmd,
         "args": obj.args,
-        "save_as": obj.save_as,
+        "save_as": True,
         "relative_path": rel,
         "image": obj.image,
         "engine": obj.engine,
@@ -1488,7 +1460,7 @@ def serialize_container_command(obj, root):
 @deserializer(ContainerCommandProvider)
 def deserialize_container_command(_type, data, root):
     rel = data["relative_path"]
-    res = SerializedOutputProvider(rel, root=root, save_as=data.get("save_as"))
+    res = SerializedOutputProvider(rel, root=root)
     res.rc = data["rc"]
     res.cmd = data["cmd"]
     res.args = data["args"]
