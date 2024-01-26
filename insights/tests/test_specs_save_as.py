@@ -59,7 +59,7 @@ SAVE_AS_MAP = {
     'many_glob': ('/many_glob/one.dir', 'many_glob/one.dir/'),
     'many_foreach': ('many_foreach_dir/', 'many_foreach_dir/'),
     'smpl_cmd': ('/smpl_dir/smpl_cmd', 'smpl_dir/smpl_cmd'),
-    'smpl_cmd_w_filter': ('smpl_dir/', 'smpl_dir/'),
+    'smpl_cmd_w_filter': ('smpl_dir_wf/', 'smpl_dir_wf'),
     'smpl_file': (None, None),
     'smpl_file_w_filter': ('smpl_filtered_file/', 'smpl_filtered_file/'),
     'first_of_spec_w_filter': ('/first.file', 'first.file'),
@@ -170,7 +170,6 @@ def test_specs_save_as_collect(obfuscate):
         dr.load_components(pkg, exclude=None)
 
     conf = InsightsConfig(obfuscate=obfuscate, obfuscate_hostname=obfuscate)
-    output_path, errors = '', None
     output_path, errors = collect.collect(
             manifest=specs_save_as_manifest,
             client_config=conf)
@@ -190,7 +189,7 @@ def test_specs_save_as_collect(obfuscate):
                     results = [results]
                 for result in results:
                     # Save As
-                    assert result['object']['save_as'] == SAVE_AS_MAP[spec][1]
+                    assert result['object']['save_as'] is True
                     # relative_path is started with "save_as"
                     rel = result['object']['relative_path']
                     if "insights_commands" in rel:
