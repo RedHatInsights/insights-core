@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.3
+Version:        3.3.4
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,9 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Fri Jan 26 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.4-1
+- fix: 'Save As' as a limited workaround (#4000) (xiangceliu@redhat.com)
+
 * Thu Jan 25 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.3-1
 - feat: new 'Save As' feature to core collection (#3992)
   (xiangceliu@redhat.com)

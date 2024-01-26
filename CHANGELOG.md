@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.4) (2024-01-26)
+
+- fix: 'Save As' as a limited workaround ([PR 4000](https://github.com/RedHatInsights/insights-core/pull/4000))
+
 # [insights-core-3.3.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.3) (2024-01-25)
 
 - feat: new 'Save As' feature to core collection ([PR 3992](https://github.com/RedHatInsights/insights-core/pull/3992))
