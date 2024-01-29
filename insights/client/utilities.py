@@ -14,6 +14,7 @@ import threading
 import time
 import json
 import tarfile
+import errno
 from subprocess import Popen, PIPE, STDOUT
 
 import yaml
@@ -95,7 +96,14 @@ def write_to_disk(filename, delete=False, content=get_time()):
         return
     if delete:
         if os.path.lexists(filename):
-            os.remove(filename)
+            try:
+                os.remove(filename)
+            except OSError as err:
+                # Only raise the exception if it's not
+                # a missing file error (ENOENT), which can be
+                # ignored since nothing needs to be removed.
+                if err.errno != errno.ENOENT:
+                    raise err
     else:
         with open(filename, 'wb') as f:
             f.write(content.encode('utf-8'))

@@ -10,6 +10,7 @@ import re
 import mock
 import six
 import pytest
+import errno
 from mock.mock import patch
 from json import loads as json_load
 
@@ -49,6 +50,30 @@ def test_write_to_disk():
         result = f.read()
     assert result == 'boop'
     util.write_to_disk(filename, delete=True) is None
+
+
+def test_write_to_disk_with_broken_path():
+    """
+    Ensure that the `write_to_disk` method only
+    executes without raising an exception if
+    the encountered exception has error code 2
+    (No such file or directory), otherwise
+    raise the exception.
+    """
+    content = 'boop'
+    filename = '/tmp/testing'
+    util.write_to_disk(filename, content=content)
+    assert os.path.exists(filename)
+
+    with patch("os.remove") as mock_remove:
+        mock_remove.side_effect = OSError()
+        mock_remove.side_effect.errno = errno.ENOENT
+        assert util.write_to_disk(filename, delete=True) is None
+
+        mock_remove.side_effect.errno = errno.ENOTTY
+        with pytest.raises(OSError):
+            util.write_to_disk(filename, delete=True)
+    os.remove(filename)
 
 
 def test_generate_machine_id():
