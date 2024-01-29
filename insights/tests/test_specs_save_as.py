@@ -1,11 +1,12 @@
 import os
-import shutil
 import json
 
-from pytest import mark
 from collections import defaultdict
+from mock.mock import patch, Mock
+from pytest import mark
 
 from insights import collect
+from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
 from insights.core import dr
 from insights.core import filters
@@ -95,7 +96,7 @@ class Stuff(Specs):
     smpl_cmd = simple_command("/usr/bin/uptime", save_as=SAVE_AS_MAP['smpl_cmd'][0])
     smpl_cmd_w_filter = simple_command("echo -n ' hello '", save_as=SAVE_AS_MAP['smpl_cmd_w_filter'][0])
     smpl_file = simple_file(this_file, save_as=SAVE_AS_MAP['smpl_file'][0])
-    smpl_file_w_filter = simple_file(this_file, kind=RawFileProvider, save_as=SAVE_AS_MAP['smpl_file_w_filter'][0])
+    smpl_file_w_filter = simple_file(this_file, kind=RawFileProvider, save_as=SAVE_AS_MAP['smpl_file_w_filter'][0])  # RAW file won't filter
     first_of_spec_w_filter = first_file([this_file, "/etc/os-release"], save_as=SAVE_AS_MAP['first_of_spec_w_filter'][0])
 
 
@@ -160,6 +161,7 @@ def test_specs_save_as_no_collect():
 
 
 @mark.parametrize("obfuscate", [True, False])
+@patch('insights.core.spec_cleaner.Cleaner.generate_report', Mock())
 def test_specs_save_as_collect(obfuscate):
     add_filter(Stuff.smpl_cmd_w_filter, " hello ")
     add_filter(Stuff.smpl_file_w_filter, "def test")
@@ -170,8 +172,12 @@ def test_specs_save_as_collect(obfuscate):
         dr.load_components(pkg, exclude=None)
 
     conf = InsightsConfig(obfuscate=obfuscate, obfuscate_hostname=obfuscate)
+    arch = InsightsArchive(conf)
+    arch.create_archive_dir()
     output_path, errors = collect.collect(
             manifest=specs_save_as_manifest,
+            tmp_path=arch.tmp_dir,
+            archive_name=arch.archive_name,
             client_config=conf)
     meta_data_root = os.path.join(output_path, 'meta_data')
 
@@ -200,8 +206,7 @@ def test_specs_save_as_collect(obfuscate):
                         assert rel.startswith(SAVE_AS_MAP[spec][1])
     assert count == len(SAVE_AS_MAP)
 
-    if os.path.isdir(output_path):
-        shutil.rmtree(output_path)
+    arch.delete_archive_dir()
 
     # Reset Test ENV
     dr.COMPONENTS = defaultdict(lambda: defaultdict(set))

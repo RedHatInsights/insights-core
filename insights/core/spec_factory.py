@@ -90,12 +90,18 @@ class ContentProvider(object):
         return self._content
 
     def write(self, dst):
+        # Clean (Obfuscate, Redact, and Filter) the Spec Content:
         if self.ds and self.cleaner:
-            # Clean the specs content for core collection
-            self.cleaner.clean_file(
-                    dst, filters=get_filters(self.ds),
-                    no_obfuscate=self.ds.no_obfuscate,
-                    no_redact=self.ds.no_redact)
+            if not (self.ds.no_redact and
+                    all(ob in self.ds.no_obfuscate for ob in ['hostname', 'ip'])):
+                # Do Obfuscation/Redaction ONLY when Specs is:
+                # - no_obfuscate == [] OR no_redact == False
+                self.cleaner.clean_file(
+                        dst, filters=None,
+                        no_obfuscate=self.ds.no_obfuscate,
+                        no_redact=self.ds.no_redact)
+            else:
+                log.debug("Skipping cleaning %s", "/" + self.relative_path)
 
     def __repr__(self):
         msg = "<%s(path=%r, cmd=%r)>"
@@ -109,18 +115,18 @@ class ContentProvider(object):
 
 
 class DatasourceProvider(ContentProvider):
-    def __init__(self, content, relative_path, root='/', ds=None, ctx=None,
-                 cleaner=None, no_obfuscate=None, no_redact=False):
+    def __init__(self, content, relative_path, root='/', save_as=None, ds=None,
+                 ctx=None, cleaner=None, no_obfuscate=None, no_redact=False):
         super(DatasourceProvider, self).__init__()
+        self.relative_path = relative_path.lstrip("/")
+        self.save_as = save_as
+        self._content = content if isinstance(content, list) else content.splitlines()
+        self.root = root
         self.ds = ds or self
         self.ctx = ctx
-        self.root = root
         self.cleaner = cleaner
         self.no_obfuscate = no_obfuscate or []
         self.no_redact = no_redact
-        self.relative_path = relative_path
-        self.save_as = save_as
-        self._content = content if isinstance(content, list) else content.splitlines()
 
     def _stream(self):
         """
@@ -143,7 +149,8 @@ class DatasourceProvider(ContentProvider):
 
 
 class FileProvider(ContentProvider):
-    def __init__(self, relative_path, root="/", save_as=None, ds=None, ctx=None):
+    def __init__(self, relative_path, root="/", save_as=None, ds=None,
+                 ctx=None, cleaner=None):
         super(FileProvider, self).__init__()
         self.ds = ds
         self.ctx = ctx
@@ -331,23 +338,22 @@ class CommandOutputProvider(ContentProvider):
                  args=None, split=True, keep_rc=False, ds=None, timeout=None,
                  inherit_env=None, override_env=None, signum=None, cleaner=None):
         super(CommandOutputProvider, self).__init__()
-        self.ds = ds
-        self.rc = None
         self.cmd = cmd
         self.root = root
         self.save_as = save_as
         self.ctx = ctx
-        self.root = root
-        self.cleaner = cleaner
         self.args = args  # already interpolated into cmd - stored here for context.
         self.split = split
         self.keep_rc = keep_rc
+        self.ds = ds
         self.timeout = timeout
         self.inherit_env = inherit_env if inherit_env is not None else []
         self.override_env = override_env if override_env is not None else dict()
         self.signum = signum or signal.SIGKILL
-        self._misc_settings()
+        self.rc = None
+        self.cleaner = cleaner
 
+        self._misc_settings()
         self._content = None
         self._env = self.create_env()
 
@@ -430,8 +436,9 @@ class CommandOutputProvider(ContentProvider):
         if args:
             timeout = self.timeout or self.ctx.timeout
             p = Pipeline(*args, timeout=timeout, signum=self.signum, env=self._env)
-            p.write(dst, keep_rc=self.keep_rc)
+            ret = p.write(dst, keep_rc=self.keep_rc)
             super(CommandOutputProvider, self).write(dst)
+            return ret
 
     def __repr__(self):
         return 'CommandOutputProvider("%r")' % self.cmd
@@ -479,16 +486,15 @@ class RegistryPoint(object):
     # intentionally not a docstring so this doesn't show up in pydoc.
     def __init__(self, metadata=None, multi_output=False, raw=False,
                  filterable=False, no_obfuscate=None, no_redact=False):
-        no_obfuscate = [] if no_obfuscate is None else no_obfuscate
         self.metadata = metadata
         self.multi_output = multi_output
-        self.no_obfuscate = no_obfuscate
+        self.no_obfuscate = [] if no_obfuscate is None else no_obfuscate
         self.no_redact = no_redact
         self.raw = raw
         self.filterable = filterable
         self.__name__ = self.__class__.__name__
         datasource([], metadata=metadata, multi_output=multi_output, raw=raw,
-                   filterable=filterable, no_obfuscate=no_obfuscate,
+                   filterable=filterable, no_obfuscate=self.no_obfuscate,
                    no_redact=no_redact)(self)
 
     def __call__(self, broker):
@@ -1073,8 +1079,8 @@ class foreach_collect(object):
             substituting each element of provider into the path template.
     """
 
-    def __init__(self, provider, path, ignore=None, context=HostContext,
-                 deps=None, kind=TextFileProvider, **kwargs):
+    def __init__(self, provider, path, save_as=None, ignore=None,
+                 context=HostContext, deps=None, kind=TextFileProvider, **kwargs):
         deps = deps if deps is not None else []
         self.provider = provider
         self.path = path
@@ -1105,8 +1111,8 @@ class foreach_collect(object):
                     continue
                 try:
                     result.append(self.kind(
-                            p[len(root):], root=root, save_as=self.save_as,
-                            ds=self, ctx=ctx, cleaner=cleaner))
+                        p[len(root):], root=root, save_as=self.save_as,
+                        ds=self, ctx=ctx, cleaner=cleaner))
                 except:
                     log.debug(traceback.format_exc())
         if result:
@@ -1206,8 +1212,8 @@ class container_collect(foreach_execute):
                  split=True, keep_rc=False, timeout=None, inherit_env=None,
                  override_env=None, signum=None, **kwargs):
         super(container_collect, self).__init__(
-                provider, path, context, deps, split, keep_rc, timeout,
-                inherit_env, override_env, signum, **kwargs)
+            provider, path, context, deps, split, keep_rc, timeout,
+            inherit_env, override_env, signum, **kwargs)
 
     def __call__(self, broker):
         result = []
@@ -1335,6 +1341,8 @@ def serialize_command_output(obj, root):
     rel = os.path.join("insights_commands", obj.relative_path)
     if obj.save_as:
         rel = os.path.join("insights_commands", obj.save_as)
+        if obj.save_as.endswith("/"):
+            rel = os.path.join(rel, os.path.basename(obj.relative_path))
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
@@ -1363,6 +1371,8 @@ def serialize_text_file_provider(obj, root):
     rel = obj.relative_path
     if obj.save_as:
         rel = obj.save_as
+        if obj.save_as.endswith("/"):
+            rel = os.path.join(rel, os.path.basename(obj.relative_path))
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
@@ -1385,6 +1395,8 @@ def serialize_raw_file_provider(obj, root):
     rel = obj.relative_path
     if obj.save_as:
         rel = obj.save_as
+        if obj.save_as.endswith("/"):
+            rel = os.path.join(rel, os.path.basename(obj.relative_path))
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
@@ -1407,6 +1419,8 @@ def serialize_datasource_provider(obj, root):
     rel = obj.relative_path
     if obj.save_as:
         rel = obj.save_as
+        if obj.save_as.endswith("/"):
+            rel = os.path.join(rel, os.path.basename(obj.relative_path))
     dst = os.path.join(root, rel)
     obj.write(dst)
     return {"relative_path": rel, "save_as": obj.save_as}
@@ -1425,6 +1439,8 @@ def serialize_metadata_provider(obj, root):
     rel = obj.relative_path
     if obj.save_as:
         rel = obj.save_as
+        if obj.save_as.endswith("/"):
+            rel = os.path.join(rel, os.path.basename(obj.relative_path))
     dst = os.path.join(root, obj.relative_path)
     obj.write(dst)
     return {"relative_path": rel, "save_as": obj.save_as}
@@ -1443,6 +1459,8 @@ def serialize_container_file_output(obj, root):
     rel = os.path.join("insights_containers", obj.relative_path)
     if obj.save_as:
         rel = os.path.join("insights_containers", obj.save_as)
+        if obj.save_as.endswith("/"):
+            rel = os.path.join(rel, os.path.basename(obj.relative_path))
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
@@ -1471,6 +1489,8 @@ def serialize_container_command(obj, root):
     rel = os.path.join("insights_containers", obj.relative_path)
     if obj.save_as:
         rel = os.path.join("insights_containers", obj.save_as)
+        if obj.save_as.endswith("/"):
+            rel = os.path.join(rel, os.path.basename(obj.relative_path))
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
