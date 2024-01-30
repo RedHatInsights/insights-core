@@ -17,6 +17,8 @@ def _log_dir():
         insights_log_dir = os.path.join(os.sep, 'var', 'log', _app_name)
     else:
         insights_log_dir = os.path.join(_user_cache, _app_name, 'log')
+        if not os.path.exists(insights_log_dir):
+            os.makedirs(insights_log_dir)
     return insights_log_dir
 
 
@@ -31,6 +33,8 @@ def _lib_dir():
         insights_lib_dir = os.path.join(os.sep, 'var', 'lib', 'insights')
     else:
         insights_lib_dir = os.path.join(_user_cache, _app_name, 'lib')
+        if not os.path.exists(insights_lib_dir):
+            os.makedirs(insights_lib_dir)
     return insights_lib_dir
 
 
