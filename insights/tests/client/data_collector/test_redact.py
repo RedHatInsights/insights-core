@@ -64,7 +64,7 @@ def test_redact_call_walk(walk):
     arch.create_archive_dir()
 
     dc = DataCollector(conf, arch)
-    rm_conf = {}
+    rm_conf = {'patterns': ['test']}
 
     dc.redact(rm_conf)
     walk.assert_called_once_with(arch.archive_dir)
@@ -83,7 +83,7 @@ def test_redact_call_walk_core(walk):
     arch.create_archive_dir()
 
     dc = DataCollector(conf, arch)
-    rm_conf = {}
+    rm_conf = {'patterns': ['test']}
 
     dc.redact(rm_conf)
     walk.assert_called_once_with(os.path.join(arch.archive_dir, 'data'))
@@ -94,10 +94,6 @@ def test_redact_call_process_redaction(_process_content_redaction):
     '''
     Verify that redact() calls _process_content_redaction
     then writes the returned data back to the same file
-
-    Also verifies that the "exclude" parameter is None and the
-    "regex" parameter is False in the _process_content_redaction
-    call when rm_conf is empty
     '''
     conf = InsightsConfig(core_collect=False)
     arch = InsightsArchive(conf)
@@ -109,7 +105,7 @@ def test_redact_call_process_redaction(_process_content_redaction):
         t.write(test_file_data)
 
     dc = DataCollector(conf, arch)
-    rm_conf = {}
+    rm_conf = {'patterns': ['test']}
 
     if six.PY3:
         open_name = 'builtins.open'
@@ -118,7 +114,7 @@ def test_redact_call_process_redaction(_process_content_redaction):
 
     with patch(open_name, create=True) as mock_open:
         dc.redact(rm_conf)
-        _process_content_redaction.assert_called_once_with(test_file, None, False)
+        _process_content_redaction.assert_called_once_with(test_file, ['test'], False)
         mock_open.assert_called_once_with(test_file, 'wb')
         mock_open.return_value.__enter__.return_value.write.assert_called_once_with(_process_content_redaction.return_value)
 
@@ -184,9 +180,8 @@ def test_redact_exclude_no_regex(_process_content_redaction):
 @patch('insights.client.data_collector._process_content_redaction')
 def test_redact_exclude_empty(_process_content_redaction):
     '''
-    Verify that the _process_content_redaction call is made with
-    exclude == [] and regex == False when the patterns key is
-    defined but value is an empty list
+    Verify that the _process_content_redaction is NOT called when the
+    patterns key is defined but value is an empty list
     '''
     conf = InsightsConfig(core_collect=False)
     arch = InsightsArchive(conf)
@@ -207,15 +202,14 @@ def test_redact_exclude_empty(_process_content_redaction):
 
     with patch(open_name, create=True):
         dc.redact(rm_conf)
-        _process_content_redaction.assert_called_once_with(test_file, [], False)
+        _process_content_redaction.assert_not_called()
 
 
 @patch('insights.client.data_collector._process_content_redaction')
 def test_redact_exclude_none(_process_content_redaction):
     '''
-    Verify that the _process_content_redaction call is made with
-    exclude == None and regex == False when the patterns key is
-    defined but value is an empty dict
+    Verify that the _process_content_redaction is NOT called when the
+    patterns key is defined but value is None
     '''
     conf = InsightsConfig(core_collect=False)
     arch = InsightsArchive(conf)
@@ -227,7 +221,7 @@ def test_redact_exclude_none(_process_content_redaction):
         t.write(test_file_data)
 
     dc = DataCollector(conf, arch)
-    rm_conf = {'patterns': {}}
+    rm_conf = {'patterns': None}
 
     if six.PY3:
         open_name = 'builtins.open'
@@ -236,7 +230,7 @@ def test_redact_exclude_none(_process_content_redaction):
 
     with patch(open_name, create=True):
         dc.redact(rm_conf)
-        _process_content_redaction.assert_called_once_with(test_file, None, False)
+        _process_content_redaction.assert_not_called()
 
 
 @patch('insights.client.data_collector.os.walk')

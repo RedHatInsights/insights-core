@@ -49,7 +49,6 @@ class InsightsConstants(object):
     default_log_file = os.path.join(log_dir, app_name + '.log')
     default_payload_log = os.path.join(log_dir, app_name + '-payload.log')
     custom_network_log_level = 11
-    default_sed_file = os.path.join(default_conf_dir, '.exp.sed')
     base_url = 'cert-api.access.redhat.com/r/insights/platform'
     legacy_base_url = 'cert-api.access.redhat.com/r/insights'
     collection_rules_file = os.path.join(default_conf_dir, '.cache.json')
