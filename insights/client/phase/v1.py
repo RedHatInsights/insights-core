@@ -57,6 +57,11 @@ def get_phases():
 
 @phase
 def pre_update(client, config):
+
+    # Check if BASIC auth is used to print a WARNING message
+    if config.authmethod == 'BASIC':
+        logger.warning('WARN: BASIC authentication method is being deprecated. Please consider using CERT authentication method.')
+
     if config.version:
         logger.info(constants.version)
         sys.exit(constants.sig_kill_ok)
