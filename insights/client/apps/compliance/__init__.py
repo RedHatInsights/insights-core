@@ -285,7 +285,7 @@ class ComplianceClient:
 
     def _get_inventory_id(self):
         systems = self.conn._fetch_system_by_machine_id()
-        if len(systems) == 1 and 'id' in systems[0]:
+        if type(systems) is list and len(systems) == 1 and 'id' in systems[0]:
             return systems[0].get('id')
         else:
             logger.error('Failed to find system in Inventory')
