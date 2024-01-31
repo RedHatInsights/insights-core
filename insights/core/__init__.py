@@ -79,8 +79,7 @@ class Parser(object):
     def __init__(self, context):
         self.file_path = os.path.join("/", context.relative_path) if context.relative_path is not None else None
         """str: Full context path of the input file."""
-        self.file_name = os.path.basename(context.path) \
-            if context.path is not None else None
+        self.file_name = os.path.basename(context.path) if context.path is not None else None
         """str: Filename portion of the input file."""
         if hasattr(context, "last_client_run"):
             self.last_client_run = context.last_client_run
