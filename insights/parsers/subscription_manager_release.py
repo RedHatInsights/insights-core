@@ -13,11 +13,16 @@ from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.subscription_manager_release_show)
 class SubscriptionManagerReleaseShow(CommandParser):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.6.0.
+        Please use the :class:`insights.parsers.rhsm_releasever.RhsmReleaseVer` instead.
+
     Class for parsing the output of `subscription-manager release --show` command.
 
     Typical output of the command is::
@@ -39,6 +44,10 @@ class SubscriptionManagerReleaseShow(CommandParser):
         >>> rhsm_rel.minor
         2
     """
+
+    def __init__(self, *args, **kwargs):
+        deprecated(SubscriptionManagerReleaseShow, "Please use the :class:`insights.parsers.rhsm_releasever.RhsmReleaseVer` instead.", "3.6.0")
+        super(SubscriptionManagerReleaseShow, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         self.set = self.major = self.minor = None
