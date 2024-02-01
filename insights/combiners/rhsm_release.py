@@ -4,17 +4,19 @@ Red Hat Subscription Manager Release
 
 Combiner provides the Red Hat Subscription Manager release information from
 the parsers :class:`insights.parsers.rhsm_releasever.RhsmReleaseVer`
-and :class:`insights.parsers.subscription_manager_release.SubscriptionManagerReleaseShow`.
+and :class:`insights.parsers.subscription_manager_release.SubscriptionManagerReleaseShow`
+and :class:`insights.parsers.rhui_release.RHUISetRelease`.
 """
 from insights.core.plugins import combiner
 from insights.parsers.rhsm_releasever import RhsmReleaseVer
 from insights.parsers.subscription_manager_release import SubscriptionManagerReleaseShow
+from insights.parsers.rhui_release import RHUISetRelease
 
 
-@combiner([RhsmReleaseVer, SubscriptionManagerReleaseShow])
+@combiner([RhsmReleaseVer, SubscriptionManagerReleaseShow, RHUISetRelease])
 class RhsmRelease(object):
     """
-    Combiner for parsers RhsmReleaseVer and SubscriptionManagerReleaseShow.
+    Combiner for parsers RhsmReleaseVer and SubscriptionManagerReleaseShow and RHUISetRelease.
 
     Examples:
         >>> type(rhsm_release)
@@ -26,7 +28,7 @@ class RhsmRelease(object):
         >>> rhsm_release.minor
         6
     """
-    def __init__(self, rhsm_release, sm_release):
+    def __init__(self, rhsm_release, sm_release, rhui_release):
         self.set = None
         """ str: Release version string returned from the parsers """
 
@@ -41,7 +43,11 @@ class RhsmRelease(object):
             self.major = rhsm_release.major
             self.minor = rhsm_release.minor
 
-        else:
+        elif sm_release is not None:
             self.set = sm_release.set
             self.major = sm_release.major
             self.minor = sm_release.minor
+        else:
+            self.set = rhui_release.set
+            self.major = rhui_release.major
+            self.minor = rhui_release.minor
