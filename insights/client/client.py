@@ -334,27 +334,22 @@ def collect(config):
     """
     All the heavy lifting done here
     """
-    branch_info = get_branch_info(config)
     pc = InsightsUploadConf(config)
-
-    rm_conf = pc.get_rm_conf()
-    blacklist_report = pc.create_report()
-    if rm_conf:
-        logger.warn("WARNING: Excluding data from files")
-
     archive = InsightsArchive(config)
 
-    msg_name = determine_hostname(config.display_name)
     if config.core_collect:
-        collection_rules = None
         dc = CoreCollector(config, archive)
     else:
-        collection_rules = pc.get_conf_file()
-        dc = DataCollector(config, archive)
-    logger.info('Starting to collect Insights data for %s', msg_name)
-    dc.run_collection(collection_rules, rm_conf, branch_info, blacklist_report)
-    output = dc.done(collection_rules, rm_conf)
-    return output
+        dc = DataCollector(config, archive, spec_conf=pc.get_conf_file())
+
+    logger.info('Starting to collect Insights data for %s',
+                determine_hostname(config.display_name))
+
+    dc.run_collection(pc.get_rm_conf(),
+                      get_branch_info(config),
+                      pc.create_report())
+
+    return dc.done()
 
 
 def get_connection(config):
