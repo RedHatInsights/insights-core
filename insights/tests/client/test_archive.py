@@ -7,9 +7,10 @@ from insights.client.constants import InsightsConstants as constants
 
 test_timestamp = '000000'
 test_hostname = 'testhostname'
+test_uuidhex = Mock(hex='000000')
 test_archive_name = 'insights-testhostname-000000'
 test_archive_dir = '/var/tmp/insights-client-000000/insights-testhostname-000000'
-test_obfuscated_archive_dir = '/var/tmp/insights-client-000000/insights-localhost-000000'
+test_obfuscated_archive_dir = '/var/tmp/insights-client-000000/insights-000000-000000'
 test_cmd_dir = '/var/tmp/insights-client-000000/insights-testhostname-000000/insights_commands'
 test_tmp_dir_path = '/var/tmp/insights-client-000000'
 test_tmp_dir = 'insights-client-000000'
@@ -96,13 +97,15 @@ class TestInsightsArchive(TestCase):
         listdir.assert_called_once_with(constants.insights_tmp_path)
         rmtree.assert_called_with(test_tmp_dir_path, True)
 
+    @patch('insights.client.archive.uuid.uuid4', return_value=test_uuidhex)
     @patch('insights.client.archive.os.makedirs')
-    def test_create_archive_dir_obfuscated(self, makedirs, _, __):
+    def test_create_archive_dir_obfuscated(self, makedirs, uuid4, _, __):
         '''
         Verify archive_dir is created when it does not already exist
         '''
         config = Mock()
         config.obfuscate_hostname = True
+        config.core_collect = False
         with patch('insights.client.archive.os.path.exists', return_value=True):
             archive = InsightsArchive(config)
         # give this a discrete value so we can check the results

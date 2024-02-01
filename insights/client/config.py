@@ -756,7 +756,7 @@ class InsightsConfig(object):
                 raise ValueError('Cannot write to %s. %s is not a directory.' % (self.output_dir, parent_dir))
             if self.obfuscate:
                 if self._print_errors:
-                    sys.stdout.write('WARNING: SOSCleaner reports will be created alongside the output directory.\n')
+                    sys.stdout.write('WARNING: Obfuscation reports will be created alongside the output directory.\n')
         if self.output_file:
             if os.path.exists(self.output_file):
                 raise ValueError('File %s already exists.' % self.output_file)
@@ -767,7 +767,7 @@ class InsightsConfig(object):
                 raise ValueError('Cannot write to %s. %s is not a directory.' % (self.output_file, parent_dir))
             if self.obfuscate:
                 if self._print_errors:
-                    sys.stdout.write('WARNING: SOSCleaner reports will be created alongside the output archive.\n')
+                    sys.stdout.write('WARNING: Obfuscation reports will be created alongside the output archive.\n')
         if self.module and not self.module.startswith('insights.client.apps.'):
             raise ValueError('You can only run modules within the namespace insights.client.apps.*')
         if self.app and not self.manifest:
@@ -788,6 +788,8 @@ class InsightsConfig(object):
         self.to_json = self.to_json or self.analyze_container
         self.register = self.register and not self.offline
         self.keep_archive = self.keep_archive or self.no_upload
+        # TODO: remove this when discarding legacy data collection (data_collector)
+        self.rhsm_facts_file = constants.rhsm_facts_file
         if self.to_json and self.quiet:
             self.diagnosis = True
         if self.test_connection:
