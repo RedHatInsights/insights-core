@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.4
+Version:        3.3.5
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,25 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 01 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.5-1
+- feat: New spec "rhui-set-release" and parser (#3998)
+  (44796653+huali027@users.noreply.github.com)
+- fix(yum_udpates): load dnf plugins (#4007) (psegedy@redhat.com)
+- feat: deprecate parser SubscriptionManagerReleaseShow (#4006)
+  (xiaoxwan@redhat.com)
+- feat: move obfuscation and redaction to core (with specs) (#3679)
+  (xiangceliu@redhat.com)
+- fix: rmtree error in playbook verification tests of py27 (#4008)
+  (xiangceliu@redhat.com)
+- fix: change log level to debug for ValueError in serde.py (#4001)
+  (lichen@redhat.com)
+- fix(compliance): RHINENG-1935 handle non-list responses from inventory
+  (#4004) (skateman@users.noreply.github.com)
+- feat: add warning message when BASIC auth is used (#3997)
+  (93577878+ahitacat@users.noreply.github.com)
+- fix: resolve missing 'insights-client/lib' error in playbook verification
+  tests (#4005) (jajerome@redhat.com)
+
 * Fri Jan 26 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.4-1
 - fix: 'Save As' as a limited workaround (#4000) (xiangceliu@redhat.com)
 
