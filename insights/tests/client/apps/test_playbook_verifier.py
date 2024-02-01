@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+import os
 import sys
 import pytest
 import tempfile
@@ -67,7 +68,8 @@ def test_key_not_imported():
                 verify(fake_playbook, skipVerify=False)
             assert key_error in str(error.value)
     finally:
-        shutil.rmtree(temp_dir)
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
@@ -92,7 +94,8 @@ def test_key_import_error():
                 verify(fake_playbook, skipVerify=False)
             assert key_error in str(error.value)
     finally:
-        shutil.rmtree(temp_dir)
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
@@ -134,7 +137,8 @@ def test_playbook_verification_success(mock_method):
             result = verify(fake_playbook, skipVerify=False)
             assert result == fake_playbook
     finally:
-        shutil.rmtree(temp_dir)
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
 
 
 # getRevocationList can't load list
