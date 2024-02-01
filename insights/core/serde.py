@@ -180,6 +180,8 @@ class Hydration(object):
                         broker.exec_times[comp] = exec_time + ser_time
             except ContentException as ex:
                 log.debug(ex)
+            except ValueError as ve:
+                log.debug(ve)
             except Exception as ex:
                 log.warning(ex)
         return broker
