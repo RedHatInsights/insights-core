@@ -2,6 +2,18 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.5) (2024-02-01)
+
+- feat: New spec "rhui-set-release" and parser ([PR 3998](https://github.com/RedHatInsights/insights-core/pull/3998))
+- fix(yum_udpates): load dnf plugins ([PR 4007](https://github.com/RedHatInsights/insights-core/pull/4007))
+- feat: deprecate parser SubscriptionManagerReleaseShow ([PR 4006](https://github.com/RedHatInsights/insights-core/pull/4006))
+- feat: move obfuscation and redaction to core (with specs) ([PR 3679](https://github.com/RedHatInsights/insights-core/pull/3679))
+- fix: rmtree error in playbook verification tests of py27 ([PR 4008](https://github.com/RedHatInsights/insights-core/pull/4008))
+- fix: change log level to debug for ValueError in serde.py ([PR 4001](https://github.com/RedHatInsights/insights-core/pull/4001))
+- fix(compliance): RHINENG-1935 handle non-list responses from inventory ([PR 4004](https://github.com/RedHatInsights/insights-core/pull/4004))
+- feat: add warning message when BASIC auth is used ([PR 3997](https://github.com/RedHatInsights/insights-core/pull/3997))
+- fix: resolve missing 'insights-client/lib' error in playbook verification tests ([PR 4005](https://github.com/RedHatInsights/insights-core/pull/4005))
+
 # [insights-core-3.3.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.4) (2024-01-26)
 
 - fix: 'Save As' as a limited workaround ([PR 4000](https://github.com/RedHatInsights/insights-core/pull/4000))
