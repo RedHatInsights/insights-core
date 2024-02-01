@@ -2,24 +2,24 @@
 Collect all the interesting data for analysis - Core version
 """
 from __future__ import absolute_import
-import os
-import six
-import logging
-from insights import collect
 
-from .constants import InsightsConstants as constants
-from .data_collector import DataCollector
-from .utilities import systemd_notify_init_thread
+import logging
+
+from insights import collect
+from insights.client.constants import InsightsConstants as constants
+from insights.client.data_collector import DataCollector
+from insights.client.utilities import systemd_notify_init_thread
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
 
 class CoreCollector(DataCollector):
-    def __init__(self, *args, **kwargs):
-        super(CoreCollector, self).__init__(*args, **kwargs)
+    """
+    Collectoer for new core-collector
+    """
 
-    def run_collection(self, conf, rm_conf, branch_info, blacklist_report):
+    def run_collection(self, rm_conf, branch_info, blacklist_report):
         '''
         Initialize core collection here and generate the
         output directory with collected data.
@@ -27,18 +27,9 @@ class CoreCollector(DataCollector):
         # initialize systemd-notify thread
         systemd_notify_init_thread()
 
-        if rm_conf is None:
-            rm_conf = {}
+        self.archive.create_archive_dir()
 
-        logger.debug('Beginning to run collection...')
-
-        # only load files, keywords, components into core
-        core_blacklist = {
-            'commands': rm_conf.get('commands', []),
-            'files': rm_conf.get('files', []),
-            'components': rm_conf.get('components', [])
-        }
-
+        logger.debug('Beginning to run core collection ...')
         manifest = collect.default_manifest
         if hasattr(self.config, 'manifest') and self.config.manifest:
             if self.config.app is None:
@@ -46,38 +37,18 @@ class CoreCollector(DataCollector):
                     manifest = f.read()
             else:
                 manifest = self.config.manifest
-        collected_data_path, exceptions = collect.collect(
+
+        collect.collect(
             manifest=manifest,
             tmp_path=self.archive.tmp_dir,
-            rm_conf=core_blacklist,
-            client_config=self.config
+            archive_name=self.archive.archive_name,
+            rm_conf=rm_conf or {},
+            client_config=self.config,
         )
-
-        # update the archive dir with the reported data location from Insights Core
-        if not collected_data_path:
-            raise RuntimeError('Error running collection: no output path defined.')
-        self.archive.archive_dir = collected_data_path
-        self.archive.archive_name = os.path.basename(collected_data_path)
-
-        if not six.PY3:
-            # collect.py returns a unicode string, and these must be bytestrings
-            #   when we call the tar command in 2.6
-            self.archive.archive_dir = self.archive.archive_dir.encode('utf-8')
-            self.archive.archive_name = self.archive.archive_name.encode('utf-8')
-
-        # set hostname_path for soscleaner
-        if os.path.exists(os.path.join(self.archive.archive_dir, 'data', 'insights_commands', 'hostname_-f')):
-            self.hostname_path = 'data/insights_commands/hostname_-f'
-        else:
-            # fall back to hostname if hostname -f not available
-            self.hostname_path = 'data/insights_commands/hostname'
-
-        logger.debug('Collection finished.')
-
-        self.redact(rm_conf)
+        logger.debug('Core collection finished.')
 
         # collect metadata
-        logger.debug('Collecting metadata...')
+        logger.debug('Collecting metadata ...')
         self._write_branch_info(branch_info)
         self._write_display_name()
         self._write_ansible_host()

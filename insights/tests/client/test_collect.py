@@ -1,16 +1,17 @@
 # -*- coding: UTF-8 -*-
+import mock
+import pytest
+import six
 
 from contextlib import contextmanager
-from insights.client.client import collect
-from insights.client.config import InsightsConfig
-from insights.client.data_collector import DataCollector
 from json import dump as json_dump, dumps as json_dumps
 from mock.mock import Mock, patch
 from pytest import mark, raises
 from tempfile import NamedTemporaryFile
-import six
-import mock
-import pytest
+
+from insights.client.client import collect
+from insights.client.config import InsightsConfig
+from insights.client.data_collector import DataCollector
 
 stdin_uploader_json = {"some key": "some value"}
 stdin_sig = "some signature"
@@ -202,32 +203,29 @@ def test_data_collector_file(get_branch_info, get_conf_file, get_rm_conf, data_c
     config = collect_args()
     collect(config)
 
-    collection_rules = get_conf_file.return_value
     rm_conf = get_rm_conf.return_value
     branch_info = get_branch_info.return_value
     blacklist_report = create_report.return_value
-    data_collector.return_value.run_collection.assert_called_once_with(collection_rules, rm_conf, branch_info, blacklist_report)
-    data_collector.return_value.done.assert_called_once_with(collection_rules, rm_conf)
+    data_collector.return_value.run_collection.assert_called_once_with(rm_conf, branch_info, blacklist_report)
+    data_collector.return_value.done.assert_called_once_with()
 
 
 @patch("insights.client.client.InsightsUploadConf.create_report")
 @patch("insights.client.client.CoreCollector")
 @patch_get_rm_conf()
-@patch_get_conf_file()
 @patch_get_branch_info()
-def test_core_collector_file(get_branch_info, get_conf_file, get_rm_conf, core_collector, create_report):
+def test_core_collector_file(get_branch_info, get_rm_conf, core_collector, create_report):
     """
-    CoreCollector is loaded with rm_conf and a None value for collection_rules
+    CoreCollector is loaded and a None value for spec_conf
     """
     config = collect_args(core_collect=True)
     collect(config)
 
-    collection_rules = None
     rm_conf = get_rm_conf.return_value
     branch_info = get_branch_info.return_value
     blacklist_report = create_report.return_value
-    core_collector.return_value.run_collection.assert_called_once_with(collection_rules, rm_conf, branch_info, blacklist_report)
-    core_collector.return_value.done.assert_called_once_with(collection_rules, rm_conf)
+    core_collector.return_value.run_collection.assert_called_once_with(rm_conf, branch_info, blacklist_report)
+    core_collector.return_value.done.assert_called_once_with()
 
 
 @patch("insights.client.client.CoreCollector")
@@ -316,7 +314,8 @@ def test_file_signature_invalid(get_branch_info, validate_gpg_sig, data_collecto
 @patch_isfile(True)
 @patch_try_disk({"version": "1.2.3"})
 @patch_get_branch_info()
-def test_file_result(get_branch_info, try_disk, raw_config_parser, data_collector, verify_permissions):
+@patch("insights.client.client.InsightsUploadConf.create_report")
+def test_file_result(create_report, get_branch_info, try_disk, raw_config_parser, data_collector, verify_permissions):
     """
     Configuration from file is loaded from the "uploader.json" key.
     """
@@ -333,15 +332,12 @@ def test_file_result(get_branch_info, try_disk, raw_config_parser, data_collecto
         config = collect_args()
         collect(config)
 
-        name, args, kwargs = try_disk.mock_calls[0]
-        collection_rules = try_disk.return_value.copy()
-        collection_rules.update({"file": args[0]})
-
         rm_conf = {"files": removed_files}
         branch_info = get_branch_info.return_value
+        blacklist_report = create_report.return_value
 
-        data_collector.return_value.run_collection.assert_called_once_with(collection_rules, rm_conf, branch_info)
-        data_collector.return_value.done.assert_called_once_with(collection_rules, rm_conf)
+        data_collector.return_value.run_collection.assert_called_once_with(rm_conf, branch_info, blacklist_report)
+        data_collector.return_value.done.assert_called_once_with()
 
 
 @mark.regression
