@@ -205,6 +205,7 @@ class InsightsArchiveSpecs(Specs):
     readlink_e_shift_cert_server = simple_file("insights_commands/readlink_-e_.etc.origin.node.certificates.kubelet-server-current.pem")
     repquota_agnpuv = simple_file("insights_commands/repquota_-agnpuv")
     rhsm_katello_default_ca_cert = simple_file("insights_commands/openssl_x509_-in_.etc.rhsm.ca.katello-default-ca.pem_-noout_-issuer")
+    rhui_set_release = simple_file("insights_commands/rhui-set-release")
     rndc_status = simple_file("insights_commands/rndc_status")
     rpm_ostree_status = simple_file("insights_commands/rpm-ostree_status_--json")
     rpm_V_packages = first_file([
