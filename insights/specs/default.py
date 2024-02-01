@@ -512,6 +512,7 @@ class DefaultSpecs(Specs):
     resolv_conf = simple_file("/etc/resolv.conf")
     rhsm_conf = simple_file("/etc/rhsm/rhsm.conf")
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
+    rhui_set_release = simple_command("/usr/bin/rhui-set-release")
     rndc_status = simple_command("/usr/sbin/rndc status")
     ros_config = simple_file("/var/lib/pcp/config/pmlogger/config.ros")
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony findutils glibc systemd", keep_rc=True, signum=signal.SIGTERM)
