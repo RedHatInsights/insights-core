@@ -57,6 +57,8 @@ class DnfManager:
         logging.disable(logging.WARNING)
         cli = dnf.cli.Cli(self.base)
         cli._read_conf_file()
+        self.base.init_plugins()
+        self.base.pre_configure_plugins()
         subst = self.base.conf.substitutions
         if subst.get("releasever"):
             self.releasever = subst["releasever"]
@@ -64,6 +66,7 @@ class DnfManager:
             self.basearch = subst["basearch"]
 
         self.base.read_all_repos()
+        self.base.configure_plugins()
 
         self.packages = hawkey.Query(hawkey.Sack())
         try:
