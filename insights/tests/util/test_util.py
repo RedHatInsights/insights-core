@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
 import pytest
 import sys
 import warnings
+
 from insights.tests import deep_compare
 from insights.core.dr import split_requirements, stringify_requirements, get_missing_requirements
 from insights.core import context

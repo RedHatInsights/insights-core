@@ -19,9 +19,10 @@ from datetime import datetime
 
 from insights import apply_configs, apply_default_enabled, get_pool
 from insights.core import blacklist, dr, filters
-from insights.core.exceptions import CalledProcessError
 from insights.core.serde import Hydration
+from insights.core.spec_cleaner import Cleaner
 from insights.util import fs
+from insights.util.hostname import determine_hostname
 from insights.util.subproc import call
 
 SAFE_ENV = {
@@ -319,17 +320,21 @@ def apply_blacklist(cfg):
         if not _check_and_skip_component(b):
             blacklist.add_command('^' + b + '$')
 
-    for b in cfg.get("patterns", []):
-        blacklist.add_pattern(b)
-
-    for b in cfg.get("keywords", []):
-        blacklist.add_keyword(b)
-
     for component in cfg.get('components', []):
         if not dr.get_component_by_name(component):
             log.warning('WARNING: Unknown component in blacklist: %s' % component)
         else:
             _skip_component(component)
+
+    if cfg.get('patterns'):
+        log.warning("WARNING: Excluding patterns defined in blacklist configuration")
+        for b in cfg.get("patterns"):
+            blacklist.add_pattern(b)
+
+    if cfg.get('keywords'):
+        log.warning("WARNING: Replacing keywords defined in blacklist configuration")
+        for b in cfg.get("keywords"):
+            blacklist.add_keyword(b)
 
 
 def create_context(ctx):
@@ -389,8 +394,17 @@ def create_archive(path, remove_path=True):
     return archive_path
 
 
-def collect(manifest=default_manifest, tmp_path=None, compress=False,
-            rm_conf=None, client_config=None):
+def generate_archive_name():
+    """
+    Creates the archive directory to store the component output.
+    """
+    hostname = determine_hostname()
+    suffix = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    return "insights-%s-%s" % (hostname, suffix)
+
+
+def collect(manifest=default_manifest, tmp_path=None, archive_name=None,
+            compress=False, rm_conf=None, client_config=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
     directory in which to store output, and a boolean for optional compression.
@@ -398,9 +412,10 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False,
     Args:
         manifest (str or dict): json document or dictionary containing the
             collection manifest. See default_manifest for an example.
-        tmp_path (str): The temporary directory that will be used to create a
-            working directory for storing component output as well as the final
-            tar.gz if one is generated.
+        tmp_path (str): The temporary directory that is used to create a
+            working directory for storing the final tar.gz if one is generated.
+        archive_name (str): The directory that is used to generate the output
+            as well as the final tar.gz.
         compress (boolean): True to create a tar.gz and remove the original
             workspace containing output. False to leave the workspace without
             creating a tar.gz
@@ -408,6 +423,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False,
             "commands", "files", and "keywords", to be injected
             into the manifest blacklist.
         client_config (InsightsConfig): Configurations read by the client tool.
+
     Returns:
         (str, dict): The full path to the created tar.gz or workspace.
         And a dictionary with relevant exceptions captured by the broker during
@@ -418,7 +434,6 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False,
     manifest = load_manifest(manifest)
     client = manifest.get("client", {})
     plugins = manifest.get("plugins", {})
-    run_strategy = client.get("run_strategy", {"name": "parallel"})
 
     load_packages(plugins.get("packages", []))
     apply_default_enabled(plugins)
@@ -434,7 +449,6 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False,
             client['context']['args']['timeout'] = client_config.cmd_timeout
         except LookupError:
             log.warning('Could not set timeout option.')
-    to_persist = get_to_persist(client.get("persist", set()))
 
     try:
         filters.load()
@@ -445,24 +459,26 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False,
         # problem parsing the filters
         log.debug("Could not parse filters: %s", str(e))
 
-    try:
-        hostname = call("hostname -f", env=SAFE_ENV).strip()
-    except CalledProcessError:
-        # problem calling hostname -f
-        hostname = call("hostname", env=SAFE_ENV).strip()
-    suffix = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    relative_path = "insights-%s-%s" % (hostname, suffix)
-    tmp_path = tmp_path or tempfile.gettempdir()
-    output_path = os.path.join(tmp_path, relative_path)
+    output_path = os.path.join(tmp_path, archive_name)
     fs.ensure_path(output_path)
     fs.touch(os.path.join(output_path, "insights_archive.txt"))
 
     broker = dr.Broker()
     ctx = create_context(client.get("context", {}))
+    cleaner = Cleaner(client_config, rm_conf)
     broker[ctx.__class__] = ctx
+    broker['cleaner'] = cleaner
     broker['client_config'] = client_config
 
+    # run in "serial" mode by default
+    run_strategy = client.get("run_strategy", {"name": "serial"})
     parallel = run_strategy.get("name") == "parallel"
+    to_persist = get_to_persist(client.get("persist", set()))
+
+    if client_config.obfuscate and parallel:
+        log.warning("Parallel collection is not supported when 'obfuscate' is enabled")
+        parallel = False
+
     pool_args = run_strategy.get("args", {})
     with get_pool(parallel, "insights-collector-pool", pool_args) as pool:
         h = Hydration(output_path, pool=pool)
@@ -470,6 +486,8 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False,
         dr.run_all(broker=broker, pool=pool)
 
     collect_errors = _parse_broker_exceptions(broker, EXCEPTIONS_TO_REPORT)
+
+    cleaner.generate_report(archive_name, client_config.rhsm_facts_file)
 
     if compress:
         return create_archive(output_path), collect_errors
@@ -537,7 +555,9 @@ def main():
         manifest = default_manifest
 
     out_path = args.out_path or tempfile.gettempdir()
-    archive, errors = collect(manifest, out_path, compress=args.compress)
+    archive, errors = collect(manifest, out_path,
+                              archive_name=generate_archive_name(),
+                              compress=args.compress)
     print(archive)
 
 

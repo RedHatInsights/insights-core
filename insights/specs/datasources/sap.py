@@ -79,6 +79,7 @@ def ld_library_path_of_user(broker):
         Currently, only Sap users are supported.
     """
     ctx = broker[HostContext]
+
     llds = []
     for sid in broker[sap_sid]:
         usr = '{0}adm'.format(sid)
@@ -89,5 +90,8 @@ def ld_library_path_of_user(broker):
             if "LD_LIBRARY_PATH=" in v:
                 llds.append('{0} {1}'.format(usr, v.split('=', 1)[-1]))
     if llds:
-        return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
+        return DatasourceProvider(
+            '\n'.join(llds),
+            cleaner=broker.get('cleaner'),
+            relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
     raise SkipComponent('')

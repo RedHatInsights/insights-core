@@ -2,70 +2,29 @@
 Collect all the interesting data for analysis
 """
 from __future__ import absolute_import
-import os
+import copy
 import errno
+import glob
 import json
 import logging
-import copy
-import glob
-import six
+import os
 import shlex
-import re
+import six
+
 from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
-from tempfile import NamedTemporaryFile
 
+from insights.client.archive import InsightsArchive
+from insights.client.constants import InsightsConstants as constants
+from insights.client.insights_spec import InsightsFile, InsightsCommand
+from insights.client.utilities import (_expand_paths, get_version_info,
+                                       systemd_notify_init_thread, get_tags)
 from insights.core.blacklist import BLACKLISTED_SPECS
-from insights.util import mangle
-from ..contrib.soscleaner import SOSCleaner
-from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
-from .constants import InsightsConstants as constants
-from .insights_spec import InsightsFile, InsightsCommand
-from .archive import InsightsArchive
+from insights.core.dr import get_component_by_name
+from insights.core.spec_cleaner import Cleaner
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
-# python 2.7
-SOSCLEANER_LOGGER = logging.getLogger('soscleaner')
-SOSCLEANER_LOGGER.setLevel(logging.ERROR)
-# python 2.6
-SOSCLEANER_LOGGER = logging.getLogger('insights-client.soscleaner')
-SOSCLEANER_LOGGER.setLevel(logging.ERROR)
-
-
-def _process_content_redaction(filepath, exclude, regex=False):
-    '''
-    Redact content from a file, based on
-    /etc/insights-client/.exp.sed and and the contents of "exclude"
-
-    filepath    file to modify
-    exclude     list of strings to redact
-    regex       whether exclude is a list of regular expressions
-
-    Returns the file contents with the specified data removed
-    '''
-    logger.debug('Processing %s...', filepath)
-
-    # password removal
-    sedcmd = Popen(['sed', '-rf', constants.default_sed_file, filepath], stdout=PIPE)
-    # patterns removal
-    if exclude:
-        exclude_file = NamedTemporaryFile()
-        exclude_file.write("\n".join(exclude).encode('utf-8'))
-        exclude_file.flush()
-        if regex:
-            flag = '-E'
-        else:
-            flag = '-F'
-        grepcmd = Popen(['grep', '-v', flag, '-f', exclude_file.name], stdin=sedcmd.stdout, stdout=PIPE)
-        sedcmd.stdout.close()
-        stdout, stderr = grepcmd.communicate()
-        logger.debug('Process status: %s', grepcmd.returncode)
-    else:
-        stdout, stderr = sedcmd.communicate()
-        logger.debug('Process status: %s', sedcmd.returncode)
-    logger.debug('Process stderr: %s', stderr)
-    return stdout
 
 
 class DataCollector(object):
@@ -73,13 +32,11 @@ class DataCollector(object):
     Run commands and collect files
     '''
 
-    def __init__(self, config, archive_=None, mountpoint=None):
+    def __init__(self, config, archive_=None, mountpoint=None, spec_conf=None):
         self.config = config
         self.archive = archive_ if archive_ else InsightsArchive(config)
-        self.mountpoint = '/'
-        if mountpoint:
-            self.mountpoint = mountpoint
-        self.hostname_path = None
+        self.mountpoint = mountpoint if mountpoint else '/'
+        self.spec_conf = spec_conf if spec_conf else {}
 
     def _write_branch_info(self, branch_info):
         logger.debug("Writing branch information to archive...")
@@ -138,9 +95,8 @@ class DataCollector(object):
             json.dumps(blacklist_report), '/blacklist_report')
 
     def _write_blacklisted_specs(self):
-        logger.debug("Writing blacklisted specs to archive...")
-
         if BLACKLISTED_SPECS:
+            logger.debug("Writing blacklisted specs to archive...")
             self.archive.add_metadata_to_archive(
                 json.dumps({"specs": BLACKLISTED_SPECS}), '/blacklisted_specs')
 
@@ -171,43 +127,31 @@ class DataCollector(object):
             json.dumps(collection_stats), '/collection_stats')
 
     def _write_rhsm_facts(self, hashed_fqdn, ip_csv):
-        logger.info('Writing RHSM facts to %s...', constants.rhsm_facts_file)
-        ips_list = ''
-        with open(ip_csv) as fil:
-            # create IP list as JSON block with format
-            # [
-            #   {
-            #     original: <original IP>
-            #     obfuscated: <obfuscated IP>
-            #   }
-            # ]
+        logger.info('Writing RHSM facts to %s ...', constants.rhsm_facts_file)
 
-            ips_list = fil.readlines()
-            headings = ips_list[0].strip().split(',')
-            # set the indices for the IPs
-            if 'original' in headings[0].lower():
-                # soscleaner 0.4.4, original first
-                org = 0
-                obf = 1
-            else:
-                # soscleaner 0.2.2, obfuscated first
-                org = 1
-                obf = 0
+        hn_block = []
+        for k, v in self.hn_db.items():
+            hn_block.append({'original': k, 'obfuscated': v})
 
-            ip_block = []
-            for line in ips_list[1:]:
-                ipset = line.strip().split(',')
-                ip_block.append(
-                    {
-                        'original': ipset[org],
-                        'obfuscated': ipset[obf]
-                    })
+        kw_block = []
+        for k, v in self.kw_db.items():
+            kw_block.append({'original': k, 'obfuscated': v})
+
+        ip_block = []
+        for k, v in self.ip_db.items():
+            ip_block.append(
+                {
+                    'original': self._int2ip(v),
+                    'obfuscated': self._int2ip(k)
+                })
 
         facts = {
-            'insights_client.obfuscate_hostname_enabled': self.config.obfuscate_hostname,
-            'insights_client.hostname': hashed_fqdn,
-            'insights_client.obfuscate_ip_enabled': self.config.obfuscate,
-            'insights_client.ips': json.dumps(ip_block)
+            'insights_client.hostname': self.obfuscated_fqdn,
+            'insights_client.obfuscate_ip_enabled': 'ip' in self.obfuscate,
+            'insights_client.ips': json.dumps(ip_block),
+            'insights_client.obfuscate_hostname_enabled': 'hostname' in self.obfuscate,
+            'insights_client.hostnames': json.dumps(hn_block),
+            'insights_client.keywords': json.dumps(kw_block),
         }
 
         try:
@@ -313,10 +257,17 @@ class DataCollector(object):
         else:
             return [spec]
 
-    def run_collection(self, conf, rm_conf, branch_info, blacklist_report):
+    def run_collection(self, rm_conf, branch_info, blacklist_report):
         '''
         Run specs and collect all the data
         '''
+        def _get_spec_info(symbolic_name):
+            if symbolic_name:
+                symbolic_comp = get_component_by_name('insights.specs.Specs.{0}'.format(symbolic_name))
+                if symbolic_comp:
+                    return symbolic_comp.no_obfuscate, symbolic_comp.no_redact
+            return [], False
+
         # initialize systemd-notify thread
         systemd_notify_init_thread()
 
@@ -325,78 +276,80 @@ class DataCollector(object):
 
         collection_stats = {}
 
-        if rm_conf is None:
-            rm_conf = {}
-        logger.debug('Beginning to run collection spec...')
+        logger.debug('Beginning to run spec collection ...')
 
+        rm_conf = rm_conf or {}
+        cleaner = Cleaner(self.config, rm_conf)
         rm_commands = rm_conf.get('commands', [])
         rm_files = rm_conf.get('files', [])
 
-        for c in conf['commands']:
-            # remember hostname archive path
-            if c.get('symbolic_name') == 'hostname':
-                self.hostname_path = os.path.join(
-                    'insights_commands', mangle.mangle_command(c['command']))
-            if c['command'] in rm_commands or c.get('symbolic_name') in rm_commands:
-                logger.warn("WARNING: Skipping command %s", c['command'])
-                BLACKLISTED_SPECS.append(c['symbolic_name'])
+        for c in self.spec_conf['commands']:
+            symbolic_name = c.get('symbolic_name')
+            command = c.get('command')
+            spec_info = _get_spec_info(symbolic_name)
+            if command in rm_commands or symbolic_name in rm_commands:
+                logger.warn("WARNING: Skipping command %s", command)
+                BLACKLISTED_SPECS.append(symbolic_name)
             elif self.mountpoint == "/" or c.get("image"):
-                cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
+                cmd_specs = self._parse_command_spec(c, self.spec_conf['pre_commands'])
                 for s in cmd_specs:
                     if s['command'] in rm_commands:
                         logger.warn("WARNING: Skipping command %s", s['command'])
                         BLACKLISTED_SPECS.append(s['symbolic_name'])
                         continue
                     cmd_spec = InsightsCommand(self.config, s, self.mountpoint)
-                    self.archive.add_to_archive(cmd_spec)
+                    self.archive.add_to_archive(cmd_spec, cleaner, spec_info)
                     collection_stats[s['command']] = {
                         'return_code': cmd_spec.return_code,
                         'exec_time': cmd_spec.exec_time,
                         'output_size': cmd_spec.output_size
                     }
-        for f in conf['files']:
-            if f['file'] in rm_files or f.get('symbolic_name') in rm_files:
+        for f in self.spec_conf['files']:
+            symbolic_name = f.get('symbolic_name')
+            spec_info = _get_spec_info(symbolic_name)
+            if f['file'] in rm_files or symbolic_name in rm_files:
                 logger.warn("WARNING: Skipping file %s", f['file'])
-                BLACKLISTED_SPECS.append(f['symbolic_name'])
+                BLACKLISTED_SPECS.append(symbolic_name)
             else:
                 file_specs = self._parse_file_spec(f)
                 for s in file_specs:
                     # filter files post-wildcard parsing
-                    if s['file'] in rm_conf.get('files', []):
+                    if s['file'] in rm_files:
                         logger.warn("WARNING: Skipping file %s", s['file'])
                         BLACKLISTED_SPECS.append(s['symbolic_name'])
                     else:
                         file_spec = InsightsFile(s, self.mountpoint)
-                        self.archive.add_to_archive(file_spec)
+                        self.archive.add_to_archive(file_spec, cleaner, spec_info)
                         collection_stats[s['file']] = {
                             'exec_time': file_spec.exec_time,
                             'output_size': file_spec.output_size
                         }
-        if 'globs' in conf:
-            for g in conf['globs']:
-                if g.get('symbolic_name') in rm_files:
+        if 'globs' in self.spec_conf:
+            for g in self.spec_conf['globs']:
+                symbolic_name = g.get('symbolic_name')
+                spec_info = _get_spec_info(symbolic_name)
+                if symbolic_name in rm_files:
                     # ignore glob via symbolic name
                     logger.warn("WARNING: Skipping file %s", g['glob'])
-                    BLACKLISTED_SPECS.append(g['symbolic_name'])
+                    BLACKLISTED_SPECS.append(symbolic_name)
                 else:
                     glob_specs = self._parse_glob_spec(g)
-                    for g in glob_specs:
-                        if g['file'] in rm_files:
-                            logger.warn("WARNING: Skipping file %s", g['file'])
-                            BLACKLISTED_SPECS.append(g['symbolic_name'])
+                    for s in glob_specs:
+                        if s['file'] in rm_files:
+                            logger.warn("WARNING: Skipping file %s", s['file'])
+                            BLACKLISTED_SPECS.append(s['symbolic_name'])
                         else:
-                            glob_spec = InsightsFile(g, self.mountpoint)
-                            self.archive.add_to_archive(glob_spec)
-                            collection_stats[g['file']] = {
+                            glob_spec = InsightsFile(s, self.mountpoint)
+                            self.archive.add_to_archive(glob_spec, cleaner, spec_info)
+                            collection_stats[s['file']] = {
                                 'exec_time': glob_spec.exec_time,
                                 'output_size': glob_spec.output_size
                             }
+        cleaner.generate_report(self.archive.archive_name, constants.rhsm_facts_file)
         logger.debug('Spec collection finished.')
 
-        self.redact(rm_conf)
-
         # collect metadata
-        logger.debug('Collecting metadata...')
+        logger.debug('Collecting metadata ...')
         self._write_branch_info(branch_info)
         self._write_display_name()
         self._write_ansible_host()
@@ -408,143 +361,11 @@ class DataCollector(object):
         self._write_collection_stats(collection_stats)
         logger.debug('Metadata collection finished.')
 
-    def redact(self, rm_conf):
-        '''
-        Perform data redaction (password sed command and patterns),
-        write data to the archive in place
-        '''
-        logger.debug('Running content redaction...')
-
-        if not re.match(r'/var/tmp/.+/insights-.+', self.archive.archive_dir):
-            # sanity check to make sure we're only modifying
-            #   our own stuff in temp
-            # we should never get here but just in case
-            raise RuntimeError('ERROR: invalid Insights archive temp path')
-
-        if rm_conf is None:
-            rm_conf = {}
-        exclude = None
-        regex = False
-        if rm_conf:
-            try:
-                exclude = rm_conf['patterns']
-                if isinstance(exclude, dict) and exclude['regex']:
-                    # if "patterns" is a dict containing a non-empty "regex" list
-                    logger.debug('Using regular expression matching for patterns.')
-                    exclude = exclude['regex']
-                    regex = True
-                logger.warn("WARNING: Skipping patterns defined in blacklist configuration")
-            except LookupError:
-                # either "patterns" was undefined in rm conf, or
-                #   "regex" was undefined in "patterns"
-                exclude = None
-        if not exclude:
-            logger.debug('Patterns section of blacklist configuration is empty.')
-
-        # TODO: consider implementing redact() in CoreCollector class rather than
-        #   special handling here
-        if self.config.core_collect:
-            # redact only from the 'data' directory
-            searchpath = os.path.join(self.archive.archive_dir, 'data')
-            if not (os.path.isdir(searchpath) and
-                    re.match(r'/var/tmp/.+/insights-.+/data', searchpath)):
-                # abort if the dir does not exist and isn't the correct format
-                # we should never get here but just in case
-                raise RuntimeError('ERROR: invalid Insights archive temp path')
-        else:
-            searchpath = self.archive.archive_dir
-
-        for dirpath, dirnames, filenames in os.walk(searchpath):
-            for f in filenames:
-                fullpath = os.path.join(dirpath, f)
-                if (fullpath.endswith(
-                        (
-                            'etc/insights-client/machine-id',
-                            'etc/machine-id',
-                            'insights_commands/subscription-manager_identity',
-                            'insights_commands/ls_-lanRL_.etc.systemd_.run.systemd_.usr.lib.systemd_.usr.local.lib.systemd_.usr.local.share.systemd_.usr.share.systemd',  # issue #3858
-                            'var/opt/mssql/log/assessments/assessment-latest',  # issue #3885
-                        )
-                )):
-                    # do not redact the ID files
-                    continue
-                redacted_contents = _process_content_redaction(fullpath, exclude, regex)
-                with open(fullpath, 'wb') as dst:
-                    dst.write(redacted_contents)
-
-    def done(self, conf, rm_conf):
+    def done(self):
         """
         Do finalization stuff
-
-        Returns:
-            default:
-                path to generated tarfile
-            conf.obfuscate==True:
-                path to generated tarfile, scrubbed by soscleaner
-            conf.output_dir:
-                path to a generated directory
-            conf.obfuscate==True && conf.output_dir:
-                path to generated directory, scubbed by soscleaner
-        Ideally, we may want to have separate functions for directories
-            and archive files.
         """
-        if self.config.obfuscate:
-            if rm_conf and rm_conf.get('keywords'):
-                logger.warn("WARNING: Skipping keywords defined in blacklist configuration")
-            cleaner = SOSCleaner(quiet=True)
-            clean_opts = CleanOptions(
-                self.config, self.archive.tmp_dir, rm_conf, self.hostname_path)
-            cleaner.clean_report(clean_opts, self.archive.archive_dir)
-            if clean_opts.keyword_file is not None:
-                os.remove(clean_opts.keyword_file.name)
-
-            # generate RHSM facts at this point
-            self._write_rhsm_facts(cleaner.hashed_fqdn, cleaner.ip_report)
-
-            if self.config.output_dir:
-                # return the entire soscleaner dir
-                #   see additions to soscleaner.SOSCleaner.clean_report
-                #   for details
-                return cleaner.dir_path
-            else:
-                # return the generated soscleaner archive
-                self.archive.tar_file = cleaner.archive_path
-                return cleaner.archive_path
-
         if self.config.output_dir:
             return self.archive.archive_dir
         else:
             return self.archive.create_tar_file()
-
-
-class CleanOptions(object):
-    """
-    Options for soscleaner
-    """
-    def __init__(self, config, tmp_dir, rm_conf, hostname_path):
-        self.report_dir = tmp_dir
-        self.domains = []
-        self.files = []
-        self.quiet = True
-        self.keyword_file = None
-        self.keywords = None
-        self.no_tar_file = config.output_dir
-        self.core_collect = config.core_collect
-
-        if rm_conf:
-            try:
-                keywords = rm_conf['keywords']
-                self.keyword_file = NamedTemporaryFile(delete=False)
-                self.keyword_file.write("\n".join(keywords).encode('utf-8'))
-                self.keyword_file.flush()
-                self.keyword_file.close()
-                self.keywords = [self.keyword_file.name]
-                logger.debug("Attmpting keyword obfuscation")
-            except LookupError:
-                pass
-
-        if config.obfuscate_hostname:
-            # default to its original location
-            self.hostname_path = hostname_path or 'insights_commands/hostname'
-        else:
-            self.hostname_path = None
