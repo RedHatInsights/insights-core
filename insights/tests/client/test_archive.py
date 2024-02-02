@@ -12,7 +12,6 @@ test_uuidhex = Mock(hex='000000')
 test_archive_name = 'insights-testhostname-000000'
 test_archive_dir = '/var/tmp/insights-client-000000/insights-testhostname-000000'
 test_obfuscated_archive_dir = '/var/tmp/insights-client-000000/insights-000000-000000'
-test_cmd_dir = '/var/tmp/insights-client-000000/insights-testhostname-000000/insights_commands'
 test_tmp_dir_path = '/var/tmp/insights-client-000000'
 test_tmp_dir = 'insights-client-000000'
 
@@ -34,7 +33,6 @@ class TestInsightsArchive(TestCase):
         assert archive.config == config
         assert archive.tmp_dir
         assert archive.archive_dir is None
-        assert archive.cmd_dir is None
         assert archive.compressor == config.compressor
         assert archive.archive_name == test_archive_name
 
@@ -106,7 +104,6 @@ class TestInsightsArchive(TestCase):
         '''
         config = Mock()
         config.obfuscate_hostname = True
-        config.core_collect = False
         with patch('insights.client.archive.os.path.exists', return_value=True):
             archive = InsightsArchive(config)
         # give this a discrete value so we can check the results
@@ -190,25 +187,6 @@ class TestInsightsArchive(TestCase):
         assert archive.archive_dir == test_archive_dir
         # ensure the retval and attr are the same
         assert result == archive.archive_dir
-
-    @patch('insights.client.archive.InsightsArchive.create_archive_dir', return_value=test_archive_dir)
-    @patch('insights.client.archive.os.makedirs')
-    @patch('insights.client.archive.os.path.exists', side_effect=[False])
-    def test_create_command_dir(self, exists, makedirs, create_archive_dir, _, __):
-        '''
-        Verify insights_commands dir is created
-        '''
-        archive = InsightsArchive(Mock())
-        archive.archive_dir = test_archive_dir
-        result = archive.create_command_dir()
-        create_archive_dir.assert_called_once()
-        makedirs.assert_called_once_with(test_cmd_dir, 0o700)
-        # ensure the cmd_dir is returned from the function
-        assert result == test_cmd_dir
-        # ensure the class attr is set
-        assert archive.cmd_dir == test_cmd_dir
-        # ensure the retval and attr are the same
-        assert result == archive.cmd_dir
 
     @patch('insights.client.archive.InsightsArchive.create_archive_dir', return_value=test_archive_dir)
     @patch('insights.client.archive.os.path.join', Mock())

@@ -869,11 +869,6 @@ class InsightsConnection(object):
         logger.info("Archive is {fsize} MB which is larger than the maximum allowed size of {flimit} MB.".format(
             fsize=archive_filesize, flimit=constants.archive_filesize_max))
 
-        if not self.config.core_collect:
-            logger.error("Cannot estimate the spec with largest filesize because core collection is not enabled. "
-                    "Enable core collection by setting core_collect=True in %s, and attempt the upload again.", self.config.conf)
-            return
-
         biggest_file = largest_spec_in_archive(archive_file)
         logger.info("The largest file in the archive is %s at %s MB.", biggest_file[0], size_in_mb(biggest_file[1]))
         logger.info("Please add the following spec to /etc/insights-client/file-redaction.yaml."
@@ -882,7 +877,7 @@ class InsightsConnection(object):
         "# file-redaction.yaml\n"
         "# Omit entire output of files\n"
         "# Files can be specified either by full filename or\n"
-        "#   by the 'symbolic_name' listed in .cache.json\n"
+        "#   by the specs listed in insights/specs/default.py\n"
         "files:\n"
         "- %s \n**** ****", biggest_file[2])
 
