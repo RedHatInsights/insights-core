@@ -143,9 +143,6 @@ def update(client, config):
     if config.payload:
         logger.debug('Uploading a payload. Bypassing rules update.')
         return
-    # Download uploader.json only when core_collect=False
-    if not config.core_collect:
-        client.update_rules()
 
 
 @phase
