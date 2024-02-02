@@ -546,8 +546,7 @@ class Specs(SpecSet):
     pci_rport_target_disk_paths = RegistryPoint()
     pcp_metrics = RegistryPoint()
     pcp_openmetrics_log = RegistryPoint(filterable=True)
-    # TODO: no_obfuscate=['hostname', 'ip'], no_redact=True
-    pcp_raw_data = RegistryPoint(raw=True, multi_output=True)  # No Parser required
+    pcp_raw_data = RegistryPoint(raw=True, multi_output=True, no_obfuscate=['hostname', 'ip'], no_redact=True)  # No Parser required
     pcs_config = RegistryPoint()
     pcs_quorum_status = RegistryPoint()
     pcs_status = RegistryPoint()

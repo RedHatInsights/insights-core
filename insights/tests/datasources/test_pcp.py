@@ -4,6 +4,7 @@ import pytest
 from mock.mock import patch
 
 from insights.client.config import InsightsConfig
+from insights.combiners.hostname import Hostname
 from insights.combiners.ps import Ps
 from insights.combiners.services import Services
 from insights.core import dr
@@ -173,15 +174,40 @@ def test_ros_collect():
 
 @patch("insights.specs.datasources.pcp.glob.glob", return_value=PCP_RAW_FILES)
 @patch("insights.specs.datasources.pcp.os.path.isfile", return_value=True)
-def test_pcp_raw_files(_isfile, _glob):
+@patch("insights.specs.datasources.pcp.os.path.exists", return_value=True)
+def test_pcp_raw_files(_exists, _isfile, _glob):
     broker = dr.Broker()
-    broker[HostnameShort] = HostnameShort(context_wrap("insights-test"))
+    broker[Hostname] = Hostname(
+            None, None,
+            HostnameShort(context_wrap("insights-test")), None)
     broker['insights_config'] = InsightsConfig(ros_collect=True)
 
     ret = pcp_raw_files(broker)
 
     assert sorted(ret) == sorted(PCP_RAW_FILES)
 
-    _glob.return_value = [PCP_RAW_FILES[0]]
+
+@patch("insights.specs.datasources.pcp.glob.glob", return_value=[PCP_RAW_FILES[0]])
+@patch("insights.specs.datasources.pcp.os.path.isfile", return_value=True)
+@patch("insights.specs.datasources.pcp.os.path.exists", return_value=True)
+def test_pcp_raw_files_ab(_exists, _isfile, _glob):
+    broker = dr.Broker()
+    broker[Hostname] = Hostname(
+            None, None,
+            HostnameShort(context_wrap("insights-test")), None)
+    broker['insights_config'] = InsightsConfig(ros_collect=True)
+
+    with pytest.raises(ContentException):
+        pcp_raw_files(broker)
+
+
+@patch("insights.specs.datasources.pcp.os.path.exists", return_value=False)
+def test_pcp_raw_files_ab_dir(_exists):
+    broker = dr.Broker()
+    broker[Hostname] = Hostname(
+            None, None,
+            HostnameShort(context_wrap("insights-test")), None)
+    broker['insights_config'] = InsightsConfig(ros_collect=True)
+
     with pytest.raises(ContentException):
         pcp_raw_files(broker)

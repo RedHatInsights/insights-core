@@ -6,12 +6,12 @@ import glob
 import logging
 import os
 
+from insights.combiners.hostname import Hostname
 from insights.combiners.ps import Ps
 from insights.combiners.services import Services
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent, ContentException
 from insights.core.plugins import datasource
-from insights.parsers.hostname import HostnameShort
 from insights.parsers.ros_config import RosConfig
 
 logger = logging.getLogger(__name__)
@@ -93,36 +93,36 @@ def pmlog_summary_args(broker):
     return "{0} {1}".format(pm_file, ' '.join(sorted(metrics)))
 
 
-@datasource(ros_collect, HostnameShort, HostContext)
+@datasource(ros_collect, Hostname, HostContext)
 def pcp_raw_files(broker):
     """
     Return all existing paths of PCP RAW data files of yesterday.
 
     .. note::
         The "hostname" in the file paths will be removed by the "save_as"
-        in the `pcp_raw_data` spec.
-        All the collected PCP RAW data files will be stored in the
-        "var/log/pcp/pmlogger" directory in the archive.
+        in the `pcp_raw_data` spec.  All the collected PCP RAW data files
+        will be stored in "var/log/pcp/pmlogger" directory in the archive.
 
     Returns:
         list(str): list of file path
 
     Raises:
-        ContentException: Raises when number of PCP RAW files less than 3.
+        ContentException: Raises when no such directory or number of PCP RAW
+                          files less than 3.
     """
-    hostname = broker[HostnameShort].hostname
+    hn = broker[Hostname]
+    pm_root = os.path.join("/var/log/pcp/pmlogger/", hn.hostname)
+    if not os.path.exists(pm_root):
+        pm_root = os.path.join("/var/log/pcp/pmlogger/", hn.fqdn)
+    if not os.path.exists(pm_root):
+        raise ContentException("No PCP data directory found for {0} or {1}".format(hn.hostname, hn.fqdn))
+
     yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
-
-    pm_root = os.path.join("/var/log/pcp/pmlogger/", hostname)
-
     pm_files = glob.glob(os.path.join(pm_root, "{0}.*.xz".format(yesterday)))
     pm_files.append(os.path.join(pm_root, "{0}.index".format(yesterday)))
     pm_files = sorted(filter(lambda x: os.path.isfile(x), pm_files))
 
-    file_cnt = 0
-    for pf in pm_files:
-        file_cnt += 1 if pf.endswith(('.index', '.meta.xz', '.0.xz')) else 0
-    if file_cnt < 3:
+    if len([pf.endswith(('.index', '.meta.xz', '.0.xz')) for pf in pm_files]) < 3:
         raise ContentException("Incomplete PCP RAW data of {0}".format(yesterday))
 
     return pm_files
