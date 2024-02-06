@@ -116,21 +116,19 @@ def pcp_raw_files(broker):
     hn = broker.get(Hostname)
     hostnames.update([hn.hostname, hn.fqdn]) if hn else None
 
-    pm_root = None
-    for hostname in hostnames:
-        tmp_root = os.path.join("/var/log/pcp/pmlogger/", hostname)
-        if os.path.exists(tmp_root):
-            pm_root = tmp_root
-            break
-    if pm_root is None:
-        raise ContentException("No PCP data directory found")
-
+    pm_cand = []
     yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
-    pm_files = glob.glob(os.path.join(pm_root, "{0}.*.xz".format(yesterday)))
-    pm_files.append(os.path.join(pm_root, "{0}.index".format(yesterday)))
-    pm_files = sorted(filter(lambda x: os.path.isfile(x), pm_files))
+    for hostname in hostnames:
+        pm_root = os.path.join("/var/log/pcp/pmlogger/", hostname)
+        if os.path.exists(pm_root):
+            pm_files = glob.glob(os.path.join(pm_root, "{0}.*.xz".format(yesterday)))
+            pm_files.append(os.path.join(pm_root, "{0}.index".format(yesterday)))
+            pm_files = sorted(filter(lambda x: os.path.isfile(x), pm_files))
+            if len([pf.endswith(('.index', '.meta.xz', '.0.xz')) for pf in pm_files]) >= 3:
+                pm_cand.append((pm_files, os.path.getmtime(pm_files[-2])))  # timestamp of '.index'
 
-    if len([pf.endswith(('.index', '.meta.xz', '.0.xz')) for pf in pm_files]) < 3:
-        raise ContentException("Incomplete PCP RAW data of {0}".format(yesterday))
+    if not pm_cand:
+        raise ContentException("No PCP data directory OR incomplete PCP RAW data")
 
-    return pm_files
+    # the "pm_files" with the latest yesterday that contains complete data (>=3)
+    return sorted(pm_cand, key=lambda x: x[1])[-1][0]
