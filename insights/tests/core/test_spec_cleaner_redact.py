@@ -275,7 +275,7 @@ def test_redact_exclude_patterns(line, expected):
     c = InsightsConfig()
     pp = Cleaner(c, {'patterns': ['myserver', 'mykey']})
     actual = pp._redact_line(line)
-    assert actual is expected
+    assert actual == expected
 
 
 @mark.parametrize(("line", "expected"), [
@@ -288,7 +288,7 @@ def test_redact_patterns_regex(line, expected):
     c = InsightsConfig()
     pp = Cleaner(c, {'patterns': {'regex': ['myserver', r'my(\w*)key']}})
     actual = pp._redact_line(line)
-    assert actual is expected
+    assert actual == expected
 
 
 @mark.parametrize(("line", "expected"), [
@@ -302,7 +302,7 @@ def test_redact_patterns_posix_regex(line, expected):
     c = InsightsConfig()
     pp = Cleaner(c, {'patterns': {'regex': ['myserver', r'my(\w*)key', 'test[[:digit:]]']}})
     actual = pp._redact_line(line)
-    assert actual is expected
+    assert actual == expected
 
 
 @mark.parametrize(("line", "expected"), [
