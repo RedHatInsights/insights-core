@@ -1,0 +1,13 @@
+[extend]
+useDefault = true
+
+
+[allowlist]
+description = "Repository-specific configuration"
+
+paths = [
+    # Tests for `crypto.py` contain public and private GPG keypair. They were
+    # generated specifically for this usecase. The owner of the key is:
+    # insights-core (Signing key for unit testing) <insights-core@example.org>
+    "insights/tests/client/test_crypto.py",
+]
