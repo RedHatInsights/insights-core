@@ -380,10 +380,7 @@ class DefaultSpecs(Specs):
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
     max_uid = simple_command("/bin/awk -F':' '{ if($3 > max) max = $3 } END { print max }' /etc/passwd")
     md5chk_files = foreach_execute(md5chk.files, "/usr/bin/md5sum %s", keep_rc=True)
-    #mdadm_D = command_with_args("/usr/sbin/mdadm -D %s", mdadm.raid_devices)    # command broken due to /dev/mdxyz
-    #mdadm_D = simple_command("/usr/sbin/mdadm -D /dev/md1 /dev/md56 /dev/xyz")  # command broken due to /dev/mdxyz
-    #mdadm_D = simple_command("/usr/sbin/mdadm -D /dev/md1 /dev/md56")           # command be collected successfully
-    mdadm_D = foreach_execute(mdadm.raid_devices, "/usr/sbin/mdadm -D %s")       # seperate command to not affect each other
+    mdadm_D = command_with_args("/usr/sbin/mdadm -D %s", mdadm.raid_devices, keep_rc=True)
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
