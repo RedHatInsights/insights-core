@@ -6,12 +6,12 @@ import glob
 import logging
 import os
 
-from insights.combiners.hostname import Hostname
 from insights.combiners.ps import Ps
 from insights.combiners.services import Services
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent, ContentException
 from insights.core.plugins import datasource
+from insights.parsers.hostname import Hostname, HostnameDefault
 from insights.parsers.ros_config import RosConfig
 
 logger = logging.getLogger(__name__)
@@ -93,7 +93,7 @@ def pmlog_summary_args(broker):
     return "{0} {1}".format(pm_file, ' '.join(sorted(metrics)))
 
 
-@datasource(ros_collect, Hostname, HostContext)
+@datasource(ros_collect, [Hostname, HostnameDefault], HostContext)
 def pcp_raw_files(broker):
     """
     Return all existing paths of PCP RAW data files of yesterday.
@@ -110,12 +110,20 @@ def pcp_raw_files(broker):
         ContentException: Raises when no such directory or number of PCP RAW
                           files less than 3.
     """
-    hn = broker[Hostname]
-    pm_root = os.path.join("/var/log/pcp/pmlogger/", hn.hostname)
-    if not os.path.exists(pm_root):
-        pm_root = os.path.join("/var/log/pcp/pmlogger/", hn.fqdn)
-    if not os.path.exists(pm_root):
-        raise ContentException("No PCP data directory found for {0} or {1}".format(hn.hostname, hn.fqdn))
+    hostnames = set()
+    hnd = broker.get(HostnameDefault)
+    hostnames.add(hnd.raw) if hnd else None
+    hn = broker.get(Hostname)
+    hostnames.update([hn.hostname, hn.fqdn]) if hn else None
+
+    pm_root = None
+    for hostname in hostnames:
+        tmp_root = os.path.join("/var/log/pcp/pmlogger/", hostname)
+        if os.path.exists(tmp_root):
+            pm_root = tmp_root
+            break
+    if pm_root is None:
+        raise ContentException("No PCP data directory found")
 
     yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
     pm_files = glob.glob(os.path.join(pm_root, "{0}.*.xz".format(yesterday)))

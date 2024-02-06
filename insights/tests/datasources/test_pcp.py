@@ -4,12 +4,11 @@ import pytest
 from mock.mock import patch
 
 from insights.client.config import InsightsConfig
-from insights.combiners.hostname import Hostname
 from insights.combiners.ps import Ps
 from insights.combiners.services import Services
 from insights.core import dr
 from insights.core.exceptions import SkipComponent, ContentException
-from insights.parsers.hostname import HostnameShort
+from insights.parsers.hostname import HostnameDefault, Hostname
 from insights.parsers.ps import PsAuxcww
 from insights.parsers.ros_config import RosConfig
 from insights.parsers.systemd.unitfiles import UnitFiles
@@ -177,9 +176,8 @@ def test_ros_collect():
 @patch("insights.specs.datasources.pcp.os.path.exists", return_value=True)
 def test_pcp_raw_files(_exists, _isfile, _glob):
     broker = dr.Broker()
-    broker[Hostname] = Hostname(
-            None, None,
-            HostnameShort(context_wrap("insights-test")), None)
+    broker[HostnameDefault] = HostnameDefault(context_wrap("insights-test"))
+    broker[Hostname] = None
     broker['insights_config'] = InsightsConfig(ros_collect=True)
 
     ret = pcp_raw_files(broker)
@@ -192,9 +190,8 @@ def test_pcp_raw_files(_exists, _isfile, _glob):
 @patch("insights.specs.datasources.pcp.os.path.exists", return_value=True)
 def test_pcp_raw_files_ab(_exists, _isfile, _glob):
     broker = dr.Broker()
-    broker[Hostname] = Hostname(
-            None, None,
-            HostnameShort(context_wrap("insights-test")), None)
+    broker[HostnameDefault] = None
+    broker[Hostname] = Hostname(context_wrap("insights-test"))
     broker['insights_config'] = InsightsConfig(ros_collect=True)
 
     with pytest.raises(ContentException):
@@ -204,9 +201,7 @@ def test_pcp_raw_files_ab(_exists, _isfile, _glob):
 @patch("insights.specs.datasources.pcp.os.path.exists", return_value=False)
 def test_pcp_raw_files_ab_dir(_exists):
     broker = dr.Broker()
-    broker[Hostname] = Hostname(
-            None, None,
-            HostnameShort(context_wrap("insights-test")), None)
+    broker[HostnameDefault] = HostnameDefault(context_wrap("insights-test"))
     broker['insights_config'] = InsightsConfig(ros_collect=True)
 
     with pytest.raises(ContentException):
