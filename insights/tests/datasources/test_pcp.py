@@ -86,37 +86,7 @@ PCP_RAW_FILES = [
     "/var/log/pcp/pmlogger/test/{0}.1.xz".format(yesterday),
     "/var/log/pcp/pmlogger/test/{0}.index".format(yesterday),
     "/var/log/pcp/pmlogger/test/{0}.meta.xz".format(yesterday),
-    "/var/log/pcp/pmlogger/test.rh.com/{0}.0.xz".format(yesterday),
-    "/var/log/pcp/pmlogger/test.rh.com/{0}.1.xz".format(yesterday),
-    "/var/log/pcp/pmlogger/test.rh.com/{0}.index".format(yesterday),
-    "/var/log/pcp/pmlogger/test.rh.com/{0}.meta.xz".format(yesterday),
 ]
-
-
-def patch_getmtime():
-    def decorator(old_function):
-        if patch_getmtime.counter == 0:
-            patcher = patch("insights.specs.datasources.pcp.os.path.getmtime", return_value=1)
-        if patch_getmtime.counter == 1:
-            patcher = patch("insights.specs.datasources.pcp.os.path.getmtime", return_value=2)
-        return patcher(old_function)
-    patch_getmtime.counter += 1
-    return decorator
-
-
-def patch_glob():
-    def decorator(old_function):
-        if patch_glob.counter == 0:
-            patcher = patch("insights.specs.datasources.pcp.glob.glob", return_value=PCP_RAW_FILES[:4])
-        if patch_glob.counter == 1:
-            patcher = patch("insights.specs.datasources.pcp.glob.glob", return_value=PCP_RAW_FILES[-4:])
-        return patcher(old_function)
-    patch_glob.counter += 1
-    return decorator
-
-
-patch_getmtime.counter = 0
-patch_glob.counter = 0
 
 
 def test_pcp_enabled():
@@ -203,19 +173,22 @@ def test_ros_collect():
         ros_collect({'client_config': ic})
 
 
-@patch_getmtime()
-@patch_glob()
+@patch("insights.specs.datasources.pcp.os.path.getmtime", return_value=1)
+@patch("insights.specs.datasources.pcp.glob.glob", return_value=PCP_RAW_FILES)
 @patch("insights.specs.datasources.pcp.os.path.isfile", return_value=True)
 @patch("insights.specs.datasources.pcp.os.path.exists", return_value=True)
 def test_pcp_raw_files(_exists, _isfile, _glob, mtime):
     broker = dr.Broker()
-    broker[HostnameDefault] = HostnameDefault(context_wrap("test.rh.com"))
-    broker[Hostname] = None
+    broker[HostnameDefault] = HostnameDefault(context_wrap("test"))
     broker['insights_config'] = InsightsConfig(ros_collect=True)
 
     ret = pcp_raw_files(broker)
     # test.rh.com is expected, with mtime=2
-    assert sorted(set(ret)) == sorted(PCP_RAW_FILES[-4:])
+    assert sorted(set(ret)) == sorted([
+        "/var/log/pcp/pmlogger/test/{0}.0.xz".format(yesterday),
+        "/var/log/pcp/pmlogger/test/{0}.1.xz".format(yesterday),
+        "/var/log/pcp/pmlogger/test/{0}.index".format(yesterday),
+        "/var/log/pcp/pmlogger/test/{0}.meta.xz".format(yesterday)])
 
 
 @patch("insights.specs.datasources.pcp.os.path.getmtime", return_value=1)

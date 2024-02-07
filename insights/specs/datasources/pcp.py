@@ -118,17 +118,22 @@ def pcp_raw_files(broker):
 
     pm_cand = []
     yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
-    for hostname in hostnames:
+    for hostname in sorted(hostnames):
         pm_root = os.path.join("/var/log/pcp/pmlogger/", hostname)
         if os.path.exists(pm_root):
             pm_files = glob.glob(os.path.join(pm_root, "{0}.*.xz".format(yesterday)))
             pm_files.append(os.path.join(pm_root, "{0}.index".format(yesterday)))
-            pm_files = sorted(filter(lambda x: os.path.isfile(x), pm_files))
+            pm_files = sorted(set(filter(lambda x: os.path.isfile(x), pm_files)))
+            print('----', pm_files)
             if len([pf for pf in pm_files if pf.endswith(('.index', '.meta.xz', '.0.xz'))]) >= 3:
                 pm_cand.append((pm_files, os.path.getmtime(pm_files[-2])))  # timestamp of '.index'
 
     if not pm_cand:
         raise ContentException("No PCP data directory OR incomplete PCP RAW data")
 
-    # the "pm_files" with the latest yesterday that contains complete data (>=3)
-    return sorted(pm_cand, key=lambda x: x[1])[-1][0]
+    # return the "pm_files" which:
+    # 1. has latest yesterday ".index"
+    # 2. has complete data (>=3)
+    # 3. has much more data than others
+    #    - a rare case: when more pm_files that satisfy with 1 and 2 are available
+    return sorted(pm_cand, key=lambda x: (x[1], len(x[0])))[-1][0]
