@@ -42,7 +42,11 @@ DEFAULT_PASSWORD_REGEXS = [
 """The regex for password removal, which is read from the "/etc/insights-client/.exp.sed"."""
 
 
-def write_report(report, report_file):
+def write_report(report, report_file, mode=0o644):
+    # Get the current umask
+    umask = os.umask(0o022)
+    # Reset the umask
+    os.umask(umask)
     try:
         with open(report_file, 'w') as fp:
             if isinstance(report, dict):
@@ -50,6 +54,8 @@ def write_report(report, report_file):
             elif isinstance(report, list):
                 for line in report:
                     fp.write("{0}\n".format(line))
+        # Change the file mode per the current umask
+        os.chmod(report_file, mode & ~umask)
     except (IOError, OSError) as e:
         logger.error('Could not write to %s: %s', report_file, str(e))
 
