@@ -151,6 +151,9 @@ class Bond(Parser):
                 self._slave_link_failure_count.append(link_fail_cnt)
                 if name_slave:
                     self._data[name_slave]['link_fail_cnt'] = link_fail_cnt
+            elif line.strip().startswith("Permanent HW addr: "):
+                if name_slave:
+                    self._data[name_slave]['permanent_hw_addr'] = line.strip().split(':', 1)[1].strip()
             elif line.strip().startswith("Speed: "):
                 speed = line.strip().split(':', 1)[1].strip()
                 self._slave_speed.append(speed)
