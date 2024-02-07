@@ -134,5 +134,5 @@ def pcp_raw_files(broker):
     # 1. has latest yesterday ".index"
     # 2. has complete data (>=3)
     # 3. has much more data than others
-    #    - a rare case: when more pm_files that satisfy with 1 and 2 are available
+    #    - a rare case: when multiple pm_files satisfy with both 1 and 2
     return sorted(pm_cand, key=lambda x: (x[1], len(x[0])))[-1][0]
