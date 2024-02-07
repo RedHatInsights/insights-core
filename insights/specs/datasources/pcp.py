@@ -124,7 +124,7 @@ def pcp_raw_files(broker):
             pm_files = glob.glob(os.path.join(pm_root, "{0}.*.xz".format(yesterday)))
             pm_files.append(os.path.join(pm_root, "{0}.index".format(yesterday)))
             pm_files = sorted(filter(lambda x: os.path.isfile(x), pm_files))
-            if len([pf.endswith(('.index', '.meta.xz', '.0.xz')) for pf in pm_files]) >= 3:
+            if len([pf for pf in pm_files if pf.endswith(('.index', '.meta.xz', '.0.xz'))]) >= 3:
                 pm_cand.append((pm_files, os.path.getmtime(pm_files[-2])))  # timestamp of '.index'
 
     if not pm_cand:
