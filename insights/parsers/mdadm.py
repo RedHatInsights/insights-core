@@ -217,8 +217,8 @@ class MDAdmDetail(CommandParser, list):
                 continue
 
             # Start line of a new device
-            if (line.startswith("/dev/md") and line.endswith(":")
-                    or line.startswith(self.MDADM_ERROR_MSG_PREFIX)):
+            if (line.startswith("/dev/md") and line.endswith(":") or
+                    line.startswith(self.MDADM_ERROR_MSG_PREFIX)):
 
                 # Handle the last recongnized device
                 if index > device_start_index:
