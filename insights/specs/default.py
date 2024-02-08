@@ -32,7 +32,7 @@ from insights.specs.datasources import (
     aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds,
     dir_list, eap_reports, ethernet, httpd, intersystems, ipcs, kernel,
     kernel_module_list, leapp, lpstat, ls, luks_devices, machine_ids,
-    malware_detection, md5chk, mount as mount_ds, package_provides,
+    malware_detection, md5chk, mdadm, mount as mount_ds, package_provides,
     ps as ps_datasource, rpm_pkgs, sap, satellite_missed_queues,
     ssl_certificate, sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
     user_group, yum_updates)
@@ -382,7 +382,7 @@ class DefaultSpecs(Specs):
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
     max_uid = simple_command("/bin/awk -F':' '{ if($3 > max) max = $3 } END { print max }' /etc/passwd")
     md5chk_files = foreach_execute(md5chk.files, "/usr/bin/md5sum %s", keep_rc=True)
-    mdadm_D = simple_command("/usr/sbin/mdadm -D /dev/md*")
+    mdadm_D = command_with_args("/usr/sbin/mdadm -D %s", mdadm.raid_devices, keep_rc=True)
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
