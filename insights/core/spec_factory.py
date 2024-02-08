@@ -92,14 +92,15 @@ class ContentProvider(object):
     def write(self, dst):
         # Clean (Obfuscate, Redact, and Filter) the Spec Content:
         if self.ds and self.cleaner:
-            if not (self.ds.no_redact and
-                    all(ob in self.ds.no_obfuscate for ob in ['hostname', 'ip'])):
+            no_red = getattr(self.ds, 'no_redact', False)
+            no_obf = getattr(self.ds, 'no_obfuscate', [])
+            if not (no_red and all(ob in no_obf for ob in ['hostname', 'ip'])):
                 # Do Obfuscation/Redaction ONLY when Specs is:
                 # - no_obfuscate == [] OR no_redact == False
                 self.cleaner.clean_file(
                         dst, filters=None,
-                        no_obfuscate=self.ds.no_obfuscate,
-                        no_redact=self.ds.no_redact)
+                        no_obfuscate=no_obf,
+                        no_redact=no_red)
             else:
                 log.debug("Skipping cleaning %s", "/" + self.relative_path)
 
