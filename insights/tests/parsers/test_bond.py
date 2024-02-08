@@ -321,6 +321,8 @@ def test_bond_class():
     assert bond_obj.data['enp0s8']['mii_status'] == 'down'
     assert bond_obj.data['enp0s8']['aggregator_id'] == '2'
     assert bond_obj.data['enp0s9']['aggregator_id'] == '1'
+    assert bond_obj.data['enp0s8']['permanent_hw_addr'] == '08:00:27:a2:8d:f5'
+    assert bond_obj.data['enp0s9']['permanent_hw_addr'] == '08:00:27:99:a3:6b'
 
     with pytest.raises(ParseException) as exc:
         bond_obj = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))
