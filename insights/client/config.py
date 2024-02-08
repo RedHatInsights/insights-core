@@ -357,6 +357,10 @@ DEFAULT_OPTS = {
         'type': int,
         'dest': 'retries'
     },
+    'ros_collect': {
+        # non-CLI
+        'default': False,
+    },
     'show_results': {
         'default': False,
         'opt': ['--show-results'],

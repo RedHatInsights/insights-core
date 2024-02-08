@@ -3,15 +3,21 @@ import pytest
 
 from mock.mock import patch
 
+from insights.client.config import InsightsConfig
 from insights.combiners.ps import Ps
 from insights.combiners.services import Services
 from insights.core import dr
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import SkipComponent, ContentException
+from insights.parsers.hostname import HostnameDefault, Hostname
 from insights.parsers.ps import PsAuxcww
 from insights.parsers.ros_config import RosConfig
 from insights.parsers.systemd.unitfiles import UnitFiles
-from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
+from insights.specs.datasources.pcp import (
+        ros_collect, pcp_enabled, pmlog_summary_args, pcp_raw_files)
 from insights.tests import context_wrap
+
+
+yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
 
 PS_AUXCWW = """
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
@@ -74,6 +80,13 @@ disallow .* : all;
 disallow :* : all;
 allow local:* : enquire;
 """
+
+PCP_RAW_FILES = [
+    "/var/log/pcp/pmlogger/test/{0}.0.xz".format(yesterday),
+    "/var/log/pcp/pmlogger/test/{0}.1.xz".format(yesterday),
+    "/var/log/pcp/pmlogger/test/{0}.index".format(yesterday),
+    "/var/log/pcp/pmlogger/test/{0}.meta.xz".format(yesterday),
+]
 
 
 def test_pcp_enabled():
@@ -148,3 +161,56 @@ def test_pmlog_summary_args_no_pmloger_file(isfile):
 
     with pytest.raises(SkipComponent):
         pmlog_summary_args(broker)
+
+
+def test_ros_collect():
+    ic = InsightsConfig(ros_collect=True)
+    result = ros_collect({'client_config': ic})
+    assert result is True
+
+    ic = InsightsConfig(ros_collect=False)
+    with pytest.raises(SkipComponent):
+        ros_collect({'client_config': ic})
+
+
+@patch("insights.specs.datasources.pcp.os.path.getmtime", return_value=1)
+@patch("insights.specs.datasources.pcp.glob.glob", return_value=PCP_RAW_FILES)
+@patch("insights.specs.datasources.pcp.os.path.isfile", return_value=True)
+@patch("insights.specs.datasources.pcp.os.path.exists", return_value=True)
+def test_pcp_raw_files(_exists, _isfile, _glob, mtime):
+    broker = dr.Broker()
+    broker[HostnameDefault] = HostnameDefault(context_wrap("test"))
+    broker['insights_config'] = InsightsConfig(ros_collect=True)
+
+    ret = pcp_raw_files(broker)
+    # test.rh.com is expected, with mtime=2
+    assert sorted(set(ret)) == sorted([
+        "/var/log/pcp/pmlogger/test/{0}.0.xz".format(yesterday),
+        "/var/log/pcp/pmlogger/test/{0}.1.xz".format(yesterday),
+        "/var/log/pcp/pmlogger/test/{0}.index".format(yesterday),
+        "/var/log/pcp/pmlogger/test/{0}.meta.xz".format(yesterday)])
+
+
+@patch("insights.specs.datasources.pcp.os.path.getmtime", return_value=1)
+@patch("insights.specs.datasources.pcp.glob.glob", return_value=PCP_RAW_FILES[:2])
+@patch("insights.specs.datasources.pcp.os.path.isfile", return_value=True)
+@patch("insights.specs.datasources.pcp.os.path.exists", return_value=True)
+def test_pcp_raw_files_ab(_exists, _isfile, _glob, mtime):
+    broker = dr.Broker()
+    broker[HostnameDefault] = HostnameDefault(context_wrap("test"))
+    broker[Hostname] = None
+    broker['insights_config'] = InsightsConfig(ros_collect=True)
+
+    with pytest.raises(ContentException):
+        pcp_raw_files(broker)
+
+
+@patch("insights.specs.datasources.pcp.os.path.exists", return_value=False)
+def test_pcp_raw_files_ab_dir(_exists):
+    broker = dr.Broker()
+    broker[HostnameDefault] = HostnameDefault(context_wrap("test.rh.com"))
+    broker[Hostname] = Hostname(context_wrap("test.rh.com"))
+    broker['insights_config'] = InsightsConfig(ros_collect=True)
+
+    with pytest.raises(ContentException):
+        pcp_raw_files(broker)
