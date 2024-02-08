@@ -165,7 +165,8 @@ Consistency Policy : bitmap
 """.strip()
 
 MDADM_D_CONTENT_MULTI_DEVICES = """
-/dev/md/d1p2:
+mdadm: cannot open /dev/md0: No such file or directory
+/dev/md21:
            Version : 1.2
      Creation Time : Thu Jun 17 09:03:18 2021
         Raid Level : raid1
@@ -192,7 +193,9 @@ Consistency Policy : bitmap
     Number   Major   Minor   RaidDevice State
        0      94       33        0      active sync   /dev/dasdi1
        1      94       53        1      active sync   /dev/dasdn1
-/dev/md21p3:
+mdadm: cannot open /dev/md2: No such file or directory
+some continue message of last line
+/dev/md22:
            Version : 1.2
      Creation Time : Sun Jun 27 19:14:00 2021
         Raid Level : raid1
@@ -218,6 +221,7 @@ Consistency Policy : resync
     Number   Major   Minor   RaidDevice State
        0      94       29        0      active sync   /dev/dasdh1
        1      94       37        1      active sync   /dev/dasdj1
+mdadm: cannot open /dev/md3: No such file or directory
 """.strip()
 
 
@@ -273,18 +277,20 @@ def test_mdadm_d():
     assert len(mds) == 2
     assert len(mds.unparsable_device_list) == 0
     md = mds[0]
-    assert md.device_name == '/dev/md/d1p2'
+    assert md.device_name == '/dev/md21'
     assert len(md) == 21
     assert md['State'] == 'clean'
     assert md['Consistency Policy'] == 'bitmap'
     assert md.is_internal_bitmap is True
     assert len(md.device_table) == 2
     md = mds[1]
-    assert md.device_name == '/dev/md21p3'
+    assert md.device_name == '/dev/md22'
     assert md['State'] == 'clean'
     assert md['Consistency Policy'] == 'resync'
     assert md.is_internal_bitmap is False
     assert len(md.device_table) == 2
+    assert len(mds.error_messages) == 3
+    assert mds.error_messages[-1] == "mdadm: cannot open /dev/md3: No such file or directory"
 
 
 MDADM_D_CONTENT_EMPTY_TABLE = """
