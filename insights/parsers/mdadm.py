@@ -184,14 +184,23 @@ class MDAdmDetail(CommandParser, list):
         >>> mdadm_d[1].get("Version")
         '1.2'
     """
+
+    MDADM_ERROR_MSG_PREFIX = "mdadm: "
+
     def parse_content(self, content):
 
         if len(content) == 0:
             raise SkipComponent("Empty content of command output")
 
         self.unparsable_device_list = []
+        self.error_messages = []
 
         def _handle_device(device_start_index, table_start_index, index):
+
+            if content[device_start_index].startswith(self.MDADM_ERROR_MSG_PREFIX):
+                self.error_messages.append(content[device_start_index])
+                return
+
             try:
                 device_detail = MDAdmDetailDevice()
                 device_detail.parse_device(content, device_start_index, table_start_index, index)
@@ -207,12 +216,16 @@ class MDAdmDetail(CommandParser, list):
             if not line:
                 continue
 
-            if line.startswith("/dev/md") and line.endswith(":"):
+            # Start line of a new device
+            if (line.startswith("/dev/md") and line.endswith(":") or
+                    line.startswith(self.MDADM_ERROR_MSG_PREFIX)):
+
                 # Handle the last recongnized device
                 if index > device_start_index:
                     _handle_device(device_start_index, table_start_index, index)
 
                 device_start_index = index
+
             elif "Number   Major   Minor" in line:
                 table_start_index = index
 
