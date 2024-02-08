@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.5
+Version:        3.3.6
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,26 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 08 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.6-1
+- fix: no such attribute error (#4015) (xiangceliu@redhat.com)
+- fix: spec mdadm_D to render arg /dev/md* properly (#4011)
+  (xiaoxwan@redhat.com)
+- feat: Add permanent hardware addr to bond parser (#4016)
+  (rblakley@redhat.com)
+- feat: collect PCP RAW data per 'ros_collect' set in insights-client.conf
+  (#3979) (xiangceliu@redhat.com)
+- fix: RHINENG-8044 create facts file with right permission and respecting
+  umask (#4014) (xiangceliu@redhat.com)
+- fix: check status created a machine-id file (#3965)
+  (93577878+ahitacat@users.noreply.github.com)
+- fix(test): Make the malware detection detect Podman containers (#4012)
+  (mhorky@redhat.com)
+- fix(test): spec cleaner tests are using 'is' for comparing strings (#4013)
+  (mhorky@redhat.com)
+- RHEL-2480: Do not create /root/.gnupg/ directory by accident (#3930)
+  (mhorky@redhat.com)
+- add missing CHANGELOG.md (xiangceliu@redhat.com)
+
 * Thu Feb 01 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.5-1
 - feat: New spec "rhui-set-release" and parser (#3998)
   (44796653+huali027@users.noreply.github.com)

@@ -2,6 +2,18 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.6) (2024-02-08)
+
+- fix: no such attribute error ([PR 4015](https://github.com/RedHatInsights/insights-core/pull/4015))
+- fix: spec mdadm_D to render arg /dev/md* properly ([PR 4011](https://github.com/RedHatInsights/insights-core/pull/4011))
+- feat: Add permanent hardware addr to bond parser ([PR 4016](https://github.com/RedHatInsights/insights-core/pull/4016))
+- feat: collect PCP RAW data per 'ros_collect' set in insights-client.conf ([PR 3979](https://github.com/RedHatInsights/insights-core/pull/3979))
+- fix: RHINENG-8044 create facts file with right permission and respecting umask ([PR 4014](https://github.com/RedHatInsights/insights-core/pull/4014))
+- fix: check status created a machine-id file ([PR 3965](https://github.com/RedHatInsights/insights-core/pull/3965))
+- fix(test): Make the malware detection detect Podman containers ([PR 4012](https://github.com/RedHatInsights/insights-core/pull/4012))
+- fix(test): spec cleaner tests are using 'is' for comparing strings ([PR 4013](https://github.com/RedHatInsights/insights-core/pull/4013))
+- RHEL-2480: Do not create /root/.gnupg/ directory by accident ([PR 3930](https://github.com/RedHatInsights/insights-core/pull/3930))
+
 # [insights-core-3.3.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.5) (2024-02-01)
 
 - feat: New spec "rhui-set-release" and parser ([PR 3998](https://github.com/RedHatInsights/insights-core/pull/3998))
