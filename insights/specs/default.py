@@ -23,6 +23,7 @@ from insights.components.satellite import (
 from insights.components.virtualization import IsBareMetal
 from insights.core.context import HostContext
 from insights.core.spec_factory import (
+    RawFileProvider,
     command_with_args, container_collect, container_execute, first_file,
     first_of, foreach_collect, foreach_execute, glob_file, head, listdir,
     simple_command, simple_file)
@@ -36,7 +37,8 @@ from insights.specs.datasources import (
     ssl_certificate, sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
     user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
-from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
+from insights.specs.datasources.pcp import (pcp_enabled, pcp_raw_files,
+    pmlog_summary_args)
 from insights.specs.datasources.container import (
     containers_inspect, running_rhel_containers)
 from insights.specs.datasources.container.nginx_conf import (
@@ -462,6 +464,7 @@ class DefaultSpecs(Specs):
     password_auth = simple_file("/etc/pam.d/password-auth")
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
     pcp_metrics = simple_command("/usr/bin/curl -s http://127.0.0.1:44322/metrics --connect-timeout 5", deps=[pcp_enabled])
+    pcp_raw_data = foreach_collect(pcp_raw_files, "%s", save_as="var/log/pcp/pmlogger/", kind=RawFileProvider)
     pcs_quorum_status = simple_command("/usr/sbin/pcs quorum status")
     pcs_status = simple_command("/usr/sbin/pcs status")
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
