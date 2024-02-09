@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.7) (2024-02-09)
+
+- fix: resolve missing insights-client.ppid error ([PR 4002](https://github.com/RedHatInsights/insights-core/pull/4002))
+- Revert "fix: check status created a machine-id file (3965)" ([PR 4018](https://github.com/RedHatInsights/insights-core/pull/4018))
+
 # [insights-core-3.3.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.6) (2024-02-08)
 
 - fix: no such attribute error ([PR 4015](https://github.com/RedHatInsights/insights-core/pull/4015))
