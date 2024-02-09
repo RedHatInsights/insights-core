@@ -119,6 +119,7 @@ def generate_machine_id(new=False,
         machine_id = str(uuid.uuid4())
         logger.debug("Creating %s", destination_file)
         write_to_disk(destination_file, content=machine_id)
+
     try:
         return str(uuid.UUID(str(machine_id).strip(), version=4))
     except ValueError as e:
@@ -126,13 +127,6 @@ def generate_machine_id(new=False,
         logger.error("Error details: %s", str(e))
         logger.error("Remove %s and a new one will be generated.\nRerun the client with --register", destination_file)
         sys.exit(constants.sig_kill_bad)
-
-
-def machine_id_exists(destination_file=constants.machine_id_file):
-    """
-    Get the machine-id or None if /etc/insights-client/machine-id it does not exists
-    """
-    return os.path.isfile(destination_file)
 
 
 def _expand_paths(path):

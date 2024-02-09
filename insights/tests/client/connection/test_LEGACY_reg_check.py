@@ -5,10 +5,9 @@ from mock.mock import MagicMock, Mock, patch
 
 
 @patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_registration_check_ok_reg(get_proxies, _init_session, _machine_id_exists, _generate_machine_id):
+def test_registration_check_ok_reg(get_proxies, _init_session, _):
     '''
     Request completed OK, registered
         Returns True
@@ -25,10 +24,9 @@ def test_registration_check_ok_reg(get_proxies, _init_session, _machine_id_exist
 
 
 @patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_registration_check_ok_reg_then_unreg(get_proxies, _init_session, _machine_id_exists, _generate_machine_id):
+def test_registration_check_ok_reg_then_unreg(get_proxies, _init_session, _):
     '''
     Request completed OK, was once registered but has been unregistered
         Returns the date it was unregistered
@@ -44,10 +42,10 @@ def test_registration_check_ok_reg_then_unreg(get_proxies, _init_session, _machi
     assert conn.api_registration_check() == '2019-04-10'
 
 
-@patch("insights.client.connection.machine_id_exists", return_value=True)
+@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_registration_check_ok_unreg(get_proxies, _init_session, _machine_id_exists):
+def test_registration_check_ok_unreg(get_proxies, _init_session, _):
     '''
     Request completed OK, has never been registered
         Returns None
@@ -64,10 +62,9 @@ def test_registration_check_ok_unreg(get_proxies, _init_session, _machine_id_exi
 
 
 @patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_registration_check_bad_res(get_proxies, _init_session, _machine_id_exists, _generate_machine_id):
+def test_registration_check_bad_res(get_proxies, _init_session, _):
     '''
     Can't parse response
         Returns False
@@ -84,11 +81,10 @@ def test_registration_check_bad_res(get_proxies, _init_session, _machine_id_exis
 
 
 @patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 @patch("insights.client.connection.InsightsConnection.test_connection")
-def test_registration_check_conn_error(test_connection, get_proxies, _init_session, _machine_id_exists, _generate_machine_id):
+def test_registration_check_conn_error(test_connection, get_proxies, _init_session, _):
     '''
     Can't connect, run connection test
         Returns False

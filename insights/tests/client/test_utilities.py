@@ -51,10 +51,7 @@ def test_write_to_disk():
     util.write_to_disk(filename, delete=True) is None
 
 
-def test_get_machine_id():
-    """
-    Test get machine_id with generate_machine_id method, if the machine-id file exists
-    """
+def test_generate_machine_id():
     machine_id_regex = re.match('\w{8}-\w{4}-\w{4}-\w{4}-\w{12}',
                                 util.generate_machine_id(destination_file='/tmp/testmachineid'))
     assert machine_id_regex.group(0) is not None
@@ -64,7 +61,7 @@ def test_get_machine_id():
     os.remove('/tmp/testmachineid')
 
 
-def test_get_machineid_with_non_hyphen_id():
+def test_generate_machine_id_with_non_hyphen_id():
     content = '86f6f5fad8284730b708a2e44ba5c14a'
     filename = '/tmp/testmachineid'
     util.write_to_disk(filename, content=content)
