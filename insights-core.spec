@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.6
+Version:        3.3.7
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,11 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Fri Feb 09 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.7-1
+- fix: resolve missing insights-client.ppid error (#4002) (jajerome@redhat.com)
+- Revert "fix: check status created a machine-id file (#3965)" (#4018)
+  (xiangceliu@redhat.com)
+
 * Thu Feb 08 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.6-1
 - fix: no such attribute error (#4015) (xiangceliu@redhat.com)
 - fix: spec mdadm_D to render arg /dev/md* properly (#4011)
