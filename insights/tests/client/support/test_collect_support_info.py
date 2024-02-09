@@ -112,18 +112,15 @@ def test_registration_check_registered_unreach(_, __):
     conn.api_registration_check.assert_called_once()
 
 
-@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
+@patch('insights.client.connection.generate_machine_id', return_value="xxxx-xxx-xxxx-xxx")
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 @patch("insights.client.connection.InsightsConnection.get", return_value=Mock(status_code=404, content='{"detail": "System with insights_id ID not found"}'))
 @patch('insights.client.support.write_registered_file')
 @patch('insights.client.support.write_unregistered_file')
 @patch('insights.client.support.write_to_disk')
-def test_registration_check_legacy_unregistered_good_json(write_to_disk, write_unregistered_file, write_registered_file, _geturl, _proxies, _init_session, _machine_id_exists, _generate_machine_id):
+def test_registration_check_legacy_unregistered_good_json(write_to_disk, write_unregistered_file, write_registered_file, _geturl, __, ___, _generate_machine_id):
     '''
-    In this test insights-client has a machine-id file but is not registered in server,
-    it checks if insights-client write the unregistered files when it notices is not registered.
     Ensure that connection function is called and data processed.
     When the system is not registered the server sends a 404 error with a json content.
     Check that when the client get this response the registered file and the machine-id files
@@ -139,15 +136,14 @@ def test_registration_check_legacy_unregistered_good_json(write_to_disk, write_u
     write_to_disk.assert_called_once()
 
 
-@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
+@patch('insights.client.connection.generate_machine_id', return_value="xxxx-xxx-xxxx-xxx")
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 @patch("insights.client.connection.InsightsConnection.get", return_value=Mock(status_code=404, content='{Page Not Found}'))
 @patch('insights.client.support.write_registered_file')
 @patch('insights.client.support.write_unregistered_file')
 @patch('insights.client.support.write_to_disk')
-def test_registration_check_legacy_unregistered_bad_json(write_to_disk, write_unregistered_file, write_registered_file, _geturl, _proxies, _init_session, _machine_id_exists, _generate_machine_id):
+def test_registration_check_legacy_unregistered_bad_json(write_to_disk, write_unregistered_file, write_registered_file, _geturl, __, ___, _generate_machine_id):
     '''
     Ensure that connection function is called and data processed.
     Check a 404 from a forward that doesn't contain a json a content.
@@ -163,18 +159,15 @@ def test_registration_check_legacy_unregistered_bad_json(write_to_disk, write_un
     write_to_disk.assert_not_called()
 
 
-@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
+@patch('insights.client.connection.generate_machine_id', return_value="xxxx-xxx-xxxx-xxx")
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 @patch("insights.client.connection.InsightsConnection.get", return_value=Mock(status_code=200, content='{"unregistered_at": "2019-04-10"}'))
 @patch('insights.client.support.write_registered_file')
 @patch('insights.client.support.write_unregistered_file')
 @patch('insights.client.support.write_to_disk')
-def test_registration_check_legacy_registered_then_unregistered(write_to_disk, write_unregistered_file, write_registered_file, _geturl, _proxies, _init_session, _machine_id_exists, _generate_machine_id):
+def test_registration_check_legacy_registered_then_unregistered(write_to_disk, write_unregistered_file, write_registered_file, _geturl, _, __, _generate_machine_id):
     '''
-    This test checks if insights-client removes the registration file when it notices it is not
-    registered through the API but has a machine-id file.
     Ensure that connection function is called and data processed.
     Legacy version responded with the unregistered_at as a json parameter.
     Check that when the client get this response the registered file and the machine-id files
@@ -189,14 +182,13 @@ def test_registration_check_legacy_registered_then_unregistered(write_to_disk, w
     write_unregistered_file.assert_called_once()
 
 
-@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
+@patch('insights.client.connection.generate_machine_id', return_value="xxxx-xxx-xxxx-xxx")
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 @patch("insights.client.connection.InsightsConnection.get", return_value=Mock(status_code=200, content='{"unregistered_at": null}'))
 @patch('insights.client.support.write_registered_file')
 @patch('insights.client.support.write_unregistered_file')
-def test_registration_check_legacy_registered(write_unregistered_file, write_registered_file, _geturl, _proxy, _session, _machine_id_exists, _generate_machine_id):
+def test_registration_check_legacy_registered(write_unregistered_file, write_registered_file, _geturl, _proxy, _session, _generate_machine_id):
     '''
     Ensure that connection function is called and data processed.
     When the systems is registered it get a 200 message with a json with the unregistered_at=null
@@ -212,15 +204,14 @@ def test_registration_check_legacy_registered(write_unregistered_file, write_reg
     write_unregistered_file.assert_not_called()
 
 
-@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
+@patch('insights.client.connection.generate_machine_id', return_value="xxxx-xxx-xxxx-xxx")
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 @patch("insights.client.connection.InsightsConnection.get", return_value=Mock(status_code=502, content='zSDFasfghsRGH'))
 @patch('insights.client.support.write_registered_file')
 @patch('insights.client.support.write_unregistered_file')
 @patch('insights.client.support.write_to_disk')
-def test_registration_check_legacy_bad_json(write_to_disk, write_unregistered_file, write_registered_file, _geturl, _proxy, _session, _machine_id_exists, _generate_machine_id):
+def test_registration_check_legacy_bad_json(write_to_disk, write_unregistered_file, write_registered_file, _geturl, _, __, _generate_machine_id):
     '''
     Ensure the function does not remove any file if a network error is encountered
     '''
@@ -235,15 +226,14 @@ def test_registration_check_legacy_bad_json(write_to_disk, write_unregistered_fi
     write_to_disk.assert_not_called()
 
 
-@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
+@patch('insights.client.connection.generate_machine_id', return_value="xxxx-xxx-xxxx-xxx")
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 @patch("insights.client.connection.InsightsConnection.get", return_value=Mock(status_code=502, content='{"details": "Bad gateway"}'))
 @patch('insights.client.support.write_registered_file')
 @patch('insights.client.support.write_unregistered_file')
 @patch('insights.client.support.write_to_disk')
-def test_registration_check_legacy_bad_connection(write_to_disk, write_unregistered_file, write_registered_file, _geturl, _proxy, _session, _machine_id_exists, _generate_machine_id):
+def test_registration_check_legacy_bad_connection(write_to_disk, write_unregistered_file, write_registered_file, _geturl, _, __, _generate_machine_id):
     '''
     Ensure the function does not remove any file if a network error is encountered
     '''
