@@ -315,20 +315,3 @@ def test_redact_password(line, expected):
     pp = Cleaner(c, {'patterns': {'regex': ['myserver', r'my(\w*)key']}})
     actual = pp._redact_line(line)
     assert actual == expected
-
-
-def test_cleaner_fqdn():
-    fqdn = 'test.abc.com'
-    c = InsightsConfig(obfuscate=True, obfuscate_hostname=True, display_name=fqdn)
-    pp = Cleaner(c, {}, fqdn)
-    assert pp.fqdn == fqdn
-    assert len(pp.obfuscated_fqdn.split('.')[0]) == 12
-
-    fqdn1 = 'test.def.com'
-    pp = Cleaner(c, {}, fqdn1)
-    assert pp.fqdn == fqdn1
-    assert len(pp.obfuscated_fqdn.split('.')[0]) == 12
-
-    pp = Cleaner(c, {}, '')
-    assert pp.fqdn == fqdn  # get hostname from config.display_name
-    assert len(pp.obfuscated_fqdn.split('.')[0]) == 12

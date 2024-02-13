@@ -161,10 +161,35 @@ def test_obfuscate_hostname():
     actual = pp._obfuscate_line(line, [pp._sub_hostname])
     assert line == actual
 
+
+@patch("insights.core.spec_cleaner.determine_hostname", return_value='test1.abc.com')
+def test_obfuscate_hostname_determine_hostanme(hn):
+    hostname = 'test1.abc.com'
+    c = InsightsConfig(obfuscate=True, obfuscate_hostname=True, display_name='disp.abc.com')
     line = "a line with %s here, test2.def.com" % hostname
-    pp = Cleaner(c, {}, fqdn='')  # empty hostname - no obfuscate
+    pp = Cleaner(c, {})  # passed empty hostname to cleaner, determain it
     actual = pp._obfuscate_line(line, [pp._sub_hostname])
-    assert line == actual
+    assert hostname not in actual
+    assert len(actual.split('.')[0].split()[-1]) == 12
+    assert 'test2.def.com' in actual
+
+
+@patch("insights.core.spec_cleaner.determine_hostname", return_value='dt_test.abc.com')
+def test_cleaner_fqdn(de_hn):
+    fqdn = 'test.abc.com'
+    c = InsightsConfig(obfuscate=True, obfuscate_hostname=True, display_name='disp.abc.com')
+    pp = Cleaner(c, {}, fqdn)  # pass fqdn to cleaner
+    assert pp.fqdn == fqdn
+    assert len(pp.obfuscated_fqdn.split('.')[0]) == 12
+
+    fqdn1 = 'test.def.com'
+    pp = Cleaner(c, {}, fqdn1)  # pass fqdn1 to cleaner
+    assert pp.fqdn == fqdn1
+    assert len(pp.obfuscated_fqdn.split('.')[0]) == 12
+
+    pp = Cleaner(c, {})  # pass None "hostname" to cleaner
+    assert pp.fqdn == "dt_test.abc.com"  # get hostname from determine_hostname, but not display_name
+    assert len(pp.obfuscated_fqdn.split('.')[0]) == 12
 
 
 def test_obfuscate_hostname_and_ip():
