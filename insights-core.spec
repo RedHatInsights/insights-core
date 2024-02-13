@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.7
+Version:        3.3.8
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Tue Feb 13 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.8-1
+- fix: hostname is not obfuscated when specify display_name (#4019)
+  (xiangceliu@redhat.com)
+
 * Fri Feb 09 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.7-1
 - fix: resolve missing insights-client.ppid error (#4002) (jajerome@redhat.com)
 - Revert "fix: check status created a machine-id file (#3965)" (#4018)
