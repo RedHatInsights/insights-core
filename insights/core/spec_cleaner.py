@@ -86,7 +86,7 @@ class Cleaner(object):
         self._keywords2db(keywords)
 
         # Obfuscation
-        fqdn = fqdn if fqdn else determine_hostname(config.display_name)
+        fqdn = fqdn if fqdn else determine_hostname()
         name_list = fqdn.split('.')
         self.hostname = name_list[0]
         self.fqdn = fqdn
