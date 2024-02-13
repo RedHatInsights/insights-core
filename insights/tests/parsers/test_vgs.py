@@ -1,4 +1,4 @@
-from insights.parsers.lvm import Vgs, VgsHeadings
+from insights.parsers.lvm import Vgs
 from insights.tests import context_wrap
 
 FD_LEAK_HEADER = "File descriptor 5 (/dev/null) leaked on invocation. Parent PID 99999: timeout\n"
@@ -86,15 +86,3 @@ def test_vgs():
 
     check(Vgs(context_wrap(VGS_INFO)))
     check(Vgs(context_wrap(FD_LEAK_HEADER + VGS_INFO)))
-
-
-def test_vgs_headers():
-    def check(vgs_info):
-        assert vgs_info is not None
-        assert len(vgs_info.data) == 6
-        for k, v in VGS_HEADER_5.items():
-            assert vgs_info[5][k] == v
-        assert vgs_info[5]['VPerms'] is None
-
-    check(VgsHeadings(context_wrap(VGS_HEADER_INFO)))
-    check(VgsHeadings(context_wrap(FD_LEAK_HEADER + VGS_HEADER_INFO)))

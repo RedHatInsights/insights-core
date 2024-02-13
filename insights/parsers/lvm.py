@@ -11,20 +11,11 @@ This module contains the classes that parse the output of the commands `lvs`,
 Pvs - command ``/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all``
 ------------------------------------------------------------------------------------
 
-PvsHeadings - command ``pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"``
------------------------------------------------------------------------------------------------------------------------------------------
-
 Vgs - command ``/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all``
 ------------------------------------------------------------------------------------
 
-VgsHeadings - command ``vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"``
--------------------------------------------------------------------------------------------------------------------------------------
-
 Lvs - command ``/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config="global{locking_type=0}"``
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-LvsHeadings - command ``/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"``
---------------------------------------------------------------------------------------------
 
 LvmConf - file ``/etc/lvm/lvm.conf``
 ------------------------------------
@@ -44,7 +35,7 @@ from insights.core import CommandParser, JSONParser, LegacyItemAccess, Parser
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
-from insights.parsers import get_active_lines, optlist_to_dict, parse_fixed_table
+from insights.parsers import get_active_lines, optlist_to_dict
 from insights.specs import Specs
 from insights.util import parse_keypair_lines
 
@@ -247,80 +238,6 @@ class PvsAll(Pvs):
     pass
 
 
-@parser(Specs.pvs_headings)
-class PvsHeadings(LvmHeadings):
-    """
-    Parses the output of the
-    `pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"`
-    command.
-
-    Since it is possible to have two PV's with the same name (for example *unknown device*) a
-    unique key for each PV is created by joining the `PV_NAME and PV_UUID fields with a `+`
-    character.  This key is added to the resulting dictionary as the `PV_KEY` field.
-
-    Sample input::
-
-          WARNING: Locking disabled. Be careful! This could corrupt your metadata.
-            Scanning all devices to update lvmetad.
-            No PV label found on /dev/loop0.
-            No PV label found on /dev/loop1.
-            No PV label found on /dev/sda1.
-            No PV label found on /dev/fedora/root.
-            No PV label found on /dev/sda2.
-            No PV label found on /dev/fedora/swap.
-            No PV label found on /dev/fedora/home.
-            No PV label found on /dev/mapper/docker-253:1-2361272-pool.
-            Wiping internal VG cache
-            Wiping cache of LVM-capable devices
-          PV                                                    VG     Fmt  Attr PSize   PFree DevSize PV UUID                                PMdaFree  PMdaSize  #PMda #PMdaUse PE
-          /dev/fedora/home                                                  ---       0     0  418.75g                                               0         0      0        0      0
-          /dev/fedora/root                                                  ---       0     0   50.00g                                               0         0      0        0      0
-          /dev/fedora/swap                                                  ---       0     0    7.69g                                               0         0      0        0      0
-          /dev/loop0                                                        ---       0     0  100.00g                                               0         0      0        0      0
-          /dev/loop1                                                        ---       0     0    2.00g                                               0         0      0        0      0
-          /dev/mapper/docker-253:1-2361272-pool                             ---       0     0  100.00g                                               0         0      0        0      0
-          /dev/mapper/luks-7430952e-7101-4716-9b46-786ce4684f8d fedora lvm2 a--  476.45g 4.00m 476.45g FPLCRf-d918-LVL7-6e3d-n3ED-aiZv-EesuzY        0   1020.00k     1        1 121970
-          /dev/sda1                                                         ---       0     0  500.00m                                               0         0      0        0      0
-          /dev/sda2                                                         ---       0     0  476.45g                                               0         0      0        0      0
-            Reloading config files
-            Wiping internal VG cache
-
-    Attributes:
-        data (list): List of dicts, each dict containing one row of the table
-            with column headings as keys.
-        warnings (set): Set of lines from input data containing
-            warning strings.
-
-    Examples:
-        >>> pvs_data[0]['PV']
-        '/dev/fedora/home'
-        >>> pvs_data[0]['PMdaSize']
-        '0'
-
-    """
-
-    PRIMARY_KEY = Pvs.PRIMARY_KEY
-
-    def parse_content(self, content):
-        self.warnings = set(find_warnings(content))
-        content = [l for l in content if l not in self.warnings]
-        self.data = parse_fixed_table(
-            content,
-            heading_ignore=["PV "],
-            header_substitute=[("PV UUID", "PV_UUID"), ("1st PE", "1st_PE")],
-            trailing_ignore=["Reloading", "Wiping"],
-        )
-        self.data = map_keys(self.data, Pvs.KEYS)
-        for pv in self.data:
-            pv_name = pv.get("PV") if pv.get("PV") is not None else "no_name"
-            pv_uuid = pv.get("PV_UUID") if pv.get("PV_UUID") is not None else "no_uuid"
-            pv.update({"PV_KEY": "+".join([pv_name, pv_uuid])})
-
-    def vg(self, name):
-        """Return all physical volumes assigned to the given volume group"""
-        return [i for i in self.data if i["VG"] == name]
-
-
 @parser(Specs.vgs_noheadings)
 class Vgs(Lvm):
     """
@@ -399,53 +316,6 @@ class VgsAll(Vgs):
     """
 
     pass
-
-
-@parser(Specs.vgs_headings)
-class VgsHeadings(LvmHeadings):
-    """
-    Parses output of the
-    `vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"` command.
-
-    Sample input::
-
-          WARNING: Locking disabled. Be careful! This could corrupt your metadata.
-            Using volume group(s) on command line.
-          VG            Attr   Ext   #PV #LV #SN VSize   VFree    VG UUID                                VProfile #VMda VMdaFree  VMdaSize  #VMdaUse VG Tags
-          DATA_OTM_VG   wz--n- 4.00m   6   1   0   2.05t 1020.00m xK6HXk-xl2O-cqW5-2izb-LI9M-4fV0-dAzfcc              6   507.00k  1020.00k        6
-          ITM_VG        wz--n- 4.00m   1   1   0  16.00g    4.00m nws5dd-INe6-1db6-9U1N-F0G3-S1z2-5XTdO4              1   508.00k  1020.00k        1
-          ORABIN_OTM_VG wz--n- 4.00m   2   3   0 190.00g       0  hfJwg8-hset-YgUY-X6NJ-gkWE-EunZ-KuCXGP              2   507.50k  1020.00k        2
-          REDO_OTM_VG   wz--n- 4.00m   1   3   0  50.00g       0  Q2YtGy-CWKU-sEYj-mqHk-rbdP-Hzup-wi8jsf              1   507.50k  1020.00k        1
-          SWAP_OTM_VG   wz--n- 4.00m   1   1   0  24.00g    8.00g hAerzZ-U8QU-ICkc-xxCj-N2Ny-rWzq-pmTpWJ              1   508.00k  1020.00k        1
-          rootvg        wz--n- 4.00m   1   6   0  19.51g    1.95g p4tLLb-ikeo-Ankk-2xJ6-iHYf-D4E6-KFCFvr              1   506.50k  1020.00k        1
-            Reloading config files
-            Wiping internal VG cache
-
-    Attributes:
-        data (list): List of dicts, each dict containing one row of the table
-            with column headings as keys.
-        warnings (set): Set of lines from input data containing
-            warning strings.
-
-    Examples:
-        >>> vgs_info.data[0]['VG']
-        'DATA_OTM_VG'
-        >>> vgs_info.data[0]['VG_UUID']
-        'xK6HXk-xl2O-cqW5-2izb-LI9M-4fV0-dAzfcc'
-    """
-
-    PRIMARY_KEY = Vgs.PRIMARY_KEY
-
-    def parse_content(self, content):
-        self.warnings = set(find_warnings(content))
-        content = [l for l in content if l not in self.warnings]
-        self.data = parse_fixed_table(
-            content,
-            heading_ignore=["VG "],
-            header_substitute=[("VG Tags", "VG_Tags"), ("VG UUID", "VG_UUID")],
-            trailing_ignore=["Reloading", "Wiping"],
-        )
-        self.data = map_keys(self.data, Vgs.KEYS)
 
 
 @parser(Specs.lvs_noheadings)
@@ -592,49 +462,6 @@ class LvsAll(Lvs):
     """
 
     pass
-
-
-@parser(Specs.lvs_headings)
-class LvsHeadings(LvmHeadings):
-    """
-    Process output of the command `/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"`.
-
-    Sample Input data::
-
-        WARNING: Locking disabled. Be careful! This could corrupt your metadata.
-        LV          VG      Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert LV Tags Devices
-        lv_app      vg_root -wi-ao---- 71.63g                                                             /dev/sda2(7136)
-        lv_home     vg_root -wi-ao----  2.00g                                                             /dev/sda2(2272)
-        lv_opt      vg_root -wi-ao----  5.00g                                                             /dev/sda2(2784)
-        lv_root     vg_root -wi-ao----  5.00g                                                             /dev/sda2(0)
-        lv_tmp      vg_root -wi-ao----  1.00g                                                             /dev/sda2(4064)
-        lv_usr      vg_root -wi-ao----  5.00g                                                             /dev/sda2(4320)
-        lv_usrlocal vg_root -wi-ao----  1.00g                                                             /dev/sda2(5600)
-        lv_var      vg_root -wi-ao----  5.00g                                                             /dev/sda2(5856)
-        swap        vg_root -wi-ao----  3.88g                                                             /dev/sda2(1280)
-
-    Attributes:
-        data (list): List of dicts, each dict containing one row of the table
-            with column headings as keys.
-        warnings (set): Set of lines from input data containing
-            warning strings.
-
-    Examples:
-        >>> lvs_info.data[0]['Devices']
-        '/dev/sda2(7136)'
-        >>> lvs_info.data[1]['LSize']
-        '2.00g'
-    """
-
-    PRIMARY_KEY = Lvs.PRIMARY_KEY
-
-    def parse_content(self, content):
-        self.warnings = set(find_warnings(content))
-        content = [l for l in content if l not in self.warnings]
-        self.data = parse_fixed_table(
-            content, heading_ignore=["LV "], header_substitute=[("LV Tags", "LV_Tags")]
-        )
-        self.data = map_keys(self.data, Lvs.KEYS)
 
 
 KEYS_WITH_SPACES = []

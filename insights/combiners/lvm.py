@@ -75,7 +75,7 @@ Examples:
 import copy
 from collections import namedtuple
 from insights.core.plugins import combiner
-from insights.parsers.lvm import Lvs, LvsHeadings, Pvs, PvsHeadings, Vgs, VgsHeadings
+from insights.parsers.lvm import Lvs, Pvs, Vgs
 from insights.parsers.lvm import LvsAll, PvsAll, VgsAll
 
 
@@ -167,25 +167,21 @@ def set_defaults(lvm_data):
     return lvm_data
 
 
-@combiner([Lvs, LvsHeadings, Pvs, PvsHeadings, Vgs, VgsHeadings])
+@combiner([Lvs, Pvs, Vgs])
 class Lvm(object):
     """Class implements shared combiner for LVM information."""
 
     LvVgName = namedtuple('LvVgName', ['LV', 'VG'])
     """Named tuple used as key for logical volumes."""
 
-    def __init__(self, lvs, lvs_headings, pvs, pvs_headings, vgs, vgs_headings):
+    def __init__(self, lvs, pvs, vgs):
         # Volume Groups information
-        self.volume_groups = merge_lvm_data(get_shared_data(vgs),
-                                            get_shared_data(vgs_headings),
-                                            'VG')
+        self.volume_groups = merge_lvm_data(get_shared_data(vgs), [], 'VG')
         """dict: Contains a dictionary of volume group data with keys
             from the original output."""
 
         # Physical Volumes information
-        self.physical_volumes = merge_lvm_data(get_shared_data(pvs),
-                                               get_shared_data(pvs_headings),
-                                               'PV_KEY')
+        self.physical_volumes = merge_lvm_data(get_shared_data(pvs), [], 'PV_KEY')
         """dict: Contains a dictionary of physical volume data with keys
             from the original output."""
 
@@ -196,12 +192,7 @@ class Lvm(object):
         pri_lvs_data = get_shared_data(lvs)
         for l in pri_lvs_data:
             l['LVVG'] = Lvm.LvVgName(LV=l['LV'], VG=l['VG'])
-        sec_lvs_data = get_shared_data(lvs_headings)
-        for l in sec_lvs_data:
-            l['LVVG'] = Lvm.LvVgName(LV=l['LV'], VG=l['VG'])
-        self.logical_volumes = merge_lvm_data(pri_lvs_data,
-                                              sec_lvs_data,
-                                              'LVVG')
+        self.logical_volumes = merge_lvm_data(pri_lvs_data, [], 'LVVG')
         """dict: Contains a dictionary of logical volume data with keys
             from the original output. The key is a tuple of the
             logical volume name and the volume group name. This tuple

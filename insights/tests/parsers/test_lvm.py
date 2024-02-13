@@ -249,13 +249,6 @@ def test_lvmconfig_exception():
         lvm.LvmConfig(context_wrap(LVMCONFIG3))
 
 
-def test_vgsheading_warnings():
-    result = lvm.VgsHeadings(context_wrap(VGSHEADING_CONTENT))
-    assert len(result.warnings) == 6
-    assert 'Configuration setting "activation/thin_check_executable" unknown.' in result.warnings
-    assert 'WARNING: Locking disabled. Be careful! This could corrupt your metadata.' in result.warnings
-
-
 def test_vgs_with_extra_tips():
     result = lvm.Vgs(context_wrap(CONTENT_WITH_EXTRA_LOCK_TIPS))
     assert result is not None
@@ -310,9 +303,6 @@ def test_docs():
     env = {
         'devices': lvm.LvmSystemDevices(context_wrap(SYSTEM_DEVICES1)),
         'lvm_conf_data': lvm.LvmConf(context_wrap(LVM_CONF)),
-        'pvs_data': lvm.PvsHeadings(context_wrap(PVS_HEADINGS_OUTPUT)),
-        'vgs_info': lvm.VgsHeadings(context_wrap(VGSHEADING_CONTENT_DOC)),
-        'lvs_info': lvm.LvsHeadings(context_wrap(LVS_HAEADING_OUTUPT)),
         'lvm_fullreport': lvm.LvmFullReport(context_wrap(LVM_FULLREPORT)),
     }
     failed, total = doctest.testmod(lvm, globs=env)
