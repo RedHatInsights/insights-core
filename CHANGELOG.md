@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.8](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.8) (2024-02-13)
+
+- fix: hostname is not obfuscated when specify display_name ([PR 4019](https://github.com/RedHatInsights/insights-core/pull/4019))
+
 # [insights-core-3.3.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.7) (2024-02-09)
 
 - fix: resolve missing insights-client.ppid error ([PR 4002](https://github.com/RedHatInsights/insights-core/pull/4002))
