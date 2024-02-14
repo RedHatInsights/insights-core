@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.8
+Version:        3.3.9
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Wed Feb 14 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.9-1
+- Revert "RHEL-2480: Do not create /root/.gnupg/ directory by accident" (#4021)
+  (mhorky@redhat.com)
+
 * Tue Feb 13 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.8-1
 - fix: hostname is not obfuscated when specify display_name (#4019)
   (xiangceliu@redhat.com)
