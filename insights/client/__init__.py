@@ -442,41 +442,32 @@ class InsightsClient(object):
             moves newest.egg to last_stable.egg
             this is used by the upload() function upon 2XX return
             returns (bool): if eggs rotated successfully
-            raises (IOError): if it cant copy the egg from newest to last_stable
+            raises (IOError): if it cant move the egg from newest to last_stable
         """
-        # make sure the library directory exists
-        if os.path.isdir(constants.insights_core_lib_dir):
-            # make sure the newest.egg exists
-            if os.path.isfile(constants.insights_core_newest):
-                # try copying newest to latest_stable
-                try:
-                    # copy the core
-                    shutil.move(constants.insights_core_newest,
-                             constants.insights_core_last_stable)
-                    # copy the core sig
-                    shutil.move(constants.insights_core_gpg_sig_newest,
-                             constants.insights_core_last_stable_gpg_sig)
-                except IOError:
-                    message = ("There was a problem copying %s to %s." %
-                                (constants.insights_core_newest,
-                                constants.insights_core_last_stable))
-                    logger.debug(message)
-                    raise IOError(message)
-                return True
-            else:
-                message = ("Cannot copy %s to %s because %s does not exist." %
-                            (constants.insights_core_newest,
-                            constants.insights_core_last_stable,
-                            constants.insights_core_newest))
-                logger.debug(message)
-                return False
-        else:
-            logger.debug("Cannot copy %s to %s because the %s directory does not exist." %
-                (constants.insights_core_newest,
-                    constants.insights_core_last_stable,
-                    constants.insights_core_lib_dir))
-            logger.debug("Try installing the Core first.")
+        if not os.path.isdir(constants.insights_core_lib_dir):
+            logger.debug("Egg directory {path} does not exist, there is no egg to rotate.".format(
+                path=constants.insights_core_lib_dir
+            ))
             return False
+
+        if not os.path.isfile(constants.insights_core_newest):
+            logger.debug("Egg {path} does not exist, it cannot be rotated.".format(
+                path=constants.insights_core_newest
+            ))
+            return False
+
+        logger.debug("Rotating the egg ({newest} to {stable}).".format(
+            newest=constants.insights_core_newest, stable=constants.insights_core_last_stable,
+        ))
+
+        try:
+            shutil.move(constants.insights_core_newest, constants.insights_core_last_stable)
+            shutil.move(constants.insights_core_gpg_sig_newest, constants.insights_core_last_stable_gpg_sig)
+        except IOError as exc:
+            logger.debug("Could not rotate the egg: {exc}".format(exc=exc))
+            raise exc
+
+        return True
 
     def get_last_upload_results(self):
         """
