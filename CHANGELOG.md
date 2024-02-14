@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.9](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.9) (2024-02-14)
+
+- Revert "RHEL-2480: Do not create /root/.gnupg/ directory by accident" ([PR 4021](https://github.com/RedHatInsights/insights-core/pull/4021))
+
 # [insights-core-3.3.8](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.8) (2024-02-13)
 
 - fix: hostname is not obfuscated when specify display_name ([PR 4019](https://github.com/RedHatInsights/insights-core/pull/4019))
