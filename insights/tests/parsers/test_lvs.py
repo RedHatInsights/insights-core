@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import pytest
 
 from insights.core.exceptions import ParseException
-from insights.parsers.lvm import Lvs, map_keys
+from insights.parsers.lvm import Lvs, LvsHeadings, map_keys
 from insights.tests import context_wrap
 from insights.tests.parsers.test_lvm import compare_partial_dicts
 
@@ -471,3 +471,17 @@ class TestLVS(object):
         with pytest.raises(ParseException) as ex:
             Lvs(context_wrap(LVS_INFO_ERROR))
         assert "Unrecognised field:" in str(ex)
+
+
+def test_lvs_headers():
+    lvs_info = LvsHeadings(context_wrap(LVS_HEADER_1))
+    assert lvs_info is not None
+    # Test __iter__ method
+    for i, l in enumerate(lvs_info):
+        assert compare_partial_dicts(l, LVS_HEADER_BYKEY[i])
+    # Test __len__ method
+    assert len(lvs_info) == 9
+    #  Test __getitem__ method
+    for l in range(len(LVS_HEADER_BYKEY)):
+        for k, v in LVS_HEADER_BYKEY[l].items():
+            assert lvs_info.data[l][k] == v

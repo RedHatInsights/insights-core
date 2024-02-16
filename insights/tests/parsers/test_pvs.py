@@ -1,6 +1,7 @@
 from __future__ import absolute_import
-from insights.parsers.lvm import Pvs
+from insights.parsers.lvm import Pvs, PvsHeadings
 from insights.tests import context_wrap
+from .test_lvm import compare_partial_dicts
 
 FD_LEAK_HEADER = "File descriptor 5 (/dev/null) leaked on invocation. Parent PID 99999: timeout\n"
 
@@ -184,6 +185,31 @@ def test_pvs_dup():
         'unknown device+mn5KxB-YKlY-u4hK-zuZJ-Ia6r-3dTg-8IDjsM',
         'unknown device+V4xZ9b-FXOz-CrRA-Eu2e-8iOS-9EDF-YZYftK',
     ])
+
+
+def test_pvs_headings():
+    def check(pvs_records):
+        assert len(pvs_records.data) == 9
+        for k, v in PVS_HEADINGS_6.items():
+            assert pvs_records[6][k] == v
+        assert pvs_records[6]['Missing'] is None
+
+    pvs_records = PvsHeadings(context_wrap(PVS_HEADINGS))
+    check(pvs_records)
+    pvs_records = PvsHeadings(context_wrap(FD_LEAK_HEADER + PVS_HEADINGS))
+    check(pvs_records)
+
+    # Test vg method
+    fedora_pvs = pvs_records.vg('fedora')
+    assert len(fedora_pvs) == 1
+    assert compare_partial_dicts(fedora_pvs[0], {
+        'PV': '/dev/mapper/luks-7430952e-7101-4716-9b46-786ce4684f8d',
+        'VG': 'fedora', 'Fmt': 'lvm2', 'Attr': 'a--', 'PSize': '476.45g',
+        'PFree': '4.00m', 'DevSize': '476.45g',
+        'PV_UUID': 'FPLCRf-d918-LVL7-6e3d-n3ED-aiZv-EesuzY', 'PMdaFree': '0',
+        'PMdaSize': '1020.00k', '#PMda': '1', '#PMdaUse': '1', 'PE': '121970',
+        'PV_KEY': '/dev/mapper/luks-7430952e-7101-4716-9b46-786ce4684f8d+FPLCRf-d918-LVL7-6e3d-n3ED-aiZv-EesuzY'
+    })
 
 
 def test_pvs_other_error():
