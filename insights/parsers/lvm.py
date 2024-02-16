@@ -46,6 +46,7 @@ from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines, optlist_to_dict, parse_fixed_table
 from insights.specs import Specs
+from insights.util import deprecated
 from insights.util import parse_keypair_lines
 
 
@@ -250,6 +251,10 @@ class PvsAll(Pvs):
 @parser(Specs.pvs_headings)
 class PvsHeadings(LvmHeadings):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.lvm.Pvs` instead.
+
     Parses the output of the
     `pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"`
     command.
@@ -298,6 +303,13 @@ class PvsHeadings(LvmHeadings):
         '0'
 
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            PvsHeadings,
+            "Please use insights.parsers.lvm.Pvs instead.",
+            "3.6.0"
+        )
+        super(PvsHeadings, self).__init__(*args, **kwargs)
 
     PRIMARY_KEY = Pvs.PRIMARY_KEY
 
@@ -404,6 +416,10 @@ class VgsAll(Vgs):
 @parser(Specs.vgs_headings)
 class VgsHeadings(LvmHeadings):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.lvm.Vgs` instead.
+
     Parses output of the
     `vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"` command.
 
@@ -433,6 +449,13 @@ class VgsHeadings(LvmHeadings):
         >>> vgs_info.data[0]['VG_UUID']
         'xK6HXk-xl2O-cqW5-2izb-LI9M-4fV0-dAzfcc'
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            VgsHeadings,
+            "Please use insights.parsers.lvm.Vgs instead.",
+            "3.6.0"
+        )
+        super(VgsHeadings, self).__init__(*args, **kwargs)
 
     PRIMARY_KEY = Vgs.PRIMARY_KEY
 
@@ -597,6 +620,10 @@ class LvsAll(Lvs):
 @parser(Specs.lvs_headings)
 class LvsHeadings(LvmHeadings):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.lvm.Lvs` instead.
+
     Process output of the command `/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"`.
 
     Sample Input data::
@@ -625,6 +652,13 @@ class LvsHeadings(LvmHeadings):
         >>> lvs_info.data[1]['LSize']
         '2.00g'
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            LvsHeadings,
+            "Please use insights.parsers.lvm.Lvs instead.",
+            "3.6.0"
+        )
+        super(LvsHeadings, self).__init__(*args, **kwargs)
 
     PRIMARY_KEY = Lvs.PRIMARY_KEY
 
