@@ -232,7 +232,7 @@ class InsightsClient(object):
 
             # Write the new etag
             with open(etag_file, 'w') as handle:
-                logger.debug('Cacheing etag to %s', etag_file)
+                logger.debug('Caching etag to %s', etag_file)
                 handle.write(response.headers['etag'])
 
             return True
