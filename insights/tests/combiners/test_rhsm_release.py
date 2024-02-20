@@ -23,11 +23,14 @@ EMPTY_SUBSCRIPTION_MANAGER_RELEASE = """Release not set"""
 
 RHUI_RELEASE = """8.6"""
 
+RHUI_EMPTY_RELEASE = ""
+
 SM_PARSER = SubscriptionManagerReleaseShow(context_wrap(SUBSCRIPTION_MANAGER_RELEASE))
 RHSM_PARSER = RhsmReleaseVer(context_wrap(RHSM_RELEASE))
 RHSM_EMPTY_PARSER = RhsmReleaseVer(context_wrap(RHSM_RELEASE_EMPTY))
 SM_EMPTY_PARSER = SubscriptionManagerReleaseShow(context_wrap(EMPTY_SUBSCRIPTION_MANAGER_RELEASE))
 RHUI_PARSER = RHUISetRelease(context_wrap(RHUI_RELEASE))
+RHUI_EMPTY_PARSER = RHUISetRelease(context_wrap(RHUI_EMPTY_RELEASE))
 
 
 def test_with_rhsm():
@@ -70,6 +73,18 @@ def test_with_three_but_rhsm_is_empty():
     assert rhsm_release.set == '8.6'
     assert rhsm_release.major == 8
     assert rhsm_release.minor == 6
+
+
+def test_all_empty():
+    rhsm_release = RhsmRelease(RHSM_EMPTY_PARSER, SM_EMPTY_PARSER, RHUI_EMPTY_PARSER)
+    assert rhsm_release.set is None
+    assert rhsm_release.major is None
+    assert rhsm_release.minor is None
+
+    rhsm_release = RhsmRelease(RHSM_EMPTY_PARSER, SM_EMPTY_PARSER, None)
+    assert rhsm_release.set is None
+    assert rhsm_release.major is None
+    assert rhsm_release.minor is None
 
 
 def test_doc_examples():
