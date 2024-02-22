@@ -37,17 +37,16 @@ class RhsmRelease(object):
 
         self.minor = None
         """ int: Minor version of the release """
-
-        if rhsm_release is not None:
+        if rhsm_release is not None and rhsm_release.set:
             self.set = rhsm_release.set
             self.major = rhsm_release.major
             self.minor = rhsm_release.minor
 
-        elif sm_release is not None:
+        elif sm_release is not None and sm_release.set:
             self.set = sm_release.set
             self.major = sm_release.major
             self.minor = sm_release.minor
-        else:
+        elif rhui_release is not None and rhui_release.set:
             self.set = rhui_release.set
             self.major = rhui_release.major
             self.minor = rhui_release.minor
