@@ -164,6 +164,7 @@ class DefaultSpecs(Specs):
     cpuset_cpus = simple_file("/sys/fs/cgroup/cpuset/cpuset.cpus")
     cron_daily_rhsmd = simple_file("/etc/cron.daily/rhsmd")
     cron_foreman = simple_file("/etc/cron.d/foreman")
+    cron_log = simple_file("/var/log/cron")
     crypto_policies_bind = simple_file("/etc/crypto-policies/back-ends/bind.config")
     crypto_policies_config = simple_file("/etc/crypto-policies/config")
     crypto_policies_opensshserver = simple_file("/etc/crypto-policies/back-ends/opensshserver.config")
