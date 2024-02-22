@@ -5,18 +5,18 @@ Red Hat Subscription Manager Release
 Combiner provides the Red Hat Subscription Manager release information from
 the parsers :class:`insights.parsers.rhsm_releasever.RhsmReleaseVer`
 and :class:`insights.parsers.subscription_manager_release.SubscriptionManagerReleaseShow`
-and :class:`insights.parsers.rhui_release.RHUISetRelease`.
+and :class:`insights.parsers.rhui_release.RHUIReleaseVer`.
 """
 from insights.core.plugins import combiner
 from insights.parsers.rhsm_releasever import RhsmReleaseVer
 from insights.parsers.subscription_manager_release import SubscriptionManagerReleaseShow
-from insights.parsers.rhui_release import RHUISetRelease
+from insights.parsers.rhui_release import RHUIReleaseVer
 
 
-@combiner([RhsmReleaseVer, SubscriptionManagerReleaseShow, RHUISetRelease])
+@combiner([RhsmReleaseVer, SubscriptionManagerReleaseShow, RHUIReleaseVer])
 class RhsmRelease(object):
     """
-    Combiner for parsers RhsmReleaseVer and SubscriptionManagerReleaseShow and RHUISetRelease.
+    Combiner for parsers RhsmReleaseVer and SubscriptionManagerReleaseShow and RHUIReleaseVer.
 
     Examples:
         >>> type(rhsm_release)
