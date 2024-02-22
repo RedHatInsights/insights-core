@@ -1,9 +1,9 @@
 """
-RHUI release commands
-=====================
+RHUI release commands or files
+==============================
 
-RHUISetRelease - command ``rhui_set_release``
----------------------------------------------
+RHUISetRelease - file ``/etc/yum/vars/releasever``
+--------------------------------------------------
 
 """
 import os
@@ -17,9 +17,10 @@ from insights.specs import Specs
 @parser(Specs.rhui_set_release)
 class RHUISetRelease(CommandParser):
     """
-    Class for parsing the output of `rhui_set_release` command.
+    Class for parsing the file `/etc/yum/vars/releasever`.
     It will output the rhel minor release when a minor release is set,
-    or emtpy when it isn't set.
+    or emtpy when it isn't set. It does not exist when no minor release
+    is set on some images.
 
     Typical output of the command is::
 
