@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.9
+Version:        3.3.10
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,13 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Wed Feb 21 2024 Lizhong Chen <lichen@redhat.com> 3.3.10-1
+- fixes: Update combiner "RhsmRelease" (#4027)
+  (44796653+huali027@users.noreply.github.com)
+- feat: New spec /var/log/cron and parser (#4026)
+  (30404410+qinpingli@users.noreply.github.com)
+- fix(client): Update typo in a log statement (#4023) (mhorky@redhat.com)
+
 * Wed Feb 14 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.9-1
 - Revert "RHEL-2480: Do not create /root/.gnupg/ directory by accident" (#4021)
   (mhorky@redhat.com)

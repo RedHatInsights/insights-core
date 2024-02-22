@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.10](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.10) (2024-02-22)
+
+- fixes: Update combiner "RhsmRelease" ([PR 4027](https://github.com/RedHatInsights/insights-core/pull/4027))
+- feat: New spec /var/log/cron and parser ([PR 4026](https://github.com/RedHatInsights/insights-core/pull/4026))
+- fix(client): Update typo in a log statement ([PR 4023](https://github.com/RedHatInsights/insights-core/pull/4023))
+
 # [insights-core-3.3.9](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.9) (2024-02-14)
 
 - Revert "RHEL-2480: Do not create /root/.gnupg/ directory by accident" ([PR 4021](https://github.com/RedHatInsights/insights-core/pull/4021))
