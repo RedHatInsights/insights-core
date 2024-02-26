@@ -25,6 +25,7 @@ except ImportError:
     from urllib.parse import quote
 from .utilities import (determine_hostname,
                         generate_machine_id,
+                        machine_id_exists,
                         write_unregistered_file,
                         write_registered_file,
                         os_release_info,
@@ -622,6 +623,8 @@ class InsightsConnection(object):
             string system is unregistered
         '''
         logger.debug('Checking registration status...')
+        if not machine_id_exists():
+            return None
         machine_id = generate_machine_id()
         try:
             url = self.api_url + '/v1/systems/' + machine_id
@@ -671,6 +674,9 @@ class InsightsConnection(object):
             False   system does not exist in inventory
             None    error connection or parsing response
         '''
+
+        if not machine_id_exists():
+            return False
         machine_id = generate_machine_id()
         try:
             # [circus music]
