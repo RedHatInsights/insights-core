@@ -3,15 +3,14 @@ import json
 import os
 import logging
 import tempfile
-import shlex
 import shutil
 import sys
 import atexit
-from subprocess import Popen, PIPE
 from requests import ConnectionError
 
 from .. import package_info
 from . import client
+from . import crypto
 from .constants import InsightsConstants as constants
 from .config import InsightsConfig
 from .auto_config import try_auto_configuration
@@ -268,7 +267,7 @@ class InsightsClient(object):
         else:
             logger.debug("Egg update disabled")
 
-    def verify(self, egg_path, gpg_key=constants.pub_gpg_path):
+    def verify(self, egg_path):
         """
             Verifies the GPG signature of the egg.  The signature is assumed to
             be in the same directory as the egg and named the same as the egg
@@ -283,46 +282,42 @@ class InsightsClient(object):
         if egg_path and not os.path.isfile(egg_path):
             the_message = "Provided egg path %s does not exist, cannot verify." % (egg_path)
             logger.debug(the_message)
-            return {'gpg': False,
-                    'stderr': the_message,
-                    'stdout': the_message,
-                    'rc': 1,
-                    'message': the_message}
-        if self.config.gpg and gpg_key and not os.path.isfile(gpg_key):
-            the_message = ("Running in GPG mode but cannot find "
-                            "file %s to verify against." % (gpg_key))
-            logger.debug(the_message)
-            return {'gpg': False,
-                    'stderr': the_message,
-                    'stdout': the_message,
-                    'rc': 1,
-                    'message': the_message}
+            return {
+                'gpg': False,
+                'stderr': the_message,
+                'stdout': the_message,
+                'rc': 1,
+                'message': the_message,
+            }
 
         # if we are running in no_gpg or not gpg mode then return true
         if not self.config.gpg:
-            return {'gpg': True,
-                    'stderr': None,
-                    'stdout': None,
-                    'rc': 0}
+            return {
+                'gpg': True,
+                'stderr': None,
+                'stdout': None,
+                'rc': 0,
+            }
 
         # if a valid egg path and gpg were received do the verification
-        if egg_path and gpg_key:
-            cmd_template = '/usr/bin/gpg --verify --keyring %s %s %s'
-            cmd = cmd_template % (gpg_key, egg_path + '.asc', egg_path)
-            logger.debug(cmd)
-            process = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
-            stdout, stderr = process.communicate()
-            rc = process.returncode
-            logger.debug("GPG return code: %s" % rc)
-            return {'gpg': True if rc == 0 else False,
-                    'stderr': stderr,
-                    'stdout': stdout,
-                    'rc': rc}
-        else:
-            return {'gpg': False,
-                    'stderr': 'Must specify a valid core and gpg key.',
-                    'stdout': 'Must specify a valid core and gpg key.',
-                    'rc': 1}
+        if egg_path:
+            result = crypto.verify_gpg_signed_file(
+                file=egg_path, signature=egg_path + ".asc",
+                keys=[constants.pub_gpg_path],
+            )
+            return {
+                'gpg': result.ok,
+                'rc': result.return_code,
+                'stdout': result.stdout,
+                'stderr': result.stderr,
+            }
+
+        return {
+            'gpg': False,
+            'stderr': 'Must specify a valid core and gpg key.',
+            'stdout': 'Must specify a valid core and gpg key.',
+            'rc': 1,
+        }
 
     def install(self, new_egg, new_egg_gpg_sig):
         """
