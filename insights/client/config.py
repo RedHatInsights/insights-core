@@ -477,6 +477,12 @@ DEFAULT_OPTS = {
         'const': True,
         'nargs': '?',
         'group': 'actions'
+    },
+    'collect_pcp_archive': {
+        'default': False,
+        'opt': ['--collect-pcp-archive'],
+        'help': 'Collect pcp log archives for Resource Optimization Service',
+        'action': 'store_true'
     }
 }
 
