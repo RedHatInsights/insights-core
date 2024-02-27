@@ -22,7 +22,7 @@ test_file_data = 'ip: 10.0.2.155\ntestword\n{0}'.format(hostname)
 )
 @mark.parametrize("test_umask", [0o000, 0o022])
 def test_rhsm_facts(test_umask, obfuscate, obfuscate_hostname):
-    rhsm_facts_file = constants.rhsm_facts_file = '/tmp/insights_test_rhsm.facts'
+    constants.rhsm_facts_file = '/tmp/insights_test_rhsm.facts'
     conf = InsightsConfig(obfuscate=obfuscate,
                           obfuscate_hostname=obfuscate_hostname)
     arch = InsightsArchive(conf)
@@ -41,11 +41,11 @@ def test_rhsm_facts(test_umask, obfuscate, obfuscate_hostname):
 
     umask_after_test = os.umask(old_umask)
 
-    assert os.path.isfile(rhsm_facts_file)
-    st = os.stat(rhsm_facts_file)
+    assert os.path.isfile(constants.rhsm_facts_file)
+    st = os.stat(constants.rhsm_facts_file)
     assert st.st_mode & 0o777 == 0o644 & ~test_umask
     assert umask_after_test == test_umask  # umask was not changed by Cleaner
-    with open(rhsm_facts_file, 'r') as fp:
+    with open(constants.rhsm_facts_file, 'r') as fp:
         facts = json.load(fp)
         # hostname
         assert facts['insights_client.hostname'] == hostname
