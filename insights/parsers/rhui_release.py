@@ -12,11 +12,16 @@ from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.rhui_set_release)
 class RHUISetRelease(CommandParser):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.6.0.
+        Please use the :class:`insights.parsers.rhui_release.RHUIReleaseVer` instead.
+
     Class for parsing the output of `rhui_set_release` command.
     It will output the rhel minor release when a minor release is set,
     or emtpy when it isn't set.
@@ -40,6 +45,10 @@ class RHUISetRelease(CommandParser):
         >>> rhui_rel.minor
         6
     """
+
+    def __init__(self, context, extra_bad_lines=None):
+        deprecated(RHUISetRelease, "Please use the :class:`insights.parsers.rhui_release.RHUIReleaseVer` instead.", "3.6.0")
+        super(RHUISetRelease, self).__init__(context, extra_bad_lines)
 
     def parse_content(self, content):
         self.set = self.major = self.minor = None
