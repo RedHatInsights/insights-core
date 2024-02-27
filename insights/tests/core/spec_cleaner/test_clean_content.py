@@ -3,8 +3,8 @@ from pytest import mark
 from insights.client.config import InsightsConfig
 from insights.core.spec_cleaner import Cleaner
 
-test_data = 'test\nabcd\n1234\npwd: p4ssw0rd\n'.splitlines()
-test_data_sensitive = 'test\nabcd\n1234\npassword: p4ssw0rd\n'.splitlines()
+test_data = 'test\nabcd\n \n\n1234\npwd: p4ssw0rd\n'.splitlines()
+test_data_sensitive = 'test \n\n\nabcd\n1234\npassword: p4ssw0rd\n'.splitlines()
 
 
 @mark.parametrize("obfuscate", [True, False])

@@ -357,13 +357,13 @@ class Cleaner(object):
         lines will be returned.
         """
         result = []
-        for idx, line in enumerate(lines):
-            # TODO: Do Filtering as per the "filters"
-            # line = self._filter_line_allow(line, filters)
-            # Do Redaction by default, unless 'no_redact=True'
+        for line in lines:
+            # 1. Do Redaction by default, unless 'no_redact=True'
             if line and not no_redact:
                 line = self._redact_line(line)
-            # Do Obfuscation as per the "obf_funcs"
+            # 2. TODO: Do Filtering as per the "filters"
+            # line = self._filter_line_allow(line, filters)
+            # 3. Do Obfuscation as per the "obf_funcs"
             line = self._obfuscate_line(line, obf_funcs or [])
             result.append(line) if line is not None else None
         return result
