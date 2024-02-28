@@ -1429,7 +1429,7 @@ def serialize_datasource_provider(obj, root):
 
 @deserializer(DatasourceProvider)
 def deserialize_datasource_provider(_type, data, root):
-    res = SerializedRawOutputProvider(data["relative_path"], root=root)
+    res = SerializedOutputProvider(data["relative_path"], root=root)
     return res
 
 
@@ -1451,7 +1451,7 @@ def serialize_metadata_provider(obj, root):
 def deserialize_metadata_provider(_type, data, root):
     # Built-in metadata files are put in the root instead of '/data'
     root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
-    res = SerializedRawOutputProvider(data["relative_path"], root=root)
+    res = SerializedOutputProvider(data["relative_path"], root=root)
     return res
 
 
