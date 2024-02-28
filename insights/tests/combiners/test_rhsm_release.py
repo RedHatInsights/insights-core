@@ -4,7 +4,7 @@ import insights.combiners.rhsm_release as rhsm_release_module
 from insights.combiners.rhsm_release import RhsmRelease
 from insights.parsers.rhsm_releasever import RhsmReleaseVer
 from insights.parsers.subscription_manager_release import SubscriptionManagerReleaseShow
-from insights.parsers.rhui_release import RHUISetRelease
+from insights.parsers.rhui_release import RHUIReleaseVer
 from insights.tests import context_wrap
 
 RHSM_RELEASE = """
@@ -29,8 +29,8 @@ SM_PARSER = SubscriptionManagerReleaseShow(context_wrap(SUBSCRIPTION_MANAGER_REL
 RHSM_PARSER = RhsmReleaseVer(context_wrap(RHSM_RELEASE))
 RHSM_EMPTY_PARSER = RhsmReleaseVer(context_wrap(RHSM_RELEASE_EMPTY))
 SM_EMPTY_PARSER = SubscriptionManagerReleaseShow(context_wrap(EMPTY_SUBSCRIPTION_MANAGER_RELEASE))
-RHUI_PARSER = RHUISetRelease(context_wrap(RHUI_RELEASE))
-RHUI_EMPTY_PARSER = RHUISetRelease(context_wrap(RHUI_EMPTY_RELEASE))
+RHUI_PARSER = RHUIReleaseVer(context_wrap(RHUI_RELEASE))
+RHUI_EMPTY_PARSER = RHUIReleaseVer(context_wrap(RHUI_EMPTY_RELEASE))
 
 
 def test_with_rhsm():

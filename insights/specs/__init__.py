@@ -623,6 +623,7 @@ class Specs(SpecSet):
     rhsm_katello_default_ca_cert = RegistryPoint()
     rhsm_log = RegistryPoint(filterable=True)
     rhsm_releasever = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    rhui_releasever = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     rhui_set_release = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     rhv_log_collector_analyzer = RegistryPoint()
     rndc_status = RegistryPoint()
