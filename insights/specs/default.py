@@ -30,7 +30,7 @@ from insights.core.spec_factory import (
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds,
-    dumpdev, dir_list, eap_reports, ethernet, httpd, intersystems, ipcs, kernel,
+    dir_list, eap_reports, ethernet, httpd, intersystems, ipcs, kernel,
     kernel_module_list, leapp, lpstat, ls, luks_devices, machine_ids,
     malware_detection, md5chk, mdadm, mount as mount_ds, package_provides,
     ps as ps_datasource, rpm_pkgs, sap, satellite_missed_queues,
@@ -200,7 +200,7 @@ class DefaultSpecs(Specs):
     dotnet_version = simple_command("/usr/bin/dotnet --version")
     doveconf = simple_command("/usr/bin/doveconf")
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
-    dumpe2fs_h = foreach_execute(dumpdev.dumpdev_list, "/sbin/dumpe2fs -h %s")
+    dumpe2fs_h = foreach_execute(mount_ds.dumpdev_list, "/sbin/dumpe2fs -h %s")
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
     du_dirs = foreach_execute(dir_list.du_dir_list, "/bin/du -s -k %s")  # empty filter
     duplicate_machine_id = machine_ids.dup_machine_id_info

@@ -22,3 +22,12 @@ def xfs_mounts(broker):
     if xfs_mnt:
         return sorted(m.mount_point for m in xfs_mnt)
     raise SkipComponent
+
+
+@datasource(ProcMounts)
+def dumpdev_list(broker):
+    mnt = broker[ProcMounts]
+    mounted_dev = [m.mounted_device for m in mnt if m.mount_type in ('ext2', 'ext3', 'ext4')]
+    if mounted_dev:
+        return sorted(mounted_dev)
+    raise SkipComponent
