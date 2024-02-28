@@ -1350,7 +1350,7 @@ def serialize_command_output(obj, root):
         "rc": rc,
         "cmd": obj.cmd,
         "args": obj.args,
-        "save_as": True,
+        "save_as": bool(obj.save_as),
         "relative_path": rel
     }
 
@@ -1377,7 +1377,7 @@ def serialize_text_file_provider(obj, root):
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
-        "save_as": True,
+        "save_as": bool(obj.save_as),
         "relative_path": rel,
         "rc": rc,
     }
@@ -1401,7 +1401,7 @@ def serialize_raw_file_provider(obj, root):
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
-        "save_as": True,
+        "save_as": bool(obj.save_as),
         "relative_path": rel,
         "rc": rc,
     }
@@ -1429,7 +1429,7 @@ def serialize_datasource_provider(obj, root):
 
 @deserializer(DatasourceProvider)
 def deserialize_datasource_provider(_type, data, root):
-    res = SerializedRawOutputProvider(data["relative_path"], root=root)
+    res = SerializedOutputProvider(data["relative_path"], root=root)
     return res
 
 
@@ -1451,7 +1451,7 @@ def serialize_metadata_provider(obj, root):
 def deserialize_metadata_provider(_type, data, root):
     # Built-in metadata files are put in the root instead of '/data'
     root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
-    res = SerializedRawOutputProvider(data["relative_path"], root=root)
+    res = SerializedOutputProvider(data["relative_path"], root=root)
     return res
 
 
@@ -1465,7 +1465,7 @@ def serialize_container_file_output(obj, root):
     dst = os.path.join(root, rel)
     rc = obj.write(dst)
     return {
-        "save_as": True,
+        "save_as": bool(obj.save_as),
         "relative_path": rel,
         "rc": rc,
         "image": obj.image,
@@ -1498,7 +1498,7 @@ def serialize_container_command(obj, root):
         "rc": rc,
         "cmd": obj.cmd,
         "args": obj.args,
-        "save_as": True,
+        "save_as": bool(obj.save_as),
         "relative_path": rel,
         "image": obj.image,
         "engine": obj.engine,
