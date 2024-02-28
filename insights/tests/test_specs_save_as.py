@@ -195,7 +195,7 @@ def test_specs_save_as_collect(obfuscate):
                     results = [results]
                 for result in results:
                     # Save As
-                    assert result['object']['save_as'] is True
+                    assert result['object']['save_as'] is bool(SAVE_AS_MAP[spec][1])
                     # relative_path is started with "save_as"
                     rel = result['object']['relative_path']
                     if "insights_commands" in rel:
