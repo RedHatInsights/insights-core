@@ -200,6 +200,7 @@ class DefaultSpecs(Specs):
     dotnet_version = simple_command("/usr/bin/dotnet --version")
     doveconf = simple_command("/usr/bin/doveconf")
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
+    dumpe2fs_h = foreach_execute(mount_ds.dumpdev_list, "/sbin/dumpe2fs -h %s")
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
     du_dirs = foreach_execute(dir_list.du_dir_list, "/bin/du -s -k %s")  # empty filter
     duplicate_machine_id = machine_ids.dup_machine_id_info
@@ -255,6 +256,7 @@ class DefaultSpecs(Specs):
     hostname_default = simple_command("/bin/hostname")
     hostname_short = simple_command("/bin/hostname -s")
     hosts = simple_file("/etc/hosts")
+    hponcfg_g = simple_command("/sbin/hponcfg -g")
     httpd24_httpd_error_log = simple_file("/opt/rh/httpd24/root/etc/httpd/logs/error_log")
     httpd_M = foreach_execute(httpd.httpd_cmds, "%s -M")
     httpd_V = foreach_execute(httpd.httpd_cmds, "%s -V")
@@ -277,6 +279,7 @@ class DefaultSpecs(Specs):
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
     interrupts = simple_file("/proc/interrupts")
     ip6tables = simple_command("/sbin/ip6tables-save")
+    ip6tables_permanent = simple_file("etc/sysconfig/ip6tables")
     ip_addr = simple_command("/sbin/ip addr")
     ip_addresses = simple_command("/bin/hostname -I")
     ip_route_show_table_all = simple_command("/sbin/ip route show table all")
