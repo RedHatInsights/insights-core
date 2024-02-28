@@ -1,7 +1,8 @@
 from collections import namedtuple
 
 import pytest
-from insights.parsers.lvm import (Lvs, Pvs, Vgs)
+from insights.parsers.lvm import (Lvs, LvsHeadings, Pvs, PvsHeadings, Vgs,
+                                  VgsHeadings)
 from insights.parsers.lvm import (LvsAll, PvsAll, VgsAll)
 from insights.combiners.lvm import Lvm, LvmAll
 from insights.combiners import lvm
@@ -287,24 +288,36 @@ def test_set_defaults():
 @pytest.fixture
 def lvm_data():
     vgs = Vgs(context_wrap(VGS_NO_HEADINGS))
+    vgs_headings = VgsHeadings(context_wrap(VGS_HEADINGS))
     pvs = Pvs(context_wrap(PVS_NO_HEADINGS))
+    pvs_headings = PvsHeadings(context_wrap(PVS_HEADINGS))
     lvs = Lvs(context_wrap(LVS_NO_HEADINGS))
+    lvs_headings = LvsHeadings(context_wrap(LVS_HEADINGS))
     shared_list = [
+        {Vgs: vgs, VgsHeadings: vgs_headings},
         {Vgs: vgs},
+        {VgsHeadings: vgs_headings},
+        {Pvs: pvs, PvsHeadings: pvs_headings},
         {Pvs: pvs},
+        {PvsHeadings: pvs_headings},
+        {Lvs: lvs, LvsHeadings: lvs_headings},
         {Lvs: lvs},
+        {LvsHeadings: lvs_headings}
     ]
     LvmData = namedtuple('LvmData', ['lvm_info', 'shared'])
     yield [LvmData(Lvm(shared.get(Lvs),
+                       shared.get(LvsHeadings),
                        shared.get(Pvs),
-                       shared.get(Vgs)),
+                       shared.get(PvsHeadings),
+                       shared.get(Vgs),
+                       shared.get(VgsHeadings)),
                    shared)
            for shared in shared_list]
 
 
 def test_combiner_vgs(lvm_data):
     for data in lvm_data:
-        if Vgs in data.shared:
+        if Vgs in data.shared or VgsHeadings in data.shared:
             lvm_info = data.lvm_info
             assert lvm_info.volume_groups is not None
             assert len(list(lvm_info.volume_groups)) == 8
@@ -326,7 +339,7 @@ def test_combiner_vgs(lvm_data):
 
 def test_combiner_pvs(lvm_data):
     for data in lvm_data:
-        if Pvs in data.shared:
+        if Pvs in data.shared or PvsHeadings in data.shared:
             lvm_info = data.lvm_info
             assert lvm_info.physical_volumes is not None
             assert len(list(lvm_info.physical_volumes)) == 31
@@ -383,7 +396,7 @@ def test_combiner_pvs(lvm_data):
 
 def test_combiner_lvs(lvm_data):
     for data in lvm_data:
-        if Lvs in data.shared:
+        if Lvs in data.shared or LvsHeadings in data.shared:
             lvm_info = data.lvm_info
             assert lvm_info.logical_volumes is not None
             assert len(list(lvm_info.logical_volumes)) == 40
@@ -395,6 +408,9 @@ def test_combiner_lvs(lvm_data):
             else:
                 assert 'LVM2_REGION_SIZE' not in pool7
                 assert pool7['Region'] is None
+            if LvsHeadings in data.shared:
+                for k, v in LVS_HEADINGS_POOL7.items():
+                    assert pool7[k] == v
             assert lvm_info.logical_volume_names == set([
                 Lvm.LvVgName(LV='lv_brick1', VG='data1'),
                 Lvm.LvVgName(LV='lv_hdfs1', VG='data1'),
