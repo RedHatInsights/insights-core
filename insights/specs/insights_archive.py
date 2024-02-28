@@ -93,6 +93,30 @@ class InsightsArchiveSpecs(Specs):
     hostname = simple_file("insights_commands/hostname_-f")
     hostname_default = simple_file("insights_commands/hostname")
     hostname_short = simple_file("insights_commands/hostname_-s")
+    httpd_conf = glob_file(
+        [
+            "/etc/httpd/conf/httpd.conf",
+            "/etc/httpd/conf.d/*.conf",
+            "/etc/httpd/conf.d/*/*.conf",
+            "/etc/httpd/conf.modules.d/*.conf"
+        ]
+    )
+    httpd_conf_scl_httpd24 = glob_file(
+        [
+            "/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf",
+            "/opt/rh/httpd24/root/etc/httpd/conf.d/*.conf",
+            "/opt/rh/httpd24/root/etc/httpd/conf.d/*/*.conf",
+            "/opt/rh/httpd24/root/etc/httpd/conf.modules.d/*.conf"
+        ]
+    )
+    httpd_conf_scl_jbcs_httpd24 = glob_file(
+        [
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf",
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*.conf",
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*/*.conf",
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf"
+        ]
+    )
     httpd_M = glob_file("insights_commands/*httpd*_-M")
     httpd_on_nfs = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_httpd_on_nfs")
     httpd_V = glob_file("insights_commands/*httpd*_-V")
