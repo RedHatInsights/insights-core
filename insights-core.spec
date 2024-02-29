@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.10
+Version:        3.3.11
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,19 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 29 2024 Xiangce Liu <xiangceliu@redhat.com>
+- Deprecate pvs lvs vgs (#4025) (jiazhang@redhat.com)
+- Add httpd spec insights_archive (#4036) (jiazhang@redhat.com)
+- Add miss dependency specs (#4020) (jiazhang@redhat.com)
+- feat: New spec "rhui_releasever" and parser (#4029)
+  (44796653+huali027@users.noreply.github.com)
+- fix: save_as in meta_data should reflect the actual config (#4035)
+  (xiangceliu@redhat.com)
+- fix: datasource should not be deserialized by RawProvider (#4034)
+  (xiangceliu@redhat.com)
+- Deprecate the spec "rhui_set_release" and parser (#4030)
+  (44796653+huali027@users.noreply.github.com)
+
 * Wed Feb 21 2024 Lizhong Chen <lichen@redhat.com> 3.3.10-1
 - fixes: Update combiner "RhsmRelease" (#4027)
   (44796653+huali027@users.noreply.github.com)
