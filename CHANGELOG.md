@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.11](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.11) (2024-02-29)
+
+- Deprecate pvs lvs vgs ([PR 4025](https://github.com/RedHatInsights/insights-core/pull/4025))
+- Add httpd spec insights_archive ([PR 4036](https://github.com/RedHatInsights/insights-core/pull/4036))
+- Add miss dependency specs ([PR 4020](https://github.com/RedHatInsights/insights-core/pull/4020))
+- feat: New spec "rhui_releasever" and parser ([PR 4029](https://github.com/RedHatInsights/insights-core/pull/4029))
+- fix: save_as in meta_data should reflect the actual config ([PR 4035](https://github.com/RedHatInsights/insights-core/pull/4035))
+- fix: datasource should not be deserialized by RawProvider ([PR 4034](https://github.com/RedHatInsights/insights-core/pull/4034))
+- Deprecate the spec "rhui_set_release" and parser ([PR 4030](https://github.com/RedHatInsights/insights-core/pull/4030))
+
 # [insights-core-3.3.10](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.10) (2024-02-22)
 
 - fixes: Update combiner "RhsmRelease" ([PR 4027](https://github.com/RedHatInsights/insights-core/pull/4027))
