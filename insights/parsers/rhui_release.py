@@ -55,10 +55,14 @@ class RHUIReleaseVer(Parser):
         if len(content) == 1:
             rhel_version = content[0].strip()
             line_splits = rhel_version.split('.')
-            if len(line_splits) == 2 and line_splits[0].isdigit() and line_splits[-1].isdigit():
+            if len(line_splits) == 2:
+                if line_splits[0].isdigit() and line_splits[-1].isdigit():
+                    self.set = rhel_version
+                    self.major = int(line_splits[0])
+                    self.minor = int(line_splits[-1])
+                    return
+            else:
                 self.set = rhel_version
-                self.major = int(line_splits[0])
-                self.minor = int(line_splits[-1])
                 return
         raise SkipComponent("Unexpected content: {0}".format(os.linesep.join(content)))
 
