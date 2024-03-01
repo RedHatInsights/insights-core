@@ -133,6 +133,34 @@ MIGRATION_RESULTS_OK_1 = json.loads("""
   ]
 }""".strip())
 
+MIGRATION_RESULTS_OK_2 = json.loads("""
+{
+  "activities": [
+    {
+      "executed": "/usr/bin/convert2rhel analyze -y",
+      "run_id": "null",
+      "packages": [
+        {
+          "nevra": "0:convert2rhel-1.6.1-1.el7.noarch",
+          "signature": "RSA/SHA256, Wed Dec 13 19:27:28 2023, Key ID 199e2f91fd431d51"
+        }
+      ],
+      "target_os": "null",
+      "success": true,
+      "activity_ended": "2024-03-01T07:44:15.814899Z",
+      "version": "1",
+      "env": {},
+      "activity": "analysis",
+      "source_os": {
+        "version": "7.9",
+        "id": "Core",
+        "name": "CentOS Linux"
+      },
+      "activity_started": "2024-03-01T07:37:39.278478Z"
+    }
+  ]
+}""".strip())
+
 MIGRATION_RESULTS_RET_1 = """
 [
   {
@@ -188,6 +216,27 @@ MIGRATION_RESULTS_RET_1 = """
 ]
 """.strip()
 
+MIGRATION_RESULTS_RET_2 = """
+[
+  {
+      "activity": "analysis",
+      "activity_ended": "2024-03-01T07:44:15.814899Z",
+      "activity_started": "2024-03-01T07:37:39.278478Z",
+      "env": {},
+      "run_id": "null",
+      "source_os": {
+          "version": "7.9",
+          "id": "Core",
+          "name": "CentOS Linux"
+      },
+      "success": true,
+      "target_os": "null",
+      "version": "1"
+  }
+]
+""".strip()
+
+
 MIGRATION_RESULTS_NG_1 = json.loads("""
 { "activities":[
   {
@@ -240,6 +289,17 @@ def test_leapp_migration_results_ok(m_open, m_isfile, m_load):
     result = migration_results({})
     result_json = json.loads(''.join(result.content).strip())
     expected_json = json.loads(''.join(MIGRATION_RESULTS_RET_1).strip())
+    for ret in result_json:
+        assert ret in expected_json
+
+
+@patch("json.load", return_value=MIGRATION_RESULTS_OK_2)
+@patch("os.path.isfile", return_value=True)
+@patch(builtin_open)
+def test_c2r_migration_results_ok(m_open, m_isfile, m_load):
+    result = migration_results({})
+    result_json = json.loads(''.join(result.content).strip())
+    expected_json = json.loads(''.join(MIGRATION_RESULTS_RET_2).strip())
     for ret in result_json:
         assert ret in expected_json
 

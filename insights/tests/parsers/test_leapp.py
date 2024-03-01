@@ -4,7 +4,7 @@ from insights.parsers import leapp
 from insights.parsers.leapp import LeappReport, LeappMigrationResults
 from insights.tests import context_wrap
 from insights.tests.datasources.test_leapp import LEAPP_REPORT_RESULT
-from insights.tests.datasources.test_leapp import MIGRATION_RESULTS_RET_1
+from insights.tests.datasources.test_leapp import MIGRATION_RESULTS_RET_1, MIGRATION_RESULTS_RET_2
 
 
 def test_leapp_report():
@@ -29,6 +29,15 @@ def test_leapp_migration_results():
     assert ret[0]['run_id'] == "1edff870-626d-41ba-854c-8f9dc8f20dc3"
     assert ret[1]['target_os'] == "Red Hat Enterprise Linux 9.0"
     assert ret[1]['env']['LEAPP_CURRENT_PHASE'] == "InterimPreparation"
+
+
+def test_c2r_migration_results():
+    ret = LeappMigrationResults(context_wrap(MIGRATION_RESULTS_RET_2, path='insights_commands/leapp_migration_results'))
+    assert len(ret) == 1
+    assert ret[0]['activity_ended'] == "2024-03-01T07:44:15.814899Z"
+    assert ret[0]['run_id'] == "null"
+    assert ret[0]['target_os'] == "null"
+    assert len(ret[0]['env']) == 0
 
 
 def test_doc_examples():
