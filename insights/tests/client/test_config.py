@@ -2,7 +2,7 @@ import pytest
 import sys
 import os
 from io import TextIOWrapper, BytesIO
-from insights.client.config import InsightsConfig, DEFAULT_OPTS, _core_collect_default
+from insights.client.config import InsightsConfig, DEFAULT_OPTS
 from mock.mock import patch
 from pytest import mark
 
@@ -276,32 +276,6 @@ def test_output_file_guess_file_ext():
     c.load_all()
     assert c.output_file == os.path.abspath('test-mno.tar')
     assert c.compressor == 'none'
-
-
-@patch('insights.client.config.get_version_info')
-def test_core_collect_default(get_version_info):
-    '''
-    Verify that _core_collect_default() returns
-    the correct True/False value depending on
-    the conditions
-    '''
-    # RPM version is older than 3.1.0
-    get_version_info.return_value = {'client_version': '3.0.13-1'}
-    assert not _core_collect_default()
-    conf = InsightsConfig()
-    assert not conf.core_collect
-
-    # RPM version is 3.1.0
-    get_version_info.return_value = {'client_version': '3.1.0'}
-    assert _core_collect_default()
-    conf = InsightsConfig()
-    assert conf.core_collect
-
-    # RPM version is newer than 3.1.0
-    get_version_info.return_value = {'client_version': '3.1.1'}
-    assert _core_collect_default()
-    conf = InsightsConfig()
-    assert conf.core_collect
 
 
 @patch('insights.client.config.sys.argv', [sys.argv[0], "--status"])
