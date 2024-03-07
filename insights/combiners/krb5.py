@@ -90,7 +90,9 @@ class AllKrb5Conf(LegacyItemAccess):
                 self.include = krb5_parser.include
                 self.module = krb5_parser.module
             else:
+                self.includedir.extend(krb5_parser.includedir)
                 dict_deep_merge(self.data, krb5_parser.data)
+
         # Same options in same section from other configuration files will be covered by the option
         # from main configuration, but different options in same section will be kept.
         for key, value in main_data.items():

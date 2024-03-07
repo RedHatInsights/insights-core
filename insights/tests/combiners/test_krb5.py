@@ -82,6 +82,14 @@ KRB5CONFIG3 = """
 
 """.strip()
 
+KRB5CONFIG4 = """
+# This file should normally be installed by your distribution into a
+# directory that is included from the Kerberos configuration file (/etc/krb5.conf)
+# On Fedora/RHEL/CentOS, this is /etc/krb5.conf.d/
+
+includedir /var/lib/sss/pubconf/krb5.include.d/
+""".strip()
+
 
 def test_active_krb5_nest():
     krb51 = Krb5Configuration(context_wrap(KRB5CONFIG, path='/etc/krb5.conf'))
@@ -112,3 +120,10 @@ def test_active_krb5_nest():
     assert result.dns_lookup_kdc is True
     assert result.default_realm == "EXAMPLE2.COM"
     assert result.realms == set(["EXAMPLE.COM", "EXAMPLE2.COM", "EXAMPLE3.COM", "EXAMPLE4.COM"])
+
+
+def test_active_krb5_nest_2():
+    krb51 = Krb5Configuration(context_wrap(KRB5CONFIG, path='/etc/krb5.conf'))
+    krb52 = Krb5Configuration(context_wrap(KRB5CONFIG4, path='/etc/krb5.conf.d/enable_sssd_conf_dir'))
+    result = AllKrb5Conf([krb51, krb52])
+    assert result.includedir == ['/etc/krb5.conf.d/', '/var/lib/sss/pubconf/krb5.include.d/']
