@@ -52,15 +52,20 @@ class RHUIReleaseVer(Parser):
         if len(content) == 0:
             # Release not set
             return
-        if len(content) == 1:
-            rhel_version = content[0].strip()
-            line_splits = rhel_version.split('.')
-            if len(line_splits) == 2 and line_splits[0].isdigit() and line_splits[-1].isdigit():
-                self.set = rhel_version
-                self.major = int(line_splits[0])
-                self.minor = int(line_splits[-1])
-                return
-        raise SkipComponent("Unexpected content: {0}".format(os.linesep.join(content)))
+        if len(content) != 1:
+            raise SkipComponent("Unexpected content: {0}".format(os.linesep.join(content)))
+        rhel_version = content[0].strip()
+        line_splits = rhel_version.split('.')
+        if len(line_splits) == 2 and line_splits[0].isdigit() and line_splits[-1].isdigit():
+            self.set = rhel_version
+            self.major = int(line_splits[0])
+            self.minor = int(line_splits[-1])
+        elif rhel_version and rhel_version[0].isdigit():
+            self.set = rhel_version
+            self.major = int(rhel_version[0])
+            # leave self.minor as None
+        else:
+            self.set = rhel_version
 
 
 @parser(Specs.rhui_set_release)
