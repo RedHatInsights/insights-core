@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.12](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.12) (2024-03-07)
+
+- feat: make spec_cleaner support clean file content ([PR 4033](https://github.com/RedHatInsights/insights-core/pull/4033))
+- Add parser falcontcl_backend_rfm ([PR 4039](https://github.com/RedHatInsights/insights-core/pull/4039))
+- Fix: AllKrb5Conf cannot handle 'includedir' configured under /etc/krb5.conf.d/ ([PR 4041](https://github.com/RedHatInsights/insights-core/pull/4041))
+- fix: Enhance "RHUIReleaseVer" to support "7Server" format ([PR 4038](https://github.com/RedHatInsights/insights-core/pull/4038))
+
 # [insights-core-3.3.11](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.11) (2024-02-29)
 
 - Deprecate pvs lvs vgs ([PR 4025](https://github.com/RedHatInsights/insights-core/pull/4025))
