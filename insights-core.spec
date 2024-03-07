@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.11
+Version:        3.3.12
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 07 2024 Xiangce Liu <xiangceliu@redhat.com>
+- feat: make spec_cleaner support clean file content (#4033)
+  (xiangceliu@redhat.com)
+- Add parser falcontcl_backend_rfm (#4039) (jiazhang@redhat.com)
+- Fix: AllKrb5Conf cannot handle 'includedir' configured under
+  /etc/krb5.conf.d/ (#4041) (986222045@qq.com)
+- fix: Enhance "RHUIReleaseVer" to support "7Server" format (#4038)
+  (44796653+huali027@users.noreply.github.com)
+
 * Thu Feb 29 2024 Xiangce Liu <xiangceliu@redhat.com>
 - Deprecate pvs lvs vgs (#4025) (jiazhang@redhat.com)
 - Add httpd spec insights_archive (#4036) (jiazhang@redhat.com)
