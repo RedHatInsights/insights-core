@@ -26,8 +26,6 @@ import six
 import socket
 import struct
 
-from tempfile import TemporaryFile
-
 # TODO: getting RHSM facts file from the InsightsConstants directly
 # from insights.client.constants import InsightsConstants as constants
 from insights.util.hostname import determine_hostname
@@ -272,6 +270,8 @@ class Cleaner(object):
         This will replace the exact hostname and all instances of the domain name with the obfuscated alternatives.
         Example:
         '''
+        if not line:
+            return line
         try:
             for od, d in self.dn_db.items():
                 # regex = re.compile(r'\w*\.%s' % d)
@@ -310,6 +310,8 @@ class Cleaner(object):
 
     def _sub_keywords(self, line):
         # this will substitute out any keyword entries on a given line
+        if not line:
+            return line
         for k, v in self.kw_db.items():
             if k in line:
                 line = line.replace(k, v)
@@ -323,40 +325,59 @@ class Cleaner(object):
 
     def _obfuscate_line(self, line, obf_funcs):
         # obfuscate line for possible hostname, ip
-        new_line = line
+        if not line:
+            return line
         for func in obf_funcs:
-            tmp_line = func(new_line)
-            new_line = tmp_line
-        return new_line
+            tmp_line = func(line)
+            line = tmp_line
+        return line
 
     def _redact_line(self, line):
         # redact line per the file-content-redaction.yaml
-        new_line = line
+        if not line:
+            return line
         # patterns removal
         find = re.search if self.redact['regex'] else lambda x, y: x in y
-        if any(find(pat, new_line) for pat in self.redact.get('exclude', [])):
-            logger.debug("Pattern matched, removing line: %s", line.strip())
+        if any(find(pat, line) for pat in self.redact.get('exclude', [])):
+            logger.debug("Pattern matched, removing line: %s" % line.strip())
             # patterns found, remove it
             return None
         # password removal
         for regex in DEFAULT_PASSWORD_REGEXS:
-            tmp_line = new_line
-            new_line = re.sub(regex, r"\1\2********", tmp_line)
-            if new_line != tmp_line:
+            tmp_line = line
+            line = re.sub(regex, r"\1\2********", tmp_line)
+            if line != tmp_line:
                 break
         # keyword replacement redaction
-        new_line = self._sub_keywords(new_line)
-        return new_line
+        return self._sub_keywords(line)
+
+    def clean_content(self, lines, filters=None, obf_funcs=None, no_redact=False):
+        """
+        Clean lines one by one according to the configuration, the cleaned
+        lines will be returned.
+        """
+        result = []
+        for line in lines:
+            # 1. Do Redaction by default, unless 'no_redact=True'
+            if line and not no_redact:
+                line = self._redact_line(line)
+            # 2. TODO: Do Filtering as per the "filters"
+            # line = self._filter_line_allow(line, filters)
+            # 3. Do Obfuscation as per the "obf_funcs"
+            line = self._obfuscate_line(line, obf_funcs or [])
+            result.append(line) if line is not None else None
+        return result
 
     def clean_file(self, _file, filters=None, no_obfuscate=None, no_redact=False):
-        # TODO: get the filters
-        # filters = filters or []
-        # Get the actual obfuscate list setting for this file
-        logger.debug('Cleaning %s ...', _file)
+        """
+        Clean a file according to the configuration, the file will be updated
+        directly with the cleaned content.
+        """
+        filters = filters or []
+        logger.debug('Cleaning %s ...' % _file)
 
         if os.path.exists(_file) and not os.path.islink(_file):
-            data = None
-            tmp_file = TemporaryFile(mode='w+b')
+            # Get the actual obfuscate list setting for this file
             obfs = set(self.obfuscate) - set(no_obfuscate or [])
             obf_funcs = []
             # IP obfuscation entry
@@ -364,39 +385,22 @@ class Cleaner(object):
             # Hostname obfuscation entry
             obf_funcs.append(self._sub_hostname) if "hostname" in obfs else None
             # Process the file
+            content = None
             try:
                 with open(_file, 'r') as fh:
-                    data = fh.readlines()
-                    if data:
-                        for line in data:
-                            # Do Redaction by default, unless 'no_redact=True'
-                            if no_redact is False:
-                                line = self._redact_line(line)
-                                if line is None:
-                                    # line is removed after redaction
-                                    continue
-                            # Do Obfuscation as per the "obf_funcs"
-                            line = self._obfuscate_line(line, obf_funcs)
-                            # TODO:
-                            # Do `filter` as per the "filters"
-                            # new_l = self._filter_line_allow_list(line, filters)
-                            tmp_file.write(line.encode('utf-8') if six.PY3 else line)
-                        tmp_file.seek(0)
+                    content = self.clean_content(fh.readlines(), filters, obf_funcs, no_redact)
             except Exception as e:  # pragma: no cover
                 logger.warning(e)
-                raise Exception("Error: Cannot Open File for Obfuscating/Redacting - %s" % _file)
+                raise Exception("Error: Cannot Open File for Cleaning: %s" % _file)
             # Store it
             try:
-                if data:
-                    with open(_file, 'wb') as new_fh:
-                        for line in tmp_file:
-                            new_fh.write(line)
+                if content:
+                    with open(_file, 'wb') as fh:
+                        for line in content:
+                            fh.write(line.encode('utf-8') if six.PY3 else line)
             except Exception as e:  # pragma: no cover
                 logger.warning(e)
-                raise Exception("Error: Cannot Write to New File - %s" % _file)
-
-            finally:
-                tmp_file.close()
+                raise Exception("Error: Cannot Write to File: %s" % _file)
 
     def generate_rhsm_facts(self, rhsm_facts_file):
         logger.info('Writing RHSM facts to %s ...', rhsm_facts_file)
