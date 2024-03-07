@@ -278,8 +278,10 @@ def post_update(client, config):
         #   system creation and upload are a single event on the platform
         if reg_check is False and isfile(constants.machine_id_file):
             # Do not register if a machine_id file is found
-            logger.info("Machine-id found, insights-client can not be registered."
-                        " Please, unregister insights-client first: `insights-client --unregister`")
+            logger.info("Machine-id found, insights-client can not be registered in the current state."
+                        " Please, unregister insights-client first: `insights-client --unregister`"
+                        " Consider using rhc for registering your system. "
+                        " For more information on rhc: https://access.redhat.com/articles/rhc-registration")
             sys.exit(constants.sig_kill_bad)
         if reg_check:
             logger.info('This host has already been registered.')
