@@ -50,7 +50,7 @@ class FalconctlBackend(CommandParser):
 class FalconctlRfm(CommandParser):
     """
     This parser reads the output of ``/opt/CrowdStrike/falconctl -g --rfm-state``,
-    return the Reduced Functionality Mode as a string.
+    return the Reduced Functionality Mode as boolean.
 
     Example output::
 
