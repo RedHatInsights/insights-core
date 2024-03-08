@@ -200,12 +200,10 @@ def post_update(client, config):
                 logger.debug("Running client without uploading. Bypassing registration.")
             return
 
-        if config.display_name and not config.register:
-            # setting display name independent of registration
+        # set display name when set from the command line independent of registration
+        if 'display_name' in config._cli_opts and not config.register:
             if client.set_display_name(config.display_name):
-                if 'display_name' in config._cli_opts:
-                    # only exit on success if it was invoked from command line
-                    sys.exit(constants.sig_kill_ok)
+                sys.exit(constants.sig_kill_ok)
             else:
                 sys.exit(constants.sig_kill_bad)
 
@@ -217,6 +215,12 @@ def post_update(client, config):
         elif reg is False:
             # unregistered
             sys.exit(constants.sig_kill_bad)
+
+        # set display name from config when the system is registered
+        if config.display_name and not config.register:
+            if not client.set_display_name(config.display_name):
+                sys.exit(constants.sig_kill_bad)
+
         if config.register and not config.disable_schedule:
             scheduler = get_scheduler(config)
             updated = scheduler.schedule()
