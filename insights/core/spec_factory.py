@@ -206,9 +206,9 @@ class MetadataProvider(FileProvider):
     Class used for insights-core built-in files.  These files should not
     be filtered, redacted or blocked.
     """
-    def __init__(self, relative_path, root="/", ds=None, ctx=None):
+    def __init__(self, relative_path, root="/", save_as=None, ds=None, ctx=None, cleaner=None):
         deprecated(MetadataProvider, "Please collect the built-in file via datasource spec instead.", "3.5.0")
-        super(MetadataProvider, self).__init__(relative_path, root, ds, ctx)
+        super(MetadataProvider, self).__init__(relative_path, root, save_as, ds, ctx, cleaner)
 
     def _set_root(self, root):
         self.root = root
@@ -453,7 +453,7 @@ class ContainerProvider(CommandOutputProvider):
         # path = "<podman|docker> exec container_id cat path"
         self.image = image
         super(ContainerProvider, self).__init__(
-                cmd_path, ctx, "insights_containers", args, split, keep_rc,
+                cmd_path, ctx, "insights_containers", None, args, split, keep_rc,
                 ds, timeout, inherit_env, override_env, signum, cleaner=None)
 
 
