@@ -25,6 +25,8 @@ Tags - file ``tags.json``
 VersionInfo - file ``version_info``
 -----------------------------------
 """
+import uuid
+
 from insights.core import Parser, JSONParser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
@@ -140,6 +142,8 @@ class MachineID(Parser):
         <class 'insights.parsers.client_metadata.MachineID'>
         >>> machine_id.id== "176843d1-90fa-499b-9f94-111111111111"
         True
+        >>> machine_id.uuid== "176843d1-90fa-499b-9f94-111111111111"
+        True
 
     Raises:
         SkipComponent: Nothing collected
@@ -148,6 +152,7 @@ class MachineID(Parser):
         if not content or len(content) > 1:
             raise SkipComponent()
         self.id = content[0].strip()
+        self.uuid = str(uuid.UUID(self.id))
 
 
 @parser(Specs.tags)

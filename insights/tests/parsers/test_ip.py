@@ -892,3 +892,13 @@ def test_ip_neigh_show():
     assert result['10.101.5.71']['nud'] == 'INCOMPLETE'
     assert len(result['10.101.5.71']) == 3
     assert len(result['10.101.5.17']) == 3
+
+
+HOSTNAME_I = """
+10.230.230.220 10.230.0.1 1000:52:0:4996:546f:cbff:fe47:00
+""".strip()
+
+
+def test_hostname_I_addresses():
+    result = ip.IPs(context_wrap(HOSTNAME_I))
+    assert result.ipv4_addresses == ['10.230.230.220', '10.230.0.1']

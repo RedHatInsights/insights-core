@@ -2,94 +2,27 @@
 
 from __future__ import print_function
 
-import re
-import socket
-import uuid
-
-from insights import rule, run, make_metadata
+from insights import rule, run, make_metadata, add_filter
 from insights.combiners.cloud_instance import CloudInstance
 from insights.combiners.cloud_provider import CloudProvider
-from insights.core import Parser
 from insights.core.dr import set_enabled, load_components
-from insights.core.plugins import parser
 from insights.parsers.aws_instance_id import AWSInstanceIdDoc
 from insights.parsers.azure_instance import AzureInstanceID, AzureInstanceType
+from insights.parsers.client_metadata import MachineID
 from insights.parsers.dmidecode import DMIDecode
+from insights.parsers.etc_machine_id import EtcMachineId
 from insights.parsers.gcp_instance_type import GCPInstanceType
+from insights.parsers.hostname import Hostname
 from insights.parsers.installed_rpms import InstalledRpms
+from insights.parsers.ip import IPs
+from insights.parsers.mac import MacAddress
 from insights.parsers.rhsm_conf import RHSMConf
 from insights.parsers.subscription_manager import SubscriptionManagerID, SubscriptionManagerFacts
 from insights.parsers.yum import YumRepoList
-from insights.specs import Specs
 
 
-def valid_uuid_or_None(s):
-    """
-    Returns  if `s` is a valid UUID string.
-    """
-    if not s:
-        return None
-    try:
-        return str(uuid.UUID(s))
-    except Exception:
-        return None
-
-
-def valid_ipv4_address_or_None(addr):
-    """ str: Returns the input value if it is a valid IPV4 address """
-    try:
-        socket.inet_pton(socket.AF_INET, addr)
-        return addr
-    except socket.error:
-        return None
-
-
-def valid_mac_addresses(mac_address_datasources):
-    """ list: Return a list of valid mac addresses from a list of datasources """
-    valid_addrs = []
-    for ds in mac_address_datasources:
-        try:
-            addr = ds.content[0].strip()
-        except Exception:
-            continue
-        # Only look for addresses in the form 00:00:00:00:00:00
-        match = re.match("^([0-9a-f]{2}:){5}[0-9a-f]{2}$", addr)
-        if match is not None:
-            valid_addrs.append(addr)
-
-    return valid_addrs
-
-
-@parser(Specs.ip_addresses)
-class IPs(Parser):
-    """
-    Reads the output of ``hostname -I`` and constructs a list of all assigned IP
-    addresses. This command should only output IPV4 addresses and should not
-    include localhost, but sometimes it does.  The validation function removes
-    those from the list.
-
-    Example output::
-       192.168.1.71 10.88.0.1 172.17.0.1 172.18.0.1 10.10.121.131
-
-    Resultant data structure::
-        [
-            "192.168.1.71",
-            "10.88.0.1",
-            "172.17.0.1",
-            "172.18.0.1",
-            "10.10.121.131",
-        ]
-    """
-    def parse_content(self, content):
-        self.data = list(filter(None, [valid_ipv4_address_or_None(addr) for addr in content[0].rstrip().split()]))
-
-
-def _safe_parse(ds):
-    try:
-        return ds.content[0]
-
-    except Exception:
-        return None
+add_filter(SubscriptionManagerFacts, 'instance_id')
+add_filter(RHSMConf, ['server', 'hostname'])
 
 
 def _filter_falsy(dict_):
@@ -98,29 +31,29 @@ def _filter_falsy(dict_):
 
 @rule(
     optional=[
-        Specs.machine_id,
-        Specs.etc_machine_id,
-        Specs.bios_uuid,
+        MachineID,
+        EtcMachineId,
+        DMIDecode,
         SubscriptionManagerID,
         IPs,
-        Specs.hostname,
-        Specs.mac_addresses,
+        Hostname,
+        MacAddress,
         CloudInstance,
     ]
 )
 def canonical_facts(
-    insights_id, machine_id, bios_uuid, submanid, ips, fqdn, mac_addresses,
+    insights_id, machine_id, dmidecode, submanid, ips, hostname, mac_addresses,
     cloud_instance,
 ):
 
     facts = dict(
-        insights_id=valid_uuid_or_None(_safe_parse(insights_id)),
-        machine_id=valid_uuid_or_None(_safe_parse(machine_id)),
-        bios_uuid=valid_uuid_or_None(_safe_parse(bios_uuid)),
-        subscription_manager_id=valid_uuid_or_None(submanid.identity if submanid else None),
-        ip_addresses=ips.data if ips else [],
-        mac_addresses=valid_mac_addresses(mac_addresses) if mac_addresses else [],
-        fqdn=_safe_parse(fqdn),
+        insights_id=insights_id.uuid if insights_id else None,
+        machine_id=machine_id.uuid if machine_id else None,
+        bios_uuid=dmidecode.system_uuid if dmidecode else None,
+        subscription_manager_id=submanid.uuid if submanid else None,
+        ip_addresses=ips.ipv4_addresses if ips else [],
+        mac_addresses=list(filter(None, [mc.address for mc in mac_addresses or []])),
+        fqdn=hostname.fqdn if hostname else None,
         provider_id=cloud_instance.id if cloud_instance else None,
         provider_type=cloud_instance.provider if cloud_instance else None,
     )
@@ -135,16 +68,20 @@ def get_canonical_facts(path=None):
         AWSInstanceIdDoc,
         AzureInstanceID,
         AzureInstanceType,
+        CloudInstance,
+        CloudProvider,
         DMIDecode,
+        EtcMachineId,
         GCPInstanceType,
+        Hostname,
         IPs,
         InstalledRpms,
+        MacAddress,
+        MachineID,
         RHSMConf,
         SubscriptionManagerFacts,
         SubscriptionManagerID,
         YumRepoList,
-        CloudProvider,
-        CloudInstance,
         canonical_facts,
     ]
     for comp in required_components:

@@ -92,11 +92,15 @@ Examples:
     20
     >>> dmi.bios['characteristics'][0]
     'PCI is supported'
+    >>> dmi.system_uuid == '58585858-5858-3348-3643-4D4B32353337'
+    True
 """
-
 import re
+import uuid
+
 from datetime import date
-from .. import LegacyItemAccess, parser, defaults, CommandParser
+
+from insights import LegacyItemAccess, parser, defaults, CommandParser
 from insights.specs import Specs
 
 
@@ -113,6 +117,13 @@ class DMIDecode(CommandParser, LegacyItemAccess):
     def system_info(self):
         """(str): Convenience method to get system information"""
         return self["system_information"][0] if "system_information" in self else None
+
+    @property
+    @defaults()
+    def system_uuid(self):
+        """(str): Convenience method to get system UUID"""
+        sys_uuid = self["system_information"][0]['UUID']
+        return str(uuid.UUID(sys_uuid))
 
     @property
     def bios(self):

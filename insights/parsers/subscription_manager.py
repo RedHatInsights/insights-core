@@ -10,6 +10,8 @@ SubscriptionManagerID - command ``subscription-manager identity``
 SubscriptionManagerFacts - command ``subscription-manager facts``
 -----------------------------------------------------------------
 """
+import uuid
+
 from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
 from insights.core.filters import add_filter
@@ -54,6 +56,8 @@ class SubscriptionManagerID(CommandParser, dict):
         True
         >>> subman_id.get('org ID') == '1234567'
         True
+        >>> subman_id.uuid == '6655c27c-f561-4c99-a23f-f53e5a1ef311'
+        True
     """
     def parse_content(self, content):
         self.update(_local_kv_split(content))
@@ -71,6 +75,12 @@ class SubscriptionManagerID(CommandParser, dict):
     def identity(self):
         """Returns the value of 'system identity'."""
         return self.get('system identity')
+
+    @property
+    def uuid(self):
+        """Returns the value of 'system identity'."""
+        if 'system identity' in self:
+            return str(uuid.UUID(self.get('system identity')))
 
 
 @parser(Specs.subscription_manager_facts)

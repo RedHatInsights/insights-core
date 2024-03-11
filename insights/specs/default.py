@@ -121,7 +121,6 @@ class DefaultSpecs(Specs):
     azure_load_balancer = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/loadbalancer?api-version=2021-12-13&format=json --connect-timeout 5", deps=[IsAzure])
     basic_auth_insights_client = client_metadata.basic_auth_insights_client
     bdi_read_ahead_kb = glob_file("/sys/class/bdi/*/read_ahead_kb")
-    bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/*")
     bond_dynamic_lb = glob_file("/sys/class/net/*/bonding/tlb_dynamic_lb")
