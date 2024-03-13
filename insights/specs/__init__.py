@@ -751,6 +751,7 @@ class Specs(SpecSet):
     sysctl_d_conf_usr = RegistryPoint(multi_output=True)
     systemctl_cat_dnsmasq_service = RegistryPoint()
     systemctl_cat_rpcbind_socket = RegistryPoint()
+    systemctl_get_default = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     systemctl_list_unit_files = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     systemctl_list_units = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     systemctl_show_all_services = RegistryPoint()
