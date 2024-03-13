@@ -258,6 +258,7 @@ class InsightsArchiveSpecs(Specs):
     subscription_manager_installed_product_ids = simple_file("insights_commands/find_.etc.pki.product-default._.etc.pki.product._-name_pem_-exec_rct_cat-cert_--no-content")
     sysctl = simple_file("insights_commands/sysctl_-a")
     systemctl_cat_rpcbind_socket = simple_file("insights_commands/systemctl_cat_rpcbind.socket")
+    systemctl_get_default = simple_file("insights_commands/systemctl_get-default")
     systemctl_list_unit_files = simple_file("insights_commands/systemctl_list-unit-files")
     systemctl_list_units = simple_file("insights_commands/systemctl_list-units")
     systemctl_show_all_services = simple_file("insights_commands/systemctl_show_.service")
