@@ -15,6 +15,9 @@ IpNeighParser - command ``ip neigh show nud all``
 
 IpLinkInfo - command ``ip -d -s link``
 --------------------------------------
+
+IPs - command ``hostname -I``
+-----------------------------
 """
 
 from __future__ import print_function
