@@ -15,14 +15,20 @@ IpNeighParser - command ``ip neigh show nud all``
 
 IpLinkInfo - command ``ip -d -s link``
 --------------------------------------
+
+IPs - command ``hostname -I``
+-----------------------------
 """
 
 from __future__ import print_function
 
 import six
+import socket
+
 from collections import defaultdict, deque
-from .. import parser, CommandParser
-from ..contrib import ipaddress
+
+from insights import parser, CommandParser
+from insights.contrib import ipaddress
 from insights.specs import Specs
 
 
@@ -732,3 +738,37 @@ class IpLinkInfo(IpAddr):
         TX dropped: 0
     """
     pass
+
+
+@parser(Specs.ip_addresses)
+class IPs(CommandParser):
+    """
+    Reads the output of ``hostname -I`` and constructs a list of all assigned IP
+    addresses. This command should only output IPV4 addresses and should not
+    include localhost, but sometimes it does.  The validation function removes
+    those from the list.
+
+    Example output::
+
+       192.168.1.71 10.88.0.1 172.17.0.1 172.18.0.1 10.10.121.131
+
+    Resultant data structure::
+
+        [
+            "192.168.1.71",
+            "10.88.0.1",
+            "172.17.0.1",
+            "172.18.0.1",
+            "10.10.121.131",
+        ]
+    """
+    def parse_content(self, content):
+        def valid_ipv4_address_or_None(addr):
+            """ str: Returns the input value if it is a valid IPV4 address """
+            try:
+                socket.inet_pton(socket.AF_INET, addr)
+                return addr
+            except socket.error:
+                return None
+
+        self.ipv4_addresses = list(filter(None, [valid_ipv4_address_or_None(addr) for addr in content[0].rstrip().split()]))
