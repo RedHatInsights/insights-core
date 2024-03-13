@@ -457,7 +457,6 @@ class ContainerProvider(CommandOutputProvider):
                 ds, timeout, inherit_env, override_env, signum, cleaner)
 
 
-
 class ContainerFileProvider(ContainerProvider):
     def _misc_settings(self):
         engine, _, container_id, _, path = self.cmd.split(None, 4)
