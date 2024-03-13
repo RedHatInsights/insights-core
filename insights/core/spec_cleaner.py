@@ -385,19 +385,24 @@ class Cleaner(object):
             # Hostname obfuscation entry
             obf_funcs.append(self._sub_hostname) if "hostname" in obfs else None
             # Process the file
-            content = None
+            raw_data = content = None
             try:
                 with open(_file, 'r') as fh:
-                    content = self.clean_content(fh.readlines(), filters, obf_funcs, no_redact)
+                    raw_data = fh.readlines()
+                    content = self.clean_content(raw_data, filters, obf_funcs, no_redact)
             except Exception as e:  # pragma: no cover
                 logger.warning(e)
                 raise Exception("Error: Cannot Open File for Cleaning: %s" % _file)
             # Store it
             try:
-                if content:
-                    with open(_file, 'wb') as fh:
-                        for line in content:
-                            fh.write(line.encode('utf-8') if six.PY3 else line)
+                if raw_data:
+                    if content:
+                        with open(_file, 'wb') as fh:
+                            for line in content:
+                                fh.write(line.encode('utf-8') if six.PY3 else line)
+                    else:
+                        # Empty the file, as all contents are cleaned
+                        open(_file, 'w').close()
             except Exception as e:  # pragma: no cover
                 logger.warning(e)
                 raise Exception("Error: Cannot Write to File: %s" % _file)
