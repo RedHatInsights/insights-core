@@ -454,7 +454,7 @@ class ContainerProvider(CommandOutputProvider):
         self.image = image
         super(ContainerProvider, self).__init__(
                 cmd_path, ctx, "insights_containers", None, args, split, keep_rc,
-                ds, timeout, inherit_env, override_env, signum, cleaner=None)
+                ds, timeout, inherit_env, override_env, signum, cleaner)
 
 
 class ContainerFileProvider(ContainerProvider):
