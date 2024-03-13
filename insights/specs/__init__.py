@@ -712,7 +712,7 @@ class Specs(SpecSet):
     sssd_logs = RegistryPoint(multi_output=True, filterable=True)
     sys_block_queue_stable_writes = RegistryPoint(multi_output=True)
     subscription_manager_facts = RegistryPoint(filterable=True)
-    subscription_manager_id = RegistryPoint(no_obfuscate=['hostname', 'ip'], no_redact=True)
+    subscription_manager_id = RegistryPoint(no_obfuscate=['ip'], no_redact=True)
     subscription_manager_installed_product_ids = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
     subscription_manager_list_consumed = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     subscription_manager_list_installed = RegistryPoint(no_obfuscate=['hostname', 'ip'])
