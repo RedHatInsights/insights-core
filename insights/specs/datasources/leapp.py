@@ -95,7 +95,7 @@ def migration_results(broker):
                         if key not in activity:
                             continue
                         val = activity.get(key)
-                        if filter_fn is None:
+                        if filter_fn is None or not val:
                             ret[key] = val
                         elif isinstance(val, dict) and callable(filter_fn):
                             sub_ret = dict(
