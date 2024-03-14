@@ -1,5 +1,7 @@
 import doctest
+import pytest
 
+from insights.core.exceptions import ContentException
 from insights.parsers import mssql_api_assessment
 from insights.parsers.mssql_api_assessment import MssqlApiAssessment, ContainerMssqlApiAssessment
 from insights.tests import context_wrap
@@ -35,6 +37,10 @@ API_OUTPUT = """
 ]
 """.strip()
 
+API_OUTPUT_BAD = """
+cat: /var/opt/mssql/log/assessments/assessment-latest: No such file or directory
+""".strip()
+
 
 def test_mssql_api_assessment():
     ret = MssqlApiAssessment(context_wrap(API_OUTPUT))
@@ -58,6 +64,19 @@ def test_mssql_api_assessment_container():
     assert container_ret[0]["TargetName"] == "ceph4-mon"
     assert container_ret[0]["CheckId"] == "TF174"
     assert container_ret[0]["Message"] == "Enable trace flag 174 to increase plan cache bucket count"
+
+
+def test_mssql_api_assessment_container_exceptions():
+    with pytest.raises(ContentException) as e:
+        ContainerMssqlApiAssessment(
+            context_wrap(
+                API_OUTPUT_BAD,
+                container_id='2869b4e2541c',
+                image='registry.access.redhat.com/ubi8/nginx-120',
+                engine='podman',
+            )
+        )
+    assert 'No such file or directory' in str(e)
 
 
 def test_mssql_api_assessment_doc_examples():
