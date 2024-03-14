@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.12
+Version:        3.3.13
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,21 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 14 2024 Xiangce Liu <xiangceliu@redhat.com>
+- fix: ContainerMssqlApiAssessment ParseException (#4050) (xiaoxwan@redhat.com)
+- fix: get bios_uuid (system_uuid) from dmidecode correctly (#4052)
+  (xiangceliu@redhat.com)
+- feat: collect LEAPP_* and CONVERT2RHEL_ env vars in migration-results (#4037)
+  (andywaltlova@gmail.com)
+- FEAT: Add new parser SystemctlGetDefault (#4048) (986222045@qq.com)
+- refactor: generate 'canonical_facts' from Parsers instead of Specs (#4047)
+  (xiangceliu@redhat.com)
+- fix: subscription-manager identity should be obfuscated with hostname (#4046)
+  (xiangceliu@redhat.com)
+- fix: missed passing 'cleaner' to super of ContainerProvider" (#4044)
+  (xiangceliu@redhat.com)
+- fix: unexpect kwargs save_as (#4043) (xiangceliu@redhat.com)
+
 * Thu Mar 07 2024 Xiangce Liu <xiangceliu@redhat.com>
 - feat: make spec_cleaner support clean file content (#4033)
   (xiangceliu@redhat.com)
