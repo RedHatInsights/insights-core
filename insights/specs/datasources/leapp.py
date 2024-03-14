@@ -71,20 +71,15 @@ def migration_results(broker):
         ContentException: When any exception occurs.
     """
     valid_keys = {
-        'activity': [],
-        'activity_ended': [],
-        'activity_started': [],
-        'env': [
-            'LEAPP_CURRENT_PHASE',
-            'LEAPP_EXPERIMENTAL',
-            'LEAPP_NO_RHSM',
-            'LEAPP_UNSUPPORTED'
-        ],
-        'run_id': [],
-        'source_os': [],
-        'success': [],
-        'target_os': [],
-        'version': [],
+        'activity': None,
+        'activity_ended': None,
+        'activity_started': None,
+        'env': lambda env_var: env_var.startswith('LEAPP_') or env_var.startswith('CONVERT2RHEL_'),
+        'run_id': None,
+        'source_os': None,
+        'success': None,
+        'target_os': None,
+        'version': None,
     }
     migration_results_file = "/etc/migration-results"
     if not os.path.isfile(migration_results_file):
@@ -96,16 +91,18 @@ def migration_results(broker):
                 results = []
                 for activity in json_report.get('activities', []):
                     ret = {}
-                    for key, sub_keys in valid_keys.items():
+                    for key, filter_fn in valid_keys.items():
                         if key not in activity:
                             continue
                         val = activity.get(key)
-                        if not sub_keys:
+                        if filter_fn is None or not val:
                             ret[key] = val
-                        elif isinstance(val, dict):
-                            sub_ret = {}
-                            for sk in sub_keys:
-                                sub_ret[sk] = (val or {}).get(sk)
+                        elif isinstance(val, dict) and callable(filter_fn):
+                            sub_ret = dict(
+                                (sub_key, sub_val)
+                                for sub_key, sub_val in val.items()
+                                if filter_fn(sub_key)
+                            )
                             if sub_ret:
                                 ret[key] = sub_ret
                     results.append(ret) if ret else None

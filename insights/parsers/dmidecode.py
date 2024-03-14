@@ -122,7 +122,7 @@ class DMIDecode(CommandParser, LegacyItemAccess):
     @defaults()
     def system_uuid(self):
         """(str): Convenience method to get system UUID"""
-        sys_uuid = self["system_information"][0]['UUID']
+        sys_uuid = self["system_information"][0]['uuid']
         return str(uuid.UUID(sys_uuid))
 
     @property
