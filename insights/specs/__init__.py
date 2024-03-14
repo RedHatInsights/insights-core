@@ -42,6 +42,7 @@ class Specs(SpecSet):
     azure_load_balancer = RegistryPoint()
     basic_auth_insights_client = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     bdi_read_ahead_kb = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
+    bios_uuid = RegistryPoint()
     blkid = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     bond = RegistryPoint(multi_output=True)
     bond_dynamic_lb = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
