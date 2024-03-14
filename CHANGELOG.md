@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.13](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.13) (2024-03-14)
+
+- fix: ContainerMssqlApiAssessment ParseException ([PR 4050](https://github.com/RedHatInsights/insights-core/pull/4050))
+- fix: get bios_uuid (system_uuid) from dmidecode correctly ([PR 4052](https://github.com/RedHatInsights/insights-core/pull/4052))
+- feat: collect LEAPP_* and CONVERT2RHEL_ env vars in migration-results ([PR 4037](https://github.com/RedHatInsights/insights-core/pull/4037))
+- FEAT: Add new parser SystemctlGetDefault ([PR 4048](https://github.com/RedHatInsights/insights-core/pull/4048))
+- refactor: generate 'canonical_facts' from Parsers instead of Specs ([PR 4047](https://github.com/RedHatInsights/insights-core/pull/4047))
+- fix: subscription-manager identity should be obfuscated with hostname ([PR 4046](https://github.com/RedHatInsights/insights-core/pull/4046))
+- fix: missed passing 'cleaner' to super of ContainerProvider" ([PR 4044](https://github.com/RedHatInsights/insights-core/pull/4044))
+- fix: unexpect kwargs save_as ([PR 4043](https://github.com/RedHatInsights/insights-core/pull/4043))
+
 # [insights-core-3.3.12](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.12) (2024-03-07)
 
 - feat: make spec_cleaner support clean file content ([PR 4033](https://github.com/RedHatInsights/insights-core/pull/4033))
