@@ -424,6 +424,7 @@ def test_get_dmidecode():
 
     # Test property accessors
     assert ret.system_info == ret['system_information'][0]
+    assert ret.system_uuid == '34373936-3439-4D32-3233-333630303036'.lower()
     assert ret.bios == ret['bios_information'][0]
     assert ret.bios_vendor == 'HP'
     assert ret.bios_date == date(2013, 3, 1)
@@ -438,6 +439,7 @@ def test_get_dmidecode_fail():
     ret = DMIDecode(context)
 
     assert ret.is_present is False
+    assert ret.system_uuid is None
 
 
 # def test_virt_what_1():
@@ -509,6 +511,7 @@ def test_get_dmidecode_dmi():
     assert ret.get("system_information")[0].get("serial_number") == "3H6CMK2537"
     assert ret.get("system_information")[0].get("uuid") == "58585858-5858-3348-3643-4D4B32353337"
     assert ret.get("system_information")[0].get("wake-up_type") == "Power Switch"
+    assert ret.system_uuid == '58585858-5858-3348-3643-4D4B32353337'.lower()
 
 
 def test_dmidecode_oddities():
