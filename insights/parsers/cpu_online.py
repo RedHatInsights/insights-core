@@ -7,13 +7,13 @@ This file shows the number of online cpu. The format of the content
 is string including comma.
 """
 
-from insights.core import CommandParser, ContainerParser
+from insights.core import ContainerParser
 from insights.core.plugins import parser
 from insights.specs import Specs
 
 
 @parser(Specs.container_cpu_online)
-class ContainerCpuOnline(ContainerParser, CommandParser):
+class ContainerCpuOnline(ContainerParser):
     """
     Class ``ContainerCpuOnline`` parses the content of the ``/sys/devices/system/cpu/online`` from containers.
 
