@@ -54,22 +54,21 @@ class ComplianceClient:
     def oscap_scan(self):
         self.inventory_id = self._get_inventory_id()
         self._assert_oscap_rpms_exist()
-        initial_profiles = self.get_initial_profiles()
-        matching_os_profiles = self.get_profiles_matching_os()
-        profiles = self.profile_union_by_ref_id(matching_os_profiles, initial_profiles)
-        if not profiles:
-            logger.error("System is not associated with any profiles. Assign profiles using the Compliance web UI.\n")
+        policies = self.get_policies(self.inventory_id)
+
+        if not policies:
+            logger.error("System is not associated with any policies. Assign policies using the Compliance web UI.\n")
             exit(constants.sig_kill_bad)
 
         archive_dir = self.archive.create_archive_dir()
         results_need_repair = self.results_need_repair()
 
-        for profile in profiles:
-            tailoring_file = self.download_tailoring_file(profile)
-            results_file = self._results_file(archive_dir, profile)
+        for policy in policies:
+            tailoring_file = self.download_tailoring_file(policy)
+            results_file = self._results_file(archive_dir, policy)
             self.run_scan(
-                profile['attributes']['ref_id'],
-                self.find_scap_policy(profile['attributes']['ref_id']),
+                policy['ref_id'],
+                self.find_scap_policy(policy['ref_id']),
                 results_file,
                 tailoring_file_path=tailoring_file
             )
@@ -91,62 +90,49 @@ class ComplianceClient:
 
         return self.archive.create_tar_file(), COMPLIANCE_CONTENT_TYPE
 
-    def download_tailoring_file(self, profile):
-        if ('tailored' not in profile['attributes'] or profile['attributes']['tailored'] is False or
-                ('os_minor_version' in profile['attributes'] and profile['attributes']['os_minor_version'] != self.os_minor_version())):
+    def download_tailoring_file(self, policy):
+        if ('tailored' not in policy or policy['tailored'] is False or
+                ('os_minor_version' in policy and policy['os_minor_version'] != self.os_minor_version())):
             return None
 
         # Download tailoring file to pass as argument to run_scan
         logger.debug(
-            "Policy {0} is a tailored policy. Starting tailoring file download...".format(profile['attributes']['ref_id'])
+            "Policy {0} is a tailored policy. Starting tailoring file download...".format(policy['ref_id'])
         )
         tailoring_file_path = tempfile.mkstemp(
-            prefix='oscap_tailoring_file-{0}.'.format(profile['attributes']['ref_id']),
+            prefix='oscap_tailoring_file-{0}.'.format(policy['ref_id']),
             suffix='.xml',
             dir='/var/tmp'
         )[1]
         response = self.conn.session.get(
-            "https://{0}/compliance/profiles/{1}/tailoring_file".format(self.config.base_url, profile['id'])
+            "https://{0}/compliance/policies/{1}/tailorings/{2}/tailoring_file".format(self.config.base_url, policy['id'], self.os_minor_version())
         )
         logger.debug("Response code: {0}".format(response.status_code))
 
         if not response.ok:
-            logger.info("Something went wrong during downloading the tailoring file of {0}. The expected status code is 200, got {1}".format(profile['attributes']['ref_id'], response.status_code))
+            logger.info("Something went wrong during downloading the tailoring file of {0}. The expected status code is 200, got {1}".format(policy['ref_id'], response.status_code))
             return None
 
         if response.content is None or response.headers['Content-Type'] != "application/xml":
-            logger.info("Problem with the content of the downloaded tailoring file of {0}. The expected format is xml, got {1}".format(profile['attributes']['ref_id'], response.headers['Content-Type']))
+            logger.info("Problem with the content of the downloaded tailoring file of {0}. The expected format is xml, got {1}".format(policy['ref_id'], response.headers['Content-Type']))
             return None
 
         with open(tailoring_file_path, mode="w+b") as f:
             f.write(response.content)
-            logger.info("Saved tailoring file for {0} to {1}".format(profile['attributes']['ref_id'], tailoring_file_path))
+            logger.info("Saved tailoring file for {0} to {1}".format(policy['ref_id'], tailoring_file_path))
 
-        logger.debug("Policy {0} tailoring file download finished".format(profile['attributes']['ref_id']))
+        logger.debug("Policy {0} tailoring file download finished".format(policy['ref_id']))
 
         return tailoring_file_path
 
-    def get_profiles(self, search):
-        response = self.conn.session.get("https://{0}/compliance/profiles".format(self.config.base_url),
-                                         params={'search': search, 'relationships': 'false'})
-        logger.debug("Content of the response: {0} - {1}".format(response,
-                                                                 response.content))
+    def get_policies(self, system_id):
+        response = self.conn.session.get("https://{0}/compliance/v2/systems/{1}/policies".format(self.config.base_url, system_id))
+        logger.debug("Content of the response {0} - {1}".format(response, response.content))
+
         if response.status_code == 200:
             return response.json().get('data', [])
         else:
             return []
-
-    def get_initial_profiles(self):
-        return self.get_profiles('system_ids={0} canonical=false external=false'.format(self.inventory_id))
-
-    def get_profiles_matching_os(self):
-        return self.get_profiles('system_ids={0} canonical=false os_minor_version={1}'.format(self.inventory_id, self.os_minor_version()))
-
-    def profile_union_by_ref_id(self, prioritized_profiles, merged_profiles):
-        profiles = dict((p['attributes']['ref_id'], p) for p in merged_profiles)
-        profiles.update(dict((p['attributes']['ref_id'], p) for p in prioritized_profiles))
-
-        return list(profiles.values())
 
     def os_release(self):
         _, version = os_release_info()
@@ -291,8 +277,8 @@ class ComplianceClient:
             logger.error('Failed to find system in Inventory')
             exit(constants.sig_kill_bad)
 
-    def _results_file(self, archive_dir, profile):
+    def _results_file(self, archive_dir, policy):
         return os.path.join(
             archive_dir,
-            'oscap_results-{0}.xml'.format(profile['attributes']['ref_id'])
+            'oscap_results-{0}.xml'.format(policy['ref_id'])
         )
