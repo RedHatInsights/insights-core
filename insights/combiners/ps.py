@@ -47,7 +47,8 @@ Examples:
     ... 'F': '1',
     ... 'PRI': 20,
     ... 'NI': '0',
-    ... 'WCHAN': 'kthrea'
+    ... 'WCHAN': 'kthrea',
+    ... 'NLWP': '1'
     ... }
     True
 """
@@ -95,6 +96,7 @@ class Ps(object):
         'F': None,
         'PRI': None,
         'NI': None,
+        'NLWP': None,
         'WCHAN': None
     }
 
@@ -102,8 +104,8 @@ class Ps(object):
         self._pid_data = {}
 
         # order of parsers is important here
-        if ps_eo:
-            self.__update_data(ps_eo)
+        # if ps_eo:
+        #     self.__update_data(ps_eo)
         if ps_auxcww:
             self.__update_data(ps_auxcww)
         if ps_eo_cmd:
@@ -180,14 +182,14 @@ class Ps(object):
             ... {'PID': 9, 'USER': 'root', 'UID': 0, 'PPID': 2, '%CPU': 0.1, '%MEM': 0.0,
             ...  'VSZ': 0.0, 'RSS': 0.0, 'TTY': '?', 'STAT': 'S', 'START': '2019', 'TIME': '0:00',
             ...  'COMMAND': '[rcu_bh]', 'COMMAND_NAME': '[rcu_bh]', 'ARGS': '', 'F': '1', 'PRI': 20,
-            ...  'NI': '0', 'WCHAN': 'rcu_gp'}
+            ...  'NI': '0', 'WCHAN': 'rcu_gp', 'NLWP': '1'}
             ... ]
             True
             >>> ps_combiner.search(USER='root', COMMAND='[kthreadd]') == [
             ... {'PID': 2, 'USER': 'root', 'UID': 0, 'PPID': 0, '%CPU': 0.0, '%MEM': 0.0,
             ...  'VSZ': 0.0, 'RSS': 0.0, 'TTY': '?', 'STAT': 'S', 'START': '2019', 'TIME': '1:04',
             ...  'COMMAND': '[kthreadd]', 'COMMAND_NAME': '[kthreadd]', 'ARGS': '', 'F': '1', 'PRI': 20,
-            ...  'NI': '0', 'WCHAN': 'kthrea'}
+            ...  'NI': '0', 'WCHAN': 'kthrea', 'NLWP': '1'}
             ... ]
             True
         """

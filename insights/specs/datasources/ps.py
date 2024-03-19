@@ -14,43 +14,43 @@ from insights.specs import Specs
 class LocalSpecs(Specs):
     """ Local specs used only by ps datasources """
 
-    ps_eo_args = simple_command("/bin/ps -ewwo pid,args")
-    """ Returns ps output including pid and full args """
+    ps_eo_args = simple_command("/bin/ps -ewwo pid,ppid,nlwp,args")
+    """ Returns ps output including pid, ppid, nlwp and full args """
 
 
 @datasource(LocalSpecs.ps_eo_args, HostContext)
 def ps_eo_cmd(broker):
     """
     Custom datasource to collect the full paths to all running commands on the system
-    provided by the ``ps -ewwo pid,args`` command.  After collecting the data, all of the
-    args are trimmed to leave only the command including full path.
+    provided by the ``ps -ewwo pid,ppid,nlwp,args`` command.  After collecting the data,
+    all of the args are trimmed to leave only the command including full path.
 
-    Sample output from the ``ps -ewwo pid, args`` command::
+    Sample output from the ``ps -ewwo pid,ppid,nlwp,args`` command::
 
-        PID COMMAND
-          1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
-          2 [kthreadd]
-          3 [rcu_gp]
-          4 [rcu_par_gp]
-          6 [kworker/0:0H-events_highpri]
-          9 [mm_percpu_wq]
-         10 [rcu_tasks_kthre]
-         11 /usr/bin/python3 /home/user1/python_app.py
-         12 [kworker/u16:0-kcryptd/253:0]
+        PID  PPID NLWP COMMAND
+          1     0    1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
+          2     0    1 [kthreadd]
+          3     2    1 [rcu_gp]
+          4     2    1 [rcu_par_gp]
+          6     2    1 [kworker/0:0H-events_highpri]
+          9     2    1 [mm_percpu_wq]
+         10     2    1 [rcu_tasks_kthre]
+         11     0    1 /usr/bin/python3 /home/user1/python_app.py
+         12     2    1 [kworker/u16:0-kcryptd/253:0]
 
     This datasource trims off the args to minimize possible PII and sensitive information.
     After trimming the data looks like this::
 
-        PID COMMAND
-          1 /usr/lib/systemd/systemd
-          2 [kthreadd]
-          3 [rcu_gp]
-          4 [rcu_par_gp]
-          6 [kworker/0:0H-events_highpri]
-          9 [mm_percpu_wq]
-         10 [rcu_tasks_kthre]
-         11 /usr/bin/python3
-         12 [kworker/u16:0-kcryptd/253:0]
+        PID  PPID NLWP COMMAND
+          1     0    1 /usr/lib/systemd/systemd
+          2     0    1 [kthreadd]
+          3     2    1 [rcu_gp]
+          4     2    1 [rcu_par_gp]
+          6     2    1 [kworker/0:0H-events_highpri]
+          9     2    1 [mm_percpu_wq]
+         10     2    1 [rcu_tasks_kthre]
+         11     2    1 /usr/bin/python3
+         12     2    1 [kworker/u16:0-kcryptd/253:0]
 
     Returns:
         str: Returns a multiline string in the same format as ``ps`` output
@@ -60,7 +60,7 @@ def ps_eo_cmd(broker):
     """
     content = broker[LocalSpecs.ps_eo_args].content
     data = []
-    data.append('PID COMMAND')
+    data.append('PID PPID NLWP COMMAND')
     start = False
     for l in content:
         if 'PID' in l and 'COMMAND' in l:
@@ -68,12 +68,12 @@ def ps_eo_cmd(broker):
             continue
         if not start:
             continue
-        pid, args = l.strip().split(None, 1)
+        pid, ppid, nlwp, args = l.strip().split(None, 3)
         if ' ' in args:
             cmd, _ = args.split(None, 1)
         else:
             cmd = args
-        data.append('{0} {1}'.format(pid, cmd))
+        data.append('{0} {1} {2} {3}'.format(pid, ppid, nlwp, cmd))
 
     if len(data) > 1:
         return DatasourceProvider('\n'.join(data), relative_path='insights_commands/ps_eo_cmd')
@@ -86,16 +86,15 @@ def jboss_runtime_versions(broker):
     """
      Custom datasource to collect the <JBOSS_HOME>/version.txt.
 
-     Sample output from the ``ps -ewwo pid, args`` command::
+     Sample output from the ``ps -ewwo pid,ppid,nlwp,args`` command::
 
-         PID COMMAND
-           1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
-           2 [kthreadd]
-           3 [rcu_gp]
-           4 [rcu_par_gp]
-           6 [kworker/0:0H-events_highpri]
-           8686 java -D[Standalone] -server -verbose:gc -Xms64m -Xmx512m -Djboss.home.dir=/opt/jboss-datagrid-7.3.0-server -Djboss.server.base.dir=/opt/jboss-datagrid-7.3.0-server/standalone
-
+         PID  PPID NLWP COMMAND
+           1     0    1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
+           2     0    1 [kthreadd]
+           3     2    1 [rcu_gp]
+           4     2    1 [rcu_par_gp]
+           6     2    1 [kworker/0:0H-events_highpri]
+        8686   525    1 java -D[Standalone] -server -verbose:gc -Xms64m -Xmx512m -Djboss.home.dir=/opt/jboss-datagrid-7.3.0-server -Djboss.server.base.dir=/opt/jboss-datagrid-7.3.0-server/standalone
 
      Get the Jboss home directory and read the version.txt::
 

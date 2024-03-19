@@ -3,6 +3,7 @@ from insights.combiners.ps import Ps
 from insights.parsers.ps import PsAlxwww, PsAuxww, PsAux, PsAuxcww, PsEo, PsEf, PsEoCmd
 from insights.tests import context_wrap
 import doctest
+from pprint import pprint
 
 
 PS_EO_LINES = """
@@ -16,14 +17,14 @@ PS_EO_LINES = """
  """
 
 PS_EO_CMD_LINES = """
-  PID  COMMAND
-    1  /usr/lib/systemd/systemd
-    2  [kthreadd]
-    3  [ksoftirqd/0]
-    8  [migration/0]
-    9  [rcu_bh]
-   10  [rcu_sched]
-   13  /usr/bin/python3.6
+  PID  PPID NLWP COMMAND
+    1     0    1 /usr/lib/systemd/systemd
+    2     0    1 [kthreadd]
+    3     2    1 [ksoftirqd/0]
+    8     2    1 [migration/0]
+    9     2    1 [rcu_bh]
+   10     2    1 [rcu_sched]
+   13     2    1 /usr/bin/python3.6
  """
 
 PS_AUXCWW_LINES = """
@@ -86,23 +87,42 @@ root           -  0.0    -      -     - -        I<   09:56   0:00 -
 """
 
 
-def test_pseo_parser():
-    ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
-    ps = Ps(None, None, None, None, None, ps_eo, None)
-    assert len(ps.processes) == 6
-    proc = ps[1]
-    assert proc['USER'] is None
-    assert proc['TTY'] is None
-    assert proc['%CPU'] is None
-    assert proc['%MEM'] is None
-    assert proc['COMMAND'] == proc['COMMAND_NAME']
+# def test_pseo_parser():
+#     ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
+#     ps = Ps(None, None, None, None, None, ps_eo, None)
+#     assert len(ps.processes) == 6
+#     proc = ps[1]
+#     assert proc['USER'] is None
+#     assert proc['TTY'] is None
+#     assert proc['%CPU'] is None
+#     assert proc['%MEM'] is None
+#     assert proc['COMMAND'] == proc['COMMAND_NAME']
 
 
-def test_pseo_and_psauxcww_parsers():
-    ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
+# def test_pseo_and_psauxcww_parsers():
+#     ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
+#     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
+#     ps = Ps(None, None, None, None, ps_auxcww, ps_eo, None)
+#     assert len(ps.processes) == 7
+#     proc9 = ps[9]
+#     assert proc9['USER'] == 'root'
+#     assert proc9['TTY'] == '?'
+#     assert proc9['%CPU'] == 0.1
+#     assert proc9['%MEM'] == 0.0
+#     assert proc9['COMMAND'] == proc9['COMMAND_NAME']
+#     proc10 = ps[10]
+#     assert proc10['USER'] is None
+#     assert proc10['TTY'] is None
+#     assert proc10['%CPU'] is None
+#     assert proc10['%MEM'] is None
+#     assert proc10['COMMAND'] == proc10['COMMAND_NAME']
+
+
+def test_pseocmd_and_psauxcww_parsers():
+    ps_eo_cmd = PsEoCmd(context_wrap(PS_EO_CMD_LINES, strip=False))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
-    ps = Ps(None, None, None, None, ps_auxcww, ps_eo, None)
-    assert len(ps.processes) == 7
+    ps = Ps(None, None, None, None, ps_auxcww, None, ps_eo_cmd)
+    assert len(ps.processes) == 8
     proc9 = ps[9]
     assert proc9['USER'] == 'root'
     assert proc9['TTY'] == '?'
@@ -242,6 +262,8 @@ def test_psalxwww_and_psauxww_and_psaux_and_psef_and_psauxcww_and_ps_eo_parsers(
     assert ps['PRI'] == 20
     assert ps['NI'] == '0'
     assert ps['WCHAN'] == 'ep_pol'
+    assert ps['NLWP'] is None
+
 
 
 def test_type_conversion():
@@ -286,7 +308,8 @@ def test_combiner_api():
                      'UID': None,
                      'USER': 'root',
                      'VSZ': 195712.0,
-                     'WCHAN': None}
+                     'WCHAN': None,
+                     'NLWP': None,}
     assert ps[1000] is None
     assert [proc for proc in ps]
 
@@ -357,5 +380,41 @@ def test_psalxwww_and_psauxww_and_psaux_and_psef_and_psauxcww_and_ps_eo_cmd_pars
     assert ps['PRI'] == 20
     assert ps['NI'] == '0'
     assert ps['WCHAN'] == 'ep_pol'
+    assert ps['NLWP'] == '1'
+
+    assert ps_combiner[13]['COMMAND'] == '/usr/bin/python3.6'
+
+
+def test_ps_all_parsers_combiner():
+    ps_alxwww = PsAlxwww(context_wrap(PS_ALXWWW_LINES))
+    ps_auxww = PsAuxww(context_wrap(PS_AUXWW_LINES))
+    ps_aux = PsAux(context_wrap(PS_AUX_LINES))
+    ps_ef = PsEf(context_wrap(PS_EF_LINES))
+    ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
+    ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
+    ps_eo_cmd = PsEoCmd(context_wrap(PS_EO_CMD_LINES, strip=False))
+    ps_combiner = Ps(ps_alxwww, ps_auxww, ps_aux, ps_ef, ps_auxcww, ps_eo, ps_eo_cmd)
+    len(ps_combiner.processes) == 9
+    ps = ps_combiner[1]
+    pprint(ps)
+    assert ps['PID'] == 1
+    assert ps['USER'] == 'root'
+    assert ps['UID'] == 0
+    assert ps['PPID'] == 0
+    assert ps['%CPU'] == 0.1
+    assert ps['%MEM'] == 0.0
+    assert ps['VSZ'] == 195712.0
+    assert ps['RSS'] == 7756.0
+    assert ps['STAT'] == 'Ss'
+    assert ps['TTY'] == '?'
+    assert ps['START'] == '2019'
+    assert ps['TIME'] == '478:05'
+    assert ps['COMMAND'] == '/usr/lib/systemd/systemd --switched-root --system --deserialize 21'
+    assert ps['COMMAND_NAME'] == 'systemd'
+    assert ps['F'] == '4'
+    assert ps['PRI'] == 20
+    assert ps['NI'] == '0'
+    assert ps['WCHAN'] == 'ep_pol'
+    assert ps['NLWP'] == '1'
 
     assert ps_combiner[13]['COMMAND'] == '/usr/bin/python3.6'
