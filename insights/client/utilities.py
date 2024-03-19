@@ -96,6 +96,7 @@ def write_to_disk(filename, delete=False, content=get_time()):
         return
     if delete:
         if os.path.lexists(filename):
+            logger.debug("Removing '%s'" % filename)
             try:
                 os.remove(filename)
             except OSError as err:
@@ -105,6 +106,7 @@ def write_to_disk(filename, delete=False, content=get_time()):
                 if err.errno != errno.ENOENT:
                     raise err
     else:
+        logger.debug("Writing '%s'" % filename)
         with open(filename, 'wb') as f:
             f.write(content.encode('utf-8'))
 
