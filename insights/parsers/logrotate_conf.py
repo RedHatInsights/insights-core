@@ -211,6 +211,12 @@ def parse_doc(content, ctx=None):
 @parser(Specs.logrotate_conf)
 class LogRotateConfPEG(ConfigParser):
     """
+    Class for parsing ``/etc/logrotate.conf`` and ``/etc/logrotate.d/*``
+    configuration files.
+
+    Note: It cannot handle the case without the target log file before
+    the braces for now.
+
     Sample logrotate configuration file::
 
         # sample file
