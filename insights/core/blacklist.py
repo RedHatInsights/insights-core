@@ -1,6 +1,3 @@
-import re
-
-
 BLACKLISTED_SPECS = []
 _FILE_FILTERS = set()
 _COMMAND_FILTERS = set()
@@ -9,11 +6,11 @@ _KEYWORD_FILTERS = set()
 
 
 def add_file(f):
-    _FILE_FILTERS.add(re.compile(f))
+    _FILE_FILTERS.add(f)
 
 
 def add_command(f):
-    _COMMAND_FILTERS.add(re.compile(f))
+    _COMMAND_FILTERS.add(f)
 
 
 def add_pattern(f):
@@ -25,11 +22,13 @@ def add_keyword(f):
 
 
 def allow_file(c):
-    return not any(f.match(c) for f in _FILE_FILTERS)
+    cl = len(c)
+    return not any(c.startswith(f) and (cl == len(f) or c[len(f)] == ' ') for f in _FILE_FILTERS)
 
 
 def allow_command(c):
-    return not any(f.match(c) for f in _COMMAND_FILTERS)
+    cl = len(c)
+    return not any(c.startswith(f) and (cl == len(f) or c[len(f)] == ' ') for f in _COMMAND_FILTERS)
 
 
 def get_disallowed_patterns():
