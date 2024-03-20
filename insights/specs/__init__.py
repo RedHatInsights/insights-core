@@ -4,8 +4,8 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 class Specs(SpecSet):
     # Client metadata specs/files
     ansible_host = RegistryPoint(no_obfuscate=['hostname', 'ip'])
-    blacklist_report = RegistryPoint()
-    blacklisted_specs = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    blacklist_report = RegistryPoint(prio=-1)
+    blacklisted_specs = RegistryPoint(no_obfuscate=['hostname', 'ip'], prio=-1)
     branch_info = RegistryPoint()  # https://issues.redhat.com/browse/RHIN-639
     display_name = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     egg_release = RegistryPoint()
