@@ -70,7 +70,7 @@ class ContentProvider(object):
     def _stream(self):
         raise NotImplementedError()
 
-    def _clean_content(self, content):
+    def _clean_content(self):
         """
         Clean (Obfuscate, Redact, and Filter) the Spec Content ONLY when doing
         collection.
@@ -89,16 +89,16 @@ class ContentProvider(object):
             no_obf = getattr(self.ds, 'no_obfuscate', [])
             cleans.append("Obfuscate") if len(no_obf) < 2 else None
             # Cleaning - Entry
+            content = self.content  # should load content first
             if cleans:
                 log.debug("Cleaning (%s) %s", "/".join(cleans), "/" + self.relative_path)
-                return self.cleaner.clean_content(
+                self._content = self.cleaner.clean_content(
                     content,
                     filters=filters,
                     obf_funcs=self.cleaner.get_obfuscate_functions(self.relative_path, no_obf),
                     no_redact=no_red)
             else:
                 log.debug("Skipping cleaning %s", "/" + self.relative_path)
-        return content
 
     @property
     def path(self):
@@ -121,9 +121,9 @@ class ContentProvider(object):
     def write(self, dst):
         fs.ensure_path(os.path.dirname(dst))
         # Clean Spec Content when writing it down to disk and before uploading
-        content = self._clean_content(self.content)
+        self._clean_content()
         with open(dst, "wb") as f:
-            f.write("\n".join(content).encode('utf-8'))
+            f.write("\n".join(self.content).encode('utf-8'))
 
         self.loaded = False
 
