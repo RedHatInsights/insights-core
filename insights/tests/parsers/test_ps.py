@@ -197,6 +197,10 @@ user2    20164  0.0  0.0 108472  1896 pts/5    Ss   10:10   0:00 bash
 root     20357  0.0  0.0   9120   832 ?        Ss   10:09   0:00 dhclient
 qemu     22673  0.6 10.7 1618556 840452 ?      Sl   11:38   1:31 qemu-kvm
 vdsm     27323 98.0 11.3  9120    987 ?        Ss   10.01   1:31 vdsm
+root     28106  0.0  0.0      0     0 ?        S    Mar12   0:00 NFSv4 callback
+root     28863  0.0  0.0   8700   224 ?        Ss    2023   0:00 falcond
+root     28865  0.2  0.7 933004 14424 ?        Sl    2023 323:00 falcon-sensor
+root     29570  0.0  0.0      0     0 ?        Z    Feb02   0:00 falcon-sensor <defunct>
 """.strip()
 
 PsAuxcww_BAD = """
@@ -225,8 +229,14 @@ def test_ps_auxww_from_auxcww():
         'START': 'May31', 'COMMAND': 'init', 'COMMAND_NAME': 'init', 'USER': 'root', 'STAT': 'Ss',
         'TIME': '0:01', 'RSS': '1544', 'ARGS': '',
     }
+    assert d[-1] == {
+        'USER': 'root', 'PID': '29570', '%CPU': '0.0', '%MEM': '0.0', 'VSZ': '0',
+        'RSS': '0', 'TTY': '?', 'STAT': 'Z', 'START': 'Feb02', 'TIME': '0:00',
+        'COMMAND': 'falcon-sensor <defunct>', 'COMMAND_NAME': 'falcon-sensor',
+        'ARGS': '<defunct>'
+    }
     assert d[2]["COMMAND"] == 'irqbalance'
-    assert d[-2]["COMMAND"] == 'qemu-kvm'
+    assert d[7]["COMMAND"] == 'qemu-kvm'
     assert p.fuzzy_match('irqbal')
     assert p.number_occurences("bash") == 3
     assert p.number_occurences("qemu-kvm") != 2
@@ -411,6 +421,11 @@ PS_EO_WITH_NLWP = """
      23       2 cpuhp/2            1
      24       2 watchdog/2         1
      25       2 migration/2        1
+    863       1 falcond            1
+    865     863 falcon-sensor     29
+   3106       2 NFSv4 callback     1
+  20570     865 falco <defunct>    1
+
 """
 
 
@@ -432,9 +447,12 @@ def test_ps_eo():
 
     ps_with_elwp = ps.PsEo(context_wrap(PS_EO_WITH_NLWP, strip=False))
     assert ps_with_elwp is not None
-    assert len(ps_with_elwp.pid_info) == 21
+    assert len(ps_with_elwp.pid_info) == 25
     assert ps_with_elwp.pid_info['25'] == {
         'PID': '25', 'PPID': '2', 'COMMAND': 'migration/2', 'COMMAND_NAME': 'migration/2', 'ARGS': '', 'NLWP': '1'
+    }
+    assert ps_with_elwp.pid_info['20570'] == {
+        'PID': '20570', 'PPID': '865', 'COMMAND': 'falco <defunct>', 'COMMAND_NAME': 'falco', 'ARGS': '', 'NLWP': '1'
     }
 
 
@@ -484,6 +502,7 @@ PS_EO_CMD_NORMAL = """
       1 /usr/lib/systemd/systemd
       2 [kthreadd]
       3 [rcu_gp]
+   3106 [NFSv4
   93831 qmgr
   93838 tlsmgr
 1221279 /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-4.el8.x86_64/jre/bin/java
@@ -494,7 +513,7 @@ PS_EO_CMD_NORMAL = """
 def test_ps_eo_cmd():
     p = ps.PsEoCmd(context_wrap(PS_EO_CMD_NORMAL, strip=False))
     assert p is not None
-    assert len(p.running_pids()) == 7
+    assert len(p.running_pids()) == 8
     assert '93838' in p.pid_info
     assert p.pid_info['1221279'] == {
         'PID': '1221279', 'COMMAND': '/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-4.el8.x86_64/jre/bin/java', 'COMMAND_NAME': 'java', 'ARGS': ''
@@ -510,7 +529,7 @@ def test_ps_eo_cmd():
 def test_ps_eo_cmd_stripped():
     p = ps.PsEo(context_wrap(PS_EO_CMD_NORMAL, strip=True))
     assert p is not None
-    assert len(p.running_pids()) == 7
+    assert len(p.running_pids()) == 8
 
 
 PS_AUXWWWM = """
