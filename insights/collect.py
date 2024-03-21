@@ -281,7 +281,11 @@ def load_manifest(data):
     """ Helper for loading a manifest yaml doc. """
     if isinstance(data, dict):
         return data
-    doc = yaml.safe_load(data)
+    if os.path.isfile(data):
+        with open(data, 'r') as f:
+            doc = yaml.safe_load(f)
+    else:
+        doc = yaml.safe_load(data)
     if not isinstance(doc, dict):
         raise Exception("Manifest didn't result in dict.")
     return doc
@@ -403,15 +407,18 @@ def generate_archive_name():
     return "insights-%s-%s" % (hostname, suffix)
 
 
-def collect(manifest=default_manifest, tmp_path=None, archive_name=None,
-            compress=False, rm_conf=None, client_config=None):
+def collect(client_config=None, rm_conf=None, tmp_path=None, archive_name=None,
+            compress=False):
     """
     This is the collection entry point. It accepts a manifest, a temporary
     directory in which to store output, and a boolean for optional compression.
 
     Args:
-        manifest (str or dict): json document or dictionary containing the
-            collection manifest. See default_manifest for an example.
+        client_config (InsightsConfig): Configurations read from insights-client
+            configuration, including "manifest".
+        rm_conf (dict): Client-provided python dict containing keys
+            "commands", "files", and "keywords", to be injected
+            into the manifest blacklist.
         tmp_path (str): The temporary directory that is used to create a
             working directory for storing the final tar.gz if one is generated.
         archive_name (str): The directory that is used to generate the output
@@ -419,10 +426,6 @@ def collect(manifest=default_manifest, tmp_path=None, archive_name=None,
         compress (boolean): True to create a tar.gz and remove the original
             workspace containing output. False to leave the workspace without
             creating a tar.gz
-        rm_conf (dict): Client-provided python dict containing keys
-            "commands", "files", and "keywords", to be injected
-            into the manifest blacklist.
-        client_config (InsightsConfig): Configurations read by the client tool.
 
     Returns:
         (str, dict): The full path to the created tar.gz or workspace.
@@ -430,8 +433,12 @@ def collect(manifest=default_manifest, tmp_path=None, archive_name=None,
         core collection, this dictionary has the following structure:
         ``{ exception_type: [ (exception_obj, component), (exception_obj, component) ]}``.
     """
-
+    # Get the manifest from client configuration
+    manifest = default_manifest
+    if hasattr(client_config, 'manifest') and client_config.manifest:
+        manifest = client_config.manifest
     manifest = load_manifest(manifest)
+
     client = manifest.get("client", {})
     plugins = manifest.get("plugins", {})
 
