@@ -175,7 +175,7 @@ plugins:
         - name: insights.combiners.nginx_conf.NginxConfTree
           enabled: true
 
-        - name: insights.combiners.nginx_conf._NginxConf
+        - name: insights.parsers.nginx_conf.NginxConfPEG
           enabled: true
 
     # needed for mssql_tls_cert_enddate
