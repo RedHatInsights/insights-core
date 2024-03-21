@@ -171,11 +171,12 @@ def test_specs_save_as_collect(obfuscate):
     for pkg in manifest.get("plugins", {}).get("packages", []):
         dr.load_components(pkg, exclude=None)
 
-    conf = InsightsConfig(obfuscate=obfuscate, obfuscate_hostname=obfuscate)
+    conf = InsightsConfig(
+            obfuscate=obfuscate, obfuscate_hostname=obfuscate,
+            manifest=specs_save_as_manifest)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
     output_path, errors = collect.collect(
-            manifest=specs_save_as_manifest,
             tmp_path=arch.tmp_dir,
             archive_name=arch.archive_name,
             client_config=conf)
