@@ -281,7 +281,11 @@ def load_manifest(data):
     """ Helper for loading a manifest yaml doc. """
     if isinstance(data, dict):
         return data
-    doc = yaml.safe_load(data)
+    if os.path.isfile(data):
+        with open(data, 'r') as f:
+            doc = yaml.safe_load(f)
+    else:
+        doc = yaml.safe_load(data)
     if not isinstance(doc, dict):
         raise Exception("Manifest didn't result in dict.")
     return doc
@@ -411,7 +415,7 @@ def collect(client_config=None, rm_conf=None, tmp_path=None, archive_name=None,
 
     Args:
         client_config (InsightsConfig): Configurations read from insights-client
-            configuration, including "mainfest".
+            configuration, including "manifest".
         rm_conf (dict): Client-provided python dict containing keys
             "commands", "files", and "keywords", to be injected
             into the manifest blacklist.
