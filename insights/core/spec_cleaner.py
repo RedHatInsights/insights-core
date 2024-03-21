@@ -11,7 +11,7 @@ The following processes will be applied to clean the collected specs:
       Obfuscate the IP or Hostname appears in the spec content according to the
       specs native requirement and user configuration.
 
-    - Filter (T.B.D)
+    - Filtering
       If a spec is specified as `filterable=True`, the insights core collection
       will only collect the lines that only contains the keywords listed in the
       filters list and save into the archive.
