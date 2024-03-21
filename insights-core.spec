@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.13
+Version:        3.3.14
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,16 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 21 2024 Xiangce Liu <xiangceliu@redhat.com>
+- refactor: avoid passing duplicated mainfest to insights.collect() (#4058)
+  (xiangceliu@redhat.com)
+- fix: incorrect deps in default_manifest for HttpdConfTree combiner (#4063)
+  (xiangceliu@redhat.com)
+- fix: Correct the dep parser to collect "nginx_ssl_certificate_files" (#4060)
+  (44796653+huali027@users.noreply.github.com)
+- fix: when all content are redacted, empty the file (#4051)
+  (xiangceliu@redhat.com)
+
 * Thu Mar 14 2024 Xiangce Liu <xiangceliu@redhat.com>
 - fix: ContainerMssqlApiAssessment ParseException (#4050) (xiaoxwan@redhat.com)
 - fix: get bios_uuid (system_uuid) from dmidecode correctly (#4052)
