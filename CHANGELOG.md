@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.14](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.14) (2024-03-21)
+
+- refactor: avoid passing duplicated mainfest to insights.collect() ([PR 4058](https://github.com/RedHatInsights/insights-core/pull/4058))
+- fix: incorrect deps in default_manifest for HttpdConfTree combiner ([PR 4063](https://github.com/RedHatInsights/insights-core/pull/4063))
+- fix: Correct the dep parser to collect "nginx_ssl_certificate_files" ([PR 4060](https://github.com/RedHatInsights/insights-core/pull/4060))
+- fix: when all content are redacted, empty the file ([PR 4051](https://github.com/RedHatInsights/insights-core/pull/4051))
+
 # [insights-core-3.3.13](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.13) (2024-03-14)
 
 - fix: ContainerMssqlApiAssessment ParseException ([PR 4050](https://github.com/RedHatInsights/insights-core/pull/4050))
