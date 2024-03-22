@@ -9,6 +9,7 @@ from insights.core.spec_cleaner import Cleaner
 
 test_file_data = 'test\nabcd\n1234\npwd: p4ssw0rd\n'
 test_file_data_sensitive = 'test\nabcd\n1234\npassword: p4ssw0rd\n'
+test_file_data_extra_newlines = 'test\n\n\nabcd\n1234\npwd: p4ssw0rd\n'
 
 
 @patch('insights.client.archive.InsightsArchive', Mock())
@@ -211,6 +212,27 @@ def test_redact_file_empty(core_collect, obfuscate):
     test_file = os.path.join(arch.archive_dir, 'test.file')
     with open(test_file, 'w') as t:
         t.write(test_file_data)
+
+    rm_conf = {'patterns': {'regex': ['test', 'pwd', '12.*4', '^abcd']}}
+    pp = Cleaner(conf, rm_conf)
+    pp.clean_file(test_file)
+    # file is cleaned to empty
+    with open(test_file, 'r') as t:
+        assert '' == ''.join(t.readlines())
+    arch.delete_archive_dir()
+
+
+@mark.parametrize("obfuscate", [True, False])
+@mark.parametrize("core_collect", [True, False])
+def test_redact_file_empty_but_extra_newlines(core_collect, obfuscate):
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+    arch = InsightsArchive(conf)
+    arch.create_archive_dir()
+
+    # put something in the archive to redact
+    test_file = os.path.join(arch.archive_dir, 'test.file')
+    with open(test_file, 'w') as t:
+        t.write(test_file_data_extra_newlines)
 
     rm_conf = {'patterns': {'regex': ['test', 'pwd', '12.*4', '^abcd']}}
     pp = Cleaner(conf, rm_conf)
