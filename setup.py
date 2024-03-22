@@ -114,7 +114,7 @@ if __name__ == "__main__":
         name=name,
         version=package_info["VERSION"],
         description="Insights Core is a data collection and analysis framework",
-        long_description=open("README.rst").read(),
+        long_description=open(os.path.join(__here__, "README.rst")).read(),
         url="https://github.com/redhatinsights/insights-core",
         author="Red Hat, Inc.",
         author_email="insights@redhat.com",
