@@ -56,9 +56,9 @@ plugins:
           enabled: true
         - name: insights.specs.Specs.hostname
           enabled: true
-        - name: insights.specs.default.DefaultSpecs.bios_uuid
+        - name: insights.specs.default.DefaultSpecs.dmidecode
           enabled: true
-        - name: insights.specs.Specs.bios_uuid
+        - name: insights.specs.Specs.dmidecode
           enabled: true
         - name: insights.specs.default.DefaultSpecs.machine_id
           enabled: true

@@ -121,7 +121,6 @@ class DefaultSpecs(Specs):
     azure_load_balancer = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/loadbalancer?api-version=2021-12-13&format=json --connect-timeout 5", deps=[IsAzure])
     basic_auth_insights_client = client_metadata.basic_auth_insights_client
     bdi_read_ahead_kb = glob_file("/sys/class/bdi/*/read_ahead_kb")
-    bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/*")
     bond_dynamic_lb = glob_file("/sys/class/net/*/bonding/tlb_dynamic_lb")
@@ -647,6 +646,7 @@ class DefaultSpecs(Specs):
     sysctl_d_conf_etc = glob_file("/etc/sysctl.d/*.conf")
     sysctl_d_conf_usr = glob_file("/usr/lib/sysctl.d/*.conf")
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
+    systemctl_get_default = simple_command("/bin/systemctl get-default")
     systemctl_list_unit_files = simple_command("/bin/systemctl list-unit-files")
     systemctl_list_units = simple_command("/bin/systemctl list-units")
     systemctl_show_all_services = simple_command("/bin/systemctl show *.service")
