@@ -176,8 +176,10 @@ def _legacy_handle_registration(config, pconn):
     machine_id_present = isfile(constants.machine_id_file)
 
     if machine_id_present and check['status'] is False:
-        logger.info("Machine-id found, insights-client can not be registered."
-                    " Please, unregister insights-client first: `insights-client --unregister`")
+        logger.info("Machine-id found, insights-client can not be registered in the current state. "
+                    "Please, unregister insights-client first: `insights-client --unregister`\n"
+                    "Consider using rhc for registering your system. "
+                    "For more information on rhc: https://access.redhat.com/articles/rhc-registration")
         return False
 
     logger.debug('Machine-id: %s', generate_machine_id())
