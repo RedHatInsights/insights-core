@@ -30,21 +30,14 @@ class CoreCollector(DataCollector):
         self.archive.create_archive_dir()
 
         logger.debug('Beginning to run core collection ...')
-        manifest = collect.default_manifest
-        if hasattr(self.config, 'manifest') and self.config.manifest:
-            if self.config.app is None:
-                with open(self.config.manifest, 'r') as f:
-                    manifest = f.read()
-            else:
-                manifest = self.config.manifest
 
         collect.collect(
-            manifest=manifest,
             tmp_path=self.archive.tmp_dir,
             archive_name=self.archive.archive_name,
             rm_conf=rm_conf or {},
             client_config=self.config,
         )
+
         logger.debug('Core collection finished.')
 
         # collect metadata
