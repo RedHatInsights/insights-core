@@ -19,7 +19,7 @@ from insights.core.filters import _add_filter, get_filters
 from insights.core.plugins import component, datasource, is_datasource
 from insights.core.serde import deserializer, serializer
 from insights.util import deprecated
-from insights.util import fs, which
+from insights.util import fs, streams, which
 from insights.util.mangle import mangle_command
 
 log = logging.getLogger(__name__)
@@ -77,11 +77,6 @@ class ContentProvider(object):
         """
         if isinstance(self.ctx, HostContext) and self.ds and self.cleaner:
             cleans = []
-            # Filtering?
-            filters = []
-            if self.ds and (not hasattr(self, 'split') or self.split):
-                filters = get_filters(self.ds) if self.ds else None
-            cleans.append("Filter") if filters else None
             # Redacting?
             no_red = getattr(self.ds, 'no_redact', False)
             cleans.append("Redact") if not no_red else None
@@ -94,7 +89,6 @@ class ContentProvider(object):
                 log.debug("Cleaning (%s) %s", "/".join(cleans), "/" + self.relative_path)
                 self._content = self.cleaner.clean_content(
                     content,
-                    filters=filters,
                     obf_funcs=self.cleaner.get_obfuscate_functions(self.relative_path, no_obf),
                     no_redact=no_red)
             else:
@@ -276,8 +270,22 @@ class TextFileProvider(FileProvider):
     lines. Each line is filtered if filters are defined for the datasource.
     """
 
+    def create_args(self):
+        args = []
+        filters = "\n".join(get_filters(self.ds)) if self.ds else None
+        if filters:
+            args.append(["grep", "-F", filters, self.path])
+
+        return args
+
     def load(self):
         self.loaded = True
+        args = self.create_args()
+        if args:
+            rc, out = self.ctx.shell_out(args, keep_rc=True, env=SAFE_ENV)
+            self.rc = rc
+            return out
+
         with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
             return [l.rstrip("\n") for l in f]
 
@@ -291,8 +299,13 @@ class TextFileProvider(FileProvider):
             if self._content:
                 yield self._content
             else:
-                with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-                    yield f
+                args = self.create_args()
+                if args:
+                    with streams.connect(*args, env=SAFE_ENV) as s:
+                        yield s
+                else:
+                    with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                        yield f
         except StopIteration:
             raise
         except Exception as ex:
@@ -301,7 +314,8 @@ class TextFileProvider(FileProvider):
 
 
 class SerializedOutputProvider(TextFileProvider):
-    pass
+    def create_args(self):
+        pass
 
 
 class SerializedRawOutputProvider(RawFileProvider):
@@ -355,6 +369,16 @@ class CommandOutputProvider(ContentProvider):
         if not which(cmd, env=self._env):
             raise ContentException("Command not found: %s" % cmd)
 
+    def create_args(self):
+        command = [shlex.split(self.cmd)]
+
+        if self.split:
+            filters = "\n".join(get_filters(self.ds))
+            if filters:
+                command.append(["grep", "-F", filters])
+
+        return command
+
     def create_env(self):
         env = dict(SAFE_ENV)
 
@@ -368,7 +392,7 @@ class CommandOutputProvider(ContentProvider):
         return env
 
     def load(self):
-        command = [shlex.split(self.cmd)]
+        command = self.create_args()
 
         raw = self.ctx.shell_out(command, split=self.split,
                                  keep_rc=self.keep_rc, timeout=self.timeout,
@@ -389,7 +413,7 @@ class CommandOutputProvider(ContentProvider):
             if self._content:
                 yield self._content
             else:
-                command = [shlex.split(self.cmd)]
+                command = self.create_args()
                 with self.ctx.connect(*command, env=self._env, timeout=self.timeout) as s:
                     yield s
         except StopIteration:

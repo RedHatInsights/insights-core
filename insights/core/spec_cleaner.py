@@ -11,11 +11,6 @@ The following processes will be applied to clean the collected specs:
       Obfuscate the IP or Hostname appears in the spec content according to the
       specs native requirement and user configuration.
 
-    - Filtering
-      If a spec is specified as `filterable=True`, the insights core collection
-      will only collect the lines that only contains the keywords listed in the
-      filters list and save into the archive.
-
 """
 import logging
 import hashlib
@@ -323,15 +318,6 @@ class Cleaner(object):
     #   Main functions        #
     ###########################
 
-    def _filter_line_allowlist(self, line, filters):
-        # filter line as per filters
-        # TODO: complex filtering (regex, logic-support (and, or))
-        if line is None:
-            return line
-        if not filters or any(ft in line for ft in filters):
-            return line
-        return None
-
     def _obfuscate_line(self, line, obf_funcs):
         # obfuscate line for possible hostname, ip
         if not line:
@@ -379,7 +365,7 @@ class Cleaner(object):
         obf_funcs.append(self._sub_hostname) if "hostname" in obfs else None
         return obf_funcs
 
-    def clean_content(self, lines, filters=None, obf_funcs=None, no_redact=False):
+    def clean_content(self, lines, obf_funcs=None, no_redact=False):
         """
         Clean lines one by one according to the configuration, the cleaned
         lines will be returned.
@@ -388,9 +374,7 @@ class Cleaner(object):
             # 1. Do Redaction by default, unless "no_redact=True"
             if _line and not no_redact:
                 _line = self._redact_line(_line)
-            # 2. Do Filtering as per the "filters"
-            _line = self._filter_line_allowlist(_line, filters)
-            # 3. Do Obfuscation as per the "obf_funcs"
+            # 2. Do Obfuscation as per the "obf_funcs"
             _line = self._obfuscate_line(_line, obf_funcs or [])
             return _line
 
@@ -399,13 +383,12 @@ class Cleaner(object):
             return _clean_line(lines)
 
         result = []
-        filters = filters or []
         for line in lines:
             line = _clean_line(line)
             result.append(line) if line is not None else None
         return result
 
-    def clean_file(self, _file, filters=None, no_obfuscate=None, no_redact=False):
+    def clean_file(self, _file, no_obfuscate=None, no_redact=False):
         """
         Clean a file according to the configuration, the file will be updated
         directly with the cleaned content.
@@ -419,7 +402,7 @@ class Cleaner(object):
             try:
                 with open(_file, 'r') as fh:
                     raw_data = fh.readlines()
-                    content = self.clean_content(raw_data, filters, obf_funcs, no_redact)
+                    content = self.clean_content(raw_data, obf_funcs, no_redact)
             except Exception as e:  # pragma: no cover
                 logger.warning(e)
                 raise Exception("Error: Cannot Open File for Cleaning: %s" % _file)
