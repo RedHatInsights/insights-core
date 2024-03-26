@@ -26,6 +26,7 @@ except ImportError:
 from .. import package_info
 from .constants import InsightsConstants as constants
 from .collection_rules import InsightsUploadConf, load_yaml
+from insights.client import cert_auth
 
 from insights.core.context import Context
 from insights.parsers.os_release import OsRelease
@@ -96,6 +97,7 @@ def write_to_disk(filename, delete=False, content=get_time()):
         return
     if delete:
         if os.path.lexists(filename):
+            logger.debug("Removing '%s'" % filename)
             try:
                 os.remove(filename)
             except OSError as err:
@@ -105,34 +107,67 @@ def write_to_disk(filename, delete=False, content=get_time()):
                 if err.errno != errno.ENOENT:
                     raise err
     else:
+        logger.debug("Writing '%s'" % filename)
         with open(filename, 'wb') as f:
             f.write(content.encode('utf-8'))
 
 
-def generate_machine_id(new=False,
-                        destination_file=constants.machine_id_file):
+def _get_rhsm_identity():
+    """Get the subscription-manager identity certificate UUID.
+
+    :returns: The subscription-manager UUID, or None if not found.
+    :rtype: str | None
     """
-    Generate a machine-id if /etc/insights-client/machine-id does not exist
+    if cert_auth.RHSM_CONFIG is None:
+        return None
+
+    try:
+        cert = cert_auth.rhsmCertificate.read()  # type: cert_auth.rhsmCertificate
+        subscription_manager_uuid = cert.getConsumerId()  # type: str
+    except Exception:
+        return None
+
+    logger.debug("Found subscription-manager UUID in '%s/%s'.", cert.PATH, cert.CERT)
+    return subscription_manager_uuid
+
+
+def generate_machine_id(new=False, destination_file=constants.machine_id_file):
+    """Generate a machine-id if /etc/insights-client/machine-id does not exist.
+
+    :param new: Force generate a new ID.
+    :type new: bool
+    :param destination_file: Path to the file the ID should be written to.
+    :type destination_file: str
+
+    :returns: The machine ID
+    :rtype: str
     """
-    machine_id = None
-    machine_id_file = None
-    logging_name = 'machine-id'
+    machine_id = None  # type: str | None
 
     if os.path.isfile(destination_file) and not new:
-        logger.debug('Found %s', destination_file)
-        with open(destination_file, 'r') as machine_id_file:
-            machine_id = machine_id_file.read()
-    else:
-        logger.debug('Could not find %s file, creating', logging_name)
+        with open(destination_file, "r") as f:
+            machine_id = f.read()
+        logger.debug("Using existing machine-id: '%s'." % machine_id)
+
+    if not machine_id:
+        machine_id = _get_rhsm_identity()
+        if machine_id:
+            logger.debug("Using subscription-manager identity as machine-id: '%s'." % machine_id)
+            write_to_disk(destination_file, content=machine_id)
+
+    if not machine_id:
         machine_id = str(uuid.uuid4())
-        logger.debug("Creating %s", destination_file)
+        logger.debug("Creating fresh machine-id: '%s'." % machine_id)
         write_to_disk(destination_file, content=machine_id)
     try:
+        # Old versions (redhat-access-insights) could save the UUID without hyphens,
+        # and that could mess up Inventory via e.g. `insights-client --check-results`.
+        # See RHBZ#1998560 for more details.
         return str(uuid.UUID(str(machine_id).strip(), version=4))
-    except ValueError as e:
-        logger.error("Invalid machine ID: %s", machine_id)
-        logger.error("Error details: %s", str(e))
-        logger.error("Remove %s and a new one will be generated.\nRerun the client with --register", destination_file)
+    except ValueError as exc:
+        logger.error("Invalid machine ID: '%s'." % machine_id)
+        logger.error("Error details: %s", str(exc))
+        logger.error("Please delete the file '%s' and rerun the client with '--register'." % destination_file)
         sys.exit(constants.sig_kill_bad)
 
 
