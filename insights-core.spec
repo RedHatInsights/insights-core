@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.14
+Version:        3.3.15
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Tue Mar 26 2024 Xiangce Liu <xiangceliu@redhat.com>
+- Re-do "fix: check status created a machine-id file (#3965)" (#4032)
+  (xiangceliu@redhat.com)
+- fix(setup): Allow running setup.py from non-current directory (#4065)
+  (mhorky@redhat.com)
+
 * Thu Mar 21 2024 Xiangce Liu <xiangceliu@redhat.com>
 - refactor: avoid passing duplicated mainfest to insights.collect() (#4058)
   (xiangceliu@redhat.com)
