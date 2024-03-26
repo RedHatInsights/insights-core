@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.15) (2024-03-26)
+
+- Re-do "fix: check status created a machine-id file (3965)" ([PR 4032](https://github.com/RedHatInsights/insights-core/pull/4032))
+- fix(setup): Allow running setup.py from non-current directory ([PR 4065](https://github.com/RedHatInsights/insights-core/pull/4065))
+
 # [insights-core-3.3.14](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.14) (2024-03-21)
 
 - refactor: avoid passing duplicated mainfest to insights.collect() ([PR 4058](https://github.com/RedHatInsights/insights-core/pull/4058))
