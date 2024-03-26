@@ -304,7 +304,13 @@ def apply_blacklist(cfg):
         log.warning('WARNING: Skipping component: %s' % component)
 
     def _check_and_skip_component(name):
-        if '/' in name or ' ' in name:
+        def _isidentifier(name):
+            if hasattr(str, 'isidentifier'):
+                return name.isidentifier()
+            else:
+                return not any(it in name for it in ('/', ' ', '.', '-'))
+
+        if not _isidentifier(name):
             # not symbolic name
             return False
         # like a symbolic name
@@ -316,13 +322,13 @@ def apply_blacklist(cfg):
         # not symbolic name
         return False
 
-    for b in cfg.get("files", []):
-        if not _check_and_skip_component(b):
-            blacklist.add_file('^' + b + '$')
+    for fil in cfg.get("files", []):
+        if not _check_and_skip_component(fil):
+            blacklist.add_file(fil)
 
-    for b in cfg.get("commands", []):
-        if not _check_and_skip_component(b):
-            blacklist.add_command('^' + b + '$')
+    for cmd in cfg.get("commands", []):
+        if not _check_and_skip_component(cmd):
+            blacklist.add_command(cmd)
 
     for component in cfg.get('components', []):
         if not dr.get_component_by_name(component):
@@ -332,13 +338,9 @@ def apply_blacklist(cfg):
 
     if cfg.get('patterns'):
         log.warning("WARNING: Excluding patterns defined in blacklist configuration")
-        for b in cfg.get("patterns"):
-            blacklist.add_pattern(b)
 
     if cfg.get('keywords'):
         log.warning("WARNING: Replacing keywords defined in blacklist configuration")
-        for b in cfg.get("keywords"):
-            blacklist.add_keyword(b)
 
 
 def create_context(ctx):

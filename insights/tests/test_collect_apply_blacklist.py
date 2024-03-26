@@ -19,9 +19,9 @@ def test_apply_blacklist_valid(_log):
                 "/bin/df -alP -x autofs",
                 "/bin/ps aux",
                 # foreach_execute
-                "/bin/du -s -k ().*",
+                "/bin/du -s -k",
                 # command_with_args
-                "/usr/bin/getent group ().*",
+                "/usr/bin/getent group",
                 # spec name
                 "installed_rpms",  # will be converted to component
             ],
@@ -31,10 +31,8 @@ def test_apply_blacklist_valid(_log):
                 "/var/log/messages",
                 # first_file
                 "/proc/meminfo",
-                # foreach_collect
-                "/proc/().*/limits",
                 # glob_file
-                "/boot/config-().*",
+                "/boot/config-",
                 # spec name
                 "container_installed_rpms",  # will be converted to component
             ],
@@ -59,14 +57,20 @@ def test_apply_blacklist_valid(_log):
     # files
     check_files = rm_conf['files'][:-1]
     for fil in check_files:
-        fil = fil.replace('().*', 'abcd')
         assert blacklist.allow_file(fil) is False
+        _file = fil + ' abc'
+        assert blacklist.allow_file(_file) is False
+        _file = fil + 'abc'
+        assert blacklist.allow_file(_file) is True
 
     # commonds
     check_commands = rm_conf['commands'][:-1]
     for cmd in check_commands:
-        cmd = cmd.replace('().*', 'abcd')
         assert blacklist.allow_command(cmd) is False
+        _cmd = cmd + ' abc'
+        assert blacklist.allow_command(_cmd) is False
+        _cmd = cmd + 'abc'
+        assert blacklist.allow_command(_cmd) is True
 
 
 @patch('insights.collect.log.warning')
