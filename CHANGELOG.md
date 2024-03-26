@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.16](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.16) (2024-03-26)
+
+- - feat: Reuse subscription-manager identity for machine-id ([PR 4057](https://github.com/RedHatInsights/insights-core/pull/4057))
+
 # [insights-core-3.3.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.15) (2024-03-26)
 
 - Re-do "fix: check status created a machine-id file (3965)" ([PR 4032](https://github.com/RedHatInsights/insights-core/pull/4032))

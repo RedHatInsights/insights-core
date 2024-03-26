@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.15
+Version:        3.3.16
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Tue Mar 26 2024 Xiangce Liu <xiangceliu@redhat.com>
+- feat: Reuse subscription-manager identity for machine-id (#4057)
+  (mhorky@redhat.com)
+
 * Tue Mar 26 2024 Xiangce Liu <xiangceliu@redhat.com>
 - Re-do "fix: check status created a machine-id file (#3965)" (#4032)
   (xiangceliu@redhat.com)
