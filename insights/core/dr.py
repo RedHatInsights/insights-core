@@ -470,13 +470,16 @@ def get_subgraphs(graph=None):
     Given a graph of possibly disconnected components, generate all graphs of
     connected components. graph is a dictionary of dependencies. Keys are
     components, and values are sets of components on which they depend.
+
+    Return the sub-graphs sorted as per the "prio".
     """
     graph = graph or DEPENDENCIES
-    keys = set(graph)
+    # Sort the keys as per "prio", 0 -> no priority
+    keys = sorted(graph, key=lambda x: getattr(next(iter(get_registry_points(x) or [object])), 'prio', 0), reverse=True)
     frontier = set()
     seen = set()
     while keys:
-        frontier.add(keys.pop())
+        frontier.add(keys.pop(0))
         while frontier:
             component = frontier.pop()
             seen.add(component)
@@ -484,7 +487,12 @@ def get_subgraphs(graph=None):
             frontier |= set([d for d in get_dependents(component) if d in graph])
             frontier -= seen
         yield dict((s, get_dependencies(s)) for s in seen)
-        keys -= seen
+        # Remove processed keys without changing their order
+        for s in seen:
+            try:
+                keys.remove(s)
+            except Exception:
+                pass
         seen.clear()
 
 
