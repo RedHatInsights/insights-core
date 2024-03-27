@@ -486,17 +486,18 @@ class RegistryPoint(object):
     #
     # intentionally not a docstring so this doesn't show up in pydoc.
     def __init__(self, metadata=None, multi_output=False, raw=False,
-                 filterable=False, no_obfuscate=None, no_redact=False):
+                 filterable=False, no_obfuscate=None, no_redact=False, prio=0):
         self.metadata = metadata
         self.multi_output = multi_output
         self.no_obfuscate = [] if no_obfuscate is None else no_obfuscate
         self.no_redact = no_redact
+        self.prio = prio
         self.raw = raw
         self.filterable = filterable
         self.__name__ = self.__class__.__name__
         datasource([], metadata=metadata, multi_output=multi_output, raw=raw,
                    filterable=filterable, no_obfuscate=self.no_obfuscate,
-                   no_redact=no_redact)(self)
+                   no_redact=no_redact, prio=prio)(self)
 
     def __call__(self, broker):
         for c in reversed(dr.get_delegate(self).deps):
@@ -584,6 +585,7 @@ def _resolve_registry_points(cls, base, dct):
                 v.multi_output = delegate.multi_output = point.multi_output
                 v.no_obfuscate = delegate.no_obfuscate = point.no_obfuscate
                 v.no_redact = delegate.no_redact = point.no_redact
+                v.prio = delegate.prio = point.prio
 
                 # the RegistryPoint gets the implementation datasource as a
                 # dependency
