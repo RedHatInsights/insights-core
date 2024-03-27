@@ -83,6 +83,7 @@ class datasource(PluginType):
     multi_output = False
     no_obfuscate = []
     no_redact = False
+    prio = 0
     raw = False
 
     def _handle_timeout(self, signum, frame):
