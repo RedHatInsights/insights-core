@@ -25,11 +25,11 @@ vdsm     27323 98.0 11.3  9120    987 ?        Ss   10.01   1:31 vdsm
 
 def test_is_ceph_monitor():
     ps_auxcww = PsAuxcww(context_wrap(PsAuxcww_CEPH))
-    ps = Ps(None, None, None, None, ps_auxcww, None, None)
+    ps = Ps(None, None, None, None, ps_auxcww, None)
     result = IsCephMonitor(ps)
     assert isinstance(result, IsCephMonitor)
 
     ps_auxcww = PsAuxcww(context_wrap(PsAuxcww_NO_CEPH))
-    ps = Ps(None, None, None, None, ps_auxcww, None, None)
+    ps = Ps(None, None, None, None, ps_auxcww, None)
     with pytest.raises(SkipComponent):
         IsCephMonitor(ps)
