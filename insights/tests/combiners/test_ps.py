@@ -4,16 +4,6 @@ from insights.parsers.ps import PsAlxwww, PsAuxww, PsAux, PsAuxcww, PsEf, PsEoCm
 from insights.tests import context_wrap
 import doctest
 
-PS_EO_LINES = """
-  PID  PPID COMMAND
-    1     0 systemd
-    2     0 kthreadd
-    3     2 ksoftirqd/0
-    8     2 migration/0
-    9     2 rcu_bh
-    10    2 rcu_sched
- """
-
 PS_EO_CMD_LINES = """
   PID  PPID NLWP COMMAND
     1     0    1 /usr/lib/systemd/systemd

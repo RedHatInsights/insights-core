@@ -10,6 +10,7 @@ from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsers import keyword_search, parse_delimited_table
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 def are_present(tags, line):
@@ -393,6 +394,10 @@ class ContainerPsAux(ContainerParser, PsAuxww):
 @parser(Specs.ps_eo)
 class PsEo(Ps):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.6.0.
+        Please use the :class:`insights.parsers.ps.PsEoCmd` instead.
+
     Class to parse the command `ps -eo pid,ppid,comm,nlwp`
 
     Sample input data::
@@ -430,6 +435,10 @@ class PsEo(Ps):
     command_name = 'COMMAND'
     user_name = 'PID'
     max_splits = 3
+
+    def __init__(self, *args, **kwargs):
+        deprecated(PsEo, "Please use the :class:`insights.parsers.ps.PsEoCmd` instead.", "3.6.0")
+        super(PsEo, self).__init__(*args, **kwargs)
 
     def children(self, ppid):
         """list: Returns a list of dict for all rows with `ppid` as parent PID"""

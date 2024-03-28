@@ -424,7 +424,6 @@ PS_EO_WITH_NLWP = """
 """
 
 
-
 def test_ps_eo():
     p = ps.PsEo(context_wrap(PS_EO_WITHOUT_NLWP, strip=False))
     assert p is not None
