@@ -11,10 +11,10 @@ See: http://www.linuxmanpages.org/8/logrotate
 import string
 
 from insights.core import ConfigParser, LegacyItemAccess, Parser
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
-from insights.parsr import (AnyChar, Choice, EOF, EOL, Forward, LeftCurly, LineEnd,
+from insights.parsr import (AnyChar, Choice, EOF, EOL, Forward, InSet, LeftCurly, LineEnd,
                             Literal, Many, Number, OneLineComment, Opt, PosMarker,
                             QuotedString, RightCurly, String, WS, WSChar, skip_none)
 from insights.parsr.query import Directive, Entry, Section
@@ -158,7 +158,7 @@ class DocParser(object):
         scripts = set("postrotate prerotate firstaction lastaction preremove".split())
         Stanza = Forward()
         Spaces = Many(WSChar)
-        Bare = String(set(string.printable) - (set(string.whitespace) | set("#{}'\"")))
+        Bare = String(set(string.printable) - (set(string.whitespace) | set("=#{}'\"")))
         Num = Number & (WSChar | LineEnd)
         Comment = OneLineComment("#").map(lambda x: None)
         ScriptStart = WS >> PosMarker(Choice([Literal(s) for s in scripts])) << WS
@@ -169,9 +169,11 @@ class DocParser(object):
         Script = Script.map(lambda x: [x[0], [x[1]], None])
         BeginBlock = WS >> LeftCurly << WS
         EndBlock = WS >> RightCurly
+        EqualChars = set("=")
+        Equal = InSet(EqualChars)
         First = PosMarker((Bare | QuotedString)) << Spaces
         Attr = Spaces >> (Num | Bare | QuotedString) << Spaces
-        Rest = Many(Attr)
+        Rest = Opt(Equal) >> Many(Attr)
         Block = BeginBlock >> Many(Stanza).map(skip_none).map(self.to_entries) << EndBlock
         Stmt = WS >> (Script | (First + Rest + Opt(Block))) << WS
         Stanza <= WS >> (Stmt | Comment) << WS
@@ -209,6 +211,12 @@ def parse_doc(content, ctx=None):
 @parser(Specs.logrotate_conf)
 class LogRotateConfPEG(ConfigParser):
     """
+    Class for parsing ``/etc/logrotate.conf`` and ``/etc/logrotate.d/*``
+    configuration files.
+
+    Note: It cannot handle the case without the target log file before
+    the braces for now.
+
     Sample logrotate configuration file::
 
         # sample file
@@ -255,4 +263,31 @@ class LogRotateConfPEG(ConfigParser):
         '/sbin/killall -HUP syslogd'
     """
     def parse_doc(self, content):
+        """ configuration format pre-check for logrotate configuration file"""
+        stack_list = []
+        glob_opts = ''
+        scripts = ('postrotate', 'prerotate', 'firstaction', 'lastaction', 'preremove')
+        for index, line in enumerate(content):
+            line = line.split("#")[0].strip()
+            if line.lstrip(' \t\'"').startswith(('/', '~')) and not stack_list:
+                #  Converting the target file configuration format from set vertically to set with space.
+                glob_opts += ' ' + line.strip()
+                content[index] = ''
+            if line in scripts:
+                stack_list.append('startscript')
+            elif line == 'endscript' and stack_list[-1] == 'startscript':
+                stack_list.pop()
+            if stack_list and stack_list[-1] == 'startscript':
+                continue
+            if '{' in line:
+                if not stack_list:
+                    content[index] = glob_opts.rstrip('{') + ' {'
+                    glob_opts = ''
+                stack_list.append('{')
+            #  The '}' must be on a separate line.
+            elif line == '}' and stack_list[-1] == '{':
+                stack_list.pop()
+        if stack_list:
+            raise SkipComponent("Invalid logrotate config file.")
+
         return parse_doc("\n".join(content), ctx=self)

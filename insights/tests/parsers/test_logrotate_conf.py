@@ -1,7 +1,9 @@
+from insights.core.exceptions import SkipComponent
 from insights.parsers import logrotate_conf
-from insights.parsers.logrotate_conf import LogrotateConf
+from insights.parsers.logrotate_conf import LogrotateConf, LogRotateConfPEG
 from insights.tests import context_wrap
 import doctest
+import pytest
 
 LOGROTATE_CONF_1 = """
 # see "man logrotate" for details
@@ -65,7 +67,9 @@ LOGROTATE_MAN_PAGE_DOC = """
 # sample file
 compress
 
-/var/log/messages {
+/var/log/messages
+
+{
     rotate 5
     weekly
     postrotate
@@ -119,6 +123,92 @@ LOGROTATE_CONF_4 = """
   endscript
     nocompress
 }
+
+/var/log/news/news1.crit
+/var/log/news/news2.crit
+
+/var/log/news/news3.crit {
+    monthly
+    rotate 2
+    olddir /var/log/news/old
+    missingok
+    postrotate
+                kill -HUP `cat /var/run/inn.pid`
+    endscript
+    nocompress
+}
+""".strip()
+
+LOGROTATE_CONF_5 = """
+/var/log/news/olds.crit  {
+    monthly
+    rotate 2
+    olddir /var/log/news/old
+    missingok
+    prerotate
+        export LANG=C
+        ACTLOG_RLOG=/var/log/actlog/selfinfo/postrotate
+        {
+                E=/var/log/actlog.exports/eventlog.1
+                C=/var/log/actlog.exports/cpuload.1
+                if [ -e ${C}.gz -a -e $E ] ; then
+                        E_backup=eventlog.1-`date -r $E +%F.%H%M%S`
+                        echo "WARNING: Both ${C}.gz and $E exist ; move eventlog.1 to sysinfo/${E_backup}"
+                        mv -f $E /var/log/actlog/sysinfo/${E_backup}
+                fi
+        } >>${ACTLOG_RLOG} 2>&1
+        exit 0
+  endscript
+    nocompress
+} /var/log/news/news1.crit
+/var/log/news/news2.crit
+
+/var/log/news/news3.crit {
+    monthly
+    rotate 2
+    olddir /var/log/news/old
+    missingok
+    postrotate
+                kill -HUP `cat /var/run/inn.pid`
+    endscript
+    nocompress
+}
+""".strip()
+
+LOGROTATE_CONF_6 = """
+/var/log/news/olds.crit  {
+    monthly
+    rotate 2
+    olddir /var/log/news/old
+    missingok
+    prerotate
+        export LANG=C
+        ACTLOG_RLOG=/var/log/actlog/selfinfo/postrotate
+        {
+                E=/var/log/actlog.exports/eventlog.1
+                C=/var/log/actlog.exports/cpuload.1
+                if [ -e ${C}.gz -a -e $E ] ; then
+                        E_backup=eventlog.1-`date -r $E +%F.%H%M%S`
+                        echo "WARNING: Both ${C}.gz and $E exist ; move eventlog.1 to sysinfo/${E_backup}"
+                        mv -f $E /var/log/actlog/sysinfo/${E_backup}
+                fi
+        } >>${ACTLOG_RLOG} 2>&1
+        exit 0
+  endscript
+    nocompress
+}
+/var/log/news/news1.crit
+/var/log/news/news2.crit
+
+/var/log/news/news3.crit {
+    monthly
+    rotate 2
+    olddir /var/log/news/old
+    missingok
+    postrotate
+                kill -HUP `cat /var/run/inn.pid`
+    endscript
+    nocompress}
 """.strip()
 
 
@@ -164,3 +254,34 @@ def test_logrotate_conf_4():
     assert 'mv -f $E /var/log/actlog/sysinfo/${E_backup}' in log_rt['/var/log/news/olds.crit']['prerotate']
     assert '} >>${ACTLOG_RLOG} 2>&1' in log_rt['/var/log/news/olds.crit']['prerotate']
     assert len(log_rt['/var/log/news/olds.crit']['prerotate']) == 12
+
+
+def test_logrotate_conf_peg_1():
+    log_rt = LogRotateConfPEG(context_wrap(LOGROTATE_MAN_PAGE_DOC, path='/etc/logrotate.d/abc'))
+    assert '/var/log/news/olds.crit' in log_rt
+    assert 'rotate' in log_rt['/var/log/httpd/error.log']
+    assert log_rt['/var/log/httpd/error.log']['rotate']
+    assert 'size' in log_rt['/var/log/httpd/access.log']
+    assert log_rt['/var/log/httpd/access.log']['size'].value == '100k'
+    assert log_rt['/var/log/httpd/error.log']['size'].value == '100k'
+    assert 'kill -HUP `cat /var/run/inn.pid`' in log_rt['/var/log/news/olds.crit']['postrotate'].value
+
+
+def test_logrotate_conf_peg_2():
+    log_rt = LogRotateConfPEG(context_wrap(LOGROTATE_CONF_4, path='/etc/logrotate.d/abc'))
+    assert '/var/log/news/olds.crit' in log_rt
+    assert 'mv -f $E /var/log/actlog/sysinfo/${E_backup}' in log_rt['/var/log/news/olds.crit']['prerotate'].value
+    assert '} >>${ACTLOG_RLOG} 2>&1' in log_rt['/var/log/news/olds.crit']['prerotate'].value
+    assert len(log_rt['/var/log/news/olds.crit']['prerotate']) == 1
+    assert '/var/log/news/news1.crit' in log_rt
+    assert log_rt['/var/log/news/news1.crit']['rotate'].value == 2
+    assert log_rt['/var/log/news/news2.crit']['rotate'].value == 2
+    assert log_rt['/var/log/news/news3.crit']['rotate'].value == 2
+
+
+def test_logrotate_conf_peg_3():
+    with pytest.raises(SkipComponent):
+        logrotate_conf.LogRotateConfPEG(context_wrap(LOGROTATE_CONF_5, path='/etc/logrotate.d/abc'))
+
+    with pytest.raises(SkipComponent):
+        logrotate_conf.LogRotateConfPEG(context_wrap(LOGROTATE_CONF_6, path='/etc/logrotate.d/abc'))
