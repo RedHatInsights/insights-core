@@ -169,7 +169,7 @@ class LogRotateConfTree(ConfigCombiner):
     def find_matches(self, confs, pattern):
         results = []
         for c in confs:
-            if os.path.isdir(pattern) and c.file_path.startswith(pattern):
+            if c.file_path.startswith(pattern) and len(c.file_path.split(pattern)[-1].lstrip('/').split('/')) == 1:
                 results.append(c)
             elif fnmatch(c.file_path, pattern):
                 results.append(c)
