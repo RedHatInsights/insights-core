@@ -84,10 +84,41 @@ LOGROTATE_MISSING_ENDSCRIPT = """
 }
 """.strip()
 
+CONF_NO_INCLUDE = """
+weekly
+rotate 4
+create
+dateext
+
+/var/log/wtmp {
+    missingok
+    monthly
+    create 0664 root utmp
+    minsize 1M
+    rotate 1
+    postrotate
+        do some stuff to wtmp
+    endscript
+}
+
+/var/log/btmp {
+    missingok
+    monthly
+    create 0600 root utmp
+    postrotate
+        do some stuff to btmp
+    endscript
+    rotate 1
+}
+
+""".strip()
+
 
 def test_logrotate_tree():
-    p = logrotate_conf.LogRotateConfPEG(context_wrap(CONF, path="/etc/logrotate.conf"))
-    conf = LogRotateConfTree([p])
+    p1 = logrotate_conf.LogRotateConfPEG(context_wrap(CONF, path="/etc/logrotate.conf"))
+    p2 = logrotate_conf.LogRotateConfPEG(context_wrap(JUNK_SPACE, path="/etc/logrotate.d/test"))
+    conf = LogRotateConfTree([p1, p2])
+    assert 'rotate' in conf
     assert len(conf["weekly"]) == 1
     assert len(conf["/var/log/wtmp"]["missingok"]) == 1
     assert conf["/var/log/wtmp"]["postrotate"][first].value == "do some stuff to wtmp"
@@ -95,6 +126,8 @@ def test_logrotate_tree():
     assert len(conf["/var/log/btmp"]["rotate"]) == 1
     assert len(conf["/var/log/btmp"]["postrotate"]) == 1
     assert conf["/var/log/btmp"]["postrotate"][first].value == "do some stuff to btmp"
+
+    assert 'compress' in conf["/var/log/spooler"]
 
 
 def test_junk_space():
@@ -106,3 +139,14 @@ def test_junk_space():
 def test_logrotate_conf_combiner_missing_endscript():
     with pytest.raises(Exception):
         logrotate_conf.LogRotateConfPEG(context_wrap(LOGROTATE_MISSING_ENDSCRIPT, path='/etc/logrotate.conf')),
+
+
+def test_logrotate_conf_combiner_missing_include():
+    p1 = logrotate_conf.LogRotateConfPEG(context_wrap(CONF_NO_INCLUDE, path="/etc/logrotate.conf"))
+    p2 = logrotate_conf.LogRotateConfPEG(context_wrap(JUNK_SPACE, path="/etc/logrotate.d/test"))
+    conf = LogRotateConfTree([p1, p2])
+    assert 'rotate' in conf
+    assert len(conf["weekly"]) == 1
+    assert len(conf["/var/log/wtmp"]["missingok"]) == 1
+    assert conf["/var/log/wtmp"]["postrotate"][first].value == "do some stuff to wtmp"
+    assert '/var/log/spooler' not in conf
