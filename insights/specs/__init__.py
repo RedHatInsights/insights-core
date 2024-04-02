@@ -113,7 +113,7 @@ class Specs(SpecSet):
     crio_conf = RegistryPoint(multi_output=True)
     cron_daily_rhsmd = RegistryPoint(filterable=True)
     cron_foreman = RegistryPoint(filterable=True)
-    cron_log = RegistryPoint(filterable=True)
+    cron_log = RegistryPoint(filterable=True, no_redact=True)
     crt = RegistryPoint()
     crypto_policies_bind = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     crypto_policies_config = RegistryPoint(no_obfuscate=['hostname', 'ip'])
