@@ -2,8 +2,8 @@ import doctest
 import pytest
 
 from insights.core.exceptions import SkipComponent
-from insights.parsers import falcontcl
-from insights.parsers.falcontcl import FalconctlBackend, FalconctlRfm
+from insights.parsers import falconctl
+from insights.parsers.falconctl import FalconctlBackend, FalconctlRfm
 from insights.tests import context_wrap
 
 BACKEND_1 = """
@@ -22,12 +22,12 @@ BACKEND_EMPTY = ""
 RFM_EMPTY = ""
 
 
-def test_falcontcl_1():
+def test_falconctl_1():
     backend_1 = FalconctlBackend(context_wrap(BACKEND_1))
     assert backend_1.backend == "not set"
 
 
-def test_falcontcl_2():
+def test_falconctl_2():
     backend_2 = FalconctlBackend(context_wrap(BACKEND_2))
     assert backend_2.backend == "auto"
 
@@ -54,5 +54,5 @@ def test_falcontcl_doc_examples():
         "falconctlbackend": FalconctlBackend(context_wrap(BACKEND_2)),
         "falconctlrfm": FalconctlRfm(context_wrap(RFM))
     }
-    failed, total = doctest.testmod(falcontcl, globs=env)
+    failed, total = doctest.testmod(falconctl, globs=env)
     assert failed == 0

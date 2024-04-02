@@ -16,7 +16,7 @@ from insights.core.plugins import parser
 from insights.specs import Specs
 
 
-@parser(Specs.falcontcl_backend)
+@parser(Specs.falconctl_backend)
 class FalconctlBackend(CommandParser):
     """
     This parser reads the output of ``/opt/CrowdStrike/falconctl -g --backend``,
@@ -30,7 +30,7 @@ class FalconctlBackend(CommandParser):
 
     Examples:
         >>> type(falconctlbackend)
-        <class 'insights.parsers.falcontcl.FalconctlBackend'>
+        <class 'insights.parsers.falconctl.FalconctlBackend'>
         >>> falconctlbackend.backend
         'auto'
 
@@ -46,7 +46,7 @@ class FalconctlBackend(CommandParser):
             self.backend = "not set"
 
 
-@parser(Specs.falcontcl_rfm)
+@parser(Specs.falconctl_rfm)
 class FalconctlRfm(CommandParser):
     """
     This parser reads the output of ``/opt/CrowdStrike/falconctl -g --rfm-state``,
@@ -58,7 +58,7 @@ class FalconctlRfm(CommandParser):
 
     Examples:
         >>> type(falconctlrfm)
-        <class 'insights.parsers.falcontcl.FalconctlRfm'>
+        <class 'insights.parsers.falconctl.FalconctlRfm'>
         >>> falconctlrfm.rfm
         False
 
