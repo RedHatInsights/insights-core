@@ -4,8 +4,8 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 class Specs(SpecSet):
     # Client metadata specs/files
     ansible_host = RegistryPoint(no_obfuscate=['hostname', 'ip'])
-    blacklist_report = RegistryPoint()
-    blacklisted_specs = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    blacklist_report = RegistryPoint(prio=-1)
+    blacklisted_specs = RegistryPoint(no_obfuscate=['hostname', 'ip'], prio=-1)
     branch_info = RegistryPoint()  # https://issues.redhat.com/browse/RHIN-639
     display_name = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     egg_release = RegistryPoint()
@@ -185,8 +185,8 @@ class Specs(SpecSet):
     ethtool_i = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     ethtool_k = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     facter = RegistryPoint()
-    falcontcl_backend = RegistryPoint(no_obfuscate=['hostname', 'ip'])
-    falcontcl_rfm = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    falconctl_backend = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    falconctl_rfm = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     fapolicyd_rules = RegistryPoint(multi_output=True, filterable=True, no_obfuscate=['hostname', 'ip'])
     fc_match = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     fcoeadm_i = RegistryPoint(no_obfuscate=['hostname', 'ip'])

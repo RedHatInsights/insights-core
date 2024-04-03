@@ -5,6 +5,7 @@ import tarfile
 import tempfile
 import uuid
 import insights.client.utilities as util
+import insights.client.cert_auth
 from insights.client.constants import InsightsConstants as constants
 import re
 import mock
@@ -76,14 +77,42 @@ def test_write_to_disk_with_broken_path():
     os.remove(filename)
 
 
-def test_generate_machine_id():
-    machine_id_regex = re.match('\w{8}-\w{4}-\w{4}-\w{4}-\w{12}',
-                                util.generate_machine_id(destination_file='/tmp/testmachineid'))
+@patch("insights.client.utilities._get_rhsm_identity", lambda: None)
+def test_generate_machine_id_with_no_subman():
+    machine_id_regex = re.match(
+        '\w{8}-\w{4}-\w{4}-\w{4}-\w{12}',
+        util.generate_machine_id(destination_file='/tmp/testmachineid')
+    )
     assert machine_id_regex.group(0) is not None
     with open('/tmp/testmachineid', 'r') as _file:
         machine_id = _file.read()
     assert util.generate_machine_id(destination_file='/tmp/testmachineid') == machine_id
     os.remove('/tmp/testmachineid')
+
+
+@pytest.mark.skipif(insights.client.cert_auth.RHSM_CONFIG is None, reason="RHSM config is not available")
+@patch("insights.client.utilities.os.path.isfile", lambda _: True)
+@patch("insights.client.cert_auth.rhsmCertificate")
+@patch("insights.client.utilities.cert_auth.RHSM_CONFIG")
+def test__get_rhsm_identity(mock_config, mock_rhsm_cert):
+    mock_config.return_value = "non-None-value"
+
+    cert = mock.MagicMock()
+    cert.CERT = "cert.pem"
+    cert.getConsumerId.return_value = machine_id
+    mock_rhsm_cert.read.return_value = cert
+
+    assert machine_id == util._get_rhsm_identity()
+
+
+@patch("insights.client.utilities._get_rhsm_identity", lambda: machine_id)
+def test_generate_machine_id_with_subman():
+    """Use sub-man's identity certificate for generating new machine-id."""
+    machine_id_file = "/tmp/test-machine-id"
+    read_uuid = util.generate_machine_id(destination_file=machine_id_file)
+    os.remove(machine_id_file)
+
+    assert machine_id == read_uuid
 
 
 def test_generate_machine_id_with_non_hyphen_id():
