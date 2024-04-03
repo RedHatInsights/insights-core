@@ -575,35 +575,83 @@ class InsightsConnection(object):
     # -LEGACY-
     def group_systems(self, group_name, systems):
         """
-        Adds an array of systems to specified group
+        Adds an array of systems to specified group. When given group_name
+        does not exist, then client tries to create a new group and adds
+        given system to the new group.
 
         Args:
             group_name: Display name of group
             systems: Array of {'machine_id': machine_id}
         """
-        api_group_id = None
+        system_ids = list(systems.values())
         headers = {'Content-Type': 'application/json'}
         group_path = self.api_url + '/v1/groups'
-        group_get_path = group_path + ('?display_name=%s' % quote(group_name))
 
+        # Description of the API is here (groups GET /groups):
+        # yeah, links with anchors do not work as expected :-/
+        # https://console.redhat.com/docs/api/inventory/v1#operations-groups-api
+        group_get_path = group_path + ('?name=%s' % quote(group_name))
         get_group = self.get(group_get_path)
+
+        api_group_id = None
         if get_group.status_code == 200:
-            api_group_id = get_group.json()['id']
+            group_info = get_group.json()
+            if isinstance(group_info, dict):
+                try:
+                    results = group_info.get("results", None)
+                    if isinstance(results, list) and len(results) >= 1:
+                        group = results[0]
+                        if isinstance(group, dict):
+                            api_group_id = group.get("id", None)
+                except KeyError:
+                    logger.error("Group info does not contain information about ID")
 
-        if get_group.status_code == 404:
-            # Group does not exist, POST to create
-            data = json.dumps({'display_name': group_name})
-            post_group = self.post(group_path,
-                                   headers=headers,
-                                   data=data)
+            if api_group_id is None:
+                logger.warning("Unable to get ID of group: {group_name}".format(group_name=group_name))
+            else:
+                logger.debug("Adding systems {systems} to the group {group_name}".format(
+                    systems=", ".join(system_ids), group_name=group_name
+                ))
+                # Documentation for this REST API is here (groups POST /groups/{group_id}/hosts):
+                # yeah, links with anchors do not work as expected :-/
+                # https://console.redhat.com/docs/api/inventory/v1#operations-groups-api
+                data = json.dumps(system_ids)
+                post_systems = self.post(
+                    group_path +
+                    ('/%s/hosts' % api_group_id),
+                    headers=headers,
+                    data=data
+                )
+                if post_systems.status_code == 201:
+                    logger.info("Successfully added systems {systems} to the group {group_name}".format(
+                        systems=", ".join(system_ids), group_name=group_name
+                    ))
+                else:
+                    logger.error("Unable to add systems {systems} to the group {group_name}".format(
+                        systems=", ".join(system_ids), group_name=group_name
+                    ))
+
+        if get_group.status_code == 404 or api_group_id is None:
+            logger.debug("Adding systems {systems} to new group {group_name}".format(
+                systems=", ".join(system_ids), group_name=group_name
+            ))
+
+            # Group does not exist, POST to create new group with host_ids
+            # Documentation for this REST API end-point is here:
+            # https://console.redhat.com/docs/api/inventory/v1#operations-groups-api
+            data = json.dumps({"name": group_name, "host_ids": system_ids})
+            post_group = self.post(
+                group_path,
+                headers=headers,
+                data=data
+            )
             self.handle_fail_rcs(post_group)
-            api_group_id = post_group.json()['id']
-
-        data = json.dumps(systems)
-        self.put(group_path +
-                 ('/%s/systems' % api_group_id),
-                 headers=headers,
-                 data=data)
+            if post_group.status_code == 201:
+                logger.info("Successfully created group {group_name} containing {systems}".format(
+                    systems=", ".join(system_ids), group_name=group_name
+                ))
+            else:
+                logger.error("Unable to create group: {group_name}".format(group_name=group_name))
 
     # -LEGACY-
     # Keeping this function around because it's not private and I don't know if anything else uses it
