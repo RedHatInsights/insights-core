@@ -2,9 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.17](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.17) (2024-04-04)
+
+- fix: Update falconctl name ([PR 4068](https://github.com/RedHatInsights/insights-core/pull/4068))
+- fix: support commands/files in file-redaction.yaml per manual ([PR 4059](https://github.com/RedHatInsights/insights-core/pull/4059))
+- Fix: Fix LogRotateConfPEG cannot handle '=' ([PR 3967](https://github.com/RedHatInsights/insights-core/pull/3967))
+- feat: collect specs in order based on given priority ([PR 4062](https://github.com/RedHatInsights/insights-core/pull/4062))
+
 # [insights-core-3.3.16](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.16) (2024-03-26)
 
-- - feat: Reuse subscription-manager identity for machine-id ([PR 4057](https://github.com/RedHatInsights/insights-core/pull/4057))
+- feat: Reuse subscription-manager identity for machine-id ([PR 4057](https://github.com/RedHatInsights/insights-core/pull/4057))
 
 # [insights-core-3.3.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.15) (2024-03-26)
 
