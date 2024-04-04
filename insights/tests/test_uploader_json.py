@@ -9,7 +9,7 @@ def get_uploader_json():
     Download latest uploader.json to use for unit tests
     '''
     try:
-        url = "https://api.access.redhat.com/r/insights/v1/static/uploader.v2.json"
+        url = "https://cloud.redhat.com/api/v1/static/testing/uploader.v2.json"
         uploader_json = requests.get(url).json()
         return uploader_json
     except Exception:
