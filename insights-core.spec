@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.16
+Version:        3.3.17
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,14 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Apr 04 2024 Xiangce Liu <xiangceliu@redhat.com>
+- fix: Update falconctl name (#4068) (jiazhang@redhat.com)
+- fix: support commands/files in file-redaction.yaml per manual (#4059)
+  (xiangceliu@redhat.com)
+- Fix: Fix LogRotateConfPEG cannot handle '=' (#3967) (986222045@qq.com)
+- feat: collect specs in order based on given priority (#4062)
+  (xiangceliu@redhat.com)
+
 * Tue Mar 26 2024 Xiangce Liu <xiangceliu@redhat.com>
 - feat: Reuse subscription-manager identity for machine-id (#4057)
   (mhorky@redhat.com)
