@@ -62,38 +62,43 @@ class LuksMeta(CommandParser, dict):
         6   active cb6e8904-81ff-40da-a84a-07ab9ab5715e
         7   active cb6e8904-81ff-40da-a84a-07ab9ab5715e
 
+    Attributes:
+        device_uuid (str): UUID of the LUKS device
+        key_slot_ids (list): List of LUKS keyslot id which can be used to retrieve the
+            keyslot metadata.
 
     Examples:
         >>> type(parsed_result)
         <class 'insights.parsers.luksmeta.LuksMeta'>
-
         >>> parsed_result[0].index
         0
-
         >>> parsed_result[0].state
         'active'
-
         >>> parsed_result[4].state
         'inactive'
-
         >>> parsed_result[0].metadata is None
         True
-
         >>> parsed_result[1].metadata
         'cb6e8904-81ff-40da-a84a-07ab9ab5715e'
-    """  # noqa
+        >>> parsed_result.device_uuid
+        'd62357eb-ea88-4b13-b756-a24e91fbfe9a'
+        >>> parsed_result.key_slot_ids
+        [0, 1, 2, 3, 4, 5, 6, 7]
+    """
 
     BAD_LINES = [
-            "device is not initialized",
-            "luksmeta data appears corrupt",
-            "unknown error",
-            "invalid slot",
-            "is not a luksv1 device",
-            "invalid argument",
-            "unable to read luksv1 header"
+        "device is not initialized",
+        "luksmeta data appears corrupt",
+        "unknown error",
+        "invalid slot",
+        "is not a luksv1 device",
+        "invalid argument",
+        "unable to read luksv1 header"
     ]
 
     def __init__(self, context):
+        self.device_uuid = None
+        self.key_slot_ids = []
         super(LuksMeta, self).__init__(context, LuksMeta.BAD_LINES)
 
     def parse_content(self, content):
@@ -101,9 +106,11 @@ class LuksMeta(CommandParser, dict):
 
         if len(filename_split) >= 4 and filename_split[-4] == "dev" and filename_split[-3] == "disk" and filename_split[-2] == "by-uuid":
             self["device_uuid"] = self.file_name.split(".")[-1] if self.file_name else None
+            self.device_uuid = self["device_uuid"]
 
         for line in content:
             index, state, metadata = line.split()
             index = int(index)
+            self.key_slot_ids.append(index)
             metadata = None if metadata == "empty" else metadata
             self[index] = KeyslotSpecification(index, state, metadata)
