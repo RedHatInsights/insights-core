@@ -14,7 +14,7 @@ from insights.core.context import HostContext
 from insights.core.filters import add_filter
 from insights.core.plugins import datasource
 from insights.core.spec_factory import (
-        RawFileProvider, RegistryPoint, SpecSet,
+        RawFileProvider, RegistryPoint, SpecSet, command_with_args,
         glob_file, simple_command, simple_file, first_file, foreach_collect)
 
 specs_save_as_manifest = """
@@ -61,6 +61,7 @@ SAVE_AS_MAP = {
     'many_foreach': ('many_foreach_dir/', 'many_foreach_dir/'),
     'smpl_cmd': ('/smpl_dir/smpl_cmd', 'smpl_dir/smpl_cmd'),
     'smpl_cmd_w_filter': ('smpl_dir_wf/', 'smpl_dir_wf'),
+    'cmd_w_args': ('cmd_with_args/', 'cmd_with_args'),
     'smpl_file': (None, None),
     'smpl_file_w_filter': ('smpl_filtered_file/', 'smpl_filtered_file/'),
     'first_of_spec_w_filter': ('/first.file', 'first.file'),
@@ -79,6 +80,7 @@ class Specs(SpecSet):
     many_foreach = RegistryPoint(multi_output=True)
     smpl_cmd = RegistryPoint()
     smpl_cmd_w_filter = RegistryPoint(filterable=True)
+    cmd_w_args = RegistryPoint()
     smpl_file = RegistryPoint()
     smpl_file_w_filter = RegistryPoint(filterable=True)
     first_of_spec_w_filter = RegistryPoint(filterable=True)
@@ -88,6 +90,11 @@ class Stuff(Specs):
     many_glob = glob_file(here + "/*.py", save_as=SAVE_AS_MAP['many_glob'][0])
 
     @datasource(HostContext)
+    def ls_files(broker):
+        """ Return a file path """
+        return this_file
+
+    @datasource(HostContext)
     def files(broker):
         """ Return a list of directories from the spec filter """
         return [this_file, here + "/__init__.py"]
@@ -95,6 +102,7 @@ class Stuff(Specs):
     many_foreach = foreach_collect(files, "%s", save_as=SAVE_AS_MAP['many_foreach'][0])
     smpl_cmd = simple_command("/usr/bin/uptime", save_as=SAVE_AS_MAP['smpl_cmd'][0])
     smpl_cmd_w_filter = simple_command("echo -n ' hello '", save_as=SAVE_AS_MAP['smpl_cmd_w_filter'][0])
+    cmd_w_args = command_with_args("ls %s", ls_files, save_as=SAVE_AS_MAP['cmd_w_args'][0])
     smpl_file = simple_file(this_file, save_as=SAVE_AS_MAP['smpl_file'][0])
     smpl_file_w_filter = simple_file(this_file, kind=RawFileProvider, save_as=SAVE_AS_MAP['smpl_file_w_filter'][0])  # RAW file won't filter
     first_of_spec_w_filter = first_file([this_file, "/etc/os-release"], save_as=SAVE_AS_MAP['first_of_spec_w_filter'][0])
@@ -117,6 +125,11 @@ def teardown_function(func):
         del filters.FILTERS[Stuff.smpl_file_w_filter]
         del filters.FILTERS[Stuff.first_of_spec_w_filter]
 
+    # Reset Test ENV
+    dr.COMPONENTS = defaultdict(lambda: defaultdict(set))
+    dr.TYPE_OBSERVERS = defaultdict(set)
+    dr.ENABLED = defaultdict(lambda: True)
+
 
 @stage(Stuff.many_glob,
        Stuff.many_foreach,
@@ -124,12 +137,14 @@ def teardown_function(func):
        Stuff.smpl_file_w_filter,
        Stuff.smpl_cmd,
        Stuff.smpl_cmd_w_filter,
+       Stuff.cmd_w_args,
        Stuff.first_of_spec_w_filter)
 def dostuff(broker):
     assert Stuff.many_glob in broker
     assert Stuff.many_foreach in broker
     assert Stuff.smpl_cmd in broker
     assert Stuff.smpl_cmd_w_filter in broker
+    assert Stuff.cmd_w_args in broker
     assert Stuff.smpl_file in broker
     assert Stuff.smpl_file_w_filter in broker
     assert Stuff.first_of_spec_w_filter in broker
@@ -155,6 +170,7 @@ def test_specs_save_as_no_collect():
     assert broker[Stuff.many_foreach][1].save_as == SAVE_AS_MAP['many_foreach'][1]
     assert broker[Stuff.smpl_cmd].save_as == SAVE_AS_MAP['smpl_cmd'][1]
     assert broker[Stuff.smpl_cmd_w_filter].save_as == SAVE_AS_MAP['smpl_cmd_w_filter'][1]
+    assert broker[Stuff.cmd_w_args].save_as == SAVE_AS_MAP['cmd_w_args'][1]
     assert broker[Stuff.smpl_file].save_as == SAVE_AS_MAP['smpl_file'][1]
     assert broker[Stuff.smpl_file_w_filter].save_as == SAVE_AS_MAP['smpl_file_w_filter'][1]
     assert broker[Stuff.first_of_spec_w_filter].save_as == SAVE_AS_MAP['first_of_spec_w_filter'][1]
@@ -208,8 +224,3 @@ def test_specs_save_as_collect(obfuscate):
     assert count == len(SAVE_AS_MAP)
 
     arch.delete_archive_dir()
-
-    # Reset Test ENV
-    dr.COMPONENTS = defaultdict(lambda: defaultdict(set))
-    dr.TYPE_OBSERVERS = defaultdict(set)
-    dr.ENABLED = defaultdict(lambda: True)
