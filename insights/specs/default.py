@@ -475,7 +475,7 @@ class DefaultSpecs(Specs):
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
     pmlog_summary = command_with_args("/usr/bin/pmlogsummary %s", pmlog_summary_args)
-    pmlog_summary_new = command_with_args("/usr/bin/pmlogsummary %s", pmlog_summary_args_new)
+    pmlog_summary_new = command_with_args("/usr/bin/pmlogsummary %s", pmlog_summary_args_new, save_as='pmlogsummary_based_on_pcp_zeroconf_archives')
     pmrep_metrics = simple_command("/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv")
     podman_list_containers = simple_command("/usr/bin/podman ps --all --no-trunc")
     postconf = simple_command("/usr/sbin/postconf")
