@@ -393,7 +393,7 @@ class InsightsUploadConf(object):
     def get_rm_conf(self):
         '''
         Try to load the the "new" version of
-        remove.conf (file-redaction.yaml and file-redaction.yaml)
+        remove.conf (file-redaction.yaml and file-content-redaction.yaml)
         '''
         rm_conf = {}
         redact_conf = self.load_redaction_file(self.redaction_file)
@@ -409,6 +409,9 @@ class InsightsUploadConf(object):
             # remove Nones, empty strings, and empty lists
             self.rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
 
+        if self.rm_conf and ('/etc/insights-client/machine-id' in self.rm_conf.get('files', []) or
+                'insights.specs.default.DefaultSpecs.machine_id' in self.rm_conf.get('components', [])):
+            logger.warning("WARNING: Spec machine_id will be skipped for redaction; as it would cause issues, please remove it from %s.", self.redaction_file)
         # return the RAW rm_conf
         return self.rm_conf
 
