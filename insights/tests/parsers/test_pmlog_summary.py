@@ -52,8 +52,8 @@ def test_pmlog_summary():
     pmlog_summary = PmLogSummary(context_wrap(PMLOG))
     verify_it(pmlog_summary)
 
-    pmlog_summary_new = PmLogSummaryPcpZeroConf(context_wrap(PMLOG))
-    verify_it(pmlog_summary_new)
+    pmlog_summary_pcp_zeroconf = PmLogSummaryPcpZeroConf(context_wrap(PMLOG))
+    verify_it(pmlog_summary_pcp_zeroconf)
 
 
 def test_pmlog_summmary():

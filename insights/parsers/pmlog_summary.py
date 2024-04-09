@@ -7,8 +7,8 @@ Parsers for parsing output of the ``pmlogsummary`` commands.
 PmLogSummary - Spec ``pmlog_summary``
 -------------------------------------
 
-PmLogSummaryPcpZeroConf - Spec ``pmlog_summary_new``
-----------------------------------------------------
+PmLogSummaryPcpZeroConf - Spec ``pmlog_summary_pcp_zeroconf``
+-------------------------------------------------------------
 """
 from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
@@ -151,9 +151,9 @@ class PmLogSummary(PmLogSummaryBase):
     pass
 
 
-@parser(Specs.pmlog_summary_new)
+@parser(Specs.pmlog_summary_pcp_zeroconf)
 class PmLogSummaryPcpZeroConf(PmLogSummaryBase):
     """
-    Parser to parse the content of `pmlog_summary_new` spec.
+    Parser to parse the content of `pmlog_summary_pcp_zeroconf` spec.
     """
     pass

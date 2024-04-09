@@ -16,7 +16,7 @@ from insights.specs.datasources import pcp
 from insights.specs.datasources.pcp import (
         pcp_enabled,
         pcp_raw_files,
-        pmlog_summary_args_new,
+        pmlog_summary_args_pcp_zeroconf,
         pmlog_summary_args,
         ros_collect)
 from insights.tests import context_wrap
@@ -225,7 +225,7 @@ def test_pcp_raw_files_ab_dir(_exists):
 @patch("insights.specs.datasources.pcp.glob.glob", return_value=PCP_RAW_FILES)
 @patch("insights.specs.datasources.pcp.os.path.isfile", return_value=True)
 @patch("insights.specs.datasources.pcp.os.path.exists", return_value=True)
-def test_pmlog_summary_args_new(_exists, _isfile, _glob, mtime):
+def test_pmlog_summary_args_pcp_zeroconf(_exists, _isfile, _glob, mtime):
     broker = dr.Broker()
     broker[HostnameDefault] = HostnameDefault(context_wrap("test"))
     broker['insights_config'] = InsightsConfig(ros_collect=True)
@@ -236,6 +236,6 @@ def test_pmlog_summary_args_new(_exists, _isfile, _glob, mtime):
 
     broker[pcp_raw_files] = pm_files
 
-    result = pmlog_summary_args_new(broker)
+    result = pmlog_summary_args_pcp_zeroconf(broker)
     expected = '{0} {1}'.format(pm_index, ' '.join(pcp.pcp_metrics))
     assert result == expected

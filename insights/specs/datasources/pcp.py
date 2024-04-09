@@ -152,7 +152,7 @@ def pcp_raw_files(broker):
 
 
 @datasource(pcp_raw_files, HostContext)
-def pmlog_summary_args_new(broker):
+def pmlog_summary_args_pcp_zeroconf(broker):
     """
     Return the 'index' of the PCP Raw data files and the required metrics.
 
