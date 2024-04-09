@@ -346,7 +346,7 @@ class Cleaner(object):
         for regex in DEFAULT_PASSWORD_REGEXS:
             tmp_line = line
             # The workaround of avoiding special cases
-            if ".withoutpassword" in line:
+            if line.strip().endswith(".withoutpassword"):
                 break
             line = re.sub(regex, r"\1\2********", tmp_line)
             if line != tmp_line:
