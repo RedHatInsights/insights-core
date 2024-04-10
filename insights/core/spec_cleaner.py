@@ -11,7 +11,7 @@ The following processes will be applied to clean the collected specs:
       Obfuscate the IP or Hostname appears in the spec content according to the
       specs native requirement and user configuration.
 
-    - Filter (T.B.D)
+    - Filtering
       If a spec is specified as `filterable=True`, the insights core collection
       will only collect the lines that only contains the keywords listed in the
       filters list and save into the archive.
@@ -63,8 +63,8 @@ class Cleaner(object):
         self.report_dir = '/tmp'
         # Obfuscation - set: ip and hostname only
         self.obfuscate = set()
-        self.obfuscate.add('ip') if config.obfuscate else None
-        self.obfuscate.add('hostname') if config.obfuscate_hostname else None
+        self.obfuscate.add('ip') if config and config.obfuscate else None
+        self.obfuscate.add('hostname') if config and config.obfuscate_hostname else None
 
         # File Content Redaction
         # - Pattern redaction
@@ -104,7 +104,7 @@ class Cleaner(object):
         self.dn_db = dict()  # domain name database
         self.domain_count = 0
 
-        if config.obfuscate_hostname and self.fqdn:
+        if config and config.obfuscate_hostname and self.fqdn:
             self._domains2db()
             hashed_hostname = hashlib.sha1(
                     self.fqdn.encode('utf-8')
@@ -323,6 +323,15 @@ class Cleaner(object):
     #   Main functions        #
     ###########################
 
+    def _filter_line_allowlist(self, line, filters):
+        # filter line as per filters
+        # TODO: complex filtering (regex, logic-support (and, or))
+        if line is None:
+            return line
+        if not filters or any(ft in line for ft in filters):
+            return line
+        return None
+
     def _obfuscate_line(self, line, obf_funcs):
         # obfuscate line for possible hostname, ip
         if not line:
@@ -336,36 +345,63 @@ class Cleaner(object):
         # redact line per the file-content-redaction.yaml
         if not line:
             return line
-        # patterns removal
+        # 1. patterns removal
         find = re.search if self.redact['regex'] else lambda x, y: x in y
         if any(find(pat, line) for pat in self.redact.get('exclude', [])):
             logger.debug("Pattern matched, removing line: %s" % line.strip())
             # patterns found, remove it
             return None
-        # password removal
-        if not line.strip().endswith(".withoutpassword"):
+        # 2. password removal
+        # TODO - refine the workaround
+        if not line.strip().endswith(".withoutpassword"):  # workaround special lines
             for regex in DEFAULT_PASSWORD_REGEXS:
                 tmp_line = line
                 line = re.sub(regex, r"\1\2********", tmp_line)
                 if line != tmp_line:
                     break
-        # keyword replacement redaction
+        # 3. keyword replacement redaction
         return self._sub_keywords(line)
+
+    def get_obfuscate_functions(self, filename='', no_obfuscate=None):
+        """
+        Return the list of required obfuscation function according to the
+        filename and configuration.  By default, it returns:
+            - [] when obfuscate=False
+            - [self._sub_ip] when obfuscate=True Only
+            - [self._sub_hostname, self._sub_ip] when obfuscate_hostname=True
+        """
+        obf_funcs = []
+        # Get the actual obfuscate list setting for this file
+        obfs = set(self.obfuscate) - set(no_obfuscate or [])
+        # IP obfuscation entry
+        obf_funcs.append(self._sub_ip_netstat if filename.endswith("netstat_-neopa") else self._sub_ip) if "ip" in obfs else None
+        # Hostname obfuscation entry
+        obf_funcs.append(self._sub_hostname) if "hostname" in obfs else None
+        return obf_funcs
 
     def clean_content(self, lines, filters=None, obf_funcs=None, no_redact=False):
         """
         Clean lines one by one according to the configuration, the cleaned
         lines will be returned.
         """
-        result = []
-        for line in lines:
-            # 1. Do Redaction by default, unless 'no_redact=True'
-            if line and not no_redact:
-                line = self._redact_line(line)
-            # 2. TODO: Do Filtering as per the "filters"
-            # line = self._filter_line_allow(line, filters)
+        def _clean_line(_line):
+            # 1. Do Redaction by default, unless "no_redact=True"
+            if _line and not no_redact:
+                _line = self._redact_line(_line)
+            # 2. Do Filtering as per the "filters"
+            _line = self._filter_line_allowlist(_line, filters)
             # 3. Do Obfuscation as per the "obf_funcs"
-            line = self._obfuscate_line(line, obf_funcs or [])
+            _line = self._obfuscate_line(_line, obf_funcs or [])
+            return _line
+
+        # handle single string
+        if not isinstance(lines, list):
+            return _clean_line(lines)
+
+        result = []
+        filters = filters or []
+        for line in lines:
+            line = _clean_line(line)
             result.append(line) if line is not None else None
         return result
 
@@ -374,19 +410,12 @@ class Cleaner(object):
         Clean a file according to the configuration, the file will be updated
         directly with the cleaned content.
         """
-        filters = filters or []
         logger.debug('Cleaning %s ...' % _file)
 
         if os.path.exists(_file) and not os.path.islink(_file):
-            # Get the actual obfuscate list setting for this file
-            obfs = set(self.obfuscate) - set(no_obfuscate or [])
-            obf_funcs = []
-            # IP obfuscation entry
-            obf_funcs.append(self._sub_ip_netstat if _file.endswith("netstat_-neopa") else self._sub_ip) if "ip" in obfs else None
-            # Hostname obfuscation entry
-            obf_funcs.append(self._sub_hostname) if "hostname" in obfs else None
             # Process the file
             raw_data = content = None
+            obf_funcs = self.get_obfuscate_functions(_file, no_obfuscate)
             try:
                 with open(_file, 'r') as fh:
                     raw_data = fh.readlines()
