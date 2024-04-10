@@ -343,14 +343,12 @@ class Cleaner(object):
             # patterns found, remove it
             return None
         # password removal
-        for regex in DEFAULT_PASSWORD_REGEXS:
-            tmp_line = line
-            # The workaround of avoiding special cases
-            if line.strip().endswith(".withoutpassword"):
-                break
-            line = re.sub(regex, r"\1\2********", tmp_line)
-            if line != tmp_line:
-                break
+        if not line.strip().endswith(".withoutpassword"):
+            for regex in DEFAULT_PASSWORD_REGEXS:
+                tmp_line = line
+                line = re.sub(regex, r"\1\2********", tmp_line)
+                if line != tmp_line:
+                    break
         # keyword replacement redaction
         return self._sub_keywords(line)
 
