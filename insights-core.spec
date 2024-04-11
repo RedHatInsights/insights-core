@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.17
+Version:        3.3.18
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Apr 11 2024 Xiangce Liu <xiangceliu@redhat.com>
+- feat: add spec to collect pmlogsummary of PCP Raw data (#4064)
+  (xiangceliu@redhat.com)
+- feat: imporve Cleaner.clean_content to process filters (#4076)
+  (xiangceliu@redhat.com)
+- fix: workaround/skip password redaction for special case (#4074)
+  (jiazhang@redhat.com)
+- fix: save_as of command_with_args cannot be a directory (#4069)
+  (xiangceliu@redhat.com)
+- feat: Enhance luksmeta parser (#4072)
+  (20520336+bfahr@users.noreply.github.com)
+- chore: use the uploader.json in '/testing' for unit test (#4071)
+  (xiangceliu@redhat.com)
+
 * Thu Apr 04 2024 Xiangce Liu <xiangceliu@redhat.com>
 - fix: Update falconctl name (#4068) (jiazhang@redhat.com)
 - fix: support commands/files in file-redaction.yaml per manual (#4059)
