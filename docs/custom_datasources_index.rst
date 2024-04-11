@@ -218,7 +218,7 @@ insights.specs.datasources.pcp
 ------------------------------
 
 .. automodule:: insights.specs.datasources.pcp
-    :members: ros_collect, pcp_enabled, pmlog_summary_args
+    :members: ros_collect, pcp_enabled, pmlog_summary_args, pmlog_summary_args_pcp_zeroconf
     :show-inheritance:
     :undoc-members:
 
