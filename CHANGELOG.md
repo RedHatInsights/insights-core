@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.18](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.18) (2024-04-11)
+
+- feat: add spec to collect pmlogsummary of PCP Raw data ([PR 4064](https://github.com/RedHatInsights/insights-core/pull/4064))
+- feat: imporve Cleaner.clean_content to process filters ([PR 4076](https://github.com/RedHatInsights/insights-core/pull/4076))
+- fix: workaround/skip password redaction for special case ([PR 4074](https://github.com/RedHatInsights/insights-core/pull/4074))
+- fix: save_as of command_with_args cannot be a directory ([PR 4069](https://github.com/RedHatInsights/insights-core/pull/4069))
+- feat: Enhance luksmeta parser ([PR 4072](https://github.com/RedHatInsights/insights-core/pull/4072))
+- chore: use the uploader.json in '/testing' for unit test ([PR 4071](https://github.com/RedHatInsights/insights-core/pull/4071))
+
 # [insights-core-3.3.17](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.17) (2024-04-04)
 
 - fix: Update falconctl name ([PR 4068](https://github.com/RedHatInsights/insights-core/pull/4068))
