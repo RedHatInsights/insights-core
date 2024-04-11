@@ -1,6 +1,14 @@
 """
 PmLogSummary - Command ``pmlogsummary``
 =======================================
+
+Parsers for parsing output of the ``pmlogsummary`` commands.
+
+PmLogSummary - Spec ``pmlog_summary``
+-------------------------------------
+
+PmLogSummaryPcpZeroConf - Spec ``pmlog_summary_pcp_zeroconf``
+-------------------------------------------------------------
 """
 from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
@@ -61,10 +69,9 @@ def parse(data):
     return result
 
 
-@parser(Specs.pmlog_summary)
-class PmLogSummary(CommandParser, dict):
+class PmLogSummaryBase(CommandParser, dict):
     """
-    Parser to parse the output of the ``pmlogsummary`` command
+    Base Parser to parse the output of the ``pmlogsummary`` command
 
     Sample output of the command is::
 
@@ -134,3 +141,19 @@ class PmLogSummary(CommandParser, dict):
             raise SkipComponent()
 
         self.update(data)
+
+
+@parser(Specs.pmlog_summary)
+class PmLogSummary(PmLogSummaryBase):
+    """
+    Parser to parse the content of `pmlog_summary` spec.
+    """
+    pass
+
+
+@parser(Specs.pmlog_summary_pcp_zeroconf)
+class PmLogSummaryPcpZeroConf(PmLogSummaryBase):
+    """
+    Parser to parse the content of `pmlog_summary_pcp_zeroconf` spec.
+    """
+    pass
