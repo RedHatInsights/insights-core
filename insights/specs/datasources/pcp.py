@@ -16,6 +16,19 @@ from insights.parsers.ros_config import RosConfig
 
 logger = logging.getLogger(__name__)
 
+pcp_metrics = [
+        'disk.dev.total',
+        'hinv.ncpu',
+        'kernel.all.cpu.idle',
+        'kernel.all.pressure.cpu.some.avg',
+        'kernel.all.pressure.io.full.avg',
+        'kernel.all.pressure.io.some.avg',
+        'kernel.all.pressure.memory.full.avg',
+        'kernel.all.pressure.memory.some.avg',
+        'mem.physmem',
+        'mem.util.available',
+]
+
 
 @datasource(Services, HostContext)
 def pcp_enabled(broker):
@@ -136,3 +149,17 @@ def pcp_raw_files(broker):
     # 3. has much more data than others
     #    - a rare case: when multiple pm_files satisfy with both 1 and 2
     return sorted(pm_cand, key=lambda x: (x[1], len(x[0])))[-1][0]
+
+
+@datasource(pcp_raw_files, HostContext)
+def pmlog_summary_args_pcp_zeroconf(broker):
+    """
+    Return the 'index' of the PCP Raw data files and the required metrics.
+
+    Returns:
+        str: Full arguments string that will be passed to the `pmlogsummary`,
+             which contains the `pmlogger` index file and the required `metrics`.
+    """
+    pm_files = broker.get(pcp_raw_files)
+    pm_index = [fil for fil in pm_files if fil.endswith('.index')][0]
+    return "{0} {1}".format(pm_index, ' '.join(pcp_metrics))
