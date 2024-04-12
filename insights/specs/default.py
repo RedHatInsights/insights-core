@@ -29,7 +29,7 @@ from insights.core.spec_factory import (
     simple_command, simple_file)
 from insights.specs import Specs
 from insights.specs.datasources import (
-    aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds,
+    aws, awx_manage, block_devices, client_metadata, cloud_init, corosync as corosync_ds,
     dir_list, eap_reports, ethernet, httpd, intersystems, ipcs, kernel,
     kernel_module_list, leapp, lpstat, ls, luks_devices, machine_ids,
     malware_detection, md5chk, mdadm, mount as mount_ds, package_provides,
@@ -125,6 +125,7 @@ class DefaultSpecs(Specs):
     bond = glob_file("/proc/net/bonding/*")
     bond_dynamic_lb = glob_file("/sys/class/net/*/bonding/tlb_dynamic_lb")
     boot_loader_entries = glob_file("/boot/loader/entries/*.conf")
+    boot_loader_on_disk = command_with_args("/usr/bin/file -s %s", block_devices.boot_device)
     bootc_status = simple_command("/usr/bin/bootc status --json")
     buddyinfo = simple_file("/proc/buddyinfo")
     brctl_show = simple_command("/usr/sbin/brctl show")

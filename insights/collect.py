@@ -269,6 +269,10 @@ plugins:
     # needed by the 'iris_messages_log' spec
         - name: insights.parsers.iris.IrisCpf
           enabled: true
+
+    # needed by 'boot_loader_on_disk' spec
+        - name: insights.parsers.lsblk.LSBlock
+          enabled: true
 """.strip()
 
 EXCEPTIONS_TO_REPORT = set([

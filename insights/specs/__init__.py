@@ -47,6 +47,7 @@ class Specs(SpecSet):
     bond = RegistryPoint(multi_output=True)
     bond_dynamic_lb = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     boot_loader_entries = RegistryPoint(multi_output=True)
+    boot_loader_on_disk = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     bootc_status = RegistryPoint(no_obfuscate=['hostname'])
     brctl_show = RegistryPoint()
     buddyinfo = RegistryPoint()

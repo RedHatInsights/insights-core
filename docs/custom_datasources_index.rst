@@ -27,6 +27,14 @@ insights.specs.datasources.awx_manage
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.block_devices
+----------------------------------------
+
+.. automodule:: insights.specs.datasources.block_devices
+    :members: boot_device
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.candlepin_broker
 -------------------------------------------
 
