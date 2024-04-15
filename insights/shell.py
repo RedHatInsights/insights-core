@@ -62,7 +62,7 @@ def _create_new_broker(path=None):
         broker[ctx.__class__] = ctx
 
         if isinstance(ctx, SerializedArchiveContext):
-            h = Hydration(ctx.root)
+            h = Hydration(ctx.root, ctx)
             broker = h.hydrate(broker=broker)
 
         dr.run(datasources, broker=broker)
