@@ -18,8 +18,8 @@ from insights.core.exceptions import BlacklistedSpec, ContentException, SkipComp
 from insights.core.filters import _add_filter, get_filters
 from insights.core.plugins import component, datasource, is_datasource
 from insights.core.serde import deserializer, serializer
-from insights.util import deprecated
 from insights.util import fs, streams, which
+from insights.util import deprecated
 from insights.util.mangle import mangle_command
 
 log = logging.getLogger(__name__)
@@ -72,7 +72,7 @@ class ContentProvider(object):
 
     def _clean_content(self):
         """
-        Clean (Obfuscate, Redact, and Filter) the Spec Content ONLY when doing
+        Clean (Obfuscate and Redact) the Spec Content ONLY when doing
         collection.
         """
         if isinstance(self.ctx, HostContext) and self.ds and self.cleaner:

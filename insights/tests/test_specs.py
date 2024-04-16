@@ -162,9 +162,9 @@ def dostuff(broker):
 with open(here + "/helpers.py") as f:
     smpl_file_content = f.read().splitlines()
 with open(here + "/mock_web_server.py") as f:
-    smpl_file_w_filter_content = f.read().splitlines()
+    smpl_file_w_filter_content = [l for l in f.read().splitlines() if "def get" in l]
 with open(here + "/spec_tests.py") as f:
-    first_file_content = f.read().splitlines()
+    first_file_w_filter_content = [l for l in f.read().splitlines() if any(i in l for i in ["def report_", "rhel"])]
 
 #
 # TEST
@@ -194,11 +194,11 @@ def test_spec_factory():
     assert dostuff in broker, broker.tracebacks
     assert broker[Stuff.smpl_file].content == smpl_file_content
     assert not any(l.endswith("\n") for l in broker[Stuff.smpl_file].content)
-    # "filter" works only when writing
+    # "filter" works when loading
     assert "hello" in broker[Stuff.smpl_cmd_w_filter].content[0]
     assert len(broker[Stuff.smpl_cmd_w_filter].content) == 1
     assert broker[Stuff.smpl_file_w_filter].content == smpl_file_w_filter_content
-    assert broker[Stuff.first_file_spec_w_filter].content == first_file_content
+    assert broker[Stuff.first_file_spec_w_filter].content == first_file_w_filter_content
     assert len(broker[Stuff.first_of_spec_w_filter].content) == 1
     assert len(broker.exceptions) == 2
     for exp in broker.exceptions:
@@ -226,7 +226,7 @@ def test_line_terminators():
     assert "hello" in broker[Stuff.smpl_cmd_w_filter].content[0]
     assert len(broker[Stuff.smpl_cmd_w_filter].content) == 1
     assert len(broker[Stuff.smpl_file_w_filter].content) == len(smpl_file_w_filter_content)
-    assert len(broker[Stuff.first_file_spec_w_filter].content) == len(first_file_content)
+    assert len(broker[Stuff.first_file_spec_w_filter].content) == len(first_file_w_filter_content)
     assert len(broker[Stuff.first_of_spec_w_filter].content) == 1
 
 

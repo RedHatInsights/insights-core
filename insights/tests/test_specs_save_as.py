@@ -113,10 +113,10 @@ class stage(dr.ComponentType):
 # File content
 with open(this_file) as f:
     smpl_file_content = f.read().splitlines()
-with open(here + "/mock_web_server.py", 'rb') as f:  # RawFileProvider: rb
+with open(here + "/mock_web_server.py", 'rb') as f:  # RawFileProvider: rb; and no filtering
     smpl_file_w_filter_content = f.read()
 with open(here + "/spec_tests.py") as f:
-    first_file_content = f.read().splitlines()
+    first_file_w_filter_content = [l for l in f.read().splitlines() if any(i in l for i in [" hello ", "class T"])]
 
 #
 # TEST
@@ -143,12 +143,8 @@ def teardown_function(func):
        Stuff.smpl_file_w_filter,
        Stuff.smpl_cmd,
        Stuff.smpl_cmd_w_filter,
-<<<<<<< HEAD
        Stuff.cmd_w_args,
-       Stuff.first_of_spec_w_filter)
-=======
        Stuff.first_file_spec_w_filter)
->>>>>>> f481c08e (feat: clean (obfuscate/redact/filter) specs in memory)
 def dostuff(broker):
     assert Stuff.many_glob in broker
     assert Stuff.many_foreach in broker
@@ -172,11 +168,11 @@ def test_specs_save_as_no_collect():
     assert dostuff in broker, broker.tracebacks
     assert broker[Stuff.smpl_file].content == smpl_file_content
     assert not any(l.endswith("\n") for l in broker[Stuff.smpl_file].content)
-    # "filter" works only when writing
+    # "filter" works when loading
     assert "hello" in broker[Stuff.smpl_cmd_w_filter].content[0]
     assert len(broker[Stuff.smpl_cmd_w_filter].content) == 1
     assert broker[Stuff.smpl_file_w_filter].content == smpl_file_w_filter_content  # RawFileProvdier only one line
-    assert broker[Stuff.first_file_spec_w_filter].content == first_file_content
+    assert broker[Stuff.first_file_spec_w_filter].content == first_file_w_filter_content
     # test "Save As"
     assert broker[Stuff.many_glob][-1].save_as == SAVE_AS_MAP['many_glob'][1]
     assert broker[Stuff.many_foreach][0].save_as == SAVE_AS_MAP['many_foreach'][1]
@@ -247,7 +243,7 @@ def test_specs_save_as_collect(obfuscate):
                     elif "first_file_spec_w_filter" in spec:
                         with open(os.path.join(data_root, rel), 'r') as fp:
                             new_content = fp.read().splitlines()
-                        assert new_content == [line for line in first_file_content if "class T" in line]
+                        assert new_content == [line for line in first_file_w_filter_content if "class T" in line]
     assert count == len(SAVE_AS_MAP)
 
     arch.delete_archive_dir()
