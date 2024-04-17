@@ -20,6 +20,7 @@ from insights.specs import Specs
 
 add_filter(
     Specs.subscription_manager_facts, [
+        'conversions.activity',
         'image-builder.osbuild-composer.api-type',
         'instance_id',
     ]

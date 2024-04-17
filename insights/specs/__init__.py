@@ -555,7 +555,8 @@ class Specs(SpecSet):
     pcs_status = RegistryPoint()
     php_ini = RegistryPoint(filterable=True)
     pluginconf_d = RegistryPoint(multi_output=True)
-    pmlog_summary = RegistryPoint()  # TODO: Remove after 'pcp_raw_data' works
+    pmlog_summary = RegistryPoint(no_obfuscate=['hostname', 'ip'])  # TODO: Remove after 'pcp_raw_data' works
+    pmlog_summary_pcp_zeroconf = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     pmrep_metrics = RegistryPoint()
     podman_list_containers = RegistryPoint()
     podman_list_images = RegistryPoint()
