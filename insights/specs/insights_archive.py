@@ -202,6 +202,7 @@ class InsightsArchiveSpecs(Specs):
     nmcli_dev_show = simple_file("insights_commands/nmcli_dev_show")
     ntpq_pn = simple_file("insights_commands/ntpq_-pn")
     numeric_user_group_name = simple_file("insights_commands/grep_-c_digit_.etc.passwd_.etc.group")
+    nvidia_smi_l = simple_file("insights_commands/nvidia-smi_-L")
     od_cpu_dma_latency = simple_file("insights_commands/od_-An_-t_d_.dev.cpu_dma_latency")
     ovs_vsctl_list_bridge = simple_file("insights_commands/ovs-vsctl_list_bridge")
     ovs_vsctl_show = simple_file("insights_commands/ovs-vsctl_show")
