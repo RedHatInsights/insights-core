@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.19](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.19) (2024-04-18)
+
+- chore: print warning when 'machine_id' is skipped for redaction ([PR 4073](https://github.com/RedHatInsights/insights-core/pull/4073))
+- feat: extend Specs.ps_eo_cmd to deprecate Specs.ps_eo ([PR 4066](https://github.com/RedHatInsights/insights-core/pull/4066))
+- feat: add "nvidia-smi -L" command to collect gpu data ([PR 4083](https://github.com/RedHatInsights/insights-core/pull/4083))
+- fix: deprecated parser usage in combiner.rhsm_release ([PR 4078](https://github.com/RedHatInsights/insights-core/pull/4078))
+- feat: add filter to Specs.subscription_manager_facts ([PR 4080](https://github.com/RedHatInsights/insights-core/pull/4080))
+
 # [insights-core-3.3.18](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.18) (2024-04-11)
 
 - feat: add spec to collect pmlogsummary of PCP Raw data ([PR 4064](https://github.com/RedHatInsights/insights-core/pull/4064))
