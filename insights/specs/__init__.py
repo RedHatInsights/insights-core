@@ -494,6 +494,7 @@ class Specs(SpecSet):
     ntptime = RegistryPoint()
     numa_cpus = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     numeric_user_group_name = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    nvidia_smi_l = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     nvme_core_io_timeout = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     oc_get_bc = RegistryPoint()
     oc_get_build = RegistryPoint()
