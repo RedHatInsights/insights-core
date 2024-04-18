@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.18
+Version:        3.3.19
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Apr 18 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.19-1
+- chore: print warning when 'machine_id' is skipped for redaction (#4073)
+  (xiangceliu@redhat.com)
+- feat: extend Specs.ps_eo_cmd to deprecate Specs.ps_eo (#4066)
+  (xiaoxwan@redhat.com)
+- feat: add "nvidia-smi -L" command to collect gpu data (#4083)
+  (lichen@redhat.com)
+- fix: deprecated parser usage in combiner.rhsm_release (#4078)
+  (xiaoxwan@redhat.com)
+- feat: add filter to Specs.subscription_manager_facts (#4080)
+  (xiaoxwan@redhat.com)
+
 * Thu Apr 11 2024 Xiangce Liu <xiangceliu@redhat.com>
 - feat: add spec to collect pmlogsummary of PCP Raw data (#4064)
   (xiangceliu@redhat.com)
