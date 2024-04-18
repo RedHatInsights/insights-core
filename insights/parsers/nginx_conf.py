@@ -142,7 +142,7 @@ class NginxConfPEG(ConfigParser):
         EndBlock = WS >> RightCurly << WS
         Bare = String(set(string.printable) - (set(string.whitespace) | set("#;{}'\"")))
         Name = WS >> PosMarker(String(name_chars) | EmptyQuotedString(name_chars)) << WS
-        Attr = WS >> (Num | Bare | QuotedString) << WS
+        Attr = WS >> (Num | Bare | QuotedString | EmptyQuotedString(name_chars)) << WS
         Attrs = Many(Attr)
         Block = BeginBlock >> Many(Stmt).map(skip_none) << EndBlock
         Stanza = (Lift(to_entry) * Name * Attrs * (Block | SemiColon)) | Comment
