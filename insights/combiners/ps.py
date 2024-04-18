@@ -4,7 +4,6 @@ PS
 
 This combiner provides information about running processes based on the ``ps`` command.
 More specifically this consolidates data from
-:py:class:`insights.parsers.ps.PsEo`,
 :py:class:`insights.parsers.ps.PsAuxcww`,
 :py:class:`insights.parsers.ps.PsEoCmd`,
 :py:class:`insights.parsers.ps.PsEf`,
@@ -47,17 +46,18 @@ Examples:
     ... 'F': '1',
     ... 'PRI': 20,
     ... 'NI': '0',
-    ... 'WCHAN': 'kthrea'
+    ... 'WCHAN': 'kthrea',
+    ... 'NLWP': '1'
     ... }
     True
 """
 
 from insights.core.plugins import combiner
 from insights.parsers import keyword_search
-from insights.parsers.ps import PsAlxwww, PsAuxww, PsAux, PsAuxcww, PsEo, PsEf, PsEoCmd
+from insights.parsers.ps import PsAlxwww, PsAuxww, PsAux, PsAuxcww, PsEf, PsEoCmd
 
 
-@combiner([PsAlxwww, PsAuxww, PsAux, PsEf, PsAuxcww, PsEo, PsEoCmd])
+@combiner([PsAlxwww, PsAuxww, PsAux, PsEf, PsAuxcww, PsEoCmd])
 class Ps(object):
     """
     ``Ps`` combiner consolidates data from the parsers in ``insights.parsers.ps`` module.
@@ -95,15 +95,14 @@ class Ps(object):
         'F': None,
         'PRI': None,
         'NI': None,
+        'NLWP': None,
         'WCHAN': None
     }
 
-    def __init__(self, ps_alxwww, ps_auxww, ps_aux, ps_ef, ps_auxcww, ps_eo, ps_eo_cmd):
+    def __init__(self, ps_alxwww, ps_auxww, ps_aux, ps_ef, ps_auxcww, ps_eo_cmd):
         self._pid_data = {}
 
         # order of parsers is important here
-        if ps_eo:
-            self.__update_data(ps_eo)
         if ps_auxcww:
             self.__update_data(ps_auxcww)
         if ps_eo_cmd:
@@ -180,14 +179,14 @@ class Ps(object):
             ... {'PID': 9, 'USER': 'root', 'UID': 0, 'PPID': 2, '%CPU': 0.1, '%MEM': 0.0,
             ...  'VSZ': 0.0, 'RSS': 0.0, 'TTY': '?', 'STAT': 'S', 'START': '2019', 'TIME': '0:00',
             ...  'COMMAND': '[rcu_bh]', 'COMMAND_NAME': '[rcu_bh]', 'ARGS': '', 'F': '1', 'PRI': 20,
-            ...  'NI': '0', 'WCHAN': 'rcu_gp'}
+            ...  'NI': '0', 'WCHAN': 'rcu_gp', 'NLWP': '1'}
             ... ]
             True
             >>> ps_combiner.search(USER='root', COMMAND='[kthreadd]') == [
             ... {'PID': 2, 'USER': 'root', 'UID': 0, 'PPID': 0, '%CPU': 0.0, '%MEM': 0.0,
             ...  'VSZ': 0.0, 'RSS': 0.0, 'TTY': '?', 'STAT': 'S', 'START': '2019', 'TIME': '1:04',
             ...  'COMMAND': '[kthreadd]', 'COMMAND_NAME': '[kthreadd]', 'ARGS': '', 'F': '1', 'PRI': 20,
-            ...  'NI': '0', 'WCHAN': 'kthrea'}
+            ...  'NI': '0', 'WCHAN': 'kthrea', 'NLWP': '1'}
             ... ]
             True
         """

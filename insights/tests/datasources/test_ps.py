@@ -10,45 +10,45 @@ from insights.core.spec_factory import DatasourceProvider
 from insights.specs.datasources.ps import ps_eo_cmd, LocalSpecs, jboss_runtime_versions
 
 PS_DATA = """
-PID COMMAND
-  1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
-  2 [kthreadd]
-  3 [rcu_gp]
-  4 [rcu_par_gp]
-  6 [kworker/0:0H-events_highpri]
-  9 [mm_percpu_wq]
- 10 [rcu_tasks_kthre]
- 11 /usr/bin/python3 /home/user1/python_app.py
- 12 [kworker/u16:0-kcryptd/253:0]
+PID  PPID NLWP COMMAND
+  1     0    1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
+  2     0    1 [kthreadd]
+  3     2    1 [rcu_gp]
+  4     2    1 [rcu_par_gp]
+  6     2    1 [kworker/0:0H-events_highpri]
+  9     2    1 [mm_percpu_wq]
+ 10     2    1 [rcu_tasks_kthre]
+ 11     2    1 /usr/bin/python3 /home/user1/python_app.py
+ 12     2    1 [kworker/u16:0-kcryptd/253:0]
 """
 
 PS_EXPECTED = """
-PID COMMAND
-1 /usr/lib/systemd/systemd
-2 [kthreadd]
-3 [rcu_gp]
-4 [rcu_par_gp]
-6 [kworker/0:0H-events_highpri]
-9 [mm_percpu_wq]
-10 [rcu_tasks_kthre]
-11 /usr/bin/python3
-12 [kworker/u16:0-kcryptd/253:0]
+PID PPID NLWP COMMAND
+1 0 1 /usr/lib/systemd/systemd
+2 0 1 [kthreadd]
+3 2 1 [rcu_gp]
+4 2 1 [rcu_par_gp]
+6 2 1 [kworker/0:0H-events_highpri]
+9 2 1 [mm_percpu_wq]
+10 2 1 [rcu_tasks_kthre]
+11 2 1 /usr/bin/python3
+12 2 1 [kworker/u16:0-kcryptd/253:0]
 """
 
 PS_BAD = "Command not found"
 
 PS_EMPTY = """
-PID COMMAND
+PID PPID NLWP COMMAND
 """
 jboss_home_1 = tempfile.mkdtemp(prefix='insights_test')
 jboss_home_2 = tempfile.mkdtemp(prefix='insights_test')
 PS_JBOSS_VERSION = """
-    PID COMMAND
-    1 /usr/lib/systemd/systemd --switched-root --system --deserialize 17
-    2 [kthreadd]
-    3 [rcu_gp]
-    8686 java -D[Standalone] -server -verbose:gc -Xloggc:/opt/jboss-datagrid-7.3.0-server/standalone/log/gc.log -XX:+PrintGCDetails -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M -XX:-TraceClassUnloading -Xms64m -Xmx512m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true -Dorg.jboss.boot.log.file=/opt/jboss-datagrid-7.3.0-server/standalone/log/server.log -Dlogging.configuration=file:/opt/jboss-datagrid-7.3.0-server/standalone/configuration/logging.properties -jar /opt/jboss-datagrid-7.3.0-server/jboss-modules.jar -mp /opt/jboss-datagrid-7.3.0-server/modules org.jboss.as.standalone -Djboss.home.dir={0} -Djboss.server.base.dir=/opt/jboss-datagrid-7.3.0-server/standalone
-    8880 /usr/lib/jvm/java-1.8.0-oracle/bin/java -D[Process Controller] -server -Xms64m -Xmx512m -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true -Dorg.jboss.boot.log.file=/home/jboss/jboss-eap-7.1/domain/log/process-controller.log -Dlogging.configuration=file:/home/jboss/jboss-eap-7.1/domain/configuration/logging.properties -jar /home/jboss/jboss-eap-7.1/jboss-modules.jar -mp /home/jboss/jboss-eap-7.1/modules org.jboss.as.process-controller -jboss-home {1} -jvm /usr/lib/jvm/java-1.8.0-oracle/bin/java -mp /home/jboss/jboss-eap-7.1/modules -- -Dorg.jboss.boot.log.file=/home/jboss/jboss-eap-7.1/domain/log/host-controller.log -Dlogging.configuration=file:/home/jboss/jboss-eap-7.1/domain/configuration/logging.properties -server
+  PID  PPID NLWP COMMAND
+    1     0    1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
+    2     0    1 [kthreadd]
+    3     2    1 [rcu_gp]
+ 8686   525    1 java -D[Standalone] -server -verbose:gc -Xloggc:/opt/jboss-datagrid-7.3.0-server/standalone/log/gc.log -XX:+PrintGCDetails -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M -XX:-TraceClassUnloading -Xms64m -Xmx512m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true -Dorg.jboss.boot.log.file=/opt/jboss-datagrid-7.3.0-server/standalone/log/server.log -Dlogging.configuration=file:/opt/jboss-datagrid-7.3.0-server/standalone/configuration/logging.properties -jar /opt/jboss-datagrid-7.3.0-server/jboss-modules.jar -mp /opt/jboss-datagrid-7.3.0-server/modules org.jboss.as.standalone -Djboss.home.dir={0} -Djboss.server.base.dir=/opt/jboss-datagrid-7.3.0-server/standalone
+ 8880   525    1 /usr/lib/jvm/java-1.8.0-oracle/bin/java -D[Process Controller] -server -Xms64m -Xmx512m -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true -Dorg.jboss.boot.log.file=/home/jboss/jboss-eap-7.1/domain/log/process-controller.log -Dlogging.configuration=file:/home/jboss/jboss-eap-7.1/domain/configuration/logging.properties -jar /home/jboss/jboss-eap-7.1/jboss-modules.jar -mp /home/jboss/jboss-eap-7.1/modules org.jboss.as.process-controller -jboss-home {1} -jvm /usr/lib/jvm/java-1.8.0-oracle/bin/java -mp /home/jboss/jboss-eap-7.1/modules -- -Dorg.jboss.boot.log.file=/home/jboss/jboss-eap-7.1/domain/log/host-controller.log -Dlogging.configuration=file:/home/jboss/jboss-eap-7.1/domain/configuration/logging.properties -server
 """.format(jboss_home_1, jboss_home_2)
 
 RELATIVE_PATH = 'insights_commands/ps_eo_cmd'
