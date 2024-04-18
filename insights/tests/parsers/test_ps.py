@@ -63,11 +63,11 @@ F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
 """
 
 PsEoCmd_TEST_DOC = """
-  PID COMMAND
-    1 /usr/lib/systemd/systemd
-    2 [kthreadd]
-    11 /usr/bin/python3
-    12 [kworker/u16:0-kcryptd/253:0]
+  PID  PPID NLWP COMMAND
+    1     0    1 /usr/lib/systemd/systemd
+    2     0    1 [kthreadd]
+   11     2    1 /usr/bin/python3
+   12     2    1 [kworker/u16:0-kcryptd/253:0]
 """
 
 
@@ -197,6 +197,10 @@ user2    20164  0.0  0.0 108472  1896 pts/5    Ss   10:10   0:00 bash
 root     20357  0.0  0.0   9120   832 ?        Ss   10:09   0:00 dhclient
 qemu     22673  0.6 10.7 1618556 840452 ?      Sl   11:38   1:31 qemu-kvm
 vdsm     27323 98.0 11.3  9120    987 ?        Ss   10.01   1:31 vdsm
+root     28106  0.0  0.0      0     0 ?        S    Mar12   0:00 NFSv4 callback
+root     28863  0.0  0.0   8700   224 ?        Ss    2023   0:00 falcond
+root     28865  0.2  0.7 933004 14424 ?        Sl    2023 323:00 falcon-sensor
+root     29570  0.0  0.0      0     0 ?        Z    Feb02   0:00 falcon-sensor <defunct>
 """.strip()
 
 PsAuxcww_BAD = """
@@ -225,8 +229,14 @@ def test_ps_auxww_from_auxcww():
         'START': 'May31', 'COMMAND': 'init', 'COMMAND_NAME': 'init', 'USER': 'root', 'STAT': 'Ss',
         'TIME': '0:01', 'RSS': '1544', 'ARGS': '',
     }
+    assert d[-1] == {
+        'USER': 'root', 'PID': '29570', '%CPU': '0.0', '%MEM': '0.0', 'VSZ': '0',
+        'RSS': '0', 'TTY': '?', 'STAT': 'Z', 'START': 'Feb02', 'TIME': '0:00',
+        'COMMAND': 'falcon-sensor <defunct>', 'COMMAND_NAME': 'falcon-sensor',
+        'ARGS': '<defunct>'
+    }
     assert d[2]["COMMAND"] == 'irqbalance'
-    assert d[-2]["COMMAND"] == 'qemu-kvm'
+    assert d[7]["COMMAND"] == 'qemu-kvm'
     assert p.fuzzy_match('irqbal')
     assert p.number_occurences("bash") == 3
     assert p.number_occurences("qemu-kvm") != 2
@@ -480,37 +490,49 @@ def test_ps_alxwww():
 
 
 PS_EO_CMD_NORMAL = """
-    PID COMMAND
-      1 /usr/lib/systemd/systemd
-      2 [kthreadd]
-      3 [rcu_gp]
-  93831 qmgr
-  93838 tlsmgr
-1221279 /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-4.el8.x86_64/jre/bin/java
-1221774 /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-4.el8.x86_64/jre/bin/java
+    PID  PPID NLWP COMMAND
+      1     0    1 /usr/lib/systemd/systemd
+      2     0    1 [kthreadd]
+      3     2    1 [rcu_gp]
+     63     1    1 falcond
+     65    63   29 falcon-sensor
+     70    65    1 falco
+   3106  3101    1 [NFSv4
+  93831 93830    1 qmgr
+  93838 93830    1 tlsmgr
+1221279 93840    1 /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-4.el8.x86_64/jre/bin/java
+1221774 93840    1 /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-4.el8.x86_64/jre/bin/java
 """
 
 
 def test_ps_eo_cmd():
     p = ps.PsEoCmd(context_wrap(PS_EO_CMD_NORMAL, strip=False))
     assert p is not None
-    assert len(p.running_pids()) == 7
+    assert len(p.running_pids()) == 11
     assert '93838' in p.pid_info
     assert p.pid_info['1221279'] == {
-        'PID': '1221279', 'COMMAND': '/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-4.el8.x86_64/jre/bin/java', 'COMMAND_NAME': 'java', 'ARGS': ''
+        'PID': '1221279', 'PPID': '93840', 'NLWP': '1',
+        'COMMAND': '/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-4.el8.x86_64/jre/bin/java',
+        'COMMAND_NAME': 'java', 'ARGS': ''
     }
     assert p.pid_info['3'] == {
-        'PID': '3', 'COMMAND': '[rcu_gp]', 'COMMAND_NAME': '[rcu_gp]', 'ARGS': ''
+        'PID': '3', 'PPID': '2', 'NLWP': '1', 'COMMAND': '[rcu_gp]', 'COMMAND_NAME': '[rcu_gp]', 'ARGS': ''
     }
     assert p.pid_info['93831'] == {
-        'PID': '93831', 'COMMAND': 'qmgr', 'COMMAND_NAME': 'qmgr', 'ARGS': ''
+        'PID': '93831', 'PPID': '93830', 'NLWP': '1', 'COMMAND': 'qmgr', 'COMMAND_NAME': 'qmgr', 'ARGS': ''
+    }
+    assert p.pid_info['70'] == {
+        'PID': '70', 'PPID': '65', 'NLWP': '1', 'COMMAND': 'falco', 'COMMAND_NAME': 'falco', 'ARGS': ''
+    }
+    assert p.pid_info['3106'] == {
+        'PID': '3106', 'PPID': '3101', 'NLWP': '1', 'COMMAND': '[NFSv4', 'COMMAND_NAME': '[NFSv4', 'ARGS': ''
     }
 
 
 def test_ps_eo_cmd_stripped():
     p = ps.PsEo(context_wrap(PS_EO_CMD_NORMAL, strip=True))
     assert p is not None
-    assert len(p.running_pids()) == 7
+    assert len(p.running_pids()) == 11
 
 
 PS_AUXWWWM = """

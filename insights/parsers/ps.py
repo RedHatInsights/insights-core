@@ -10,6 +10,7 @@ from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsers import keyword_search, parse_delimited_table
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 def are_present(tags, line):
@@ -393,6 +394,10 @@ class ContainerPsAux(ContainerParser, PsAuxww):
 @parser(Specs.ps_eo)
 class PsEo(Ps):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.6.0.
+        Please use the :class:`insights.parsers.ps.PsEoCmd` instead.
+
     Class to parse the command `ps -eo pid,ppid,comm,nlwp`
 
     Sample input data::
@@ -430,6 +435,10 @@ class PsEo(Ps):
     command_name = 'COMMAND'
     user_name = 'PID'
     max_splits = 3
+
+    def __init__(self, *args, **kwargs):
+        deprecated(PsEo, "Please use the :class:`insights.parsers.ps.PsEoCmd` instead.", "3.6.0")
+        super(PsEo, self).__init__(*args, **kwargs)
 
     def children(self, ppid):
         """list: Returns a list of dict for all rows with `ppid` as parent PID"""
@@ -483,25 +492,25 @@ class PsAlxwww(Ps):
 @parser(Specs.ps_eo_cmd)
 class PsEoCmd(Ps):
     """
-    Class to parse the command `ps -eo pid,args` where the
+    Class to parse the command `ps -ewwo pid,ppid,nlwp,args` where the
     datasource `ps_eo_cmd` trims off all args leaving only the full
     path to the command.
 
-    Sample output from the ``ps -eo pid, args`` command::
+    Sample output from the ``ps -ewwo pid,ppid,nlwp,args`` command::
 
-        PID COMMAND
-          1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
-          2 [kthreadd]
-         11 /usr/bin/python3 /home/user1/pythonapp.py
-         12 [kworker/u16:0-kcryptd/253:0]
+        PID  PPID NLWP COMMAND
+          1     0    1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
+          2     0    1 [kthreadd]
+         11     2    1 /usr/bin/python3 /home/user1/python_app.py
+         12     2    1 [kworker/u16:0-kcryptd/253:0]
 
     Sample data after trimming by the datasource::
 
-        PID COMMAND
-          1 /usr/lib/systemd/systemd
-          2 [kthreadd]
-         11 /usr/bin/python3
-         12 [kworker/u16:0-kcryptd/253:0]
+        PID  PPID NLWP COMMAND
+          1     0    1 /usr/lib/systemd/systemd
+          2     0    1 [kthreadd]
+         11     2    1 /usr/bin/python3
+         12     2    1 [kworker/u16:0-kcryptd/253:0]
 
     Examples:
         >>> type(ps_eo_cmd)
@@ -509,10 +518,15 @@ class PsEoCmd(Ps):
         >>> ps_eo_cmd.running_pids() == ['1', '2', '11', '12']
         True
         >>> ps_eo_cmd.search(COMMAND__contains='python3') == [
-        ...     {'PID': '11', 'COMMAND': '/usr/bin/python3', 'COMMAND_NAME': 'python3', 'ARGS': ''}
+        ...     {'PID': '11', 'PPID': '2', 'NLWP': '1', 'COMMAND': '/usr/bin/python3',
+        ...      'COMMAND_NAME': 'python3', 'ARGS': ''}
         ... ]
         True
     """
     command_name = 'COMMAND'
     user_name = 'PID'
-    max_splits = 1
+    max_splits = 3
+
+    def children(self, ppid):
+        """list: Returns a list of dict for all rows with `ppid` as parent PID"""
+        return [row for row in self.data if row['PPID'] == ppid]

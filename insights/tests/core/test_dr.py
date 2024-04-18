@@ -82,7 +82,7 @@ def test_get_registry_points_multiple_specs():
         assert spec in specs
 
     specs = dr.get_registry_points(Ps)
-    assert len(specs) == 7
+    assert len(specs) == 6
     for spec in [Specs.ps_aux, Specs.ps_auxww, Specs.ps_auxcww, Specs.ps_ef,
-                 Specs.ps_auxcww, Specs.ps_eo, Specs.ps_eo_cmd]:
+                 Specs.ps_auxcww, Specs.ps_eo_cmd]:
         assert spec in specs

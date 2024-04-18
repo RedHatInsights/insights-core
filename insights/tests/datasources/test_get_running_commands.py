@@ -6,40 +6,40 @@ from insights.specs.datasources import get_running_commands
 from insights.tests import context_wrap
 
 PS_EO_CMD = """
-   PID COMMAND
-     1 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
-     2 [kthreadd]
-   988 /usr/sbin/httpd -DFOREGROUND
-  1036 /usr/sbin/httpd -DFOREGROUND
-  1037 /usr/sbin/httpd -DFOREGROUND
-  1038 /usr/sbin/httpd -DFOREGROUND
-  1039 /usr/sbin/httpd -DFOREGROUND
-  1040 /usr/local/sbin/httpd -DFOREGROUND
- 28218 /usr/bin/java TestSleepMethod1
- 28219 java TestSleepMethod1
- 28240 /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.292.b10-1.el7_9.x86_64/jre/bin/java TestSleepMethod2
-333083 /home/user3/apps/pycharm-2021.1.1/jbr/bin/java -classpath /home/user3/apps/pycharm-2021.1.1/lib/bootstrap.jar:/home/user3/apps/pycharm-2021.1.1/lib/util.jar:/home/user3/apps/pycharm-2021.1.1/lib/jdom.jar:/home/user3/apps/pycharm-2021.1.1/lib/log4j.jar:/home/user3/apps/pycharm-2021.1.1/lib/jna.jar -Xms128m -Xmx2048m -XX:ReservedCodeCacheSize=512m -XX:+UseG1GC -XX:SoftRefLRUPolicyMSPerMB=50 -XX:CICompilerCount=2 -XX:+HeapDumpOnOutOfMemoryError -XX:-OmitStackTraceInFastThrow -ea -Dsun.io.useCanonCaches=false -Djdk.http.auth.tunneling.disabledSchemes="" -Djdk.attach.allowAttachSelf=true -Djdk.module.illegalAccess.silent=true -Dkotlinx.coroutines.debug=off -Dsun.tools.attach.tmp.only=true -XX:ErrorFile=/home/user3/java_error_in_pycharm_%p.log -XX:HeapDumpPath=/home/user3/java_error_in_pycharm_.hprof -Didea.vendor.name=JetBrains -Didea.paths.selector=PyCharm2021.1 -Djb.vmOptionsFile=/home/user3/.config/JetBrains/PyCharm2021.1/pycharm64.vmoptions -Didea.platform.prefix=Python com.intellij.idea.Main
+   PID  PPID NLWP COMMAND
+     1     0    1 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+     2     0    1 [kthreadd]
+   988     2    1 /usr/sbin/httpd -DFOREGROUND
+  1036     2    1 /usr/sbin/httpd -DFOREGROUND
+  1037     2    1 /usr/sbin/httpd -DFOREGROUND
+  1038     2    1 /usr/sbin/httpd -DFOREGROUND
+  1039     2    1 /usr/sbin/httpd -DFOREGROUND
+  1040     2    1 /usr/local/sbin/httpd -DFOREGROUND
+ 28218     2    1 /usr/bin/java TestSleepMethod1
+ 28219     2    1 java TestSleepMethod1
+ 28240     2    1 /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.292.b10-1.el7_9.x86_64/jre/bin/java TestSleepMethod2
+333083     2    1 /home/user3/apps/pycharm-2021.1.1/jbr/bin/java -classpath /home/user3/apps/pycharm-2021.1.1/lib/bootstrap.jar:/home/user3/apps/pycharm-2021.1.1/lib/util.jar:/home/user3/apps/pycharm-2021.1.1/lib/jdom.jar:/home/user3/apps/pycharm-2021.1.1/lib/log4j.jar:/home/user3/apps/pycharm-2021.1.1/lib/jna.jar -Xms128m -Xmx2048m -XX:ReservedCodeCacheSize=512m -XX:+UseG1GC -XX:SoftRefLRUPolicyMSPerMB=50 -XX:CICompilerCount=2 -XX:+HeapDumpOnOutOfMemoryError -XX:-OmitStackTraceInFastThrow -ea -Dsun.io.useCanonCaches=false -Djdk.http.auth.tunneling.disabledSchemes="" -Djdk.attach.allowAttachSelf=true -Djdk.module.illegalAccess.silent=true -Dkotlinx.coroutines.debug=off -Dsun.tools.attach.tmp.only=true -XX:ErrorFile=/home/user3/java_error_in_pycharm_%p.log -XX:HeapDumpPath=/home/user3/java_error_in_pycharm_.hprof -Didea.vendor.name=JetBrains -Didea.paths.selector=PyCharm2021.1 -Djb.vmOptionsFile=/home/user3/.config/JetBrains/PyCharm2021.1/pycharm64.vmoptions -Didea.platform.prefix=Python com.intellij.idea.Main
 """
 
 PS_EO_CMD_MISSING = """
-PID COMMAND
-  1 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
-  2 [kthreadd]
+PID  PPID NLWP COMMAND
+  1     0    1 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+  2     0    1 [kthreadd]
 """
 
 PS_EO_CMD_EXCEPTION = """
-  PID COMMAND
-    1 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
-    2 [kthreadd]
-28218 /usr/bin/java TestSleepMethod1
-28219 /exception/java
+  PID  PPID NLWP COMMAND
+    1     0    1 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+    2     0    1 [kthreadd]
+28218     2    1 /usr/bin/java TestSleepMethod1
+28219     2    1 /exception/java
 """
 
 PS_EO_CMD_ONE = """
-   PID COMMAND
-     1 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
-     2 [kthreadd]
-   988 /usr/sbin/httpd -DFOREGROUND
+   PID  PPID NLWP COMMAND
+     1     0    1 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+     2     0    1 [kthreadd]
+   988     2    1 /usr/sbin/httpd -DFOREGROUND
 """
 
 
@@ -60,7 +60,7 @@ class FakeContext(object):
 
 def test_get_running_commands_present():
     pseo = PsEoCmd(context_wrap(PS_EO_CMD))
-    ps = Ps(None, None, None, None, None, None, pseo)
+    ps = Ps(None, None, None, None, None, pseo)
     assert ps is not None
     ctx = FakeContext()
 
@@ -86,7 +86,7 @@ def test_get_running_commands_present():
 
 def test_get_running_commands_missing():
     pseo = PsEoCmd(context_wrap(PS_EO_CMD_MISSING))
-    ps = Ps(None, None, None, None, None, None, pseo)
+    ps = Ps(None, None, None, None, None, pseo)
     assert ps is not None
     ctx = FakeContext()
 
@@ -96,7 +96,7 @@ def test_get_running_commands_missing():
 
 def test_get_running_commands_cmd_exception():
     pseo = PsEoCmd(context_wrap(PS_EO_CMD_EXCEPTION))
-    ps = Ps(None, pseo, None, None, None, None, pseo)
+    ps = Ps(None, pseo, None, None, None, pseo)
     assert ps is not None
     ctx = FakeContext()
 
@@ -106,7 +106,7 @@ def test_get_running_commands_cmd_exception():
 
 def test_get_running_commands_exception():
     pseo = PsEoCmd(context_wrap(PS_EO_CMD_MISSING))
-    ps = Ps(None, None, None, None, None, None, pseo)
+    ps = Ps(None, None, None, None, None, pseo)
     assert ps is not None
     ctx = FakeContext()
 
@@ -119,7 +119,7 @@ def test_get_running_commands_exception():
 
 def test_get_running_commands_one():
     pseo = PsEoCmd(context_wrap(PS_EO_CMD_ONE))
-    ps = Ps(None, None, None, None, None, None, pseo)
+    ps = Ps(None, None, None, None, None, pseo)
     assert ps is not None
     ctx = FakeContext()
 
