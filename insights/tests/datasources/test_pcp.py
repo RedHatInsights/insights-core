@@ -118,7 +118,7 @@ def test_pmlog_summary_args(isfile, exists):
     # Case 1: OK
     ros = RosConfig(context_wrap(ROS_CONFIG))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW))
-    ps = Ps(None, None, None, None, ps_auxcww, None, None)
+    ps = Ps(None, None, None, None, ps_auxcww, None)
 
     broker = dr.Broker()
     broker[Ps] = ps
@@ -145,7 +145,7 @@ def test_pmlog_summary_args(isfile, exists):
     # Case 3 No pmloger proc in ps
     ros = RosConfig(context_wrap(ROS_CONFIG))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_NG))
-    ps = Ps(None, None, None, None, ps_auxcww, None, None)
+    ps = Ps(None, None, None, None, ps_auxcww, None)
     broker = dr.Broker()
     broker[Ps] = ps
     broker[RosConfig] = ros
@@ -158,7 +158,7 @@ def test_pmlog_summary_args(isfile, exists):
 def test_pmlog_summary_args_no_pmloger_file(isfile):
     ros = RosConfig(context_wrap(ROS_CONFIG))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW))
-    ps = Ps(None, None, None, None, ps_auxcww, None, None)
+    ps = Ps(None, None, None, None, ps_auxcww, None)
 
     broker = dr.Broker()
     broker[Ps] = ps
