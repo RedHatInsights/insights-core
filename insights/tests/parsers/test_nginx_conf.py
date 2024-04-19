@@ -99,6 +99,20 @@ http {
 }
 """.strip()
 
+NGINX_EMPTY_QUOTE = """
+server{
+        listen 443 ssl;
+        ssl_certificate /etc/nginx/certificate/nginx-certificate.crt;
+        ssl_certificate_key /etc/nginx/certificate/nginx.key;
+        location / { try_files $uri @api; }
+        location @api {
+            include fastcgi_params;
+            fastcgi_param PATH_INFO $fastcgi_script_name;
+            fastcgi_param SCRIPT_NAME "";
+            fastcgi_pass localhost:5000;
+        }
+}""".strip()
+
 
 def test_nginxconfpeg():
     nginxconf = nginx_conf.NginxConfPEG(context_wrap(NGINXCONF))
@@ -152,6 +166,11 @@ def test_nginxconfpeg_container():
     assert nginxconf.engine == 'podman'
     assert nginxconf.image == 'quay.io/rhel8'
     assert nginxconf.container_id == 'xxxx'
+
+
+def test_nginxconf_empty_quote():
+    nginxconf = nginx_conf.NginxConfPEG(context_wrap(NGINX_EMPTY_QUOTE))
+    assert nginxconf['server'][0]['location'][-1]['fastcgi_param'][-1].value == 'SCRIPT_NAME '
 
 
 def test_doc():
