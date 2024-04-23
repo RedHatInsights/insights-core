@@ -41,8 +41,11 @@ class Sudoers(SudoersBase):
     """
     def __init__(self, sudoers):
         self.lines = []
+        self.data = {}
         first = False
         for sdr in sorted(sudoers, key=lambda x: x.file_path):
+            self.data[sdr.file_path] = []
+            self.data[sdr.file_path] = sdr.lines
             self.lines.extend(sdr.lines)
             if not first:
                 first = True
