@@ -125,37 +125,37 @@ db2_database_manager_path = "insights_commands/runuser_-l_dbp_-c_db2_-c_db2_get_
 
 
 def test_db2_databases_configuration():
-    db2_configuration_user = db2.Db2DatabasesConfiguration(context_wrap(DB2_CONFIGURATION_USER, path=db2_databases_configuration_path))
+    db2_configuration_user = db2.Db2DatabaseConfiguration(context_wrap(DB2_CONFIGURATION_USER, path=db2_databases_configuration_path))
     assert db2_configuration_user["Database configuration release level"] == "0x1500"
     assert db2_configuration_user["user"] == "dbp"
 
     with pytest.raises(SkipComponent) as e:
-        db2.Db2DatabasesConfiguration(context_wrap(DB2_CONFIGURATION_USER_EMPTY, path=db2_databases_configuration_path))
+        db2.Db2DatabaseConfiguration(context_wrap(DB2_CONFIGURATION_USER_EMPTY, path=db2_databases_configuration_path))
     assert "The result is empty" in str(e)
 
     with pytest.raises(SkipComponent) as e:
-        db2.Db2DatabasesConfiguration(context_wrap(DB2_CONFIGURATION_USER_INCORRECT, path=db2_databases_configuration_path))
+        db2.Db2DatabaseConfiguration(context_wrap(DB2_CONFIGURATION_USER_INCORRECT, path=db2_databases_configuration_path))
     assert "The format is incorrect" in str(e)
 
 
 def test_db2_database_manager():
-    db2_manager_configuration = db2.Db2DatabasesManager(context_wrap(DB2_MANAGER_CONFIGURATION, path=db2_database_manager_path))
+    db2_manager_configuration = db2.Db2DatabaseManager(context_wrap(DB2_MANAGER_CONFIGURATION, path=db2_database_manager_path))
     assert db2_manager_configuration["Max number of concurrently active databases     (NUMDB)"] == "32"
     assert db2_manager_configuration["user"] == "dbp"
 
     with pytest.raises(SkipComponent) as e:
-        db2.Db2DatabasesManager(context_wrap(DB2_MANAGER_CONFIGURATION_EMPTY, path=db2_database_manager_path))
+        db2.Db2DatabaseManager(context_wrap(DB2_MANAGER_CONFIGURATION_EMPTY, path=db2_database_manager_path))
     assert "The result is empty" in str(e)
 
     with pytest.raises(SkipComponent) as e:
-        db2.Db2DatabasesManager(context_wrap(DB2_MANAGER_CONFIGURATION_INCORRECT, path=db2_database_manager_path))
+        db2.Db2DatabaseManager(context_wrap(DB2_MANAGER_CONFIGURATION_INCORRECT, path=db2_database_manager_path))
     assert "The format is incorrect" in str(e)
 
 
 def test_doc_examples():
     env = {
-        'db2databaseconfiguration': db2.Db2DatabasesConfiguration(context_wrap(DB2_CONFIGURATION_USER, path=db2_databases_configuration_path)),
-        'db2databasemanager': db2.Db2DatabasesManager(context_wrap(DB2_MANAGER_CONFIGURATION, path=db2_database_manager_path)),
+        'db2databaseconfiguration': db2.Db2DatabaseConfiguration(context_wrap(DB2_CONFIGURATION_USER, path=db2_databases_configuration_path)),
+        'db2databasemanager': db2.Db2DatabaseManager(context_wrap(DB2_MANAGER_CONFIGURATION, path=db2_database_manager_path)),
     }
     failed, total = doctest.testmod(db2, globs=env)
     assert failed == 0

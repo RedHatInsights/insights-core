@@ -1,13 +1,13 @@
 """
-db2 - db2 databases
-===================
+db2 - db2 database information
+==============================
 Parsers included in this module are:
 
-Db2DatabasesConfiguration - Command ``/usr/sbin/runuser -l  <user name>  -c 'db2 get database configuration for %s'``
-=====================================================================================================================
+Db2DatabaseConfiguration - Command ``/usr/sbin/runuser -l  <user name>  -c 'db2 get database configuration for %s'``
+====================================================================================================================
 
-Db2DatabasesManager - Command ``/usr/sbin/runuser -l  <user name>  -c 'db2 get dbm cfg'``
-=========================================================================================
+Db2DatabaseManager - Command ``/usr/sbin/runuser -l  <user name>  -c 'db2 get dbm cfg'``
+========================================================================================
 """
 
 from insights.core import CommandParser
@@ -16,8 +16,8 @@ from insights.core.plugins import parser
 from insights.specs import Specs
 
 
-@parser(Specs.db2_databases_configuration)
-class Db2DatabasesConfiguration(CommandParser, dict):
+@parser(Specs.db2_database_configuration)
+class Db2DatabaseConfiguration(CommandParser, dict):
     """
     Parse the output of the ``/usr/sbin/runuser -l  <user name>  -c 'db2 get database configuration for %s'`` command.
 
@@ -61,7 +61,7 @@ class Db2DatabasesConfiguration(CommandParser, dict):
 
 
 @parser(Specs.db2_database_manager)
-class Db2DatabasesManager(CommandParser, dict):
+class Db2DatabaseManager(CommandParser, dict):
     """
     Parse the output of the ``/usr/sbin/runuser -l  <user name>  -c 'db2 get dbm cfg'`` command.
 

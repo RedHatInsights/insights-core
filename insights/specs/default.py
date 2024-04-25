@@ -175,7 +175,7 @@ class DefaultSpecs(Specs):
     date = simple_command("/bin/date")
     date_utc = simple_command("/bin/date --utc")
     db2ls_a_c = simple_command("/usr/local/bin/db2ls -a -c")
-    db2_databases_configuration = foreach_execute(db2.db2_databases_info, "/usr/sbin/runuser -l  %s  -c 'db2 get database configuration for %s'")
+    db2_database_configuration = foreach_execute(db2.db2_databases_info, "/usr/sbin/runuser -l  %s  -c 'db2 get database configuration for %s'")
     db2_database_manager = foreach_execute(db2.db2_users, "/usr/sbin/runuser -l  %s  -c 'db2 get dbm cfg'")
     df__al = simple_command("/bin/df -al -x autofs")
     df__alP = simple_command("/bin/df -alP -x autofs")
