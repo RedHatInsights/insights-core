@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.19
+Version:        3.3.20
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,13 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Apr 25 2024 Lizhong Chen <lichen@redhat.com> 3.3.20-1
+- Feat: enhance combiners sudoers (#4088) (986222045@qq.com)
+- bug: Fix nginx conf parser for empty quoted params (#4087)
+  (20520336+bfahr@users.noreply.github.com)
+- fix: obfuscate/redact the facts for legacy_upload=False (#4085)
+  (xiangceliu@redhat.com)
+
 * Thu Apr 18 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.19-1
 - chore: print warning when 'machine_id' is skipped for redaction (#4073)
   (xiangceliu@redhat.com)
