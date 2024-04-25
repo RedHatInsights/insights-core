@@ -47,6 +47,9 @@ def test_sudoers():
     assert wheel[1] == '%wheel  ALL=(ALL)       ABC'
     assert sudo.last("Defaults") == 'Defaults:wheel !requiretty'
 
+    assert sudo.data['/etc/sudoers'] == ['%wheel  ALL=(ALL)       ALL', '#includedir /etc/sudoers.d']
+    assert sudo.data['/etc/sudoers.d/test'] == ['%wheel  ALL=(ALL)       ABC', 'Defaults:wheel !requiretty']
+
     with pytest.raises(TypeError):
         sudo.get({})
 
@@ -56,6 +59,7 @@ def test_sudoers_no_includedir():
     sudo2 = EtcSudoers(context_wrap(SUDOERS_FM, path=SUDOERS_PATH2))
     sudo3 = EtcSudoers(context_wrap(SUDOERS_WH, path=SUDOERS_PATH3))
     sudo = Sudoers([sudo1, sudo2, sudo3])
+    assert sudo.data['/etc/sudoers'] == ['%wheel  ALL=(ALL)       ALL']
     assert len(sudo.lines) == 1
 
 
