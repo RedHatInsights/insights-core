@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.20](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.20) (2024-04-25)
+
+- Feat: enhance combiners sudoers ([PR 4088](https://github.com/RedHatInsights/insights-core/pull/4088))
+- bug: Fix nginx conf parser for empty quoted params ([PR 4087](https://github.com/RedHatInsights/insights-core/pull/4087))
+- fix: obfuscate/redact the facts for legacy_upload=False ([PR 4085](https://github.com/RedHatInsights/insights-core/pull/4085))
+
 # [insights-core-3.3.19](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.19) (2024-04-18)
 
 - chore: print warning when 'machine_id' is skipped for redaction ([PR 4073](https://github.com/RedHatInsights/insights-core/pull/4073))
