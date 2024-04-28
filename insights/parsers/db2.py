@@ -56,7 +56,8 @@ class Db2DatabaseConfiguration(CommandParser, dict):
         if not result:
             raise SkipComponent("The format is incorrect")
 
-        result["user"] = self.file_path.split("_")[3]
+        result["user"] = self.file_path.split("_")[3].strip()
+        result["db_name"] = self.file_path.split("_")[-1].strip()
         self.update(result)
 
 

@@ -128,6 +128,7 @@ def test_db2_databases_configuration():
     db2_configuration_user = db2.Db2DatabaseConfiguration(context_wrap(DB2_CONFIGURATION_USER, path=db2_databases_configuration_path))
     assert db2_configuration_user["Database configuration release level"] == "0x1500"
     assert db2_configuration_user["user"] == "dbp"
+    assert db2_configuration_user["db_name"] == "TESTD1"
 
     with pytest.raises(SkipComponent) as e:
         db2.Db2DatabaseConfiguration(context_wrap(DB2_CONFIGURATION_USER_EMPTY, path=db2_databases_configuration_path))
