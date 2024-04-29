@@ -21,19 +21,16 @@ def db2_users(broker):
     Raises:
         SkipComponent: there is no db2 users running db2 databases
     """
-    users_result = []
     ps = broker[Ps]
     ps_list = ps.search(COMMAND_NAME__contains="db2sysc")
-    if not ps_list:
-        raise SkipComponent("No db2 database is running")
-    for item in ps_list:
-        user_name = item.get("USER", None)
-        if user_name:
-            users_result.append(user_name)
-    if users_result:
-        users_result.sort()
-        return users_result
-    raise SkipComponent("No db2 user is available")
+    if ps_list:
+        users_result = set(filter(None, [item.get("USER") for item in ps_list]))
+        if users_result:
+            if "root" in users_result:
+                users_result.remove("root")
+            return sorted(users_result)
+        raise SkipComponent("No db2 user is available")
+    raise SkipComponent("No db2 database is running")
 
 
 class LocalSpecs(Specs):
@@ -51,14 +48,13 @@ def db2_databases_info(broker):
     Raises:
         SkipComponent: there is no db2 databases
     """
-    result = []
+    result = set()
     for item in broker[LocalSpecs.db2_databases]:
         user = item.cmd.split()[2].strip()
         for line in item.content:
             if "Database name" in line:
                 name = line.split("=")[-1].strip()
-                result.append((user, name))
+                result.add((user, name))
     if result:
-        result.sort()
-        return result
+        return sorted(result)
     raise SkipComponent("No db2 database is available")
