@@ -19,6 +19,9 @@ class Sudoers(SudoersBase):
             ``/etc/sudoers.d/*`` files. The order of lines keeps their original
             order them in files. And the files are read with `"filename`"
             alphabetical order.
+        data(dict): The dict of RAW lines of ``/etc/sudoers`` and each file under
+            ``/etc/sudoers.d/``, The keys are the filename and values are RAW lines
+            of each file.
 
     .. note::
         1. If there is not `"#includedir /etc/sudoers.d"` line in the entry
@@ -41,8 +44,10 @@ class Sudoers(SudoersBase):
     """
     def __init__(self, sudoers):
         self.lines = []
+        self.data = {}
         first = False
         for sdr in sorted(sudoers, key=lambda x: x.file_path):
+            self.data[sdr.file_path] = sdr.lines
             self.lines.extend(sdr.lines)
             if not first:
                 first = True

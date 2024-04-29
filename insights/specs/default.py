@@ -38,7 +38,7 @@ from insights.specs.datasources import (
     user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import (pcp_enabled, pcp_raw_files,
-    pmlog_summary_args)
+    pmlog_summary_args, pmlog_summary_args_pcp_zeroconf)
 from insights.specs.datasources.container import (
     containers_inspect, running_rhel_containers)
 from insights.specs.datasources.container.nginx_conf import (
@@ -450,6 +450,7 @@ class DefaultSpecs(Specs):
     ntpq_pn = simple_command("/usr/sbin/ntpq -pn")
     numa_cpus = glob_file("/sys/devices/system/node/node[0-9]*/cpulist")
     numeric_user_group_name = simple_command("/bin/grep -c '^[[:digit:]]' /etc/passwd /etc/group")
+    nvidia_smi_l = simple_command("/usr/bin/nvidia-smi -L")
     nvme_core_io_timeout = simple_file("/sys/module/nvme_core/parameters/io_timeout")
     od_cpu_dma_latency = simple_command("/usr/bin/od -An -t d /dev/cpu_dma_latency")
     odbc_ini = simple_file("/etc/odbc.ini")
@@ -475,6 +476,7 @@ class DefaultSpecs(Specs):
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
     pmlog_summary = command_with_args("/usr/bin/pmlogsummary %s", pmlog_summary_args)
+    pmlog_summary_pcp_zeroconf = command_with_args("/usr/bin/pmlogsummary %s", pmlog_summary_args_pcp_zeroconf, save_as='pmlogsummary_based_on_pcp_zeroconf_archives')
     pmrep_metrics = simple_command("/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv")
     podman_list_containers = simple_command("/usr/bin/podman ps --all --no-trunc")
     postconf = simple_command("/usr/sbin/postconf")

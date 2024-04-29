@@ -12,8 +12,13 @@ from insights.parsers.hostname import HostnameDefault, Hostname
 from insights.parsers.ps import PsAuxcww
 from insights.parsers.ros_config import RosConfig
 from insights.parsers.systemd.unitfiles import UnitFiles
+from insights.specs.datasources import pcp
 from insights.specs.datasources.pcp import (
-        ros_collect, pcp_enabled, pmlog_summary_args, pcp_raw_files)
+        pcp_enabled,
+        pcp_raw_files,
+        pmlog_summary_args_pcp_zeroconf,
+        pmlog_summary_args,
+        ros_collect)
 from insights.tests import context_wrap
 
 
@@ -113,7 +118,7 @@ def test_pmlog_summary_args(isfile, exists):
     # Case 1: OK
     ros = RosConfig(context_wrap(ROS_CONFIG))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW))
-    ps = Ps(None, None, None, None, ps_auxcww, None, None)
+    ps = Ps(None, None, None, None, ps_auxcww, None)
 
     broker = dr.Broker()
     broker[Ps] = ps
@@ -140,7 +145,7 @@ def test_pmlog_summary_args(isfile, exists):
     # Case 3 No pmloger proc in ps
     ros = RosConfig(context_wrap(ROS_CONFIG))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_NG))
-    ps = Ps(None, None, None, None, ps_auxcww, None, None)
+    ps = Ps(None, None, None, None, ps_auxcww, None)
     broker = dr.Broker()
     broker[Ps] = ps
     broker[RosConfig] = ros
@@ -153,7 +158,7 @@ def test_pmlog_summary_args(isfile, exists):
 def test_pmlog_summary_args_no_pmloger_file(isfile):
     ros = RosConfig(context_wrap(ROS_CONFIG))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW))
-    ps = Ps(None, None, None, None, ps_auxcww, None, None)
+    ps = Ps(None, None, None, None, ps_auxcww, None)
 
     broker = dr.Broker()
     broker[Ps] = ps
@@ -214,3 +219,23 @@ def test_pcp_raw_files_ab_dir(_exists):
 
     with pytest.raises(ContentException):
         pcp_raw_files(broker)
+
+
+@patch("insights.specs.datasources.pcp.os.path.getmtime", return_value=1)
+@patch("insights.specs.datasources.pcp.glob.glob", return_value=PCP_RAW_FILES)
+@patch("insights.specs.datasources.pcp.os.path.isfile", return_value=True)
+@patch("insights.specs.datasources.pcp.os.path.exists", return_value=True)
+def test_pmlog_summary_args_pcp_zeroconf(_exists, _isfile, _glob, mtime):
+    broker = dr.Broker()
+    broker[HostnameDefault] = HostnameDefault(context_wrap("test"))
+    broker['insights_config'] = InsightsConfig(ros_collect=True)
+
+    pm_files = pcp_raw_files(broker)
+    pm_index = "/var/log/pcp/pmlogger/test/{0}.index".format(yesterday)
+    assert pm_index in pm_files
+
+    broker[pcp_raw_files] = pm_files
+
+    result = pmlog_summary_args_pcp_zeroconf(broker)
+    expected = '{0} {1}'.format(pm_index, ' '.join(pcp.pcp_metrics))
+    assert result == expected

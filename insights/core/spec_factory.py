@@ -864,7 +864,7 @@ class simple_command(object):
         save_as (str or None): path to save the collected file as.
             - It should be a relative path in which any starting and ending
             '/' will be removed, the collected file will be renamed to
-            "save_as" as the full path.
+            `save_as` under the 'insights_commands' directory.
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -920,9 +920,10 @@ class command_with_args(object):
         cmd (str): the command to execute. Breaking apart a command
             string that might require arguments.
         provider (str or tuple): argument string or a tuple of argument strings.
-        save_as (str or None): directory path to save the collected files as.
-            - It should be a relative path and any starting '/' will be removed
-            and an ending '/' will be added.
+        save_as (str or None): path to save the collected file as.
+            - It should be a relative path in which any starting and ending
+            '/' will be removed, the collected file will be renamed to
+            `save_as` under the 'insights_commands' directory.
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -949,7 +950,7 @@ class command_with_args(object):
         deps = deps if deps is not None else []
         self.cmd = cmd
         self.provider = provider
-        self.save_as = os.path.join(save_as.lstrip("/"), '') if save_as else None
+        self.save_as = save_as.strip("/") if save_as else None  # strip as a relative file path
         self.context = context
         self.split = split
         self.raw = not split
@@ -969,9 +970,9 @@ class command_with_args(object):
             raise ContentException("The provider can only be a single string or a tuple of strings, but got '%s'." %
                                    source)
         try:
-            self.cmd = self.cmd % source
+            the_cmd = self.cmd % source
             return CommandOutputProvider(
-                    self.cmd, ctx, save_as=self.save_as, split=self.split,
+                    the_cmd, ctx, save_as=self.save_as, split=self.split,
                     keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
                     inherit_env=self.inherit_env,
                     override_env=self.override_env, signum=self.signum,

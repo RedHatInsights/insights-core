@@ -494,6 +494,7 @@ class Specs(SpecSet):
     ntptime = RegistryPoint()
     numa_cpus = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     numeric_user_group_name = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    nvidia_smi_l = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     nvme_core_io_timeout = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     oc_get_bc = RegistryPoint()
     oc_get_build = RegistryPoint()
@@ -555,7 +556,8 @@ class Specs(SpecSet):
     pcs_status = RegistryPoint()
     php_ini = RegistryPoint(filterable=True)
     pluginconf_d = RegistryPoint(multi_output=True)
-    pmlog_summary = RegistryPoint()  # TODO: Remove after 'pcp_raw_data' works
+    pmlog_summary = RegistryPoint(no_obfuscate=['hostname', 'ip'])  # TODO: Remove after 'pcp_raw_data' works
+    pmlog_summary_pcp_zeroconf = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     pmrep_metrics = RegistryPoint()
     podman_list_containers = RegistryPoint()
     podman_list_images = RegistryPoint()
