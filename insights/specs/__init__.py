@@ -126,6 +126,8 @@ class Specs(SpecSet):
     current_clocksource = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     date = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     date_utc = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    db2_database_configuration = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
+    db2_database_manager = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     db2ls_a_c = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     dcbtool_gc_dcb = RegistryPoint(multi_output=True)
     designate_conf = RegistryPoint(filterable=True)
