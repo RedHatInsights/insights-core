@@ -1,6 +1,6 @@
 """
 nmap - command ``nmap``
-===============================
+=======================
 
 Parser contains in this module is:
 
