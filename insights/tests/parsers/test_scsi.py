@@ -1,6 +1,6 @@
 import pytest
 
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers.scsi import SCSI
 from insights.tests import context_wrap
 
@@ -44,6 +44,10 @@ SCSI_OUTPUT_MISSING_HEADER = """
 Host: scsi0 Channel: 03 Id: 00 Lun: 00
   Vendor: HP       Model: P420i            Rev: 3.54
   Type:   RAID                             ANSI  SCSI revision: 05
+"""
+
+SCSI_OUTPUT_HAS_ONLY_HEADER = """
+Attached devices:
 """
 
 SCSI_OUTPUT_INNORMAL_VEMDOR_LINE = """
@@ -94,6 +98,13 @@ def test_missing_header():
     assert 'Expected Header: Attached devices:' in str(excinfo.value)
 
 
+def test_has_only_header():
+    with pytest.raises(ParseException) as excinfo:
+        result = SCSI(context_wrap(SCSI_OUTPUT_HAS_ONLY_HEADER))
+        assert result is None
+    assert 'Content has only header but no other content:' in str(excinfo.value)
+
+
 def test_missing_innormal_rev():
     with pytest.raises(ParseException) as excinfo:
         result = SCSI(context_wrap(SCSI_OUTPUT_INNORMAL_VEMDOR_LINE))
@@ -102,7 +113,7 @@ def test_missing_innormal_rev():
 
 
 def test_empty():
-    with pytest.raises(ParseException) as excinfo:
+    with pytest.raises(SkipComponent) as excinfo:
         result = SCSI(context_wrap(SCSI_OUTPUT_EMPTY))
         assert result is None
     assert 'Empty content of file /proc/scsi/scsi' in str(excinfo.value)
