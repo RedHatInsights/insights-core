@@ -45,7 +45,7 @@ def serialize_doo(obj, root=None):
 
 
 @deserializer(Foo)
-def deserialize_foo(_type, data, root=None):
+def deserialize_foo(_type, data, root=None, ctx=None, ds=None):
     foo = _type.__new__(_type)
     foo.a = data.get("a")
     foo.b = data.get("b")
@@ -238,7 +238,7 @@ def test_round_trip():
         broker.exec_times[thing] = 0.5
         h.dehydrate(thing, broker)
         fn = ".".join([dr.get_name(thing), h.ser_name])
-        assert os.path.exists(os.path.join(h.meta_data, fn))
+        assert os.path.exists(os.path.join(h.meta_root, fn))
 
         broker = h.hydrate()
         assert thing in broker
@@ -263,7 +263,7 @@ def test_dehydrate():
         h = Hydration(tmp_path)
         h.dehydrate(spec_the_data, broker)
         fn = ".".join([dr.get_name(spec_the_data), h.ser_name])
-        meta_data_json = os.path.join(h.meta_data, fn)
+        meta_data_json = os.path.join(h.meta_root, fn)
         assert os.path.exists(meta_data_json)
         with open(meta_data_json, 'r') as fp:
             ret = json.load(fp)
