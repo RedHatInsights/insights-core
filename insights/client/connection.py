@@ -888,22 +888,6 @@ class InsightsConnection(object):
         """
         Do an HTTPS Upload of the archive
         """
-        def _deep_clean(data):
-            """
-            Clean (obfuscate and redact) the data items one by one.
-            """
-            if isinstance(data, dict):
-                for key, values in data.items():
-                    data[key] = _deep_clean(values)
-            elif isinstance(data, list):
-                for i, item in enumerate(data):
-                    data[i] = _deep_clean(item)
-            elif isinstance(data, str):
-                return cleaner.clean_content(
-                    data,
-                    obf_funcs=obf_funcs,
-                    no_redact=False)
-            return data
 
         if self.config.legacy_upload:
             return self._legacy_upload_archive(data_collected, duration)
@@ -925,10 +909,7 @@ class InsightsConnection(object):
             c_facts["branch_info"] = self.config.branch_info
             c_facts["satellite_id"] = self.config.branch_info["remote_leaf"]
         # Clean (obfuscate and redact) the "c_facts"
-        pc = InsightsUploadConf(self.config)
-        cleaner = Cleaner(self.config, pc.get_rm_conf())
-        obf_funcs = cleaner.get_obfuscate_functions()
-        c_facts = json.dumps(_deep_clean(c_facts))
+        c_facts = json.dumps(self._clean_facts(c_facts))
         logger.debug('Canonical facts collected:\n%s', c_facts)
 
         files = {
@@ -1139,7 +1120,9 @@ class InsightsConnection(object):
 
         try:
             canonical_facts = get_canonical_facts()
+            canonical_facts = self._clean_facts(canonical_facts)
         except Exception as e:
+            print('Error getting canonical facts: %s', e)
             logger.debug('Error getting canonical facts: %s', e)
             logger.debug('Falling back to only machine ID.')
             insights_id = generate_machine_id()
@@ -1165,3 +1148,26 @@ class InsightsConnection(object):
         else:
             logger.debug("Check-in response body %s" % response.text)
             raise RuntimeError("Unknown check-in API response")
+
+    def _clean_facts(self, cfacts):
+        def _deep_clean(data):
+            """
+            Clean (obfuscate and redact) the data items one by one.
+            """
+            if isinstance(data, dict):
+                for key, values in data.items():
+                    data[key] = _deep_clean(values)
+            elif isinstance(data, list):
+                for i, item in enumerate(data):
+                    data[i] = _deep_clean(item)
+            elif isinstance(data, str):
+                return cleaner.clean_content(
+                    data,
+                    obf_funcs=obf_funcs,
+                    no_redact=False)
+            return data
+        # Clean (obfuscate and redact) the "c_facts"
+        pc = InsightsUploadConf(self.config)
+        cleaner = Cleaner(self.config, pc.get_rm_conf())
+        obf_funcs = cleaner.get_obfuscate_functions()
+        return _deep_clean(cfacts)
