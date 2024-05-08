@@ -523,6 +523,9 @@ class Ring(CommandParser):
     are accessed using two parameters: ``max`` and ``current``.
     Within each the interface settings are available as four parameters -
     ``rx``, ``rx_mini``, ``rx_jumbo`` and ``tx``.
+    If there are any other extra statistic fields, these fields will be wrapped
+    into ``dict`` type accordingly, and can be accessed using parameters
+    ``max_extra`` and ``current_extra``.
 
     All the Ring parameter values are parsed into ``int`` type. For non-integer
     parameter values, "n/a" will be convered to `-1` and other cases will be
@@ -565,6 +568,7 @@ class Ring(CommandParser):
         2047
 
     """
+    __default_params = set(["rx", "rx_mini", "rx_jumbo", "tx"])
 
     Parameters = namedtuple("Parameters", ["rx", "rx_mini", "rx_jumbo", "tx"])
 
@@ -593,30 +597,41 @@ class Ring(CommandParser):
 
         self.iface = extract_iface_name_from_content(content[0])
 
-        def set_section(section, section_data):
+        def set_section(section, section_data, section_extra_data):
             if section:
                 ringdata = Ring.Parameters(**section_data)
                 setattr(self, section, ringdata)
                 self.data[section] = ringdata
 
+                if section_extra_data:
+                    section_extra_name = section + '_extra'
+                    setattr(self, section_extra_name, section_extra_data)
+                    self.data[section_extra_name] = section_extra_data
+
         section = None
         sections = {'Pre-set maximums:': 'max', 'Current hardware settings:': 'current'}
         section_data = {}
+        section_extra_data = {}
         # Skip "Ring parameters for interface:"
         for line in content[1:]:
             if line in sections:
-                set_section(section, section_data)
+                set_section(section, section_data, section_extra_data)
                 section = sections[line]
                 section_data = {}
+                section_extra_data = {}
             elif ':' in line:
                 # key: value, store in section data for now
                 key, value = (s.strip() for s in line.split(":", 1))
                 parsed_value = int(value) if unicode(value).isnumeric() else (
                                 -1 if value == 'n/a' else -2)
-                section_data[key.replace(" ", "_").lower()] = parsed_value
+                parsed_key = key.replace(" ", "_").lower()
+                if parsed_key in self.__default_params:
+                    section_data[parsed_key] = parsed_value
+                else:
+                    section_extra_data[parsed_key] = parsed_value
 
         # Handle last found section, if any
-        set_section(section, section_data)
+        set_section(section, section_data, section_extra_data)
 
 
 @parser(Specs.ethtool_S)
