@@ -60,5 +60,5 @@ def serialize(obj, root=None):
 
 
 @deserializer(Hostname)
-def deserialize(_type, data, root=None):
+def deserialize(_type, data, root=None, ctx=None, ds=None):
     return Hostname(**data)

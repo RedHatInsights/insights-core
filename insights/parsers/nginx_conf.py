@@ -134,7 +134,7 @@ class NginxConfPEG(ConfigParser):
                 return Directive(name=name.value, attrs=attrs, lineno=name.lineno, src=self)
             return Section(name=name.value, attrs=attrs, children=body, lineno=name.lineno, src=self)
 
-        name_chars = string.ascii_letters + "_/"
+        name_chars = string.ascii_letters + string.digits + "*_/~$|()\\."
         Stmt = Forward()
         Num = Number & (WSChar | LineEnd | SemiColon)
         Comment = OneLineComment("#").map(lambda x: None)

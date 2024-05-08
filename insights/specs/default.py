@@ -29,7 +29,7 @@ from insights.core.spec_factory import (
     simple_command, simple_file)
 from insights.specs import Specs
 from insights.specs.datasources import (
-    aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds,
+    aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds, db2,
     dir_list, eap_reports, ethernet, httpd, intersystems, ipcs, kernel,
     kernel_module_list, leapp, lpstat, ls, luks_devices, machine_ids,
     malware_detection, md5chk, mdadm, mount as mount_ds, package_provides,
@@ -171,9 +171,12 @@ class DefaultSpecs(Specs):
     cryptsetup_luksDump = luks_devices.luks_data_sources
     cupsd_conf = simple_file("/etc/cups/cupsd.conf")
     cups_files_conf = simple_file("/etc/cups/cups-files.conf")
+    cups_ppd = glob_file("etc/cups/ppd/*")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
     date_utc = simple_command("/bin/date --utc")
+    db2_database_configuration = foreach_execute(db2.db2_databases_info, "/usr/sbin/runuser -l  %s  -c 'db2 get database configuration for %s'")
+    db2_database_manager = foreach_execute(db2.db2_users, "/usr/sbin/runuser -l  %s  -c 'db2 get dbm cfg'")
     db2ls_a_c = simple_command("/usr/local/bin/db2ls -a -c")
     df__al = simple_command("/bin/df -al -x autofs")
     df__alP = simple_command("/bin/df -alP -x autofs")

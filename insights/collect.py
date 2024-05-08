@@ -490,7 +490,7 @@ def collect(client_config=None, rm_conf=None, tmp_path=None, archive_name=None,
 
     pool_args = run_strategy.get("args", {})
     with get_pool(parallel, "insights-collector-pool", pool_args) as pool:
-        h = Hydration(output_path, pool=pool)
+        h = Hydration(output_path, ctx, pool=pool)
         broker.add_observer(h.make_persister(to_persist))
         dr.run_all(broker=broker, pool=pool)
 

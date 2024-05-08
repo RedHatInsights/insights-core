@@ -30,7 +30,7 @@ def serialize(obj, root=None):
 
 
 @deserializer(Release)
-def deserialize(_type, obj, root=None):
+def deserialize(_type, obj, root=None, ctx=None, ds=None):
     return Release(**obj)
 
 
@@ -102,7 +102,7 @@ def serialize_RedHatRelease(obj, root=None):
 
 
 @deserializer(RedHatRelease)
-def deserialize_RedHatRelease(_type, obj, root=None):
+def deserialize_RedHatRelease(_type, obj, root=None, ctx=None, ds=None):
     foo = _type.__new__(_type)
     foo.major = obj.get("major")
     foo.minor = obj.get("minor")

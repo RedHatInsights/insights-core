@@ -88,12 +88,12 @@ def serialize(obj, root=None):
     }
 
 
-def deserialize(data, root=None):
+def deserialize(data, root=None, ctx=None, ds=None):
     type_data = DESERIALIZERS.get(data["type"])
     if type_data is None:
         raise Exception("Unrecognized type: %s" % data["type"])
     (_type, from_dict) = type_data
-    return from_dict(_type, data["object"], root=root)
+    return from_dict(_type, data["object"], root=root, ctx=ctx, ds=ds)
 
 
 def marshal(comp, broker, root=None, pool=None):
@@ -127,12 +127,12 @@ def marshal(comp, broker, root=None, pool=None):
     return call_serializer(ser_func, v, exc_func)
 
 
-def unmarshal(data, root=None):
+def unmarshal(data, root=None, ctx=None, ds=None):
     if data is None:
         return
     if isinstance(data, list):
-        return [deserialize(d, root=root) for d in data]
-    return deserialize(data, root=root)
+        return [deserialize(d, root=root, ctx=ctx, ds=ds) for d in data]
+    return deserialize(data, root=root, ctx=ctx, ds=ds)
 
 
 class Hydration(object):
@@ -142,10 +142,11 @@ class Hydration(object):
     file for the component and allows the serializer for a component to put raw
     data beneath a working directory.
     """
-    def __init__(self, root=None, meta_data="meta_data", data="data", pool=None):
+    def __init__(self, root=None, ctx=None, meta_root="meta_data", data_root="data", pool=None):
         self.root = root
-        self.meta_data = os.path.join(root, meta_data) if root else None
-        self.data = os.path.join(root, data) if root else None
+        self.ctx = ctx
+        self.meta_root = os.path.join(root, meta_root) if root else None
+        self.data_root = os.path.join(root, data_root) if root else None
         self.ser_name = dr.get_base_module_name(ser)
         self.created = False
         self.pool = pool
@@ -159,7 +160,7 @@ class Hydration(object):
             raise ValueError("{} is not a loaded component.".format(name))
         exec_time = doc["exec_time"]
         ser_time = doc["ser_time"]
-        results = unmarshal(doc["results"], root=self.data)
+        results = unmarshal(doc["results"], root=self.data_root, ctx=self.ctx, ds=key)
         return (key, results, exec_time, ser_time)
 
     def hydrate(self, broker=None):
@@ -169,7 +170,7 @@ class Hydration(object):
         """
 
         broker = broker or dr.Broker()
-        for path in glob(os.path.join(self.meta_data, "*")):
+        for path in glob(os.path.join(self.meta_root, "*")):
             try:
                 with open(path) as f:
                     doc = ser.load(f)
@@ -190,13 +191,13 @@ class Hydration(object):
         """
         Saves a component in the given broker to the file system.
         """
-        if not self.meta_data:
+        if not self.meta_root:
             raise Exception("Hydration meta_path not set. Can't dehydrate.")
 
         if not self.created:
-            fs.ensure_path(self.meta_data, mode=0o770)
-            if self.data:
-                fs.ensure_path(self.data, mode=0o770)
+            fs.ensure_path(self.meta_root, mode=0o770)
+            if self.data_root:
+                fs.ensure_path(self.data_root, mode=0o770)
             self.created = True
 
         try:
@@ -207,7 +208,7 @@ class Hydration(object):
             errors = [broker.tracebacks[e] for e in broker.exceptions.get(comp, [])]
 
             start = time.time()
-            results, ms_errors = marshal(comp, broker, root=self.data, pool=self.pool)
+            results, ms_errors = marshal(comp, broker, root=self.data_root, pool=self.pool)
             errors.extend(ms_errors if isinstance(ms_errors, list) else [ms_errors]) if ms_errors else None
 
             doc = {
@@ -223,7 +224,7 @@ class Hydration(object):
             if doc is not None and (doc["results"] or doc["errors"]):
                 path = None
                 try:
-                    path = os.path.join(self.meta_data, name + "." + self.ser_name)
+                    path = os.path.join(self.meta_root, name + "." + self.ser_name)
                     with open(path, "w") as f:
                         ser.dump(doc, f)
                 except Exception as boom:
@@ -242,7 +243,7 @@ class Hydration(object):
                 else.
         """
 
-        if not self.meta_data:
+        if not self.meta_root:
             raise Exception("Root not set. Can't create persister.")
 
         def persister(c, broker):

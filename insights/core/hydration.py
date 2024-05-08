@@ -69,6 +69,6 @@ def initialize_broker(path, context=None, broker=None):
 
     broker[ctx.__class__] = ctx
     if isinstance(ctx, SerializedArchiveContext):
-        h = Hydration(ctx.root)
+        h = Hydration(root=ctx.root, ctx=ctx)
         broker = h.hydrate(broker=broker)
     return ctx, broker
