@@ -65,11 +65,12 @@ class NmapSsh(CommandParser, dict):
             if not line_strip:
                 continue
 
-            if line_strip.startswith("|") and "algorithms:" in line:
-                current_key = line_strip.split(":")[0][1:].strip()
-                data[current_key] = []
-            elif line_strip.startswith("|") and line_strip.count(" ") == 7 and "algorithms:" not in line:
-                data[current_key].append(line.split()[-1])
+            if line_strip.startswith("|"):
+                if "algorithms:" in line_strip:
+                    current_key = line_strip.split(":")[0][1:].strip()
+                    data[current_key] = []
+                elif not line_strip.endswith(':'):
+                    data[current_key].append(line.split()[-1])
 
         if not data:
             raise SkipComponent("The output format is not expected")
