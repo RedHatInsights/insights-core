@@ -418,7 +418,7 @@ class Cleaner(object):
             obf_funcs = self.get_obfuscate_functions(_file, no_obfuscate)
             try:
                 with open(_file, 'r') as fh:
-                    raw_data = fh.readlines()
+                    raw_data = [l.rstrip("\n") for l in fh]
                     content = self.clean_content(raw_data, filters, obf_funcs, no_redact)
             except Exception as e:  # pragma: no cover
                 logger.warning(e)
@@ -428,7 +428,8 @@ class Cleaner(object):
                 if raw_data:
                     if content:
                         with open(_file, 'wb') as fh:
-                            for line in content:
+                            for _line in content:
+                                line = _line + "\n"
                                 fh.write(line.encode('utf-8') if six.PY3 else line)
                     else:
                         # Empty the file, as all contents are cleaned

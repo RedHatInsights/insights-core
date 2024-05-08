@@ -9,6 +9,20 @@ from insights.core.spec_cleaner import Cleaner
 
 test_file_data = 'test\nabcd\n1234\npwd: p4ssw0rd\n'
 test_file_data_sensitive = 'test\nabcd\n1234\npassword: p4ssw0rd\n'
+test_file_data_password_at_line_end = """
+/run/systemd:
+total 0
+drwxr-xr-x. 20 0 0  500 Apr 16 15:42 .
+drwxr-xr-x. 47 0 0 1260 May  7 15:03 ..
+drwxr-xr-x.  2 0 0   40 Jan 30 17:24 ask-password
+srw-------.  1 0 0    0 Jan 30 17:24 coredump
+drwxr-xr-x.  5 0 0  160 Apr 16 15:42 generator
+
+/run/systemd/ask-password:
+total 0
+drwxr-xr-x.  2 0 0  40 Jan 30 17:24 .
+drwxr-xr-x. 20 0 0 500 Apr 16 15:42 ..
+""".strip()
 
 
 @patch('insights.client.archive.InsightsArchive', Mock())
@@ -62,6 +76,29 @@ def test_redact_line_changed_password(core_collect, obfuscate):
         data = t.readlines()
         assert 'p4ssw0rd' not in data[-1]
         assert '********' in data[-1]
+    arch.delete_archive_dir()
+
+
+@mark.parametrize("obfuscate", [True, False])
+@mark.parametrize("core_collect", [True, False])
+def test_redact_line_password_at_line_end(core_collect, obfuscate):
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+    arch = InsightsArchive(conf)
+    arch.create_archive_dir()
+
+    # put something in the archive to redact
+    test_file = os.path.join(arch.archive_dir, 'test.file')
+    with open(test_file, 'w') as t:
+        t.write(test_file_data_password_at_line_end)
+
+    pp = Cleaner(conf, {})
+    pp.clean_file(test_file, [])
+    # file is changed
+    with open(test_file, 'r') as t:
+        data = t.readlines()
+        assert "17:24 ask-password********" in data[4]
+        assert "/run/systemd/ask-password:********" in data[-4]
+        assert "********" not in data[-3]
     arch.delete_archive_dir()
 
 
