@@ -61,13 +61,14 @@ class NmapSsh(CommandParser, dict):
         data = {}
         current_key = ""
         for line in content:
-            if not line.strip():
+            line_strip = line.strip()
+            if not line_strip:
                 continue
 
-            if line.strip().startswith("|") and "algorithms:" in line:
-                current_key = line.strip().split(":")[0].split("|")[-1].strip()
+            if line_strip.startswith("|") and "algorithms:" in line:
+                current_key = line_strip.split(":")[0][1:].strip()
                 data[current_key] = []
-            if line.strip().startswith("|") and line.strip().count(" ") == 7 and "algorithms:" not in line:
+            elif line_strip.startswith("|") and line_strip.count(" ") == 7 and "algorithms:" not in line:
                 data[current_key].append(line.split()[-1])
 
         if not data:
