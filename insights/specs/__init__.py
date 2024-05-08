@@ -478,6 +478,7 @@ class Specs(SpecSet):
     nginx_conf = RegistryPoint(multi_output=True)
     nginx_error_log = RegistryPoint(filterable=True)
     nginx_ssl_cert_enddate = RegistryPoint(multi_output=True)
+    nmap_ssh = RegistryPoint()
     nmcli_conn_show = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     nmcli_dev_show = RegistryPoint()
     nmcli_dev_show_sos = RegistryPoint(multi_output=True)

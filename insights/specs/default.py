@@ -438,6 +438,7 @@ class DefaultSpecs(Specs):
         ]
     )
     nginx_ssl_cert_enddate = foreach_execute(ssl_certificate.nginx_ssl_certificate_files, "/usr/bin/openssl x509 -in %s -enddate -noout")
+    nmap_ssh = simple_command("/usr/bin/nmap --script ssh2-enum-algos -sV -p 22 127.0.0.1")
     nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
     nova_compute_log = first_file(["/var/log/containers/nova/nova-compute.log", "/var/log/nova/nova-compute.log"])
