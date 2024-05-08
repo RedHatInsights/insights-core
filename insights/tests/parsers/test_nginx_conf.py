@@ -113,6 +113,15 @@ server{
         }
 }""".strip()
 
+NGINX_SP_NAME = """
+http {
+    map {
+       default                    off;
+       ~*\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2)$       max;
+    }
+}
+""".strip()
+
 
 def test_nginxconfpeg():
     nginxconf = nginx_conf.NginxConfPEG(context_wrap(NGINXCONF))
@@ -171,6 +180,13 @@ def test_nginxconfpeg_container():
 def test_nginxconf_empty_quote():
     nginxconf = nginx_conf.NginxConfPEG(context_wrap(NGINX_EMPTY_QUOTE))
     assert nginxconf['server'][0]['location'][-1]['fastcgi_param'][-1].value == 'SCRIPT_NAME '
+
+
+def test_nginxconf_specail_name():
+    nginxconf = nginx_conf.NginxConfPEG(context_wrap(NGINX_SP_NAME))
+    assert 'default' in nginxconf['http']['map'].keys()
+    assert '~*\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2)$' in nginxconf['http']['map'].keys()
+    assert nginxconf['http']['map']['~*\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2)$'].value == 'max'
 
 
 def test_doc():
