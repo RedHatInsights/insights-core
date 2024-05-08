@@ -16,6 +16,7 @@ root      1821  0.0  0.0      0     0 ?        S    May31   0:29 kondemand/0
 root     20357  0.0  0.0   9120   832 ?        Ss   10:09   0:00 dhclient
 dbp1      1161530  0.1  1.3 2306928 314076 ?      Sl   Apr19   8:42 db2sysc
 dbp2      1161531  0.1  1.3 2306928 314076 ?      Sl   Apr19   8:42 db2sysc
+root      1161532  0.1  1.3 2306928 314076 ?      Sl   Apr19   8:42 db2sysc
 """.strip()
 
 PS_AUXCWW_NG = """

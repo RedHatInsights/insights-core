@@ -25,9 +25,8 @@ def db2_users(broker):
     ps_list = ps.search(COMMAND_NAME__contains="db2sysc")
     if ps_list:
         users_result = set(filter(None, [item.get("USER") for item in ps_list]))
+        users_result.discard('root')
         if users_result:
-            if "root" in users_result:
-                users_result.remove("root")
             return sorted(users_result)
         raise SkipComponent("No db2 user is available")
     raise SkipComponent("No db2 database is running")
