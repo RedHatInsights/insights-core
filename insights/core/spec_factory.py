@@ -323,8 +323,7 @@ class TextFileProvider(FileProvider):
 
 
 class SerializedOutputProvider(TextFileProvider):
-    def create_args(self):
-        pass
+    pass
 
 
 class SerializedRawOutputProvider(RawFileProvider):
@@ -1359,10 +1358,10 @@ def serialize_command_output(obj, root):
 
 
 @deserializer(CommandOutputProvider)
-def deserialize_command_output(_type, data, root):
+def deserialize_command_output(_type, data, root, ctx, ds):
     rel = data["relative_path"]
 
-    res = SerializedOutputProvider(rel, root=root)
+    res = SerializedOutputProvider(rel, root=root, ctx=ctx, ds=ds)
 
     res.rc = data["rc"]
     res.cmd = data["cmd"]
@@ -1387,9 +1386,9 @@ def serialize_text_file_provider(obj, root):
 
 
 @deserializer(TextFileProvider)
-def deserialize_text_provider(_type, data, root):
+def deserialize_text_provider(_type, data, root, ctx, ds):
     rel = data["relative_path"]
-    res = SerializedOutputProvider(rel, root=root)
+    res = SerializedOutputProvider(rel, root=root, ctx=ctx, ds=ds)
     res.rc = data["rc"]
     return res
 
@@ -1411,9 +1410,9 @@ def serialize_raw_file_provider(obj, root):
 
 
 @deserializer(RawFileProvider)
-def deserialize_raw_file_provider(_type, data, root):
+def deserialize_raw_file_provider(_type, data, root, ctx, ds):
     rel = data["relative_path"]
-    res = SerializedRawOutputProvider(rel, root=root)
+    res = SerializedRawOutputProvider(rel, root=root, ctx=ctx, ds=ds)
     res.rc = data["rc"]
     return res
 
@@ -1431,8 +1430,8 @@ def serialize_datasource_provider(obj, root):
 
 
 @deserializer(DatasourceProvider)
-def deserialize_datasource_provider(_type, data, root):
-    res = SerializedOutputProvider(data["relative_path"], root=root)
+def deserialize_datasource_provider(_type, data, root, ctx, ds):
+    res = SerializedOutputProvider(data["relative_path"], root=root, ctx=ctx, ds=ds)
     return res
 
 
@@ -1451,10 +1450,10 @@ def serialize_metadata_provider(obj, root):
 
 
 @deserializer(MetadataProvider)
-def deserialize_metadata_provider(_type, data, root):
+def deserialize_metadata_provider(_type, data, root, ctx, ds):
     # Built-in metadata files are put in the root instead of '/data'
     root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
-    res = SerializedOutputProvider(data["relative_path"], root=root)
+    res = SerializedOutputProvider(data["relative_path"], root=root, ctx=ctx, ds=ds)
     return res
 
 
@@ -1478,9 +1477,9 @@ def serialize_container_file_output(obj, root):
 
 
 @deserializer(ContainerFileProvider)
-def deserialize_container_file(_type, data, root):
+def deserialize_container_file(_type, data, root, ctx, ds):
     rel = data["relative_path"]
-    res = SerializedOutputProvider(rel, root=root)
+    res = SerializedOutputProvider(rel, root=root, ctx=ctx, ds=ds)
     res.rc = data["rc"]
     res.image = data["image"]
     res.engine = data["engine"]
@@ -1510,9 +1509,9 @@ def serialize_container_command(obj, root):
 
 
 @deserializer(ContainerCommandProvider)
-def deserialize_container_command(_type, data, root):
+def deserialize_container_command(_type, data, root, ctx, ds):
     rel = data["relative_path"]
-    res = SerializedOutputProvider(rel, root=root)
+    res = SerializedOutputProvider(rel, root=root, ctx=ctx, ds=ds)
     res.rc = data["rc"]
     res.cmd = data["cmd"]
     res.args = data["args"]

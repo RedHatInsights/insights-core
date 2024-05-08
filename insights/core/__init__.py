@@ -115,7 +115,7 @@ def default_parser_serializer(obj):
 
 
 @deserializer(Parser)
-def default_parser_deserializer(_type, data):
+def default_parser_deserializer(_type, data, root=None, ctx=None, ds=None):
     obj = _type.__new__(_type)
     obj.file_path = None
     obj.file_name = None
