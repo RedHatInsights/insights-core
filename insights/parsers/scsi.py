@@ -1,6 +1,6 @@
 from collections import deque
 from insights.core import Parser
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -60,13 +60,15 @@ class SCSI(Parser):
     TYPE_KEYS_ALT = ['Type', 'ANSI  SCSI revision']
 
     def parse_content(self, content, header='Attached devices:'):
-        if not content or len(content) < 1:
-            raise ParseException("Empty content of file /proc/scsi/scsi", content)
+        if not content:
+            raise SkipComponent("Empty content of file /proc/scsi/scsi", content)
         devices = []
         if header:
             if content[0] != header:
                 msg = 'Expected Header: %s but got %s' % (header, content[0])
                 raise ParseException(msg)
+            if len(content) == 1:
+                raise ParseException("Content has only header but no other content: ", content)
             content = content[1:]
         lines = deque(filter(None, [line.strip() for line in content]))
         while lines:
