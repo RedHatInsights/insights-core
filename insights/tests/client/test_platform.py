@@ -85,11 +85,12 @@ def test_upload_urls():
     assert c.upload_url == 'BUNCHANONSENSE'
 
 
+@patch('insights.client.connection.InsightsUploadConf.get_rm_conf', return_value={})
 @patch("insights.client.connection.InsightsConnection._legacy_upload_archive")
 @patch("insights.client.connection.get_canonical_facts", return_value={'test': 'facts'})
 @patch('insights.client.connection.InsightsConnection.post')
 @patch("insights.client.connection.open", new_callable=mock_open)
-def test_payload_upload(op, post, c, _legacy_upload_archive):
+def test_payload_upload(op, post, c, _legacy_upload_archive, rm_conf):
     '''
     Ensure a payload upload occurs with the right URL and params
     '''
