@@ -10,7 +10,6 @@ except Exception:
 
 from insights.client.connection import InsightsConnection
 from insights.util.hostname import determine_hostname
-
 from insights.client.config import InsightsConfig
 
 
