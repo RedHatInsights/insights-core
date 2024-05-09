@@ -74,7 +74,7 @@ class DummyRequestsAdapter(BaseAdapter):
             sleep(kwargs["timeout"])
             raise ConnectTimeout
         else:
-            sleep(60)  # One minute, don’t hang for eternity.
+            sleep(60)  # One minute, don't hang for eternity.
             raise ConnectionError
 
     def close(self):
