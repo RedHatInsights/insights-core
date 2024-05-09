@@ -21,7 +21,6 @@ from insights.core.serde import deserializer, serializer
 from insights.util import fs, streams, which
 from insights.util import deprecated
 from insights.util.mangle import mangle_command
-from insights.util.subproc import Pipeline
 
 log = logging.getLogger(__name__)
 
@@ -71,6 +70,30 @@ class ContentProvider(object):
     def _stream(self):
         raise NotImplementedError()
 
+    def _clean_content(self):
+        """
+        Clean (Obfuscate and Redact) the Spec Content ONLY when doing
+        collection.
+        """
+        if isinstance(self.ctx, HostContext) and self.ds and self.cleaner:
+            cleans = []
+            # Redacting?
+            no_red = getattr(self.ds, 'no_redact', False)
+            cleans.append("Redact") if not no_red else None
+            # Obfuscating?
+            no_obf = getattr(self.ds, 'no_obfuscate', [])
+            cleans.append("Obfuscate") if len(no_obf) < 2 else None
+            # Cleaning - Entry
+            content = self.content  # should load content first
+            if cleans:
+                log.debug("Cleaning (%s) %s", "/".join(cleans), "/" + self.relative_path)
+                self._content = self.cleaner.clean_content(
+                    content,
+                    obf_funcs=self.cleaner.get_obfuscate_functions(self.relative_path, no_obf),
+                    no_redact=no_red)
+            else:
+                log.debug("Skipping cleaning %s", "/" + self.relative_path)
+
     @property
     def path(self):
         return os.path.join(self.root, self.relative_path)
@@ -90,19 +113,13 @@ class ContentProvider(object):
         return self._content
 
     def write(self, dst):
-        # Clean (Obfuscate, Redact, and Filter) the Spec Content:
-        if self.ds and self.cleaner:
-            no_red = getattr(self.ds, 'no_redact', False)
-            no_obf = getattr(self.ds, 'no_obfuscate', [])
-            if not (no_red and all(ob in no_obf for ob in ['hostname', 'ip'])):
-                # Do Obfuscation/Redaction ONLY when Specs is:
-                # - no_obfuscate == [] OR no_redact == False
-                self.cleaner.clean_file(
-                        dst, filters=None,
-                        no_obfuscate=no_obf,
-                        no_redact=no_red)
-            else:
-                log.debug("Skipping cleaning %s", "/" + self.relative_path)
+        fs.ensure_path(os.path.dirname(dst))
+        # Clean Spec Content when writing it down to disk and before uploading
+        self._clean_content()
+        with open(dst, "wb") as f:
+            f.write("\n".join(self.content).encode('utf-8'))
+
+        self.loaded = False
 
     def __repr__(self):
         msg = "<%s(path=%r, cmd=%r)>"
@@ -134,15 +151,6 @@ class DatasourceProvider(ContentProvider):
         Returns a generator of lines instead of a list of lines.
         """
         yield self._content
-
-    def write(self, dst):
-        fs.ensure_path(os.path.dirname(dst))
-        with open(dst, "wb") as f:
-            f.write("\n".join(self.content).encode("utf-8"))
-
-        self.loaded = False
-
-        super(DatasourceProvider, self).write(dst)
 
     def load(self):
         self.loaded = True
@@ -239,16 +247,11 @@ class MetadataProvider(FileProvider):
         with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
             return [l.rstrip("\n") for l in f]
 
-    def write(self, dst):
-        # TODO: the built-ine metadata files can also be collected via
-        #       core-collection
-        pass
-
 
 class RawFileProvider(FileProvider):
     """
     Class used in datasources that returns the contents of a file a single
-    string. The file is not filtered.
+    string. The file is not filtered/obfuscated/redacted.
     """
 
     def load(self):
@@ -259,7 +262,6 @@ class RawFileProvider(FileProvider):
     def write(self, dst):
         fs.ensure_path(os.path.dirname(dst))
         call([which("cp", env=SAFE_ENV), self.path, dst], env=SAFE_ENV)
-        super(RawFileProvider, self).write(dst)
 
 
 class TextFileProvider(FileProvider):
@@ -309,17 +311,6 @@ class TextFileProvider(FileProvider):
         except Exception as ex:
             self._exception = ex
             raise ContentException(str(ex))
-
-    def write(self, dst):
-        fs.ensure_path(os.path.dirname(dst))
-        args = self.create_args()
-        if args:
-            p = Pipeline(*args, env=SAFE_ENV)
-            p.write(dst)
-        else:
-            call([which("cp", env=SAFE_ENV), self.path, dst], env=SAFE_ENV)
-
-        super(TextFileProvider, self).write(dst)
 
 
 class SerializedOutputProvider(TextFileProvider):
@@ -421,24 +412,14 @@ class CommandOutputProvider(ContentProvider):
             if self._content:
                 yield self._content
             else:
-                args = self.create_args()
-                with self.ctx.connect(*args, env=self._env, timeout=self.timeout) as s:
+                command = self.create_args()
+                with self.ctx.connect(*command, env=self._env, timeout=self.timeout) as s:
                     yield s
         except StopIteration:
             raise
         except Exception as ex:
             self._exception = ex
             raise ContentException(str(ex))
-
-    def write(self, dst):
-        args = self.create_args()
-        fs.ensure_path(os.path.dirname(dst))
-        if args:
-            timeout = self.timeout or self.ctx.timeout
-            p = Pipeline(*args, timeout=timeout, signum=self.signum, env=self._env)
-            ret = p.write(dst, keep_rc=self.keep_rc)
-            super(CommandOutputProvider, self).write(dst)
-            return ret
 
     def __repr__(self):
         return 'CommandOutputProvider("%r")' % self.cmd
@@ -529,7 +510,7 @@ def _get_ctx_dependencies(component):
         try:
             if issubclass(c, ExecutionContext):
                 ctxs.add(c)
-        except:
+        except Exception:
             pass
     return ctxs
 
@@ -716,7 +697,7 @@ class glob_file(object):
                     results.append(self.kind(
                         path[len(root):], root=root, save_as=self.save_as,
                         ds=self, ctx=ctx, cleaner=cleaner))
-                except:
+                except Exception:
                     log.debug(traceback.format_exc())
         if results:
             if len(results) > self.max_files:
@@ -784,7 +765,9 @@ class first_file(object):
                 return self.kind(
                         ctx.locate_path(p), root=root, save_as=self.save_as,
                         ds=self, ctx=ctx, cleaner=cleaner)
-            except:
+            except ContentException as cex:
+                raise cex
+            except Exception:
                 pass
         raise ContentException("None of [%s] found." % ', '.join(self.paths))
 
@@ -1116,7 +1099,7 @@ class foreach_collect(object):
                     result.append(self.kind(
                         p[len(root):], root=root, save_as=self.save_as,
                         ds=self, ctx=ctx, cleaner=cleaner))
-                except:
+                except Exception:
                     log.debug(traceback.format_exc())
         if result:
             return result
@@ -1181,7 +1164,7 @@ class container_execute(foreach_execute):
                         inherit_env=self.inherit_env, override_env=self.override_env,
                         signum=self.signum, cleaner=cleaner)
                 result.append(ccp)
-            except:
+            except Exception:
                 log.debug(traceback.format_exc())
         if result:
             return result
@@ -1247,7 +1230,7 @@ class container_collect(foreach_execute):
                         override_env=self.override_env, signum=self.signum,
                         cleaner=cleaner)
                 result.append(cfp)
-            except:
+            except Exception:
                 log.debug(traceback.format_exc())
         if result:
             return result

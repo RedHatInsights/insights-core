@@ -170,7 +170,7 @@ def apply_filters(target, lines):
     integration tests. Filters are applied in an equivalent but more performant
     way at run time.
     """
-    filters = get_filters(target)
+    filters = get_filters(target) if target else None
     if filters:
         for l in lines:
             if any(f in l for f in filters):
