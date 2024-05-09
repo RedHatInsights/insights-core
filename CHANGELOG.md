@@ -2,6 +2,18 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.21](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.21) (2024-05-09)
+
+- feat: clean (obfuscate/redact) specs in memory ([PR 4055](https://github.com/RedHatInsights/insights-core/pull/4055))
+- feat: Add parser nmap ([PR 4092](https://github.com/RedHatInsights/insights-core/pull/4092))
+- fix: no context and datasource when running against insights-archive ([PR 4082](https://github.com/RedHatInsights/insights-core/pull/4082))
+- feat: Add parser db2 commands ([PR 4089](https://github.com/RedHatInsights/insights-core/pull/4089))
+- fix: special chars in nginx directive name ([PR 4095](https://github.com/RedHatInsights/insights-core/pull/4095))
+- fix: canonical facts was not obfuscated when '--checkin' ([PR 4090](https://github.com/RedHatInsights/insights-core/pull/4090))
+- Add spec cups_ppd ([PR 4096](https://github.com/RedHatInsights/insights-core/pull/4096))
+- fix: ParseException raising in parsers.scsi ([PR 4097](https://github.com/RedHatInsights/insights-core/pull/4097))
+- chore: uname supports RHEL 9.4 ([PR 4093](https://github.com/RedHatInsights/insights-core/pull/4093))
+
 # [insights-core-3.3.20](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.20) (2024-04-25)
 
 - Feat: enhance combiners sudoers ([PR 4088](https://github.com/RedHatInsights/insights-core/pull/4088))
