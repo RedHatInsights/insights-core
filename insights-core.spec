@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.20
+Version:        3.3.21
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu May 09 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.21-1
+- feat: clean (obfuscate/redact) specs in memory (#4055)
+  (xiangceliu@redhat.com)
+- feat: Add parser nmap (#4092) (jiazhang@redhat.com)
+- fix: no context and datasource when running against insights-archive (#4082)
+  (xiangceliu@redhat.com)
+- feat: Add parser db2 commands (#4089) (jiazhang@redhat.com)
+- fix: special chars in nginx directive name (#4095) (xiangceliu@redhat.com)
+- fix: canonical facts was not obfuscated when '--checkin' (#4090)
+  (xiangceliu@redhat.com)
+- Add spec cups_ppd (#4096) (jiazhang@redhat.com)
+- fix: ParseException raising in parsers.scsi (#4097) (xiaoxwan@redhat.com)
+- chore: uname supports RHEL 9.4 (#4093) (xiangceliu@redhat.com)
+
 * Thu Apr 25 2024 Lizhong Chen <lichen@redhat.com> 3.3.20-1
 - Feat: enhance combiners sudoers (#4088) (986222045@qq.com)
 - bug: Fix nginx conf parser for empty quoted params (#4087)
