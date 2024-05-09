@@ -1,16 +1,26 @@
 import glob
 import os
+import json
 import pytest
 import tempfile
 
+from collections import defaultdict
+from mock.mock import patch, Mock
+
+from insights import collect
+from insights.client.archive import InsightsArchive
+from insights.client.config import InsightsConfig
 from insights.core import Parser, dr
 from insights.core import filters
 from insights.core.context import HostContext
 from insights.core.exceptions import ContentException
 from insights.core.filters import add_filter
+from insights.core.plugins import datasource
+from insights.core.spec_cleaner import Cleaner
 from insights.core.spec_factory import (
         DatasourceProvider, RegistryPoint, SpecSet,
-        glob_file, simple_command, simple_file, first_of)
+        foreach_collect, foreach_execute,
+        glob_file, simple_command, simple_file, first_file, first_of)
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -18,6 +28,51 @@ DATA = """
 Some test data
 """
 MAX_GLOBS = 1001
+
+this_file = os.path.abspath(__file__).rstrip("c")
+
+specs_manifest = """
+---
+version: 0
+
+client:
+    context:
+        class: insights.core.context.HostContext
+        args:
+            timeout: 5
+
+    # commands and files to ignore
+    blacklist:
+        files: []
+        commands: []
+        patterns: []
+        keywords: []
+
+    persist:
+        - name: insights.tests.test_specs.Specs
+          enabled: true
+
+    run_strategy:
+        name: serial
+        args:
+            max_workers: null
+
+plugins:
+    default_component_enabled: false
+
+    packages:
+        - insights.tests.test_specs
+
+    configs:
+        - name: insights.core.spec_factory
+          enabled: true
+        - name: insights.tests.test_specs.Specs
+          enabled: true
+        - name: insights.tests.test_specs.Stuff
+          enabled: true
+        - name: insights.tests.test_specs.dostuff
+          enabled: true
+""".strip()
 
 
 # fixture to set up max glob file test
@@ -33,40 +88,83 @@ def max_globs():
         os.remove(tempfile.gettempdir() + "/" + fle)
 
 
-# hack to find this source file and not the .pyc version of it
-this_file = os.path.abspath(__file__).rstrip("c")
-with open(this_file) as f:
-    file_content = f.read().splitlines()
-
-
 class Specs(SpecSet):
-    many = RegistryPoint(multi_output=True)
-    no_such_cmd = RegistryPoint()
-    no_such_file = RegistryPoint()
+    many_glob = RegistryPoint(multi_output=True)
+    many_foreach_exe = RegistryPoint(multi_output=True)
+    many_foreach_clc = RegistryPoint(multi_output=True)
     smpl_cmd = RegistryPoint()
-    smpl_cmd_list_of_lists = RegistryPoint(filterable=True)
+    smpl_cmd_w_filter = RegistryPoint(filterable=True)
     smpl_file = RegistryPoint()
     smpl_file_w_filter = RegistryPoint(filterable=True)
-    first_of_spec = RegistryPoint(filterable=True)
+    first_file_spec_w_filter = RegistryPoint(filterable=True)
+    first_of_spec_w_filter = RegistryPoint(filterable=True)
+    no_such_cmd = RegistryPoint()
+    no_such_file = RegistryPoint()
 
 
 class Stuff(Specs):
-    many = glob_file(here + "/*.py")
+    many_glob = glob_file(here + "/test*.py")
+
+    @datasource(HostContext)
+    def files(broker):
+        """ Return a list of directories from the spec filter """
+        return [here + "/__init__.py", here + "/integration.py"]
+
+    many_foreach_exe = foreach_execute(files, 'ls %s')
+    many_foreach_clc = foreach_collect(files, "%s")
+    smpl_cmd = simple_command("/usr/bin/uptime")
+    smpl_cmd_w_filter = simple_command("echo -n ' hello 1'")
+    smpl_file = simple_file(here + "/helpers.py")
+    smpl_file_w_filter = simple_file(here + "/mock_web_server.py")
+    first_file_spec_w_filter = first_file([here + "/spec_tests.py", "/etc/os-release"])
+    first_of_spec_w_filter = first_of(
+        [
+            simple_command("echo -n ' hello 1'"),
+            simple_file(this_file),
+        ]
+    )
     no_such_cmd = simple_command("/usr/bin/no_such_cmd args")
     no_such_file = simple_file("/no/such/_file")
-    smpl_cmd = simple_command("/usr/bin/uptime")
-    smpl_cmd_list_of_lists = simple_command("echo -n ' hello '")
-    smpl_file = simple_file(this_file)
-    smpl_file_w_filter = simple_file(this_file)
-    first_of_spec = first_of([
-        simple_command("echo -n ' hello '"),
-        simple_file(this_file)
-    ])
 
 
 class stage(dr.ComponentType):
     def invoke(self, broker):
         return self.component(broker)
+
+
+@stage(
+    Stuff.many_glob,
+    Stuff.many_foreach_exe,
+    Stuff.many_foreach_clc,
+    Stuff.smpl_cmd,
+    Stuff.smpl_cmd_w_filter,
+    Stuff.smpl_file,
+    Stuff.smpl_file_w_filter,
+    Stuff.first_file_spec_w_filter,
+    Stuff.first_of_spec_w_filter,
+    optional=[Stuff.no_such_cmd, Stuff.no_such_file])
+def dostuff(broker):
+    assert Stuff.many_glob in broker
+    assert Stuff.many_foreach_exe in broker
+    assert Stuff.many_foreach_clc in broker
+    assert Stuff.smpl_cmd in broker
+    assert Stuff.smpl_cmd_w_filter in broker
+    assert Stuff.smpl_file in broker
+    assert Stuff.smpl_file_w_filter in broker
+    assert Stuff.first_file_spec_w_filter in broker
+    assert Stuff.first_of_spec_w_filter in broker
+
+    assert Stuff.no_such_cmd not in broker
+    assert Stuff.no_such_file not in broker
+
+
+# File content
+with open(here + "/helpers.py") as f:
+    smpl_file_content = f.read().splitlines()
+with open(here + "/mock_web_server.py") as f:
+    smpl_file_w_filter_content = [l for l in f.read().splitlines() if "def get" in l]
+with open(here + "/spec_tests.py") as f:
+    first_file_w_filter_content = [l for l in f.read().splitlines() if any(i in l for i in ["def report_", "rhel"])]
 
 #
 # TEST
@@ -76,39 +174,32 @@ class stage(dr.ComponentType):
 def teardown_function(func):
     filters._CACHE = {}
 
-    if func in [test_spec_factory, test_line_terminators]:
+    if func in [test_spec_factory, test_specs_collect, test_line_terminators]:
+        del filters.FILTERS[Stuff.smpl_cmd_w_filter]
         del filters.FILTERS[Stuff.smpl_file_w_filter]
-        del filters.FILTERS[Stuff.first_of_spec]
-
-
-@stage(Stuff.smpl_file, Stuff.smpl_file_w_filter, Stuff.many, Stuff.smpl_cmd,
-       Stuff.smpl_cmd_list_of_lists, Stuff.first_of_spec,
-       optional=[Stuff.no_such_cmd, Stuff.no_such_file])
-def dostuff(broker):
-    assert Stuff.smpl_file in broker
-    assert Stuff.smpl_file_w_filter in broker
-    assert Stuff.many in broker
-    assert Stuff.smpl_cmd in broker
-    assert Stuff.smpl_cmd_list_of_lists in broker
-    assert Stuff.no_such_cmd not in broker
-    assert Stuff.no_such_file not in broker
-    assert Stuff.first_of_spec in broker
+        del filters.FILTERS[Stuff.first_file_spec_w_filter]
+        del filters.FILTERS[Stuff.first_of_spec_w_filter]
 
 
 def test_spec_factory():
-    add_filter(Stuff.smpl_cmd_list_of_lists, " hello ")
-    add_filter(Stuff.smpl_file_w_filter, "def test")
-    add_filter(Stuff.first_of_spec, [" hello ", "def test"])
-    hn = HostContext()
+    add_filter(Stuff.smpl_cmd_w_filter, " hello ")
+    add_filter(Stuff.smpl_file_w_filter, "def get")
+    add_filter(Stuff.first_file_spec_w_filter, ["def report_", "rhel"])
+    add_filter(Stuff.first_of_spec_w_filter, ["def test", " hello "])
     broker = dr.Broker()
-    broker[HostContext] = hn
+    broker[HostContext] = HostContext()
+    broker['cleaner'] = Cleaner(None, None)
     broker = dr.run(dr.get_dependency_graph(dostuff), broker)
+
     assert dostuff in broker, broker.tracebacks
-    assert broker[Stuff.smpl_file].content == file_content
+    assert broker[Stuff.smpl_file].content == smpl_file_content
     assert not any(l.endswith("\n") for l in broker[Stuff.smpl_file].content)
-    assert "hello" in broker[Stuff.smpl_cmd_list_of_lists].content[0]
-    assert len(broker[Stuff.smpl_cmd_list_of_lists].content) == 1
-    assert len(broker[Stuff.first_of_spec].content) == 1
+    # "filter" works when loading
+    assert "hello" in broker[Stuff.smpl_cmd_w_filter].content[0]
+    assert len(broker[Stuff.smpl_cmd_w_filter].content) == 1
+    assert broker[Stuff.smpl_file_w_filter].content == smpl_file_w_filter_content
+    assert broker[Stuff.first_file_spec_w_filter].content == first_file_w_filter_content
+    assert len(broker[Stuff.first_of_spec_w_filter].content) == 1
     assert len(broker.exceptions) == 2
     for exp in broker.exceptions:
         if "no_such" in str(exp):
@@ -119,26 +210,31 @@ def test_spec_factory():
 
 
 def test_line_terminators():
-    add_filter(Stuff.smpl_file_w_filter, "def test")
-    add_filter(Stuff.first_of_spec, [" hello ", "def test"])
-    hn = HostContext()
+    add_filter(Stuff.smpl_cmd_w_filter, " hello ")
+    add_filter(Stuff.smpl_file_w_filter, "def get")
+    add_filter(Stuff.first_file_spec_w_filter, ["def report_", "rhel"])
+    add_filter(Stuff.first_of_spec_w_filter, ["def test", " hello "])
     broker = dr.Broker()
-    broker[HostContext] = hn
+    broker[HostContext] = HostContext()
+    broker['cleaner'] = Cleaner(None, None)
     broker = dr.run(dr.get_dependency_graph(dostuff), broker)
 
     content = broker[Stuff.smpl_file_w_filter].content
-    assert all("def test" in l for l in content), content
     assert not any(l.endswith("\n") for l in content)
-
-    content = broker[Stuff.first_of_spec].content
-    assert len(broker[Stuff.first_of_spec].content) == 1
+    # "filter" works only when writing
+    # assert all("def get" in l for l in content), content
+    assert "hello" in broker[Stuff.smpl_cmd_w_filter].content[0]
+    assert len(broker[Stuff.smpl_cmd_w_filter].content) == 1
+    assert len(broker[Stuff.smpl_file_w_filter].content) == len(smpl_file_w_filter_content)
+    assert len(broker[Stuff.first_file_spec_w_filter].content) == len(first_file_w_filter_content)
+    assert len(broker[Stuff.first_of_spec_w_filter].content) == 1
 
 
 def test_glob_max(max_globs):
     too_many = glob_file(max_globs + "/tmp_*_glob")
-    hn = HostContext()
     broker = dr.Broker()
-    broker[HostContext] = hn
+    broker[HostContext] = HostContext()
+    broker['cleaner'] = Cleaner(None, None)
     with pytest.raises(ContentException):
         too_many(broker)
 
@@ -157,16 +253,96 @@ def test_datasource_provider():
 
 
 def test_exp_no_filters():
-    hn = HostContext()
     broker = dr.Broker()
-    broker[HostContext] = hn
+    broker[HostContext] = HostContext()
+    broker['cleaner'] = Cleaner(None, None)
     broker = dr.run(dr.get_dependency_graph(dostuff), broker)
     assert dostuff not in broker
     exception_cnt = 0
     for spec, info in broker.exceptions.items():
+        # warning of lacking filters
         if any("due to" in str(msg) for msg in info):
             if "smpl_file_w_filter" in str(spec):
                 exception_cnt += 1
-            elif "first_of_spec" in str(spec):
+            elif "smpl_cmd_w_filter" in str(spec):
                 exception_cnt += 10
-    assert exception_cnt == 11
+            elif "first_file_spec_w_filter" in str(spec):
+                exception_cnt += 100
+            elif "first_of_spec_w_filter" in str(spec):
+                exception_cnt += 1000
+    assert exception_cnt == 1111
+
+
+@pytest.mark.parametrize("obfuscate", [True, False])
+@patch('insights.core.spec_cleaner.Cleaner.generate_report', Mock())
+def test_specs_collect(obfuscate):
+    add_filter(Stuff.smpl_cmd_w_filter, " hello ")
+    add_filter(Stuff.smpl_file_w_filter, "def get")
+    add_filter(Stuff.first_file_spec_w_filter, [" hello ", "Test"])
+    add_filter(Stuff.first_of_spec_w_filter, ["def test", " hello "])
+    # Prepareation
+    manifest = collect.load_manifest(specs_manifest)
+    for pkg in manifest.get("plugins", {}).get("packages", []):
+        dr.load_components(pkg, exclude=None)
+    # For verifying convenience, test obfuscate=False only
+    conf = InsightsConfig(
+            obfuscate=obfuscate, obfuscate_hostname=obfuscate,
+            manifest=manifest)
+    arch = InsightsArchive(conf)
+    arch.create_archive_dir()
+    output_path, errors = collect.collect(
+            tmp_path=arch.tmp_dir,
+            archive_name=arch.archive_name,
+            client_config=conf)
+    meta_data_root = os.path.join(output_path, 'meta_data')
+    data_root = os.path.join(output_path, 'data')
+
+    assert not errors
+    count = 0
+    for spec in Specs.__dict__:
+        if not spec.startswith(('__', 'context_handlers', 'registry')):
+            file_name = "insights.tests.test_specs.Specs.{0}.json".format(spec)
+            meta_data = os.path.join(meta_data_root, file_name)
+            with open(meta_data, 'r') as fp:
+                count += 1
+                mdata = json.load(fp)
+                results = mdata.get('results')
+                if 'no_such' in spec:
+                    assert results is None
+                    continue
+                if not isinstance(results, list):
+                    results = [results]
+                for result in results:
+                    if not result:
+                        continue
+                    rel = result['object']['relative_path']
+                    org_content = new_content = None
+                    with open(os.path.join(data_root, rel), 'r') as fp:
+                        new_content = fp.readlines()
+                    if "insights_commands" not in rel:
+                        # check files only
+                        with open("/" + rel, 'r') as fp:
+                            org_content = fp.readlines()
+                        if "_filter" not in spec:
+                            if org_content:
+                                if obfuscate:
+                                    assert len(org_content) == len(new_content)
+                                    continue
+                                    # Test below only for obfuscate=False
+                                assert org_content[:-1] == new_content[:-1]
+                                # Special: no '\n' in last line of collected data
+                                assert org_content[-1].strip() == new_content[-1].strip()
+                            else:
+                                # Both Empty
+                                assert not new_content
+                        else:
+                            # "filter" works in archive result files
+                            assert len(org_content) > len(new_content)
+    assert count == 11  # Number of Specs
+
+    arch.delete_archive_dir()
+
+    # Reset Test ENV
+    dr.COMPONENTS = defaultdict(lambda: defaultdict(set))
+    dr.TYPE_OBSERVERS = defaultdict(set)
+    dr.ENABLED = defaultdict(lambda: True)
