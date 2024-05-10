@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.22](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.22) (2024-05-10)
+
+- fix: only non-filter exception can terminate the first_file spec ([PR 4100](https://github.com/RedHatInsights/insights-core/pull/4100))
+
 # [insights-core-3.3.21](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.21) (2024-05-09)
 
 - feat: clean (obfuscate/redact) specs in memory ([PR 4055](https://github.com/RedHatInsights/insights-core/pull/4055))

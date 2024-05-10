@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.21
+Version:        3.3.22
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Fri May 10 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.22-1
+- fix: only non-filter exception can terminate the first_file spec (#4100)
+  (xiangceliu@redhat.com)
+
 * Thu May 09 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.21-1
 - feat: clean (obfuscate/redact) specs in memory (#4055)
   (xiangceliu@redhat.com)
