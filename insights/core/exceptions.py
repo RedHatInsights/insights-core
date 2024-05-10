@@ -80,6 +80,11 @@ class ContentException(SkipComponent):
     pass
 
 
+class NoFilterException(ContentException):
+    """ Raised whenever no filters added to a `filterable` :class:`datasource`."""
+    pass
+
+
 class InvalidContentType(InvalidArchive):
     def __init__(self, content_type):
         self.msg = 'Invalid content type: "%s"' % content_type

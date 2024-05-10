@@ -13,8 +13,16 @@ from glob import glob
 from subprocess import call
 
 from insights.core import blacklist, dr
-from insights.core.context import FSRoots, ExecutionContext, HostContext, SerializedArchiveContext
-from insights.core.exceptions import BlacklistedSpec, ContentException, SkipComponent
+from insights.core.context import (
+        ExecutionContext,
+        FSRoots,
+        HostContext,
+        SerializedArchiveContext)
+from insights.core.exceptions import (
+        BlacklistedSpec,
+        ContentException,
+        NoFilterException,
+        SkipComponent)
 from insights.core.filters import _add_filter, get_filters
 from insights.core.plugins import component, datasource, is_datasource
 from insights.core.serde import deserializer, serializer
@@ -187,7 +195,7 @@ class FileProvider(ContentProvider):
         if (self.ds and
                 any(s.filterable for s in dr.get_registry_points(self.ds)) and
                 not get_filters(self.ds)):
-            raise ContentException("Skipping %s due to no filters." % dr.get_name(self.ds))
+            raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
 
         if not os.path.exists(self.path):
             raise ContentException("%s does not exist." % self.path)
@@ -362,7 +370,7 @@ class CommandOutputProvider(ContentProvider):
         if (self.ds and
                 any(s.filterable for s in dr.get_registry_points(self.ds)) and
                 not get_filters(self.ds)):
-            raise ContentException("Skipping %s due to no filters." % dr.get_name(self.ds))
+            raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
 
         cmd = shlex.split(self.cmd)[0]
         if not which(cmd, env=self._env):
@@ -765,8 +773,8 @@ class first_file(object):
                 return self.kind(
                         ctx.locate_path(p), root=root, save_as=self.save_as,
                         ds=self, ctx=ctx, cleaner=cleaner)
-            except ContentException as cex:
-                raise cex
+            except NoFilterException as nfe:
+                raise nfe
             except Exception:
                 pass
         raise ContentException("None of [%s] found." % ', '.join(self.paths))
