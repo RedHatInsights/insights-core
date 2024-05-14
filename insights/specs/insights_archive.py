@@ -198,6 +198,7 @@ class InsightsArchiveSpecs(Specs):
     netstat = simple_file("insights_commands/netstat_-neopa")
     netstat_i = simple_file("insights_commands/netstat_-i")
     netstat_s = simple_file("insights_commands/netstat_-s")
+    nmap_ssh = simple_file("insights_commands/nmap_--script_ssh2-enum-algos_-sV_-p_22_127.0.0.1")
     nmcli_conn_show = simple_file("insights_commands/nmcli_conn_show")
     nmcli_dev_show = simple_file("insights_commands/nmcli_dev_show")
     ntpq_pn = simple_file("insights_commands/ntpq_-pn")
