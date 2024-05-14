@@ -89,12 +89,15 @@ def delete_cache_files():
         os.remove(f)
 
 
-def write_to_disk(filename, delete=False, content=get_time()):
+def write_to_disk(filename, delete=False, content=None):
     """
     Write filename out to disk
     """
     if not os.path.exists(os.path.dirname(filename)):
         return
+    if content is None:
+        content = get_time()
+
     if delete:
         if os.path.lexists(filename):
             logger.debug("Removing '%s'" % filename)
