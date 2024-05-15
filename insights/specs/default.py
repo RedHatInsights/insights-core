@@ -621,6 +621,7 @@ class DefaultSpecs(Specs):
     ssh_config = simple_file("/etc/ssh/ssh_config")
     ssh_config_d = glob_file(r"/etc/ssh/ssh_config.d/*.conf")
     sshd_config = simple_file("/etc/ssh/sshd_config")
+    sshd_config_d = glob_file(r"/etc/ssh/sshd_config.d/*.conf")
     sshd_config_perms = simple_command("/bin/ls -lH /etc/ssh/sshd_config")
     sshd_test_mode = simple_command("/usr/sbin/sshd -T")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
