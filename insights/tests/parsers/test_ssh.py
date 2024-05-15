@@ -2,6 +2,7 @@ import doctest
 
 from insights.parsers import ssh
 from insights.parsers.ssh import SshDConfig
+from insights.parsers.ssh import SshDConfigD
 from insights.parsers.ssh import SshdTestMode
 from insights.tests import context_wrap
 
@@ -139,10 +140,28 @@ def test_sshd_test_mode():
     assert ('test' in sshd_mode) is False
 
 
+SSHD_CONFIGURATION_D = """
+Include /etc/crypto-policies/back-ends/opensshserver.config
+
+SyslogFacility AUTHPRIV
+
+ChallengeResponseAuthentication no
+
+GSSAPIAuthentication yes
+GSSAPICleanupCredentials no
+""".strip()
+
+
+def test_sshd_configuration_d():
+    sshd_config_d = SshDConfigD(context_wrap(SSHD_CONFIGURATION_D))
+    assert sshd_config_d['Include'] == ['/etc/crypto-policies/back-ends/opensshserver.config']
+
+
 def test_sshd_test_mode_docs():
     env = {
         'sshd_test_mode': SshdTestMode(context_wrap(SSHD_TEST_MODE)),
-        'sshd_config': SshDConfig(context_wrap(SSHD_CONFIG_INPUT))
+        'sshd_config': SshDConfig(context_wrap(SSHD_CONFIG_INPUT)),
+        'sshd_config_d': SshDConfigD(context_wrap(SSHD_CONFIGURATION_D))
     }
     failed, total = doctest.testmod(ssh, globs=env)
     assert failed == 0
