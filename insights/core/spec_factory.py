@@ -12,7 +12,7 @@ from collections import defaultdict
 from glob import glob
 from subprocess import call
 
-from insights.core import blacklist, dr
+from insights.core import blacklist, dr, filters
 from insights.core.context import (
         ExecutionContext,
         FSRoots,
@@ -23,7 +23,6 @@ from insights.core.exceptions import (
         ContentException,
         NoFilterException,
         SkipComponent)
-from insights.core.filters import _add_filter, get_filters
 from insights.core.plugins import component, datasource, is_datasource
 from insights.core.serde import deserializer, serializer
 from insights.util import fs, streams, which
@@ -192,9 +191,9 @@ class FileProvider(ContentProvider):
             log.warning("WARNING: Skipping file %s", "/" + self.relative_path)
             raise BlacklistedSpec()
 
-        if (self.ds and
+        if (self.ds and filters.ENABLED and
                 any(s.filterable for s in dr.get_registry_points(self.ds)) and
-                not get_filters(self.ds)):
+                not filters.get_filters(self.ds)):
             raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
 
         if not os.path.exists(self.path):
@@ -280,9 +279,9 @@ class TextFileProvider(FileProvider):
 
     def create_args(self):
         args = []
-        filters = "\n".join(get_filters(self.ds)) if self.ds else None
-        if filters:
-            args.append(["grep", "-F", filters, self.path])
+        _filters = "\n".join(filters.get_filters(self.ds))
+        if _filters:
+            args.append(["grep", "-F", _filters, self.path])
 
         return args
 
@@ -367,9 +366,9 @@ class CommandOutputProvider(ContentProvider):
             log.warning("WARNING: Skipping command %s", self.cmd)
             raise BlacklistedSpec()
 
-        if (self.ds and
+        if (self.ds and filters.ENABLED and
                 any(s.filterable for s in dr.get_registry_points(self.ds)) and
-                not get_filters(self.ds)):
+                not filters.get_filters(self.ds)):
             raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
 
         cmd = shlex.split(self.cmd)[0]
@@ -380,9 +379,9 @@ class CommandOutputProvider(ContentProvider):
         command = [shlex.split(self.cmd)]
 
         if self.split:
-            filters = "\n".join(get_filters(self.ds))
-            if filters:
-                command.append(["grep", "-F", filters])
+            _filters = "\n".join(filters.get_filters(self.ds))
+            if _filters:
+                command.append(["grep", "-F", _filters])
 
         return command
 
@@ -1300,7 +1299,7 @@ class find(object):
         self.__module__ = self.__class__.__module__
 
         if getattr(spec, "filterable", False):
-            _add_filter(spec, pattern)
+            filters._add_filter(spec, pattern)
 
         component(spec)(self)
 
