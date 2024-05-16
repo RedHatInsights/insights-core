@@ -159,8 +159,13 @@ def get_filters(component):
             filters |= inner(d, filters)
         return filters
 
+    if not component:
+        # No filters for nothing
+        return set()
+
     if component not in _CACHE:
         _CACHE[component] = inner(component)
+
     return _CACHE[component]
 
 
@@ -170,7 +175,7 @@ def apply_filters(target, lines):
     integration tests. Filters are applied in an equivalent but more performant
     way at run time.
     """
-    filters = get_filters(target) if target else None
+    filters = get_filters(target)
     if filters:
         for l in lines:
             if any(f in l for f in filters):
