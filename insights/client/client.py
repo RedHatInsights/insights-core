@@ -26,7 +26,7 @@ from .support import registration_check
 from .constants import InsightsConstants as constants
 
 NETWORK = constants.custom_network_log_level
-LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
+LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s:%(lineno)s %(message)s")
 logger = logging.getLogger(__name__)
 
 
