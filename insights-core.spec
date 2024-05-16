@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.22
+Version:        3.3.23
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,14 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu May 16 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.23-1
+- feat: Improve debugging experience (#4094) (stomsa@redhat.com)
+- fix: env INSIGHTS_FILTERS_ENABLED no longer works (#4104)
+  (xiangceliu@redhat.com)
+- feat: Add parser sshd_config_d back (#4102) (jiazhang@redhat.com)
+- fix: Make utilities.write_to_disk use current time by default (#4022)
+  (mhorky@redhat.com)
+
 * Fri May 10 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.22-1
 - fix: only non-filter exception can terminate the first_file spec (#4100)
   (xiangceliu@redhat.com)

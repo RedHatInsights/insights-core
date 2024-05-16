@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.23](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.23) (2024-05-16)
+
+- feat: Improve debugging experience ([PR 4094](https://github.com/RedHatInsights/insights-core/pull/4094))
+- fix: env INSIGHTS_FILTERS_ENABLED no longer works ([PR 4104](https://github.com/RedHatInsights/insights-core/pull/4104))
+- feat: Add parser sshd_config_d back ([PR 4102](https://github.com/RedHatInsights/insights-core/pull/4102))
+- fix: Make utilities.write_to_disk use current time by default ([PR 4022](https://github.com/RedHatInsights/insights-core/pull/4022))
+
 # [insights-core-3.3.22](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.22) (2024-05-10)
 
 - fix: only non-filter exception can terminate the first_file spec ([PR 4100](https://github.com/RedHatInsights/insights-core/pull/4100))
