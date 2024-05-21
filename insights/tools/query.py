@@ -174,7 +174,7 @@ def matches(d, path):
 
     if isinstance(d, sf.foreach_execute):
         # Get the command name from the simple_command string
-        search_tgt = d.cmd.strip('/').split()[0].split('/')[-1]
+        search_tgt = d.cmd.strip('/').split()[0].split('/')[-1] if d.cmd else ''
         return search_tgt.startswith(path)
 
     if isinstance(d, sf.foreach_collect):
