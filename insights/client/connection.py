@@ -36,7 +36,7 @@ from .constants import InsightsConstants as constants
 from .url_cache import URLCache
 from insights import package_info
 from insights.client.collection_rules import InsightsUploadConf
-from insights.core.spec_cleaner import Cleaner
+from insights.core import spec_cleaner
 from insights.util.canonical_facts import get_canonical_facts
 
 warnings.simplefilter('ignore')
@@ -1163,6 +1163,6 @@ class InsightsConnection(object):
             return data
         # Clean (obfuscate and redact) the "c_facts"
         pc = InsightsUploadConf(self.config)
-        cleaner = Cleaner(self.config, pc.get_rm_conf())
+        cleaner = spec_cleaner.Cleaner(self.config, pc.get_rm_conf())
         obf_funcs = cleaner.get_obfuscate_functions()
         return _deep_clean(cfacts)
