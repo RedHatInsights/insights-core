@@ -409,8 +409,8 @@ def generate_archive_name():
     return "insights-%s-%s" % (hostname, suffix)
 
 
-def collect(client_config=None, rm_conf=None, tmp_path=None, archive_name=None,
-            compress=False):
+def collect(client_config=None, rm_conf=None, tmp_path=None,
+            archive_name=None, compress=False, manifest=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
     directory in which to store output, and a boolean for optional compression.
@@ -428,6 +428,10 @@ def collect(client_config=None, rm_conf=None, tmp_path=None, archive_name=None,
         compress (boolean): True to create a tar.gz and remove the original
             workspace containing output. False to leave the workspace without
             creating a tar.gz
+        manifest (str or dict): json document or dictionary containing the
+            collection manifest. See default_manifest for an example.  This
+            option works only for `insights-collect` where 'client_config'
+            is not filled.
 
     Returns:
         (str, dict): The full path to the created tar.gz or workspace.
@@ -436,8 +440,8 @@ def collect(client_config=None, rm_conf=None, tmp_path=None, archive_name=None,
         ``{ exception_type: [ (exception_obj, component), (exception_obj, component) ]}``.
     """
     # Get the manifest from client configuration
-    manifest = default_manifest
-    if hasattr(client_config, 'manifest') and client_config.manifest:
+    manifest = default_manifest if manifest is None else manifest
+    if client_config and hasattr(client_config, 'manifest') and client_config.manifest:
         manifest = client_config.manifest
     manifest = load_manifest(manifest)
 
@@ -474,7 +478,7 @@ def collect(client_config=None, rm_conf=None, tmp_path=None, archive_name=None,
 
     broker = dr.Broker()
     ctx = create_context(client.get("context", {}))
-    cleaner = Cleaner(client_config, rm_conf)
+    cleaner = Cleaner(client_config, rm_conf) if client_config else None
     broker[ctx.__class__] = ctx
     broker['cleaner'] = cleaner
     broker['client_config'] = client_config
@@ -484,7 +488,7 @@ def collect(client_config=None, rm_conf=None, tmp_path=None, archive_name=None,
     parallel = run_strategy.get("name") == "parallel"
     to_persist = get_to_persist(client.get("persist", set()))
 
-    if client_config.obfuscate and parallel:
+    if client_config and client_config.obfuscate and parallel:
         log.warning("Parallel collection is not supported when 'obfuscate' is enabled")
         parallel = False
 
@@ -496,7 +500,7 @@ def collect(client_config=None, rm_conf=None, tmp_path=None, archive_name=None,
 
     collect_errors = _parse_broker_exceptions(broker, EXCEPTIONS_TO_REPORT)
 
-    cleaner.generate_report(archive_name, client_config.rhsm_facts_file)
+    cleaner.generate_report(archive_name, client_config.rhsm_facts_file) if cleaner else None
 
     if compress:
         return create_archive(output_path), collect_errors
@@ -557,14 +561,8 @@ def main():
 
     logging.basicConfig(level=level)
 
-    if args.manifest:
-        with open(args.manifest) as f:
-            manifest = f.read()
-    else:
-        manifest = default_manifest
-
     out_path = args.out_path or tempfile.gettempdir()
-    archive, errors = collect(manifest, out_path,
+    archive, errors = collect(manifest=args.manifest, tmp_path=out_path,
                               archive_name=generate_archive_name(),
                               compress=args.compress)
     print(archive)
