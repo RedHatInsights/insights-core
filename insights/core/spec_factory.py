@@ -13,11 +13,7 @@ from glob import glob
 from subprocess import call
 
 from insights.core import blacklist, dr, filters
-from insights.core.context import (
-        ExecutionContext,
-        FSRoots,
-        HostContext,
-        SerializedArchiveContext)
+from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.exceptions import (
         BlacklistedSpec,
         ContentException,
@@ -170,21 +166,13 @@ class FileProvider(ContentProvider):
         super(FileProvider, self).__init__()
         self.ds = ds
         self.ctx = ctx
-        self._set_root(root)
+        self.root = root
         self.cleaner = cleaner
         self.relative_path = relative_path.lstrip("/")
         self.save_as = save_as
         self.file_name = os.path.basename(self.path)
 
         self.validate()
-
-    def _set_root(self, root):
-        if (isinstance(self.ctx, SerializedArchiveContext) and os.path.basename(root) != 'data'):
-            # For core-collection (SerializedArchiveContext) archive, data are
-            # in `/data` directory
-            self.root = os.path.join(root, 'data')
-        else:
-            self.root = root
 
     def validate(self):
         if not blacklist.allow_file("/" + self.relative_path):
@@ -224,9 +212,6 @@ class MetadataProvider(FileProvider):
     def __init__(self, relative_path, root="/", save_as=None, ds=None, ctx=None, cleaner=None):
         deprecated(MetadataProvider, "Please collect the built-in file via datasource spec instead.", "3.5.0")
         super(MetadataProvider, self).__init__(relative_path, root, save_as, ds, ctx, cleaner)
-
-    def _set_root(self, root):
-        self.root = root
 
     def _stream(self):
         """
