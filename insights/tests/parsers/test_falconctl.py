@@ -1,9 +1,9 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import SkipComponent, ParseException
 from insights.parsers import falconctl
-from insights.parsers.falconctl import FalconctlBackend, FalconctlRfm
+from insights.parsers.falconctl import FalconctlBackend, FalconctlRfm, FalconctlAid
 from insights.tests import context_wrap
 
 BACKEND_1 = """
@@ -14,12 +14,33 @@ BACKEND_2 = """
 backend=auto.
 """.strip()
 
-RFM = """
+RFM_1 = """
 rfm-state=false.
+""".strip()
+
+RFM_2 = """
+rfm-state=true.
 """.strip()
 
 BACKEND_EMPTY = ""
 RFM_EMPTY = ""
+
+AID_VALID = """
+aid="44e3b7d20b434a2bb2815d9808fa3a8b".
+""".strip()
+
+AID_INVALID_1 = """
+aid "44e3b7d20b434a2bb2815d9808fa3a8b" .
+""".strip()
+
+AID_INVALID_2 = """
+aid"44e3b7d20b434a2bb2815d9808fa3a8b".
+""".strip()
+
+AID_INVALID_3 = """
+aid="44e3b7d20b434a2bb2815d
+9808fa3a8b".
+""".strip()
 
 
 def test_falconctl_1():
@@ -33,8 +54,11 @@ def test_falconctl_2():
 
 
 def test_rfm():
-    rfm = FalconctlRfm(context_wrap(RFM))
+    rfm = FalconctlRfm(context_wrap(RFM_1))
     assert rfm.rfm is False
+
+    rfm = FalconctlRfm(context_wrap(RFM_2))
+    assert rfm.rfm is True
 
 
 def test_backend_empty():
@@ -49,10 +73,34 @@ def test_rfm_empty():
     assert 'SkipComponent' in str(e)
 
 
+def test_falconctl_aid():
+    aid = FalconctlAid(context_wrap(AID_VALID))
+    assert aid.aid == "44e3b7d20b434a2bb2815d9808fa3a8b"
+
+
+def test_falconctl_aid_invalid():
+    with pytest.raises(SkipComponent) as e:
+        FalconctlAid(context_wrap(""))
+    assert 'Empty.' in str(e)
+
+    with pytest.raises(ParseException) as e:
+        FalconctlAid(context_wrap(AID_INVALID_1))
+    assert 'Invalid content:' in str(e)
+
+    with pytest.raises(ParseException) as e:
+        FalconctlAid(context_wrap(AID_INVALID_2))
+    assert 'Invalid content:' in str(e)
+
+    with pytest.raises(ParseException) as e:
+        FalconctlAid(context_wrap(AID_INVALID_2))
+    assert 'Invalid content:' in str(e)
+
+
 def test_falcontcl_doc_examples():
     env = {
         "falconctlbackend": FalconctlBackend(context_wrap(BACKEND_2)),
-        "falconctlrfm": FalconctlRfm(context_wrap(RFM))
+        "falconctlrfm": FalconctlRfm(context_wrap(RFM_1)),
+        "falconctlaid": FalconctlAid(context_wrap(AID_VALID))
     }
     failed, total = doctest.testmod(falconctl, globs=env)
     assert failed == 0
