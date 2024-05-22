@@ -299,6 +299,28 @@ TEST_ETHTOOL_G_PATH_4 = """
 sos_commands/networkking/ethtool_-g_ens3
 """.strip()
 
+TEST_ETHTOOL_G_5 = """
+Ring parameters for pri:
+Pre-set maximums:
+RX:		4096
+RX Mini:	2048
+RX Jumbo:	4096
+TX:		4096
+Current hardware settings:
+RX:		1024
+RX Mini:	128
+RX Jumbo:	512
+TX:		512
+RX Buf Len:	n/a
+CQE Size:	n/a
+TX Push:	off
+TCP data split:	n/a
+""".strip()
+
+TEST_ETHTOOL_G_PATH_5 = """
+sos_commands/networkking/ethtool_-g_pri
+""".strip()
+
 
 def test_ethtool_g():
     context = context_wrap(TEST_ETHTOOL_G)
@@ -354,6 +376,21 @@ def test_ethtool_g_4():
     assert result.data['max'].rx_mini == -2
     assert result.current.rx_jumbo == -2
     assert result.current.tx == 256
+
+
+def test_ethtool_g_5():
+    context = context_wrap(TEST_ETHTOOL_G_5, path=TEST_ETHTOOL_G_PATH_5)
+    result = ethtool.Ring(context)
+    assert keys_in(["max", "current", "current_extra"], result.data)
+    assert result.ifname == "pri"
+    assert result.data['max'].rx == 4096
+    assert result.data['max'].rx_mini == 2048
+    assert result.current.rx_jumbo == 512
+    assert result.current.tx == 512
+    assert result.current_extra == {
+        'rx_buf_len': -1, 'cqe_size': -1, 'tx_push': -2, 'tcp_data_split': -1}
+    assert result.current_extra.get("rx_buf_len") == -1
+    assert result.current_extra["tx_push"] == -2
 
 
 TEST_ETHTOOL_I_DOCS = '''
