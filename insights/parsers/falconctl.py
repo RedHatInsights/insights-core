@@ -9,9 +9,12 @@ FalconctlBackend - command ``/opt/CrowdStrike/falconctl -g --backend``
 
 FalconctlRfm - command ``/opt/CrowdStrike/falconctl -g --rfm-state``
 --------------------------------------------------------------------
+
+FalconctlAid - command ``/opt/CrowdStrike/falconctl -g --aid``
+--------------------------------------------------------------
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import SkipComponent, ParseException
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -71,3 +74,32 @@ class FalconctlRfm(CommandParser):
         state = content[0].split(".")[0].split("=")[-1].strip()
         if state == "true":
             self.rfm = True
+
+
+@parser(Specs.falconctl_aid)
+class FalconctlAid(CommandParser):
+    """
+    This parser reads the output of ``/opt/CrowdStrike/falconctl -g --aid``,
+    return the agent id as a string.
+
+    Example output::
+
+        aid="44e3b7d20b434a2bb2815d9808fa3a8b".
+
+    Examples:
+        >>> type(falconctlaid)
+        <class 'insights.parsers.falconctl.FalconctlAid'>
+        >>> falconctlaid.aid
+        '44e3b7d20b434a2bb2815d9808fa3a8b'
+    """
+
+    def parse_content(self, content):
+        if not content:
+            raise SkipComponent("Empty.")
+
+        self.aid = None
+        if len(content) == 1 and "=" in content[0]:
+            self.aid = content[0].split(".")[0].split("=")[-1].strip('" ')
+
+        if not self.aid:
+            raise ParseException("Invalid content: {0}".format(content))

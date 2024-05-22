@@ -222,6 +222,7 @@ class DefaultSpecs(Specs):
     ethtool_g = foreach_execute(ethernet.interfaces, "/sbin/ethtool -g %s")
     ethtool_i = foreach_execute(ethernet.interfaces, "/sbin/ethtool -i %s")
     ethtool_k = foreach_execute(ethernet.interfaces, "/sbin/ethtool -k %s")
+    falconctl_aid = simple_command("/opt/CrowdStrike/falconctl -g --aid")
     falconctl_backend = simple_command("/opt/CrowdStrike/falconctl -g --backend")
     falconctl_rfm = simple_command("/opt/CrowdStrike/falconctl -g --rfm-state")
     fapolicyd_rules = glob_file(r"/etc/fapolicyd/rules.d/*.rules")

@@ -187,6 +187,7 @@ class Specs(SpecSet):
     ethtool_i = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     ethtool_k = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     facter = RegistryPoint()
+    falconctl_aid = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     falconctl_backend = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     falconctl_rfm = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     fapolicyd_rules = RegistryPoint(multi_output=True, filterable=True, no_obfuscate=['hostname', 'ip'])
