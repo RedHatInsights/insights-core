@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.24](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.24) (2024-05-23)
+
+- fix: TypeError in ethtool.Ring ([PR 4098](https://github.com/RedHatInsights/insights-core/pull/4098))
+- fix: correct the root of SerializedArchiveContext ([PR 4109](https://github.com/RedHatInsights/insights-core/pull/4109))
+- feat: new spec and parser for falconctl_aid ([PR 4107](https://github.com/RedHatInsights/insights-core/pull/4107))
+- fix: 'NoneType' AttributeError in insights-info ([PR 4105](https://github.com/RedHatInsights/insights-core/pull/4105))
+- fix: add manifest option back to insights.collect() ([PR 4106](https://github.com/RedHatInsights/insights-core/pull/4106))
+
 # [insights-core-3.3.23](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.23) (2024-05-16)
 
 - feat: Improve debugging experience ([PR 4094](https://github.com/RedHatInsights/insights-core/pull/4094))

@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.23
+Version:        3.3.24
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu May 23 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.24-1
+- fix: TypeError in ethtool.Ring (#4098) (xiaoxwan@redhat.com)
+- fix: correct the root of SerializedArchiveContext (#4109)
+  (xiangceliu@redhat.com)
+- feat: new spec and parser for falconctl_aid (#4107) (xiaoxwan@redhat.com)
+- fix: 'NoneType' AttributeError in insights-info (#4105) (xiaoxwan@redhat.com)
+- fix: add manifest option back to insights.collect() (#4106)
+  (xiangceliu@redhat.com)
+
 * Thu May 16 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.23-1
 - feat: Improve debugging experience (#4094) (stomsa@redhat.com)
 - fix: env INSIGHTS_FILTERS_ENABLED no longer works (#4104)
