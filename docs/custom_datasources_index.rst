@@ -185,8 +185,15 @@ insights.specs.datasources.machine_ids
 insights.specs.datasources.malware_detection
 --------------------------------------------
 
-.. automodule:: insights.specs.datasources.malware_detection
-    :members: malware_detection_app
+.. automodule:: insights.specs.datasources.malware_detection.malware_detection_ds
+    :members: malware_detection
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.manifests
+------------------------------------
+
+.. automodule:: insights.specs.datasources.manifests
     :show-inheritance:
     :undoc-members:
 

@@ -8,7 +8,7 @@ import sys
 from six.moves import configparser as ConfigParser
 from distutils.version import LooseVersion
 from .utilities import get_version_info
-from insights.client.apps.manifests import manifests, content_types
+from insights.specs.datasources.manifests import manifests, content_types
 
 try:
     from .constants import InsightsConstants as constants
