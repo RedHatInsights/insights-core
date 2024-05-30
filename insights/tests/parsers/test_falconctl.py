@@ -14,6 +14,10 @@ BACKEND_2 = """
 backend=auto.
 """.strip()
 
+BACKEND_INVALID_1 = """
+backend?auto.
+""".strip()
+
 RFM_1 = """
 rfm-state=false.
 """.strip()
@@ -27,6 +31,10 @@ RFM_EMPTY = ""
 
 AID_VALID = """
 aid="44e3b7d20b434a2bb2815d9808fa3a8b".
+""".strip()
+
+AID_VALID_UNSET = """
+aid is not set.
 """.strip()
 
 AID_INVALID_1 = """
@@ -66,6 +74,10 @@ def test_backend_empty():
         FalconctlBackend(context_wrap(BACKEND_EMPTY))
     assert 'SkipComponent' in str(e)
 
+    with pytest.raises(ParseException) as e:
+        FalconctlBackend(context_wrap(BACKEND_INVALID_1))
+    assert 'Invalid content:' in str(e)
+
 
 def test_rfm_empty():
     with pytest.raises(SkipComponent) as e:
@@ -76,6 +88,9 @@ def test_rfm_empty():
 def test_falconctl_aid():
     aid = FalconctlAid(context_wrap(AID_VALID))
     assert aid.aid == "44e3b7d20b434a2bb2815d9808fa3a8b"
+
+    aid = FalconctlAid(context_wrap(AID_VALID_UNSET))
+    assert aid.aid == "not set"
 
 
 def test_falconctl_aid_invalid():
