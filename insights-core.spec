@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.24
+Version:        3.3.25
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu May 30 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.25-1
+- feat: enhance falconctl_aid exception parsing (#4112) (xiaoxwan@redhat.com)
+- chore: uname supports RHEL 8.10 (#4110) (xiangceliu@redhat.com)
+
 * Thu May 23 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.24-1
 - fix: TypeError in ethtool.Ring (#4098) (xiaoxwan@redhat.com)
 - fix: correct the root of SerializedArchiveContext (#4109)
