@@ -43,10 +43,13 @@ class FalconctlBackend(CommandParser):
         if not content:
             raise SkipComponent("Empty.")
         self.backend = ""
-        if "=" in content[0]:
+        if len(content) == 1 and "=" in content[0]:
             self.backend = content[0].split(".")[0].split("=")[-1].strip()
-        else:
+        elif len(content) == 1 and " is not set." in content[0]:
             self.backend = "not set"
+
+        if not self.backend:
+            raise ParseException("Invalid content: {0}".format(content))
 
 
 @parser(Specs.falconctl_rfm)
@@ -100,6 +103,8 @@ class FalconctlAid(CommandParser):
         self.aid = None
         if len(content) == 1 and "=" in content[0]:
             self.aid = content[0].split(".")[0].split("=")[-1].strip('" ')
+        elif len(content) == 1 and " is not set." in content[0]:
+            self.aid = "not set"
 
         if not self.aid:
             raise ParseException("Invalid content: {0}".format(content))
