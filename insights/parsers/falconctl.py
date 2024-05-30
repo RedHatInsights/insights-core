@@ -43,9 +43,9 @@ class FalconctlBackend(CommandParser):
         if not content:
             raise SkipComponent("Empty.")
         self.backend = ""
-        if "=" in content[0]:
+        if len(content) == 1 and "=" in content[0]:
             self.backend = content[0].split(".")[0].split("=")[-1].strip()
-        elif " is not set." in content[0]:
+        elif len(content) == 1 and " is not set." in content[0]:
             self.backend = "not set"
 
         if not self.backend:
