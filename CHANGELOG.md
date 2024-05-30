@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.25](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.25) (2024-05-30)
+
+- feat: enhance falconctl_aid exception parsing ([PR 4112](https://github.com/RedHatInsights/insights-core/pull/4112))
+- chore: uname supports RHEL 8.10 ([PR 4110](https://github.com/RedHatInsights/insights-core/pull/4110))
+
 # [insights-core-3.3.24](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.24) (2024-05-23)
 
 - fix: TypeError in ethtool.Ring ([PR 4098](https://github.com/RedHatInsights/insights-core/pull/4098))
