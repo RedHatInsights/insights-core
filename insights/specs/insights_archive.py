@@ -74,6 +74,7 @@ class InsightsArchiveSpecs(Specs):
     falconctl_aid = simple_file("insights_commands/opt.CrowdStrike.falconctl_-g_--aid")
     falconctl_backend = simple_file("insights_commands/opt.CrowdStrike.falconctl_-g_--backend")
     falconctl_rfm = simple_file("insights_commands/opt.CrowdStrike.falconctl_-g_--rfm-state")
+    falconctl_version = simple_file("insights_commands/opt.CrowdStrike.falconctl_-g_--version")
     fcoeadm_i = simple_file("insights_commands/fcoeadm_-i")
     findmnt_lo_propagation = simple_file("insights_commands/findmnt_-lo_PROPAGATION")
     firewall_cmd_list_all_zones = simple_file("insights_commands/firewall-cmd_--list-all-zones")

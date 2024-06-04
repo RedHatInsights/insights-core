@@ -190,6 +190,7 @@ class Specs(SpecSet):
     falconctl_aid = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     falconctl_backend = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     falconctl_rfm = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    falconctl_version = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     fapolicyd_rules = RegistryPoint(multi_output=True, filterable=True, no_obfuscate=['hostname', 'ip'])
     fc_match = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     fcoeadm_i = RegistryPoint(no_obfuscate=['hostname', 'ip'])

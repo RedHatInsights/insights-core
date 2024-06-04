@@ -225,6 +225,7 @@ class DefaultSpecs(Specs):
     falconctl_aid = simple_command("/opt/CrowdStrike/falconctl -g --aid")
     falconctl_backend = simple_command("/opt/CrowdStrike/falconctl -g --backend")
     falconctl_rfm = simple_command("/opt/CrowdStrike/falconctl -g --rfm-state")
+    falconctl_version = simple_command("/opt/CrowdStrike/falconctl -g --version")
     fapolicyd_rules = glob_file(r"/etc/fapolicyd/rules.d/*.rules")
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
