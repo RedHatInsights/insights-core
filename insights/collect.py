@@ -478,7 +478,7 @@ def collect(client_config=None, rm_conf=None, tmp_path=None,
 
     broker = dr.Broker()
     ctx = create_context(client.get("context", {}))
-    cleaner = Cleaner(client_config, rm_conf) if client_config else None
+    cleaner = Cleaner(client_config, black_list) if client_config else None
     broker[ctx.__class__] = ctx
     broker['cleaner'] = cleaner
     broker['client_config'] = client_config

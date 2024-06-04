@@ -215,9 +215,8 @@ def test_redact_file_empty(core_collect, obfuscate):
     rm_conf = {'patterns': {'regex': ['test', 'pwd', '12.*4', '^abcd']}}
     pp = Cleaner(conf, rm_conf)
     pp.clean_file(test_file)
-    # file is cleaned to empty
-    with open(test_file, 'r') as t:
-        assert '' == ''.join(t.readlines())
+    # file is cleaned to empty, hence it was removed
+    assert not os.path.exists(test_file)
     arch.delete_archive_dir()
 
 
