@@ -93,7 +93,7 @@ def max_globs():
 
 
 class Specs(SpecSet):
-    many_glob = RegistryPoint(multi_output=True)
+    many_glob = RegistryPoint(multi_output=True, no_redact=True)
     many_foreach_exe = RegistryPoint(multi_output=True)
     many_foreach_clc = RegistryPoint(multi_output=True)
     smpl_cmd = RegistryPoint()
@@ -118,7 +118,7 @@ class Stuff(Specs):
         return [here + "/__init__.py", here + "/integration.py"]
 
     many_foreach_exe = foreach_execute(files, 'ls %s')
-    many_foreach_clc = foreach_collect(files, "%s")
+    many_foreach_clc = foreach_collect(files, "%s", no_redact=True)
     smpl_cmd = simple_command("/usr/bin/uptime")
     smpl_cmd_w_filter = simple_command("echo -n ' hello 1'")
     smpl_file = simple_file(here + "/helpers.py")
