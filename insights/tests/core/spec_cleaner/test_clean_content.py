@@ -83,6 +83,18 @@ def test_redact_patterns_exclude_regex(core_collect, obfuscate):
 
 @mark.parametrize("obfuscate", [True, False])
 @mark.parametrize("core_collect", [True, False])
+def test_redact_result_empty(core_collect, obfuscate):
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+
+    rm_conf = {'patterns': {'regex': [' ', '12.*4', '^abcd', 'test', 'pwd', 'w0rd']}}
+    pp = Cleaner(conf, rm_conf)
+    ret = pp.clean_content(test_data, [])
+    # result content is Empty
+    assert len(ret) == 0
+
+
+@mark.parametrize("obfuscate", [True, False])
+@mark.parametrize("core_collect", [True, False])
 def test_redact_patterns_exclude_no_regex(core_collect, obfuscate):
     conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
 

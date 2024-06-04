@@ -31,6 +31,10 @@ MAX_GLOBS = 1001
 
 this_file = os.path.abspath(__file__).rstrip("c")
 
+test_empty_file = '/tmp/_insights_test.empty_file'
+test_empty_after_filter = '/tmp/_insights_test.empty_after_filter'
+test_empty_after_redact = '/tmp/_insights_test.empty_after_redact'
+
 specs_manifest = """
 ---
 version: 0
@@ -45,7 +49,7 @@ client:
     blacklist:
         files: []
         commands: []
-        patterns: []
+        patterns: ['TeSt_']
         keywords: []
 
     persist:
@@ -89,7 +93,7 @@ def max_globs():
 
 
 class Specs(SpecSet):
-    many_glob = RegistryPoint(multi_output=True)
+    many_glob = RegistryPoint(multi_output=True, no_redact=True)
     many_foreach_exe = RegistryPoint(multi_output=True)
     many_foreach_clc = RegistryPoint(multi_output=True)
     smpl_cmd = RegistryPoint()
@@ -100,6 +104,9 @@ class Specs(SpecSet):
     first_of_spec_w_filter = RegistryPoint(filterable=True)
     no_such_cmd = RegistryPoint()
     no_such_file = RegistryPoint()
+    empty_orig = RegistryPoint()
+    empty_after_filter = RegistryPoint(filterable=True)
+    empty_after_redact = RegistryPoint()
 
 
 class Stuff(Specs):
@@ -111,7 +118,7 @@ class Stuff(Specs):
         return [here + "/__init__.py", here + "/integration.py"]
 
     many_foreach_exe = foreach_execute(files, 'ls %s')
-    many_foreach_clc = foreach_collect(files, "%s")
+    many_foreach_clc = foreach_collect(files, "%s", no_redact=True)
     smpl_cmd = simple_command("/usr/bin/uptime")
     smpl_cmd_w_filter = simple_command("echo -n ' hello 1'")
     smpl_file = simple_file(here + "/helpers.py")
@@ -125,6 +132,10 @@ class Stuff(Specs):
     )
     no_such_cmd = simple_command("/usr/bin/no_such_cmd args")
     no_such_file = simple_file("/no/such/_file")
+
+    empty_orig = simple_file(test_empty_file)
+    empty_after_filter = simple_file(test_empty_after_filter)
+    empty_after_redact = simple_file(test_empty_after_redact)
 
 
 class stage(dr.ComponentType):
@@ -142,7 +153,11 @@ class stage(dr.ComponentType):
     Stuff.smpl_file_w_filter,
     Stuff.first_file_spec_w_filter,
     Stuff.first_of_spec_w_filter,
-    optional=[Stuff.no_such_cmd, Stuff.no_such_file])
+    optional=[Stuff.no_such_cmd,
+              Stuff.empty_orig,
+              Stuff.empty_after_filter,
+              Stuff.empty_after_redact,
+              Stuff.no_such_file, ])
 def dostuff(broker):
     assert Stuff.many_glob in broker
     assert Stuff.many_foreach_exe in broker
@@ -154,6 +169,9 @@ def dostuff(broker):
     assert Stuff.first_file_spec_w_filter in broker
     assert Stuff.first_of_spec_w_filter in broker
 
+    assert Stuff.empty_orig not in broker
+    assert Stuff.empty_after_filter not in broker
+    assert Stuff.empty_after_redact not in broker
     assert Stuff.no_such_cmd not in broker
     assert Stuff.no_such_file not in broker
 
@@ -171,6 +189,16 @@ with open(here + "/spec_tests.py") as f:
 #
 
 
+def setup_function(func):
+    if func == test_specs_collect:
+        # empty relevant files
+        open(test_empty_file, 'a').close()
+        with open(test_empty_after_filter, 'w') as t:
+            t.write('no-filter')
+        with open(test_empty_after_redact, 'w') as t:
+            t.write('TeSt_')
+
+
 def teardown_function(func):
     filters._CACHE = {}
 
@@ -180,12 +208,18 @@ def teardown_function(func):
         del filters.FILTERS[Stuff.first_file_spec_w_filter]
         del filters.FILTERS[Stuff.first_of_spec_w_filter]
 
+    if func == test_specs_collect:
+        os.remove(test_empty_file)
+        os.remove(test_empty_after_filter)
+        os.remove(test_empty_after_redact)
+
 
 def test_spec_factory():
     add_filter(Stuff.smpl_cmd_w_filter, " hello ")
     add_filter(Stuff.smpl_file_w_filter, "def get")
     add_filter(Stuff.first_file_spec_w_filter, ["def report_", "rhel"])
     add_filter(Stuff.first_of_spec_w_filter, ["def test", " hello "])
+    add_filter(Stuff.empty_after_filter, " hello ")
     broker = dr.Broker()
     broker[HostContext] = HostContext()
     broker['cleaner'] = Cleaner(None, None)
@@ -200,13 +234,13 @@ def test_spec_factory():
     assert broker[Stuff.smpl_file_w_filter].content == smpl_file_w_filter_content
     assert broker[Stuff.first_file_spec_w_filter].content == first_file_w_filter_content
     assert len(broker[Stuff.first_of_spec_w_filter].content) == 1
-    assert len(broker.exceptions) == 2
+    assert len(broker.exceptions) == 5
     for exp in broker.exceptions:
         if "no_such" in str(exp):
             assert "args" not in str(exp)
         else:
             assert "/no/such" not in str(exp)
-    assert len(broker.tracebacks) == 2
+    assert len(broker.tracebacks) == 5
 
 
 def test_line_terminators():
@@ -214,6 +248,7 @@ def test_line_terminators():
     add_filter(Stuff.smpl_file_w_filter, "def get")
     add_filter(Stuff.first_file_spec_w_filter, ["def report_", "rhel"])
     add_filter(Stuff.first_of_spec_w_filter, ["def test", " hello "])
+    add_filter(Stuff.empty_after_filter, " hello ")
     broker = dr.Broker()
     broker[HostContext] = HostContext()
     broker['cleaner'] = Cleaner(None, None)
@@ -280,7 +315,8 @@ def test_specs_collect(obfuscate):
     add_filter(Stuff.smpl_file_w_filter, "def get")
     add_filter(Stuff.first_file_spec_w_filter, [" hello ", "Test"])
     add_filter(Stuff.first_of_spec_w_filter, ["def test", " hello "])
-    # Prepareation
+    add_filter(Stuff.empty_after_filter, " hello ")
+    # Preparation
     manifest = collect.load_manifest(specs_manifest)
     for pkg in manifest.get("plugins", {}).get("packages", []):
         dr.load_components(pkg, exclude=None)
@@ -310,6 +346,10 @@ def test_specs_collect(obfuscate):
                 if 'no_such' in spec:
                     assert results is None
                     continue
+                if "empty" in spec:
+                    assert results is None
+                    assert ": Empty " in mdata.get('errors')[0]
+                    continue
                 if not isinstance(results, list):
                     results = [results]
                 for result in results:
@@ -338,7 +378,7 @@ def test_specs_collect(obfuscate):
                         else:
                             # "filter" works in archive result files
                             assert len(org_content) > len(new_content)
-    assert count == 11  # Number of Specs
+    assert count == 14  # Number of Specs
 
     arch.delete_archive_dir()
 
