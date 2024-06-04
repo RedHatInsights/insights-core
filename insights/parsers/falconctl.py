@@ -117,7 +117,7 @@ class FalconctlAid(CommandParser):
 class FalconctlVersion(CommandParser):
     """
     This parser reads the output of ``/opt/CrowdStrike/falconctl -g --version``,
-    return the agent id as a string.
+    return the running falcon_sensor version.
 
     Example output::
 
