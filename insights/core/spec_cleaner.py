@@ -386,7 +386,11 @@ class Cleaner(object):
         for line in lines:
             line = _clean_line(line)
             result.append(line) if line is not None else None
-        return result
+        if result and list(filter(None, result)):
+            # When there are some lines Truth
+            return result
+        # All lines blank
+        return []
 
     def clean_file(self, _file, no_obfuscate=None, no_redact=False):
         """
@@ -414,8 +418,9 @@ class Cleaner(object):
                             for line in content:
                                 fh.write(line.encode('utf-8') if six.PY3 else line)
                     else:
-                        # Empty the file, as all contents are cleaned
-                        open(_file, 'w').close()
+                        # Remove Empty file
+                        logger.debug('Removing %s, as it\'s empty after cleaning' % _file)
+                        os.remove(_file)
             except Exception as e:  # pragma: no cover
                 logger.warning(e)
                 raise Exception("Error: Cannot Write to File: %s" % _file)
