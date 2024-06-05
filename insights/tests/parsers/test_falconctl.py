@@ -3,7 +3,7 @@ import pytest
 
 from insights.core.exceptions import SkipComponent, ParseException
 from insights.parsers import falconctl
-from insights.parsers.falconctl import FalconctlBackend, FalconctlRfm, FalconctlAid
+from insights.parsers.falconctl import FalconctlBackend, FalconctlRfm, FalconctlAid, FalconctlVersion
 from insights.tests import context_wrap
 
 BACKEND_1 = """
@@ -48,6 +48,18 @@ aid"44e3b7d20b434a2bb2815d9808fa3a8b".
 AID_INVALID_3 = """
 aid="44e3b7d20b434a2bb2815d
 9808fa3a8b".
+""".strip()
+
+VERSION_VALID = """
+version = 7.14.16703.0
+
+""".strip()
+
+VERSION_EMPTY = ""
+
+VERSION_INVALID = """
+version 7.14.16703.0
+
 """.strip()
 
 
@@ -111,11 +123,27 @@ def test_falconctl_aid_invalid():
     assert 'Invalid content:' in str(e)
 
 
+def test_falconctl_version():
+    falcon_version = FalconctlVersion(context_wrap(VERSION_VALID))
+    assert falcon_version.version == "7.14.16703.0"
+
+
+def test_falconctl_version_invalid():
+    with pytest.raises(SkipComponent) as e:
+        FalconctlVersion(context_wrap(VERSION_EMPTY))
+    assert 'Empty.' in str(e)
+
+    with pytest.raises(ParseException) as e:
+        FalconctlVersion(context_wrap(VERSION_INVALID))
+    assert 'Invalid content:' in str(e)
+
+
 def test_falcontcl_doc_examples():
     env = {
         "falconctlbackend": FalconctlBackend(context_wrap(BACKEND_2)),
         "falconctlrfm": FalconctlRfm(context_wrap(RFM_1)),
-        "falconctlaid": FalconctlAid(context_wrap(AID_VALID))
+        "falconctlaid": FalconctlAid(context_wrap(AID_VALID)),
+        "falconctlversion": FalconctlVersion(context_wrap(VERSION_VALID))
     }
     failed, total = doctest.testmod(falconctl, globs=env)
     assert failed == 0
