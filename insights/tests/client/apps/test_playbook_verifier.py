@@ -197,8 +197,8 @@ def test_revoked_playbook(call_1, call_2):
         }
     }]
 
-    with raises(PlaybookVerificationError) as error:
-        verify(fake_playbook, skip_verify=False)
+        with raises(PlaybookVerificationError) as error:
+            verify(fake_playbook)
 
     assert revoked_error in str(error.value)
 
