@@ -12,6 +12,9 @@ FalconctlRfm - command ``/opt/CrowdStrike/falconctl -g --rfm-state``
 
 FalconctlAid - command ``/opt/CrowdStrike/falconctl -g --aid``
 --------------------------------------------------------------
+
+FalconctlVersion - command ``/opt/CrowdStrike/falconctl -g --version``
+----------------------------------------------------------------------
 """
 from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent, ParseException
@@ -107,4 +110,33 @@ class FalconctlAid(CommandParser):
             self.aid = "not set"
 
         if not self.aid:
+            raise ParseException("Invalid content: {0}".format(content))
+
+
+@parser(Specs.falconctl_version)
+class FalconctlVersion(CommandParser):
+    """
+    This parser reads the output of ``/opt/CrowdStrike/falconctl -g --version``,
+    return the running falcon_sensor version.
+
+    Example output::
+
+        version = 7.14.16703.0
+
+    Examples:
+        >>> type(falconctlversion)
+        <class 'insights.parsers.falconctl.FalconctlVersion'>
+        >>> falconctlversion.version
+        '7.14.16703.0'
+    """
+
+    def parse_content(self, content):
+        if not content:
+            raise SkipComponent("Empty.")
+
+        self.version = None
+        if "=" in content[0]:
+            self.version = content[0].split("=")[-1].strip()
+
+        if not self.version:
             raise ParseException("Invalid content: {0}".format(content))
