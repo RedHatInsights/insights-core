@@ -179,7 +179,7 @@ def exclude_dynamic_elements(snippet):
                 del result[elements[0]]
             except Exception:
                 raise PlaybookVerificationError(
-                    "Dynamic key '{key}' does not exist and cannot be excluded.".format(key=element)
+                    "Dynamic key '{key}' does not exist and could not be excluded.".format(key=element)
                 )
             continue
 
@@ -188,7 +188,7 @@ def exclude_dynamic_elements(snippet):
                 del result[elements[0]][elements[1]]
             except Exception:
                 raise PlaybookVerificationError(
-                    "Dynamic key '{key}' does not exist and cannot be excluded.".format(key=element)
+                    "Dynamic key '{key}' does not exist and could not be excluded.".format(key=element)
                 )
             continue
 
@@ -248,10 +248,12 @@ def verify_playbook_snippet(snippet):
     return execute_verification(cleaned_snippet, encoded_signature)
 
 
-def get_playbook_snippet_revocation_list():
+def get_playbook_snippet_revocation_list(revoked_playbooks_yaml):
     """
     Load the list of revoked playbook snippet hashes from the egg.
 
+    :param revoked_playbooks_yaml: The YAML containing revoked playbooks.
+    :type revoked_playbooks_yaml: bytes
     :returns: Revocation entries in a form of `name:hash`.
     :rtype: dict[str, str]
     """
@@ -268,7 +270,6 @@ def get_playbook_snippet_revocation_list():
         # >     - name: ...
         # >       hash: ...
         # There will never be more than one top-level object, we can safely do [0].
-        revoked_playbooks_yaml = pkgutil.get_data('insights', 'revoked_playbooks.yaml')  # type: bytes
         revoked_playbooks = yaml.load(revoked_playbooks_yaml)[0]  # type: dict
     except Exception:
         raise PlaybookVerificationError("Could not load snippet revocation list.")
@@ -296,7 +297,8 @@ def verify(playbook):
     if not playbook:
         raise PlaybookVerificationError("Empty playbooks cannot be verified.")
 
-    revocation_list = get_playbook_snippet_revocation_list()  # type: dict[str, str]
+    revocation_list_file_content = pkgutil.get_data('insights', 'revoked_playbooks.yaml')  # type: bytes
+    revocation_list = get_playbook_snippet_revocation_list(revocation_list_file_content)  # type: dict[str, str]
 
     name = playbook.get("name", "NAME UNAVAILABLE")
     verified, playbook_hash = verify_playbook_snippet(playbook)  # type: ..., str

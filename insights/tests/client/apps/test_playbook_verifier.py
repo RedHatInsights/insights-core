@@ -1,7 +1,10 @@
 # -*- coding: UTF-8 -*-
 # flake8: noqa: E402
 import os
+import pkgutil
 import sys
+
+import mock
 import pytest
 import tempfile
 import shutil
@@ -18,6 +21,8 @@ if sys.version_info > (2, 6):
 
 
 SKIP_BELOW_27 = pytest.mark.skipif(sys.version_info < (2, 7), reason="Unsupported; needs Python 2.7+ or 3.6+")
+SKIP_ON_3 = pytest.mark.skipif(sys.version_info[0] > 2, reason="Only required in Python 2")
+BROKEN_OVER_311 = pytest.mark.xfail(sys.version_info > (3, 11), reason="Broken in Python 3.12+")
 
 
 @SKIP_BELOW_27
@@ -142,7 +147,7 @@ class TestErrors:
         load_error = "Could not load snippet revocation list."
 
         with raises(PlaybookVerificationError) as error:
-            get_playbook_snippet_revocation_list()
+            get_playbook_snippet_revocation_list(pkgutil.get_data('insights', 'revoked_playbooks.yaml'))
 
         assert load_error in str(error.value)
 
@@ -152,7 +157,7 @@ class TestErrors:
         load_error = "List of revocation signatures is invalid."
 
         with raises(PlaybookVerificationError) as error:
-            get_playbook_snippet_revocation_list()
+            get_playbook_snippet_revocation_list(pkgutil.get_data('insights', 'revoked_playbooks.yaml'))
 
         assert load_error in str(error.value)
 
@@ -191,7 +196,8 @@ class TestErrors:
         assert revoked_error in str(error.value)
 
 
-@pytest.mark.skipif(sys.version_info[:2] != (2, 7), reason="normalize_snippet only targets Python 2.7")
+@SKIP_ON_3
+@SKIP_BELOW_27
 def test_normalize_snippet():
     playbook = '''task:
   when:
@@ -210,3 +216,207 @@ def test_normalize_snippet():
     }
 
     assert normalize_snippet(snippet) == want
+
+
+@SKIP_BELOW_27
+class TestExcludeDynamicElements:
+    def test_ok_signature(self):
+        source = {
+            "vars": {"insights_signature_exclude": "/vars/insights_signature", "insights_signature": b"binary data"}
+        }
+        expected = {"vars": {"insights_signature_exclude": "/vars/insights_signature"}}
+        result = playbook_verifier.exclude_dynamic_elements(source)
+        assert result == expected
+
+    def test_ok_hosts(self):
+        source = {"vars": {"insights_signature_exclude": "/hosts"}, "hosts": "localhost"}
+        expected = {"vars": {"insights_signature_exclude": "/hosts"}}
+        result = playbook_verifier.exclude_dynamic_elements(source)
+        assert result == expected
+
+    def test_ok_signature_and_hosts(self):
+        source = {
+            "vars": {"insights_signature_exclude": "/vars/insights_signature,/hosts", "insights_signature": b""},
+            "hosts": "localhost",
+        }
+        expected = {"vars": {"insights_signature_exclude": "/vars/insights_signature,/hosts"}}
+        result = playbook_verifier.exclude_dynamic_elements(source)
+        assert result == expected
+
+    def test_ok_vars_foo_bar(self):
+        source = {"vars": {"insights_signature_exclude": "/vars/foo,/vars/bar", "foo": "foo", "bar": "bar"}}
+        expected = {"vars": {"insights_signature_exclude": "/vars/foo,/vars/bar"}}
+        result = playbook_verifier.exclude_dynamic_elements(source)
+        assert result == expected
+
+    def test_ok_trailing_slash(self):
+        source = {"vars": {"insights_signature_exclude": "/vars/insights_signature/", "insights_signature": b""}}
+        expected = {"vars": {"insights_signature_exclude": "/vars/insights_signature/"}}
+        result = playbook_verifier.exclude_dynamic_elements(source)
+        assert result == expected
+
+    def test_missing_vars(self):
+        source = {}
+        expected = (
+            "The playbook snippet does not have the key 'vars/insights_signature_exclude', "
+            "dynamic exclusion cannot be performed."
+        )
+        with pytest.raises(PlaybookVerificationError) as excinfo:
+            playbook_verifier.exclude_dynamic_elements(source)
+        assert excinfo.value.message == expected
+
+    def test_missing_vars_exclude(self):
+        source = {"vars": {"insights_signature": b""}}
+        expected = (
+            "The playbook snippet does not have the key 'vars/insights_signature_exclude', "
+            "dynamic exclusion cannot be performed."
+        )
+        with pytest.raises(PlaybookVerificationError) as excinfo:
+            playbook_verifier.exclude_dynamic_elements(source)
+        assert excinfo.value.message == expected
+
+    def test_missing_exclusion_key_in_vars(self):
+        source = {"vars": {"insights_signature_exclude": "/vars/missing"}}
+        expected = "Dynamic key '/vars/missing' does not exist and could not be excluded."
+        with pytest.raises(PlaybookVerificationError) as excinfo:
+            playbook_verifier.exclude_dynamic_elements(source)
+        assert excinfo.value.message == expected
+
+    def test_missing_exclusion_key_in_root(self):
+        source = {"vars": {"insights_signature_exclude": "/hosts"}}
+        expected = "Dynamic key '/hosts' does not exist and could not be excluded."
+        with pytest.raises(PlaybookVerificationError) as excinfo:
+            playbook_verifier.exclude_dynamic_elements(source)
+        assert excinfo.value.message == expected
+
+    def test_deep_exclusion_key(self):
+        source = {"vars": {"insights_signature_exclude": "/vars/too/deep"}, "too": {"deep": ""}}
+        expected = "Dynamic key '/vars/too/deep' cannot be excluded from verification."
+        with pytest.raises(PlaybookVerificationError) as excinfo:
+            playbook_verifier.exclude_dynamic_elements(source)
+        assert excinfo.value.message == expected
+
+    def test_missing_deep_exclusion_key(self):
+        source = {"vars": {"insights_signature_exclude": "/vars/too/deep"}}
+        expected = "Dynamic key '/vars/too/deep' cannot be excluded from verification."
+        with pytest.raises(PlaybookVerificationError) as excinfo:
+            playbook_verifier.exclude_dynamic_elements(source)
+        assert excinfo.value.message == expected
+
+    def test_invalid_exclusion_key(self):
+        source = {"name": "test", "vars": {"insights_signature_exclude": "/name"}}
+        expected = "Dynamic key '/name' cannot be excluded from verification."
+        with pytest.raises(PlaybookVerificationError) as excinfo:
+            playbook_verifier.exclude_dynamic_elements(source)
+        assert excinfo.value.message == expected
+
+
+@SKIP_BELOW_27
+@BROKEN_OVER_311
+class TestSerializePlaybookSnippet:
+    def test_small(self):
+        raw_playbook = "\n".join([
+            "---",
+            '- name: test',
+            '  vars:',
+            '    insights_signature_exclude: /hosts',
+            '  tasks:',
+            '    - name: show current date',
+            '      command: date | cowsay | lolcat',
+        ])
+        expected = (
+            b"ordereddict(["
+            b"('name', 'test'), "
+            b"('vars', ordereddict(["
+            b"('insights_signature_exclude', '/hosts')"
+            b"])), "
+            b"('tasks', [ordereddict(["
+            b"('name', 'show current date'), ('command', 'date | cowsay | lolcat')"
+            b"])])"
+            b"])"
+        )
+
+        playbooks = playbook_verifier.load_playbook_yaml(raw_playbook)  # type: list[dict]
+        result = playbook_verifier.serialize_playbook_snippet(playbooks[0])  # type: bytes
+        assert result == expected
+
+    def test_real(self):
+        parent = os.path.dirname(__file__)  # type: str
+        with open("{}/playbooks/insights_remove.yml".format(parent), "r") as f:
+            playbooks = load_playbook_yaml(f.read())  # type: list[dict]
+        playbook = playbook_verifier.exclude_dynamic_elements(playbooks[0])  # type: dict
+        with open("{}/playbooks/insights_remove.serialized.bin".format(parent), "rb") as f:
+            expected = f.read()  # type: bytes
+
+        result = playbook_verifier.serialize_playbook_snippet(playbook)  # type: bytes
+        assert result == expected
+
+
+@SKIP_BELOW_27
+class TestGetPlaybookSnippetRevocationList:
+    @mock.patch(
+        "insights.client.apps.ansible.playbook_verifier.verify_playbook_snippet",
+        return_value=(True, b"snippet hash"),
+    )
+    def test_ok(self, mocked_verify_playbook_snippet):
+        revoked_playbooks = (
+            b"---\n"
+            b"- name: revocation list\n"
+            b"  timestamp: 123\n"
+            b"  vars:\n"
+            b"    insights_signature_exclude: /vars/insights_signature\n"
+            b"    insights_signature: !!binary |\n"
+            b"      content==\n"
+            b"  revoked_playbooks:\n"
+            b"    - name: a.yml hash8a\n"
+            b"      hash: hash64a\n"
+            b"    - name: b.yml hash8b\n"
+            b"      hash: hash64b\n"
+        )
+        revocation_list = playbook_verifier.get_playbook_snippet_revocation_list(revoked_playbooks)
+        expected = [{"name": "a.yml hash8a", "hash": "hash64a"}, {"name": "b.yml hash8b", "hash": "hash64b"}]
+
+        assert mocked_verify_playbook_snippet.call_count == 1
+        assert revocation_list == expected
+
+    def test_malformed(self):
+        revoked_playbooks = (
+            b"---\n"
+            b"- name: foo\n"
+            b"  vars:\n"
+            b"    key: value\n"
+            b"text that should not be here"
+        )
+        with pytest.raises(playbook_verifier.PlaybookVerificationError) as excinfo:
+            playbook_verifier.get_playbook_snippet_revocation_list(revoked_playbooks)
+        assert "Could not load" in excinfo.value.message
+
+    @mock.patch(
+        "insights.client.apps.ansible.playbook_verifier.verify_playbook_snippet",
+        return_value=(False, b"snippet hash"),
+    )
+    def test_invalid_signature(self, mocked_verify_playbook_snippet):
+        revoked_playbooks = (
+            b"---\n"
+            b"- name: foo\n"
+            b"  vars:\n"
+            b"    key: value\n"
+        )
+        with pytest.raises(playbook_verifier.PlaybookVerificationError) as excinfo:
+            playbook_verifier.get_playbook_snippet_revocation_list(revoked_playbooks)
+        assert "invalid" in excinfo.value.message
+        assert mocked_verify_playbook_snippet.call_count == 1
+
+
+@SKIP_BELOW_27
+class TestHashPlaybookSnippets:
+    def test_real(self):
+        parent = os.path.dirname(__file__)  # type: str
+        with open("{}/playbooks/insights_remove.serialized.bin".format(parent), "rb") as f:
+            serialized_playbook = f.read()  # type: bytes
+
+        with open("{}/playbooks/insights_remove.digest.bin".format(parent), "rb") as f:
+            expected = f.read()  # type: bytes
+
+        result = playbook_verifier.hash_playbook_snippet(serialized_playbook)  # type: bytes
+        assert result == expected
