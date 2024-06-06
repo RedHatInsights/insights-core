@@ -1,0 +1,32 @@
+---
+# This playbook will take care of all steps required to disable
+# Insights Client
+- name: Insights Disable
+  hosts: localhost
+  become: yes
+  vars:
+    insights_signature_exclude: /hosts,/vars/insights_signature
+    insights_signature: !!binary |
+      TFMwdExTMUNSVWRKVGlCUVIxQWdVMGxIVGtGVVZWSkZMUzB0TFMwS1ZtVnljMmx2YmpvZ1IyNTFV
+      RWNnZGpFS0NtbFJTVlpCZDFWQldVODNjekU0ZG5jMU9FUXJhalZ3VGtGUmFGcGlhRUZCYkdkdGFI
+      WXpZVTR5WjFJM2EwRXdiRVZMSzNNeVVVeGtiSE00YkhSaVZXZ0tORkZoWlZaSVNWa3pPRTVsTXpG
+      aFJUTkRURFJZV0ZneVVuSlhUbk5QVG5GbFZFUmpPV2xOVERjM05uZzFjbTE2VWk5bFVrbG5NbXg1
+      UVRoQkwwOWpOd3A0ZGtkcE1uaHBSRkZVWWtsVE9XaFRTM04yZEZKVllXbHdWWEIwUkV0TVlVcHZN
+      VTl2Ulhkd2JqQXhUVGMyZDJOQlZqSmxUR1Y0YkhweU5TOXpOazlMQ25oRU4waFFiMjlpU0RGblVG
+      QjNVbmszZDFadVdIUXhSbE5DYVVKUlYzcE9XRGRzU0hOR1RUaHVjbE01UlhaMWJ6VjBTMmh6Y1Zo
+      U2VqQnNXR0prWVZnS1NVeERiVWhMVkdjd2JESm9iRTA1V25sS1JqTllNRUpLWVV0dFRWRjFibVpL
+      Wkd0NlMxSlpOR2QyUTBaTFZGbHBWMEZxZDNFelRreFNTMmQ0Wlhwd1VBcDVlV2xVVTBoRlRrTlZP
+      RXB2V0Rsa1FuWm5UbUl5TWpreFZIUmxSbGRSVTFGcVlUazRLeXQ2VGpKV2JqVlFNbmN5TlZFd2Iw
+      ZzBNRGs1Ym5kclVEazJDakptVHk5aVJpOTFTM0l4V1RBelFsSmhaRFEwWmxneGVFYzNlbXBVYUZw
+      WmNYUjFUM2hyUkVKVk5USkpTRlpaYWxVMFNsVmpPWFUzYUdOTFRYRlNhSG9LVVdKc1EwSnVNMDV2
+      YUVsbWEySjFNSGxqVldwQldIcHVOR3hJVTJaNFFreHFOM3BYUVU4MWEwTnNVbm8xVTJScWFIVnFk
+      bUl3Tms4MlJIRkZWU3MzWkFwVWVVSTRVVXd4Y1VRclp5dFFSV3d2U0RVclZtTm1NRlJST0dnd05G
+      bHBiVUpOYWpkWVFuQkxVSFpWTlc1WlJVRmtiMVIxWkUwMlpWSk1aRUl2VG5aakNtZExXV1pJTm1G
+      eGNFMXRiVTFVUTFwTVRFZENLM05yY1ZwdFFVSlJTazV5VlcxM2NYRnlSakJYVVZGMk9HSkxZMFpp
+      Tm1kb0swbzBlalJLVW5nM1dqWUtkVU5GV2tsRlFVWnRSbkkwTDNjcmJ6QndaM1ZJYlZCRVZrNUZZ
+      WGhTVWpWMlNFSm9Xa2xRV25wNlUwNXRhMDAwWTNWblZHbDZUM0JMVUhoTVRYWlJTZ3A0U0ZCUFZq
+      SjFXRUZXTkQwS1BWQkphRThLTFMwdExTMUZUa1FnVUVkUUlGTkpSMDVCVkZWU1JTMHRMUzB0Q2c9
+      PQ==
+  tasks:
+    - name: Disable the insights-client
+      command: insights-client --disable-schedule

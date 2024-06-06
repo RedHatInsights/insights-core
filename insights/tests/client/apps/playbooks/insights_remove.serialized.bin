@@ -1,0 +1,1 @@
+ordereddict([('name', 'Insights Disable'), ('become', 'yes'), ('vars', ordereddict([('insights_signature_exclude', '/hosts,/vars/insights_signature')])), ('tasks', [ordereddict([('name', 'Disable the insights-client'), ('command', 'insights-client --disable-schedule')])])])
