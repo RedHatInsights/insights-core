@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.26](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.26) (2024-06-06)
+
+- Add spec falconctl version ([PR 4114](https://github.com/RedHatInsights/insights-core/pull/4114))
+- feat: exclude empty files during core collection ([PR 4113](https://github.com/RedHatInsights/insights-core/pull/4113))
+
 # [insights-core-3.3.25](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.25) (2024-05-30)
 
 - feat: enhance falconctl_aid exception parsing ([PR 4112](https://github.com/RedHatInsights/insights-core/pull/4112))

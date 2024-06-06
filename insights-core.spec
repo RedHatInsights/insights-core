@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.25
+Version:        3.3.26
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,11 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 06 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.26-1
+- Add spec falconctl version (#4114) (jiazhang@redhat.com)
+- feat: exclude empty files during core collection (#4113)
+  (xiangceliu@redhat.com)
+
 * Thu May 30 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.25-1
 - feat: enhance falconctl_aid exception parsing (#4112) (xiaoxwan@redhat.com)
 - chore: uname supports RHEL 8.10 (#4110) (xiangceliu@redhat.com)
