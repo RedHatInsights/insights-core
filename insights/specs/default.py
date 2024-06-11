@@ -36,15 +36,16 @@ from insights.specs.datasources import (
     ps as ps_datasource, rpm_pkgs, sap, satellite_missed_queues,
     ssl_certificate, sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
     user_group, yum_updates)
-from insights.specs.datasources.malware_detection import malware_detection_ds
-from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
-from insights.specs.datasources.pcp import (pcp_enabled, pcp_raw_files,
-    pmlog_summary_args, pmlog_summary_args_pcp_zeroconf)
+from insights.specs.datasources.compliance import compliance_ds
 from insights.specs.datasources.container import (
     containers_inspect, running_rhel_containers)
 from insights.specs.datasources.container.nginx_conf import (
     nginx_conf as container_nginx_conf_ds)
-
+from insights.specs.datasources.malware_detection import malware_detection_ds
+from insights.specs.datasources.pcp import (
+    pcp_enabled, pcp_raw_files, pmlog_summary_args,
+    pmlog_summary_args_pcp_zeroconf)
+from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +98,7 @@ class DefaultSpecs(Specs):
     version_info = client_metadata.version_info
 
     # Client App specs
+    compliance = compliance_ds.compliance
     malware_detection = malware_detection_ds.malware_detection
 
     # Regular collection specs
