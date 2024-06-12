@@ -267,6 +267,7 @@ class Specs(SpecSet):
     ifcfg = RegistryPoint(multi_output=True)
     ifcfg_static_route = RegistryPoint(multi_output=True)
     imagemagick_policy = RegistryPoint(multi_output=True, filterable=True, no_obfuscate=['ip'])
+    image_builder_facts = RegistryPoint()
     init_ora = RegistryPoint()
     init_process_cgroup = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     initctl_lst = RegistryPoint(no_obfuscate=['hostname', 'ip'])
