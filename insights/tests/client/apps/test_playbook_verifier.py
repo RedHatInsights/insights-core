@@ -22,7 +22,6 @@ if sys.version_info > (2, 6):
 
 SKIP_BELOW_27 = pytest.mark.skipif(sys.version_info < (2, 7), reason="Unsupported; needs Python 2.7+ or 3.6+")
 SKIP_ON_3 = pytest.mark.skipif(sys.version_info[0] > 2, reason="Only required in Python 2")
-BROKEN_OVER_311 = pytest.mark.xfail(sys.version_info > (3, 11), reason="Broken in Python 3.12+")
 
 
 @SKIP_BELOW_27
@@ -320,9 +319,64 @@ class TestExcludeDynamicElements:
         assert excinfo.value.message == expected
 
 
+class TestPlaybookSerializer:
+    def test_list(self):
+        source = ["value1", "value2"]
+        result = playbook_verifier.PlaybookSerializer._list(source)
+        expected = "['value1', 'value2']"
+        assert result == expected
+
+    def test_dict_single(self):
+        source = {"key": "value"}
+        result = playbook_verifier.PlaybookSerializer._dict(source)
+        expected = "ordereddict([('key', 'value')])"
+        assert result == expected
+
+    def test_dict_list(self):
+        source = {"key": ["value1", "value2"]}
+        result = playbook_verifier.PlaybookSerializer._dict(source)
+        expected = "ordereddict([('key', ['value1', 'value2'])])"
+        assert result == expected
+
+    def test_dict_mixed(self):
+        source = {"key": "key", "value": ["value1", "value2"]}
+        result = playbook_verifier.PlaybookSerializer._dict(source)
+        expected = "ordereddict([('key', 'key'), ('value', ['value1', 'value2'])])"
+        assert result == expected
+
+    def test_dict_multiple(self):
+        source = {"key": "key", "value": "value"}
+        result = playbook_verifier.PlaybookSerializer._dict(source)
+        expected = "ordereddict([('key', 'key'), ('value', 'value')])"
+        assert result == expected
+
+    def test_numbers(self):
+        source = {"integer": 37, "float": 17.93233901}
+        result = playbook_verifier.PlaybookSerializer._dict(source)
+        expected = "ordereddict([('integer', 37), ('float', 17.93233901)])"
+        assert result == expected
+
+
 @SKIP_BELOW_27
-@BROKEN_OVER_311
 class TestSerializePlaybookSnippet:
+    def test_serialize_dictionary(self):
+        raw = "\n".join([
+            "---",
+            "- tasks:",
+            "    - name: name",
+            "      command: command",
+        ])
+        expected = (
+            b"ordereddict(["
+            b"('tasks', [ordereddict(["
+            b"('name', 'name'), ('command', 'command')"
+            b"])])"
+            b"])"
+        )
+        playbooks = playbook_verifier.load_playbook_yaml(raw)  # type: list[dict]
+        result = playbook_verifier.serialize_playbook_snippet(playbooks[0])  # type: bytes
+        assert result == expected
+
     def test_small(self):
         raw_playbook = "\n".join([
             "---",
