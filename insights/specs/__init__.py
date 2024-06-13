@@ -786,6 +786,8 @@ class Specs(SpecSet):
     tomcat_vdc_fallback = RegistryPoint()
     tomcat_vdc_targeted = RegistryPoint(multi_output=True)
     tomcat_web_xml = RegistryPoint(multi_output=True)
+    tower_pip_freeze = RegistryPoint(multi_output=True)
+    tower_version = RegistryPoint()
     tuned_adm = RegistryPoint()
     tuned_conf = RegistryPoint()
     udev_66_md_rules = RegistryPoint(filterable=True)
