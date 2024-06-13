@@ -439,7 +439,10 @@ def collect(client_config=None, rm_conf=None, tmp_path=None,
         core collection, this dictionary has the following structure:
         ``{ exception_type: [ (exception_obj, component), (exception_obj, component) ]}``.
     """
-    # Get the manifest from client configuration
+    # Get the manifest per the following order:
+    # 1. "client_config.manifest"
+    # 2. "manifest" passed to the `insights.collect()`
+    # 3. "default_manifest" defined in this module
     manifest = default_manifest if manifest is None else manifest
     if client_config and hasattr(client_config, 'manifest') and client_config.manifest:
         manifest = client_config.manifest
