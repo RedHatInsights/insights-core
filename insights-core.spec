@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.26
+Version:        3.3.27
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 13 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.27-1
+- refactor: move malware_detection to specs.datasources (#4117)
+  (xiangceliu@redhat.com)
+- fix(test): Catch errors caused by GPG (#4121) (mhorky@redhat.com)
+- chore(test): Add unit tests for playbook verification (mhorky@redhat.com)
+- chore(test): Move existing playbook verifier tests into a class
+  (mhorky@redhat.com)
+- chore: playbook verifier: Simplify the logic and structure
+  (mhorky@redhat.com)
+- chore: playbook verifier: Update function/variable names (mhorky@redhat.com)
+- chore: Drop vendorized oyaml from playbook verifier (mhorky@redhat.com)
+
 * Thu Jun 06 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.26-1
 - Add spec falconctl version (#4114) (jiazhang@redhat.com)
 - feat: exclude empty files during core collection (#4113)

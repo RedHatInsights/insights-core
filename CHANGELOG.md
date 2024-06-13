@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.27](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.27) (2024-06-13)
+
+- refactor: move malware_detection to specs.datasources ([PR 4117](https://github.com/RedHatInsights/insights-core/pull/4117))
+- fix(test): Catch errors caused by GPG ([PR 4121](https://github.com/RedHatInsights/insights-core/pull/4121))
+- chore(test): Add unit tests for playbook verification ([PR 4115](https://github.com/RedHatInsights/insights-core/pull/4115))
+- chore(test): Move existing playbook verifier tests into a class ([PR 4115](https://github.com/RedHatInsights/insights-core/pull/4115))
+- chore: playbook verifier: Simplify the logic and structure ([PR 4115](https://github.com/RedHatInsights/insights-core/pull/4115))
+- chore: playbook verifier: Update function/variable names ([PR 4115](https://github.com/RedHatInsights/insights-core/pull/4115))
+- chore: Drop vendorized oyaml from playbook verifier ([PR 4115](https://github.com/RedHatInsights/insights-core/pull/4115))
+
 # [insights-core-3.3.26](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.26) (2024-06-06)
 
 - Add spec falconctl version ([PR 4114](https://github.com/RedHatInsights/insights-core/pull/4114))
