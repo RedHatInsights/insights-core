@@ -1,6 +1,7 @@
 """
-App manifests for use with the --collector APP option
-Define the app manifest and add it to the manifests dict at the bottom of the file
+App manifests for use with the "--collector APP" option
+Define the manifest for the app and add it to the manifests dict at the bottom
+of the file
 """
 
 malware_detection_manifest = """

@@ -32,10 +32,11 @@ from insights.specs.datasources import (
     aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds, db2,
     dir_list, eap_reports, ethernet, httpd, intersystems, ipcs, kernel,
     kernel_module_list, leapp, lpstat, ls, luks_devices, machine_ids,
-    malware_detection, md5chk, mdadm, mount as mount_ds, package_provides,
+    md5chk, mdadm, mount as mount_ds, package_provides,
     ps as ps_datasource, rpm_pkgs, sap, satellite_missed_queues,
     ssl_certificate, sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
     user_group, yum_updates)
+from insights.specs.datasources.malware_detection import malware_detection_ds
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import (pcp_enabled, pcp_raw_files,
     pmlog_summary_args, pmlog_summary_args_pcp_zeroconf)
@@ -96,7 +97,7 @@ class DefaultSpecs(Specs):
     version_info = client_metadata.version_info
 
     # Client App specs
-    malware_detection = malware_detection.malware_detection_app
+    malware_detection = malware_detection_ds.malware_detection
 
     # Regular collection specs
     abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
