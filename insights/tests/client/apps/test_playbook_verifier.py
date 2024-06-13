@@ -76,7 +76,10 @@ class TestErrors:
                 assert key_error in str(error.value)
         finally:
             if os.path.exists(temp_dir):
-                shutil.rmtree(temp_dir)
+                try:
+                    shutil.rmtree(temp_dir)
+                except OSError:
+                    pass
 
     @patch('insights.client.apps.ansible.playbook_verifier.PUBLIC_KEY_PATH', None)
     def test_key_import_error(self):
@@ -100,7 +103,10 @@ class TestErrors:
                 assert key_error in str(error.value)
         finally:
             if os.path.exists(temp_dir):
-                shutil.rmtree(temp_dir)
+                try:
+                    shutil.rmtree(temp_dir)
+                except OSError:
+                    pass
 
     @patch('insights.client.apps.ansible.playbook_verifier.verify_playbook_snippet', return_value=([], []))
     @patch('insights.client.apps.ansible.playbook_verifier.get_playbook_snippet_revocation_list', return_value=[])
@@ -139,7 +145,10 @@ class TestErrors:
                 assert result == fake_playbook
         finally:
             if os.path.exists(temp_dir):
-                shutil.rmtree(temp_dir)
+                try:
+                    shutil.rmtree(temp_dir)
+                except OSError:
+                    pass
 
     # get_playbook_snippet_revocation_list can't load list
     @patch('insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.YAML.load', side_effect=Exception())
