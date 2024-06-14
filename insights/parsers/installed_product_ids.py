@@ -123,4 +123,4 @@ class InstalledProductIDs(CommandParser):
         if one_file_data:
             # add the last file data
             self.data.append(one_file_data)
-        self.ids = {item['ID'] for item in self.data}
+        self.ids = set([item['ID'] for item in self.data])
