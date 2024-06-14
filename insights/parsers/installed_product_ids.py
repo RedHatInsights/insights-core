@@ -92,35 +92,33 @@ class InstalledProductIDs(CommandParser):
 
     Attributes:
         ids (set): set of strings of the unique IDs collected by the command
-        data(list): list of dicts of the attributes and its value
+        product_certs(list): list of dicts of the product certificates key-value pairs
 
     Examples:
         >>> type(products)
         <class 'insights.parsers.installed_product_ids.InstalledProductIDs'>
         >>> list(products.ids)
         ['69']
-        >>> products.data[0]
+        >>> products.product_certs[0]
         {'Path': '/etc/pki/product-default/69.pem', 'ID': '69'}
 
     """
     def parse_content(self, content):
         """ Parse command output """
         self.ids = set()
-        self.data = []
-        one_file_data = {}
-        valid_data = False
+        self.product_certs = []
+        one_file_data = None
         for line in content:
             # different file delimiter
             if line == 'Product Certificate':
                 if one_file_data:
-                    self.data.append(one_file_data)
+                    self.product_certs.append(one_file_data)
                 one_file_data = {}
-                valid_data = True
             else:
-                if valid_data:
+                if one_file_data is not None:
                     name, value = line.split(':', 1)
                     one_file_data[name.strip()] = value.strip()
         if one_file_data:
             # add the last file data
-            self.data.append(one_file_data)
-        self.ids = set([item['ID'] for item in self.data])
+            self.product_certs.append(one_file_data)
+        self.ids = set([item['ID'] for item in self.product_certs])

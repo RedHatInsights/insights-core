@@ -28,6 +28,22 @@ Brand Type:
 Brand Name:
 """
 
+COMMAND_SOME_CERT_PART_DATA_OUTPUT3 = """
+Product Certificate
+Path: /etc/pki/product-default/69.pem
+ID: 69
+Brand Type:
+Brand Name:
+Tags: rhel-7,rhel-7-server
+Product Certificate
+Path: /etc/pki/product/479.pem
+ID: 479
+Tags: rhel-8,rhel-8-x86_64
+Brand Type:
+Brand Name:
+Product Certificate
+"""
+
 NONE_FOUND = """
 find: '/etc/pki/product-default/': No such file or directory
 find: '/etc/pki/product/': No such file or directory
@@ -42,24 +58,27 @@ def test_installed_product_ids():
     results = InstalledProductIDs(context_wrap(COMMAND_OUTPUT))
     assert results is not None
     assert results.ids == set(['69', '69'])
-    assert results.data[0]['Path'] == '/etc/pki/product-default/69.pem'
-    assert results.data[0]['ID'] == '69'
-    assert results.data[1]['Path'] == '/etc/pki/product/69.pem'
-    assert results.data[1]['ID'] == '69'
+    assert results.product_certs[0]['Path'] == '/etc/pki/product-default/69.pem'
+    assert results.product_certs[0]['ID'] == '69'
+    assert results.product_certs[1]['Path'] == '/etc/pki/product/69.pem'
+    assert results.product_certs[1]['ID'] == '69'
 
     results = InstalledProductIDs(context_wrap(COMMAND_OUTPUT2))
-    assert results.data[0]['Path'] == '/etc/pki/product-default/69.pem'
-    assert results.data[0]['ID'] == '69'
-    assert results.data[0]['Brand Type'] == ''
-    assert results.data[0]['Brand Name'] == ''
-    assert results.data[0]['Tags'] == 'rhel-7,rhel-7-server'
-    assert results.data[1]['Path'] == '/etc/pki/product/479.pem'
-    assert results.data[1]['ID'] == '479'
-    assert results.data[1]['Brand Type'] == ''
-    assert results.data[1]['Brand Name'] == ''
-    assert results.data[1]['Tags'] == 'rhel-8,rhel-8-x86_64'
-    assert len(results.data) == 2
+    assert results.product_certs[0]['Path'] == '/etc/pki/product-default/69.pem'
+    assert results.product_certs[0]['ID'] == '69'
+    assert results.product_certs[0]['Brand Type'] == ''
+    assert results.product_certs[0]['Brand Name'] == ''
+    assert results.product_certs[0]['Tags'] == 'rhel-7,rhel-7-server'
+    assert results.product_certs[1]['Path'] == '/etc/pki/product/479.pem'
+    assert results.product_certs[1]['ID'] == '479'
+    assert results.product_certs[1]['Brand Type'] == ''
+    assert results.product_certs[1]['Brand Name'] == ''
+    assert results.product_certs[1]['Tags'] == 'rhel-8,rhel-8-x86_64'
+    assert len(results.product_certs) == 2
     assert results.ids == set(['69', '479'])
+
+    results = InstalledProductIDs(context_wrap(COMMAND_SOME_CERT_PART_DATA_OUTPUT3))
+    assert len(results.product_certs) == 2
 
     results = InstalledProductIDs(context_wrap(NONE_FOUND))
     assert results is not None
