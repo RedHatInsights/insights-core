@@ -13,7 +13,7 @@ from insights.core.filters import add_filter
 from insights.specs import Specs
 from .. import parser, CommandParser
 
-add_filter(Specs.subscription_manager_installed_product_ids, 'ID:')
+add_filter(Specs.subscription_manager_installed_product_ids, ['ID:', 'Product Certificate', 'Path'])
 
 
 @parser(Specs.subscription_manager_installed_product_ids)
@@ -88,23 +88,39 @@ class InstalledProductIDs(CommandParser):
             Brand Type:
             Brand Name:
 
-    Filters have been added to the parser so that only the ``ID`` element will
-    be collected.
+    Filters have been added to the parser so that only the filtered lines will be collected.
 
     Attributes:
         ids (set): set of strings of the unique IDs collected by the command
+        data(list): list of dicts of the attributes and its value
 
     Examples:
         >>> type(products)
         <class 'insights.parsers.installed_product_ids.InstalledProductIDs'>
         >>> list(products.ids)
         ['69']
+        >>> products.data[0]
+        {'Path': '/etc/pki/product-default/69.pem', 'ID': '69'}
 
     """
     def parse_content(self, content):
         """ Parse command output """
         self.ids = set()
+        self.data = []
+        one_file_data = {}
+        valid_data = False
         for line in content:
-            if line.strip().startswith('ID:'):
-                _, id = line.strip().split(':', 1)
-                self.ids.add(id.strip())
+            # different file delimiter
+            if line == 'Product Certificate':
+                if one_file_data:
+                    self.data.append(one_file_data)
+                one_file_data = {}
+                valid_data = True
+            else:
+                if valid_data:
+                    name, value = line.split(':', 1)
+                    one_file_data[name.strip()] = value.strip()
+        if one_file_data:
+            # add the last file data
+            self.data.append(one_file_data)
+        self.ids = {item['ID'] for item in self.data}

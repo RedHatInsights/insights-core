@@ -5,68 +5,27 @@ from insights.tests import context_wrap
 
 
 COMMAND_OUTPUT = """
-+-------------------------------------------+
 Product Certificate
-+-------------------------------------------+
+Path: /etc/pki/product-default/69.pem
+ID: 69
+Product Certificate
+Path: /etc/pki/product/69.pem
+ID: 69
+"""
 
-Certificate:
-    Path: /etc/pki/product-default/69.pem
-    Version: 1.0
-    Serial: 12750047592154749739
-    Start Date: 2017-06-28 18:05:10+00:00
-    End Date: 2037-06-23 18:05:10+00:00
-
-Subject:
-    CN: Red Hat Product ID [4f9995e0-8dc4-4b4f-acfe-4ef1264b94f3]
-
-Issuer:
-    C: US
-    CN: Red Hat Entitlement Product Authority
-    O: Red Hat, Inc.
-    OU: Red Hat Network
-    ST: North Carolina
-    emailAddress: ca-support@redhat.com
-
-Product:
-    ID: 69
-    Name: Red Hat Enterprise Linux Server
-    Version: 7.4
-    Arch: x86_64
-    Tags: rhel-7,rhel-7-server
-    Brand Type:
-    Brand Name:
-
-
-+-------------------------------------------+
-    Product Certificate
-+-------------------------------------------+
-
-Certificate:
-    Path: /etc/pki/product/69.pem
-    Version: 1.0
-    Serial: 12750047592154751271
-    Start Date: 2018-04-13 11:23:50+00:00
-    End Date: 2038-04-08 11:23:50+00:00
-
-Subject:
-    CN: Red Hat Product ID [f3c92a95-26be-4bdf-800f-02c044503896]
-
-Issuer:
-    C: US
-    CN: Red Hat Entitlement Product Authority
-    O: Red Hat, Inc.
-    OU: Red Hat Network
-    ST: North Carolina
-    emailAddress: ca-support@redhat.com
-
-Product:
-    ID: 69
-    Name: Red Hat Enterprise Linux Server
-    Version: 7.6
-    Arch: x86_64
-    Tags: rhel-7,rhel-7-server
-    Brand Type:
-    Brand Name:
+COMMAND_OUTPUT2 = """
+Product Certificate
+Path: /etc/pki/product-default/69.pem
+ID: 69
+Brand Type:
+Brand Name:
+Tags: rhel-7,rhel-7-server
+Product Certificate
+Path: /etc/pki/product/479.pem
+ID: 479
+Tags: rhel-8,rhel-8-x86_64
+Brand Type:
+Brand Name:
 """
 
 NONE_FOUND = """
@@ -83,6 +42,24 @@ def test_installed_product_ids():
     results = InstalledProductIDs(context_wrap(COMMAND_OUTPUT))
     assert results is not None
     assert results.ids == set(['69', '69'])
+    assert results.data[0]['Path'] == '/etc/pki/product-default/69.pem'
+    assert results.data[0]['ID'] == '69'
+    assert results.data[1]['Path'] == '/etc/pki/product/69.pem'
+    assert results.data[1]['ID'] == '69'
+
+    results = InstalledProductIDs(context_wrap(COMMAND_OUTPUT2))
+    assert results.data[0]['Path'] == '/etc/pki/product-default/69.pem'
+    assert results.data[0]['ID'] == '69'
+    assert results.data[0]['Brand Type'] == ''
+    assert results.data[0]['Brand Name'] == ''
+    assert results.data[0]['Tags'] == 'rhel-7,rhel-7-server'
+    assert results.data[1]['Path'] == '/etc/pki/product/479.pem'
+    assert results.data[1]['ID'] == '479'
+    assert results.data[1]['Brand Type'] == ''
+    assert results.data[1]['Brand Name'] == ''
+    assert results.data[1]['Tags'] == 'rhel-8,rhel-8-x86_64'
+    assert len(results.data) == 2
+    assert results.ids == set(['69', '479'])
 
     results = InstalledProductIDs(context_wrap(NONE_FOUND))
     assert results is not None
@@ -97,5 +74,5 @@ def test_installed_product_ids_docs():
     env = {
         'products': InstalledProductIDs(context_wrap(COMMAND_OUTPUT)),
     }
-    failed, total = doctest.testmod(installed_product_ids, globs=env)
+    failed, _ = doctest.testmod(installed_product_ids, globs=env)
     assert failed == 0
