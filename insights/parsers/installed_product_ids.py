@@ -13,7 +13,7 @@ from insights.core.filters import add_filter
 from insights.specs import Specs
 from .. import parser, CommandParser
 
-add_filter(Specs.subscription_manager_installed_product_ids, ['ID:', 'Product Certificate', 'Path'])
+add_filter(Specs.subscription_manager_installed_product_ids, ['ID:', 'Product Certificate', 'Path:'])
 
 
 @parser(Specs.subscription_manager_installed_product_ids)
@@ -91,8 +91,9 @@ class InstalledProductIDs(CommandParser):
     Filters have been added to the parser so that only the filtered lines will be collected.
 
     Attributes:
-        ids (set): set of strings of the unique IDs collected by the command
-        product_certs(list): list of dicts of the product certificates key-value pairs
+        ids (set): set of strings of the unique product IDs
+        product_certs(list): list of dicts of the product certificates key-value pairs split by colon,
+            the key is transferred to lowercase format concatenated by an underscore if it contains whitespace
 
     Examples:
         >>> type(products)
@@ -100,7 +101,7 @@ class InstalledProductIDs(CommandParser):
         >>> list(products.ids)
         ['69']
         >>> products.product_certs[0]
-        {'Path': '/etc/pki/product-default/69.pem', 'ID': '69'}
+        {'path': '/etc/pki/product-default/69.pem', 'id': '69'}
 
     """
     def parse_content(self, content):
@@ -114,11 +115,11 @@ class InstalledProductIDs(CommandParser):
                 if one_file_data:
                     self.product_certs.append(one_file_data)
                 one_file_data = {}
-            else:
-                if one_file_data is not None:
-                    name, value = line.split(':', 1)
-                    one_file_data[name.strip()] = value.strip()
+            elif one_file_data is not None and ':' in line:
+                name, value = line.split(':', 1)
+                lower_name_with_underscore = '_'.join([item.strip().lower() for item in name.split()])
+                one_file_data[lower_name_with_underscore] = value.strip()
         if one_file_data:
             # add the last file data
             self.product_certs.append(one_file_data)
-        self.ids = set([item['ID'] for item in self.product_certs])
+        self.ids = set([item['id'] for item in self.product_certs])

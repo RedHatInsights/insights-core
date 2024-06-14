@@ -6,41 +6,41 @@ from insights.tests import context_wrap
 
 COMMAND_OUTPUT = """
 Product Certificate
-Path: /etc/pki/product-default/69.pem
-ID: 69
+path: /etc/pki/product-default/69.pem
+id: 69
 Product Certificate
-Path: /etc/pki/product/69.pem
-ID: 69
+path: /etc/pki/product/69.pem
+id: 69
 """
 
 COMMAND_OUTPUT2 = """
 Product Certificate
-Path: /etc/pki/product-default/69.pem
-ID: 69
-Brand Type:
-Brand Name:
-Tags: rhel-7,rhel-7-server
+path: /etc/pki/product-default/69.pem
+id: 69
+brand_type:
+brand_name:
+tags: rhel-7,rhel-7-server
 Product Certificate
-Path: /etc/pki/product/479.pem
-ID: 479
-Tags: rhel-8,rhel-8-x86_64
-Brand Type:
-Brand Name:
+path: /etc/pki/product/479.pem
+id: 479
+tags: rhel-8,rhel-8-x86_64
+brand_type:
+brand_name:
 """
 
 COMMAND_SOME_CERT_PART_DATA_OUTPUT3 = """
 Product Certificate
-Path: /etc/pki/product-default/69.pem
-ID: 69
-Brand Type:
-Brand Name:
-Tags: rhel-7,rhel-7-server
+path: /etc/pki/product-default/69.pem
+id: 69
+brand_type:
+brand_name:
+tags: rhel-7,rhel-7-server
 Product Certificate
-Path: /etc/pki/product/479.pem
-ID: 479
-Tags: rhel-8,rhel-8-x86_64
-Brand Type:
-Brand Name:
+path: /etc/pki/product/479.pem
+id: 479
+tags: rhel-8,rhel-8-x86_64
+brand_type:
+brand_name:
 Product Certificate
 """
 
@@ -58,22 +58,22 @@ def test_installed_product_ids():
     results = InstalledProductIDs(context_wrap(COMMAND_OUTPUT))
     assert results is not None
     assert results.ids == set(['69', '69'])
-    assert results.product_certs[0]['Path'] == '/etc/pki/product-default/69.pem'
-    assert results.product_certs[0]['ID'] == '69'
-    assert results.product_certs[1]['Path'] == '/etc/pki/product/69.pem'
-    assert results.product_certs[1]['ID'] == '69'
+    assert results.product_certs[0]['path'] == '/etc/pki/product-default/69.pem'
+    assert results.product_certs[0]['id'] == '69'
+    assert results.product_certs[1]['path'] == '/etc/pki/product/69.pem'
+    assert results.product_certs[1]['id'] == '69'
 
     results = InstalledProductIDs(context_wrap(COMMAND_OUTPUT2))
-    assert results.product_certs[0]['Path'] == '/etc/pki/product-default/69.pem'
-    assert results.product_certs[0]['ID'] == '69'
-    assert results.product_certs[0]['Brand Type'] == ''
-    assert results.product_certs[0]['Brand Name'] == ''
-    assert results.product_certs[0]['Tags'] == 'rhel-7,rhel-7-server'
-    assert results.product_certs[1]['Path'] == '/etc/pki/product/479.pem'
-    assert results.product_certs[1]['ID'] == '479'
-    assert results.product_certs[1]['Brand Type'] == ''
-    assert results.product_certs[1]['Brand Name'] == ''
-    assert results.product_certs[1]['Tags'] == 'rhel-8,rhel-8-x86_64'
+    assert results.product_certs[0]['path'] == '/etc/pki/product-default/69.pem'
+    assert results.product_certs[0]['id'] == '69'
+    assert results.product_certs[0]['brand_type'] == ''
+    assert results.product_certs[0]['brand_name'] == ''
+    assert results.product_certs[0]['tags'] == 'rhel-7,rhel-7-server'
+    assert results.product_certs[1]['path'] == '/etc/pki/product/479.pem'
+    assert results.product_certs[1]['id'] == '479'
+    assert results.product_certs[1]['brand_type'] == ''
+    assert results.product_certs[1]['brand_name'] == ''
+    assert results.product_certs[1]['tags'] == 'rhel-8,rhel-8-x86_64'
     assert len(results.product_certs) == 2
     assert results.ids == set(['69', '479'])
 
