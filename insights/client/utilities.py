@@ -304,8 +304,13 @@ def print_egg_versions():
             logger.debug('Could not start python.')
             return
         stdout, stderr = proc.communicate()
-        version = stdout.decode('utf-8', 'ignore').strip()
-        logger.debug('%s: %s', egg, version)
+        exit_code = proc.wait()
+
+        if exit_code == 0:
+            version = stdout.decode('utf-8', 'ignore').strip()
+            logger.debug('%s: %s', egg, version)
+        else:
+            logger.debug('%s: Could not read egg version.', egg)
 
 
 def read_pidfile():
