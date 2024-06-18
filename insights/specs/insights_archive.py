@@ -262,6 +262,7 @@ class InsightsArchiveSpecs(Specs):
     subscription_manager_facts = simple_file("insights_commands/subscription-manager_facts")
     subscription_manager_id = simple_file("insights_commands/subscription-manager_identity")
     subscription_manager_installed_product_ids = simple_file("insights_commands/find_.etc.pki.product-default._.etc.pki.product._-name_pem_-exec_rct_cat-cert_--no-content")
+    subscription_manager_status = simple_file("insights_commands/subscription-manager_status")
     sysctl = simple_file("insights_commands/sysctl_-a")
     systemctl_cat_rpcbind_socket = simple_file("insights_commands/systemctl_cat_rpcbind.socket")
     systemctl_get_default = simple_file("insights_commands/systemctl_get-default")
