@@ -146,5 +146,3 @@ class SubscriptionManagerStatus(CommandParser, dict):
 
         if not self:
             raise SkipComponent
-
-
