@@ -14,7 +14,8 @@ from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.core.exceptions import SkipComponent, ContentException
 from insights.specs.datasources.client_metadata import (
-    ansible_host, basic_auth_insights_client, blacklisted_specs, branch_info, display_name, egg_release,
+    ansible_host, basic_auth_insights_client, blacklist_report,
+    blacklisted_specs, branch_info, display_name, egg_release,
     version_info, tags)
 
 
@@ -45,9 +46,27 @@ def test_ansible_host():
 
 
 def test_blacklist_report():
-    # TODO:
-    # after #3679
-    pass
+    ic = InsightsConfig(obfuscate=True, obfuscate_hostname=False)
+    rm = {'patterns': {'regex': ['test', 'pwd', '12.*4', '^abcd']}}
+    result = blacklist_report({'client_config': ic, 'redact_config': rm})
+    assert json.loads(result.content[0]) == {
+            "obfuscate": True, "obfuscate_hostname": False, "commands": 0,
+            "files": 0, "components": 0, "patterns": 4, "keywords": 0,
+            "using_new_format": True, "using_patterns_regex": True}
+
+    ic = InsightsConfig(obfuscate=True, obfuscate_hostname=True)
+    rm = {'patterns': ['test', 'pwd', '', '']}
+    result = blacklist_report({'client_config': ic, 'redact_config': rm})
+    assert json.loads(result.content[0]) == {
+            "obfuscate": True, "obfuscate_hostname": True, "commands": 0,
+            "files": 0, "components": 0, "patterns": 2, "keywords": 0,
+            "using_new_format": True, "using_patterns_regex": False}
+
+    result = blacklist_report({})
+    assert json.loads(result.content[0]) == {
+            "obfuscate": False, "obfuscate_hostname": False, "commands": 0,
+            "files": 0, "components": 0, "patterns": 0, "keywords": 0,
+            "using_new_format": True, "using_patterns_regex": False}
 
 
 @patch("insights.specs.datasources.client_metadata.BLACKLISTED_SPECS", [])

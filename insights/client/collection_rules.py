@@ -335,7 +335,7 @@ class InsightsUploadConf(object):
                 raise RuntimeError('ERROR: invalid section(s) in remove.conf. Only "remove" is valid.')
 
             expected_keys = ('commands', 'files', 'patterns', 'keywords')
-            rm_conf = {}
+            rm_conf = {'new_format': False}
             for item, value in parsedconfig.items('remove'):
                 if item not in expected_keys:
                     raise RuntimeError('ERROR: Unknown key in remove.conf: ' + item +
@@ -404,6 +404,7 @@ class InsightsUploadConf(object):
             #   try to use remove.conf
             self.rm_conf = self.get_rm_conf_old()
         else:
+            rm_conf.update(new_format=True)
             rm_conf.update(redact_conf or {})
             rm_conf.update(content_redact_conf or {})
             # remove Nones, empty strings, and empty lists
