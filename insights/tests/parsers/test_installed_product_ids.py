@@ -5,68 +5,43 @@ from insights.tests import context_wrap
 
 
 COMMAND_OUTPUT = """
-+-------------------------------------------+
 Product Certificate
-+-------------------------------------------+
+path: /etc/pki/product-default/69.pem
+id: 69
+Product Certificate
+path: /etc/pki/product/69.pem
+id: 69
+"""
 
-Certificate:
-    Path: /etc/pki/product-default/69.pem
-    Version: 1.0
-    Serial: 12750047592154749739
-    Start Date: 2017-06-28 18:05:10+00:00
-    End Date: 2037-06-23 18:05:10+00:00
+COMMAND_OUTPUT2 = """
+Product Certificate
+path: /etc/pki/product-default/69.pem
+id: 69
+brand_type:
+brand_name:
+tags: rhel-7,rhel-7-server
+Product Certificate
+path: /etc/pki/product/479.pem
+id: 479
+tags: rhel-8,rhel-8-x86_64
+brand_type:
+brand_name:
+"""
 
-Subject:
-    CN: Red Hat Product ID [4f9995e0-8dc4-4b4f-acfe-4ef1264b94f3]
-
-Issuer:
-    C: US
-    CN: Red Hat Entitlement Product Authority
-    O: Red Hat, Inc.
-    OU: Red Hat Network
-    ST: North Carolina
-    emailAddress: ca-support@redhat.com
-
-Product:
-    ID: 69
-    Name: Red Hat Enterprise Linux Server
-    Version: 7.4
-    Arch: x86_64
-    Tags: rhel-7,rhel-7-server
-    Brand Type:
-    Brand Name:
-
-
-+-------------------------------------------+
-    Product Certificate
-+-------------------------------------------+
-
-Certificate:
-    Path: /etc/pki/product/69.pem
-    Version: 1.0
-    Serial: 12750047592154751271
-    Start Date: 2018-04-13 11:23:50+00:00
-    End Date: 2038-04-08 11:23:50+00:00
-
-Subject:
-    CN: Red Hat Product ID [f3c92a95-26be-4bdf-800f-02c044503896]
-
-Issuer:
-    C: US
-    CN: Red Hat Entitlement Product Authority
-    O: Red Hat, Inc.
-    OU: Red Hat Network
-    ST: North Carolina
-    emailAddress: ca-support@redhat.com
-
-Product:
-    ID: 69
-    Name: Red Hat Enterprise Linux Server
-    Version: 7.6
-    Arch: x86_64
-    Tags: rhel-7,rhel-7-server
-    Brand Type:
-    Brand Name:
+COMMAND_SOME_CERT_PART_DATA_OUTPUT3 = """
+Product Certificate
+path: /etc/pki/product-default/69.pem
+id: 69
+brand_type:
+brand_name:
+tags: rhel-7,rhel-7-server
+Product Certificate
+path: /etc/pki/product/479.pem
+id: 479
+tags: rhel-8,rhel-8-x86_64
+brand_type:
+brand_name:
+Product Certificate
 """
 
 NONE_FOUND = """
@@ -83,6 +58,27 @@ def test_installed_product_ids():
     results = InstalledProductIDs(context_wrap(COMMAND_OUTPUT))
     assert results is not None
     assert results.ids == set(['69', '69'])
+    assert results.product_certs[0]['path'] == '/etc/pki/product-default/69.pem'
+    assert results.product_certs[0]['id'] == '69'
+    assert results.product_certs[1]['path'] == '/etc/pki/product/69.pem'
+    assert results.product_certs[1]['id'] == '69'
+
+    results = InstalledProductIDs(context_wrap(COMMAND_OUTPUT2))
+    assert results.product_certs[0]['path'] == '/etc/pki/product-default/69.pem'
+    assert results.product_certs[0]['id'] == '69'
+    assert results.product_certs[0]['brand_type'] == ''
+    assert results.product_certs[0]['brand_name'] == ''
+    assert results.product_certs[0]['tags'] == 'rhel-7,rhel-7-server'
+    assert results.product_certs[1]['path'] == '/etc/pki/product/479.pem'
+    assert results.product_certs[1]['id'] == '479'
+    assert results.product_certs[1]['brand_type'] == ''
+    assert results.product_certs[1]['brand_name'] == ''
+    assert results.product_certs[1]['tags'] == 'rhel-8,rhel-8-x86_64'
+    assert len(results.product_certs) == 2
+    assert results.ids == set(['69', '479'])
+
+    results = InstalledProductIDs(context_wrap(COMMAND_SOME_CERT_PART_DATA_OUTPUT3))
+    assert len(results.product_certs) == 2
 
     results = InstalledProductIDs(context_wrap(NONE_FOUND))
     assert results is not None
@@ -97,5 +93,5 @@ def test_installed_product_ids_docs():
     env = {
         'products': InstalledProductIDs(context_wrap(COMMAND_OUTPUT)),
     }
-    failed, total = doctest.testmod(installed_product_ids, globs=env)
+    failed, _ = doctest.testmod(installed_product_ids, globs=env)
     assert failed == 0
