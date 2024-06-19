@@ -634,6 +634,8 @@ class DefaultSpecs(Specs):
     subscription_manager_id = simple_command("/usr/sbin/subscription-manager identity",  # use "/usr/sbin" here, BZ#1690529
                                              override_env={"LC_ALL": "C.UTF-8"})
     subscription_manager_installed_product_ids = simple_command("/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;")
+    subscription_manager_status = simple_command("/usr/sbin/subscription-manager status",
+                                                 override_env={"LC_ALL": "C.UTF-8"})
     sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
     sys_block_queue_stable_writes = glob_file("/sys/block/*/queue/stable_writes")
