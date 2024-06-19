@@ -70,20 +70,58 @@ def basic_auth_insights_client(broker):
 
 @datasource(HostContext)
 def blacklist_report(broker):
-    # TODO:
-    # - This spec depends on PR#3679
-    # - Implement it after #3679
     """
     Custom datasource for ``blacklist_report`` getting from insights-client
     configuration.
 
-    Raises:
-        SkipComponent: When there is no `file-redaction` is configured.
-
     Returns:
         str: The JSON strings
     """
-    pass
+    def length(lst):
+        '''
+        Because of how the INI remove.conf is parsed,
+        an empty value in the conf will produce
+        the value [''] when parsed. Do not include
+        these in the report
+        '''
+        return len(list(filter(None, lst)))
+
+    redact_config = broker.get('redact_config')
+    client_config = broker.get('client_config')
+
+    ret = dict(
+        obfuscate=False,
+        obfuscate_hostname=False,
+        commands=0,
+        files=0,
+        components=0,
+        patterns=0,
+        keywords=0,
+        using_new_format=True,
+        using_patterns_regex=False,
+    )
+    if client_config:
+        ret.update(
+            obfuscate=client_config.obfuscate,
+            obfuscate_hostname=client_config.obfuscate_hostname,
+        )
+    if redact_config:
+        ret.update(
+            commands=length(redact_config.get('commands', [])),
+            files=length(redact_config.get('files', [])),
+            components=length(redact_config.get('components', [])),
+            keywords=length(redact_config.get('keywords', [])),
+            using_new_format=redact_config.get('new_format', True),
+        )
+        if isinstance(redact_config.get('patterns'), dict):
+            ret.update(
+                patterns=length(redact_config['patterns']['regex']),
+                using_patterns_regex=True
+            )
+        else:
+            ret.update(patterns=length(redact_config.get('patterns')))
+    return DatasourceProvider(content=json.dumps(ret),
+                              relative_path='blacklist_report')
 
 
 @datasource(HostContext)
