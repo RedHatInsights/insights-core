@@ -3,7 +3,7 @@ import pytest
 
 from insights.core.exceptions import SkipComponent
 from insights.parsers import subscription_manager
-from insights.parsers.subscription_manager import SubscriptionManagerID, SubscriptionManagerFacts
+from insights.parsers.subscription_manager import SubscriptionManagerID, SubscriptionManagerFacts, SubscriptionManagerStatus
 from insights.tests import context_wrap
 
 FACTS_NORMAL_1 = """
@@ -48,6 +48,21 @@ Release not set
 INPUT_NG_2 = ""
 
 
+SUBSCRIPTION_MANAGER_STATUS = """
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Disabled
+Content Access Mode is set to Simple Content Access. This host has access to content, regardless of subscription status.
+
+System Purpose Status: Disabled
+""".strip()
+
+SUBSCRIPTION_MANAGER_STATUS_EMPTY = """
+
+""".strip()
+
+
 def test_subman_facts():
     ret = SubscriptionManagerFacts(context_wrap(FACTS_NORMAL_1))
     for line in FACTS_NORMAL_1.splitlines():
@@ -78,6 +93,13 @@ def test_subman_id():
     assert ret.identity == '6655c27c-f561-4c99-a23f-f53e5a1ef311'
 
 
+def test_subman_status():
+    ret = SubscriptionManagerStatus(context_wrap(SUBSCRIPTION_MANAGER_STATUS))
+    assert ret['Overall Status'] == 'Disabled'
+    assert ret['Content Access Mode'] == 'Simple Content Access'
+    assert ret['System Purpose Status'] == 'Disabled'
+
+
 def test_subman_facts_ng():
     with pytest.raises(SkipComponent):
         SubscriptionManagerFacts(context_wrap(INPUT_NG_1))
@@ -94,10 +116,16 @@ def test_subman_id_ng():
         SubscriptionManagerID(context_wrap(INPUT_NG_2))
 
 
+def test_subman_status_ng():
+    with pytest.raises(SkipComponent):
+        SubscriptionManagerStatus(context_wrap(SUBSCRIPTION_MANAGER_STATUS_EMPTY))
+
+
 def test_doc_examples():
     env = {
             'rhsm_facts': SubscriptionManagerFacts(context_wrap(FACTS_with_AB_LINES)),
             'subman_id': SubscriptionManagerID(context_wrap(ID_with_AB_LINES)),
+            'subman_status': SubscriptionManagerStatus(context_wrap(SUBSCRIPTION_MANAGER_STATUS)),
           }
     failed, total = doctest.testmod(subscription_manager, globs=env)
     assert failed == 0

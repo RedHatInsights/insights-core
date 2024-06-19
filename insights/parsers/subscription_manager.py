@@ -9,6 +9,9 @@ SubscriptionManagerID - command ``subscription-manager identity``
 
 SubscriptionManagerFacts - command ``subscription-manager facts``
 -----------------------------------------------------------------
+
+SubscriptionManagerStatus - command ``subscription-manager status``
+-------------------------------------------------------------------
 """
 import uuid
 
@@ -106,3 +109,40 @@ class SubscriptionManagerFacts(CommandParser, dict):
     """
     def parse_content(self, content):
         self.update(_local_kv_split(content))
+
+
+@parser(Specs.subscription_manager_status)
+class SubscriptionManagerStatus(CommandParser, dict):
+    """
+    Reads the output of subscription-manager status
+
+    Example output::
+
+        +-------------------------------------------+
+           System Status Details
+        +-------------------------------------------+
+        Overall Status: Disabled
+        Content Access Mode is set to Simple Content Access. This host has access to content, regardless of subscription status.
+
+        System Purpose Status: Disabled
+
+    Examples::
+        >>> type(subman_status)
+        <class 'insights.parsers.subscription_manager.SubscriptionManagerStatus'>
+        >>> subman_status['Overall Status'] == 'Disabled'
+        True
+        >>> subman_status['Content Access Mode'] == 'Simple Content Access'
+        True
+        >>> subman_status['System Purpose Status'] == 'Disabled'
+        True
+    """
+    def parse_content(self, content):
+        for line in content:
+            if ': ' in line:
+                key, val = [_l.strip() for _l in line.split(': ', 1)]
+                self[key] = val
+            elif line.startswith('Content Access Mode is set to'):
+                self['Content Access Mode'] = line.split('.', 1)[0].split('Content Access Mode is set to')[1].strip()
+
+        if not self:
+            raise SkipComponent
