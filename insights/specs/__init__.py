@@ -726,6 +726,7 @@ class Specs(SpecSet):
     subscription_manager_list_consumed = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     subscription_manager_list_installed = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     subscription_manager_release_show = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    subscription_manager_status = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     sudoers = RegistryPoint(multi_output=True, filterable=True)
     swift_conf = RegistryPoint()
     swift_log = RegistryPoint(filterable=True)
