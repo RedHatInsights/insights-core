@@ -22,7 +22,8 @@ def httpd_certificate_info_in_nss(broker):
         list: Returns a list of tuple with the Nss database path and the certificate nickname
 
     Raises:
-        SkipComponent: Raised when NSSEngine isn't enabled or "NSSCertificateDatabase" and "NSSNickname" directives aren't found
+        SkipComponent: Raised when NSSEngine isn't enabled or "NSSCertificateDatabase" and
+            "NSSNickname" directives aren't found
     """
     conf = broker[HttpdConfTree]
     path_pairs = []
@@ -122,12 +123,13 @@ def rsyslog_tls_cert_file(broker):
     for obj in rsyslog_objs.values():
         for item in obj:
             if 'DefaultNetstreamDriverCertFile' in item:
-                # basic format
                 if '$DefaultNetstreamDriverCertFile' in item:
+                    # basic format
                     return item.split()[-1].strip()
                 else:
-                    # advanced format, it is set in global block, and the global line contains all the content in it
-                    parts = item.strip().split()
+                    # advanced format
+                    # it is set in global block, and the global line contains all the content in it
+                    parts = item.split()
                     for part in parts:
                         if 'DefaultNetstreamDriverCertFile' in part:
                             return part.split('=')[-1].strip('"')
