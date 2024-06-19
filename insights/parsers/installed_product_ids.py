@@ -110,6 +110,7 @@ class InstalledProductIDs(CommandParser):
         self.product_certs = []
         one_file_data = None
         for line in content:
+            line = line.strip()
             # different file delimiter
             if line == 'Product Certificate':
                 if one_file_data:

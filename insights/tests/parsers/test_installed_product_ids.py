@@ -14,18 +14,18 @@ id: 69
 """
 
 COMMAND_OUTPUT2 = """
-Product Certificate
-path: /etc/pki/product-default/69.pem
-id: 69
-brand_type:
-brand_name:
-tags: rhel-7,rhel-7-server
-Product Certificate
-path: /etc/pki/product/479.pem
-id: 479
-tags: rhel-8,rhel-8-x86_64
-brand_type:
-brand_name:
+    Product Certificate
+    path: /etc/pki/product-default/69.pem
+    id: 69
+    brand_type:
+    brand_name:
+    tags: rhel-7,rhel-7-server
+    Product Certificate
+    path: /etc/pki/product/479.pem
+    id: 479
+    tags: rhel-8,rhel-8-x86_64
+    brand_type:
+    brand_name:
 """
 
 COMMAND_SOME_CERT_PART_DATA_OUTPUT3 = """
@@ -63,7 +63,7 @@ def test_installed_product_ids():
     assert results.product_certs[1]['path'] == '/etc/pki/product/69.pem'
     assert results.product_certs[1]['id'] == '69'
 
-    results = InstalledProductIDs(context_wrap(COMMAND_OUTPUT2))
+    results = InstalledProductIDs(context_wrap(COMMAND_OUTPUT2, strip=False))
     assert results.product_certs[0]['path'] == '/etc/pki/product-default/69.pem'
     assert results.product_certs[0]['id'] == '69'
     assert results.product_certs[0]['brand_type'] == ''
