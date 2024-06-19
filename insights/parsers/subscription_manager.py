@@ -141,7 +141,7 @@ class SubscriptionManagerStatus(CommandParser, dict):
             if ': ' in line:
                 key, val = [_l.strip() for _l in line.split(': ', 1)]
                 self[key] = val
-            if line.startswith('Content Access Mode is set to'):
+            elif line.startswith('Content Access Mode is set to'):
                 self['Content Access Mode'] = line.split('.', 1)[0].split('Content Access Mode is set to')[1].strip()
 
         if not self:
