@@ -7,6 +7,7 @@ from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
 from insights.parsers.mssql_conf import MsSQLConf
+from insights.combiners.rsyslog_confs import RsyslogAllConf
 
 
 @datasource(HttpdConfTree, HostContext)
@@ -21,7 +22,8 @@ def httpd_certificate_info_in_nss(broker):
         list: Returns a list of tuple with the Nss database path and the certificate nickname
 
     Raises:
-        SkipComponent: Raised when NSSEngine isn't enabled or "NSSCertificateDatabase" and "NSSNickname" directives aren't found
+        SkipComponent: Raised when NSSEngine isn't enabled or "NSSCertificateDatabase" and
+            "NSSNickname" directives aren't found
     """
     conf = broker[HttpdConfTree]
     path_pairs = []
@@ -91,6 +93,7 @@ def nginx_ssl_certificate_files(broker):
 def mssql_tls_cert_file(broker):
     """
     Get the mssql tls certificate file path configured by "ssl_certificate"
+
     Arguments:
         broker: the broker object for the current session
     Returns:
@@ -101,4 +104,33 @@ def mssql_tls_cert_file(broker):
     mssql_conf_content = broker[MsSQLConf]
     if mssql_conf_content.has_option("network", "tlscert"):
         return mssql_conf_content.get("network", "tlscert")
+    raise SkipComponent
+
+
+@datasource(RsyslogAllConf, HostContext)
+def rsyslog_tls_cert_file(broker):
+    """
+    Get the rsyslog tls certificate file path configured by "DefaultNetstreamDriverCertFile"
+
+    Arguments:
+        broker: the broker object for the current session
+    Returns:
+        str: Returns the SSL certificate file path configured by "DefaultNetstreamDriverCertFile"
+    Raises:
+        SkipComponent: Raised if "DefaultNetstreamDriverCertFile" isn't found
+    """
+    rsyslog_objs = broker[RsyslogAllConf]
+    for obj in rsyslog_objs.values():
+        for item in obj:
+            if 'DefaultNetstreamDriverCertFile' in item:
+                if '$DefaultNetstreamDriverCertFile' in item:
+                    # basic format
+                    return item.split()[-1].strip()
+                else:
+                    # advanced format
+                    # it is set in global block, and the global line contains all the content in it
+                    parts = item.split()
+                    for part in parts:
+                        if 'DefaultNetstreamDriverCertFile' in part:
+                            return part.split('=')[-1].strip('"')
     raise SkipComponent

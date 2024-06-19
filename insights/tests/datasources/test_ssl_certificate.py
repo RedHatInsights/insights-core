@@ -6,9 +6,12 @@ from insights.core.exceptions import SkipComponent
 from insights.parsers.httpd_conf import HttpdConf
 from insights.parsers.mssql_conf import MsSQLConf
 from insights.parsers.nginx_conf import NginxConfPEG
+from insights.parsers.rsyslog_conf import RsyslogConf
+from insights.combiners.rsyslog_confs import RsyslogAllConf
 from insights.specs.datasources.ssl_certificate import (
     httpd_ssl_certificate_files, nginx_ssl_certificate_files,
-    mssql_tls_cert_file, httpd_certificate_info_in_nss
+    mssql_tls_cert_file, httpd_certificate_info_in_nss,
+    rsyslog_tls_cert_file
 )
 from insights.tests import context_wrap
 
@@ -185,6 +188,34 @@ NSSNickname testcert
 </VirtualHost>
 """.strip()
 
+RSYSLOG_TLS_CFG1 = """
+$ActionQueueFileName abc
+$DefaultNetstreamDriver gtls
+$DefaultNetstreamDriverCAFile /etc/pki/rsyslog/ca-cert.pem
+$DefaultNetstreamDriverCertFile /etc/pki/rsyslog/sender-cert.pem
+$DefaultNetstreamDriverKeyFile /etc/pki/rsyslog/sender-key.pem
+$ActionSendStreamDriverAuthMode anon
+"""
+
+RSYSLOG_TLS_CFG2 = """
+global(
+workDirectory="/var/lib/rsyslog"
+DefaultNetstreamDriverCAFile="/etc/rsyslog.d/certificates/crt/ca.crt"
+DefaultNetstreamDriverCertFile="/etc/rsyslog.d/certificates/crt/cert.crt"
+DefaultNetstreamDriverKeyFile="/etc/rsyslog.d/certificates/key/driver.key"
+)
+include(file="/etc/rsyslog.d/*.conf" mode="optional")
+*.info;mail.none;authpriv.none;cron.none                /var/log/messages
+"""
+
+RSYSLOG_CFG3 = """
+global(
+workDirectory="/var/lib/rsyslog"
+)
+include(file="/etc/rsyslog.d/*.conf" mode="optional")
+*.info;mail.none;authpriv.none;cron.none                /var/log/messages
+"""
+
 
 def test_httpd_certificate():
     conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
@@ -298,3 +329,31 @@ def test_httpd_certificate_info_in_nss_exception():
     }
     with pytest.raises(SkipComponent):
         httpd_certificate_info_in_nss(broker)
+
+
+def test_rsyslog_certification():
+    rsys_par = RsyslogConf(context_wrap(RSYSLOG_TLS_CFG1, path='/etc/rsyslog.conf'))
+    rsys_com = RsyslogAllConf([rsys_par])
+    broker = {
+        RsyslogAllConf: rsys_com
+    }
+    result = rsyslog_tls_cert_file(broker)
+    assert result == '/etc/pki/rsyslog/sender-cert.pem'
+
+    rsys_par = RsyslogConf(context_wrap(RSYSLOG_TLS_CFG2, path='/etc/rsyslog.conf'))
+    rsys_com = RsyslogAllConf([rsys_par])
+    broker = {
+        RsyslogAllConf: rsys_com
+    }
+    result = rsyslog_tls_cert_file(broker)
+    assert result == '/etc/rsyslog.d/certificates/crt/cert.crt'
+
+
+def test_rsyslog_certification_exception():
+    rsys_par = RsyslogConf(context_wrap(RSYSLOG_CFG3, path='/etc/rsyslog.conf'))
+    rsys_com = RsyslogAllConf([rsys_par])
+    broker = {
+        RsyslogAllConf: rsys_com
+    }
+    with pytest.raises(SkipComponent):
+        rsyslog_tls_cert_file(broker)
