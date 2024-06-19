@@ -182,6 +182,13 @@ plugins:
         - name: insights.parsers.mssql_conf.MsSQLConf
           enabled: true
 
+    # need for rsyslog_tls_cert_file
+        - name: insights.parsers.rsyslog_conf.RsyslogConf
+          enabled: true
+
+        - name: insights.combiners.rsyslog_confs.RsyslogAllConf
+          enabled: true
+
     # needed to collect the sap_hdb_version spec that uses the Sap combiner
         - name: insights.parsers.saphostctrl
           enabled: true
