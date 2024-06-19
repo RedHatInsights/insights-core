@@ -491,6 +491,7 @@ def collect(client_config=None, rm_conf=None, tmp_path=None,
     cleaner = Cleaner(client_config, black_list) if client_config else None
     broker[ctx.__class__] = ctx
     broker['cleaner'] = cleaner
+    broker['redact_config'] = black_list
     broker['client_config'] = client_config
 
     # run in "serial" mode by default
