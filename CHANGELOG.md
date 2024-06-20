@@ -2,7 +2,7 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
-# [insights-core-3.3.29](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.29) (2024-06-20)
+# [insights-core-3.3.28](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.28) (2024-06-20)
 
 - chore: use datasoruce spec to collect blacklist_report ([PR 4127](https://github.com/RedHatInsights/insights-core/pull/4127))
 - FEAT: Add new parser SubscriptionManagerStatus ([PR 4126](https://github.com/RedHatInsights/insights-core/pull/4126))
