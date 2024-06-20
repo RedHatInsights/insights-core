@@ -348,17 +348,6 @@ class InsightsClient(object):
         if self.config.gpg:
             logger.debug("Installing the new Core GPG Sig %s", new_egg_gpg_sig)
 
-        # Make sure /var/lib/insights exists
-        try:
-            if not os.path.isdir(constants.insights_core_lib_dir):
-                logger.debug("Creating directory %s for the Core." %
-                             (constants.insights_core_lib_dir))
-                os.mkdir(constants.insights_core_lib_dir)
-        except OSError:
-            logger.info("There was an error creating %s for core installation." % (
-                constants.insights_core_lib_dir))
-            raise
-
         # Copy the NEW (/tmp/insights-core.egg) egg to /var/lib/insights/newest.egg
         # Additionally, copy NEW (/tmp/insights-core.egg.asc) to /var/lib/insights/newest.egg.asc
         try:
@@ -444,38 +433,29 @@ class InsightsClient(object):
             returns (bool): if eggs rotated successfully
             raises (IOError): if it cant copy the egg from newest to last_stable
         """
-        # make sure the library directory exists
-        if os.path.isdir(constants.insights_core_lib_dir):
-            # make sure the newest.egg exists
-            if os.path.isfile(constants.insights_core_newest):
-                # try copying newest to latest_stable
-                try:
-                    # copy the core
-                    shutil.move(constants.insights_core_newest,
-                             constants.insights_core_last_stable)
-                    # copy the core sig
-                    shutil.move(constants.insights_core_gpg_sig_newest,
-                             constants.insights_core_last_stable_gpg_sig)
-                except IOError:
-                    message = ("There was a problem copying %s to %s." %
-                                (constants.insights_core_newest,
-                                constants.insights_core_last_stable))
-                    logger.debug(message)
-                    raise IOError(message)
-                return True
-            else:
-                message = ("Cannot copy %s to %s because %s does not exist." %
+        # make sure the newest.egg exists
+        if os.path.isfile(constants.insights_core_newest):
+            # try copying newest to latest_stable
+            try:
+                # copy the core
+                shutil.move(constants.insights_core_newest,
+                         constants.insights_core_last_stable)
+                # copy the core sig
+                shutil.move(constants.insights_core_gpg_sig_newest,
+                         constants.insights_core_last_stable_gpg_sig)
+            except IOError:
+                message = ("There was a problem copying %s to %s." %
                             (constants.insights_core_newest,
-                            constants.insights_core_last_stable,
-                            constants.insights_core_newest))
+                            constants.insights_core_last_stable))
                 logger.debug(message)
-                return False
+                raise IOError(message)
+            return True
         else:
-            logger.debug("Cannot copy %s to %s because the %s directory does not exist." %
-                (constants.insights_core_newest,
-                    constants.insights_core_last_stable,
-                    constants.insights_core_lib_dir))
-            logger.debug("Try installing the Core first.")
+            message = ("Cannot copy %s to %s because %s does not exist." %
+                        (constants.insights_core_newest,
+                        constants.insights_core_last_stable,
+                        constants.insights_core_newest))
+            logger.debug(message)
             return False
 
     def get_last_upload_results(self):
