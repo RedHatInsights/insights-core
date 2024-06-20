@@ -76,6 +76,7 @@ def test_rhe7():
     assert release.version == "7.2"
     assert release.is_rhel
     assert release.product == "Red Hat Enterprise Linux Server"
+    assert release.short_product == 'RHEL'
 
 
 def test_rhe75_0_14():
@@ -86,6 +87,7 @@ def test_rhe75_0_14():
     assert release.version == "7.5-0.14"
     assert release.is_rhel
     assert release.product == "Red Hat Enterprise Linux"
+    assert release.short_product == 'RHEL'
 
 
 def test_rhevh35():
@@ -94,8 +96,9 @@ def test_rhevh35():
     assert release.major == 6
     assert release.minor == 7
     assert release.version == "6.7"
-    assert not release.is_rhel
+    assert release.is_rhel
     assert release.product == "Red Hat Enterprise Virtualization Hypervisor"
+    assert release.short_product == 'RHEL'
 
 
 def test_rhvh40():
@@ -106,6 +109,7 @@ def test_rhvh40():
     assert release.version == "7.3"
     assert release.is_rhel
     assert release.product == "Red Hat Enterprise Linux"
+    assert release.short_product == 'RHEL'
 
 
 def test_fedora23():
@@ -117,6 +121,7 @@ def test_fedora23():
     assert not release.is_rhel
     assert release.is_fedora
     assert release.product == "Fedora"
+    assert release.short_product == 'Fedora'
 
 
 def test_rhel6_10():
@@ -127,6 +132,7 @@ def test_rhel6_10():
     assert release.version == "6.10"
     assert release.is_rhel
     assert release.product == "Red Hat Enterprise Linux Server"
+    assert release.short_product == 'RHEL'
 
 
 def test_rhel8():
@@ -137,6 +143,7 @@ def test_rhel8():
     assert release.version == "8.2"
     assert release.is_rhel
     assert release.product == "Red Hat Enterprise Linux"
+    assert release.short_product == 'RHEL'
 
 
 def test_rhel_alpha():
@@ -150,6 +157,7 @@ def test_rhel_alpha():
     assert not release.is_beta
     assert release.parsed['code_name'] == 'Plow'
     assert release.product == "Red Hat Enterprise Linux"
+    assert release.short_product == 'RHEL'
 
 
 def test_rhel_beta():
@@ -163,6 +171,7 @@ def test_rhel_beta():
     assert not release.is_alpha
     assert release.parsed['code_name'] == 'Ootpa'
     assert release.product == "Red Hat Enterprise Linux Server"
+    assert release.short_product == 'RHEL'
 
 
 def test_centos_stream():
@@ -172,6 +181,7 @@ def test_centos_stream():
     assert release.product == 'CentOS Stream'
     assert release.is_centos
     assert not release.is_rhel
+    assert release.short_product == 'CentOS'
 
 
 def test_centos_7():
@@ -182,6 +192,7 @@ def test_centos_7():
     assert release.code_name == 'Core'
     assert release.is_centos
     assert not release.is_rhel
+    assert release.short_product == 'CentOS'
 
 
 def test_examples():
@@ -193,7 +204,7 @@ def test_examples():
     assert failed == 0
 
 
-def test_container_rhe8():
+def test_container_rhel8():
     release = ContainerRedhatRelease(
         context_wrap(
             REDHAT_RELEASE_8_CONTAINER,
@@ -209,6 +220,7 @@ def test_container_rhe8():
     assert release.rhel == "8.6"
     assert release.is_rhel is True
     assert release.product == "Red Hat Enterprise Linux Server"
+    assert release.short_product == 'RHEL'
     assert release.image == "quay.io/rhel8"
     assert release.engine == "podman"
     assert release.container_id == "xxxx"

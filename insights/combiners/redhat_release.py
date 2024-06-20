@@ -74,7 +74,7 @@ class RedHatRelease(object):
             self.major = uname.redhat_release.major
             self.minor = uname.redhat_release.minor
             self.rhel = '{0}.{1}'.format(self.major, self.minor)
-        elif rh_rel and rh_rel.is_rhel:
+        elif rh_rel:
             self.major = rh_rel.major
             self.minor = rh_rel.minor
             self.rhel = rh_rel.version
