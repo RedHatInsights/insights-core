@@ -6,7 +6,7 @@ from insights.parsers.messages import Messages
 from insights.parsers.ps import PsAuxcww
 from insights.parsers.virt_what import VirtWhat
 from insights.parsers.date import Date
-from insights.parsers.tags import Tags
+from insights.parsers.client_metadata import Tags
 from insights.parsers.lspci import LsPci, LsPciVmmkn
 from insights.parsers.lsof import Lsof
 from insights.parsers.lscpu import LsCPU

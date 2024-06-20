@@ -65,27 +65,6 @@ class YumLog(Parser, list):
         >>> sorted(e.idx for e in yl) == sorted(range(len(yl)))
         True
     """
-    ERASED = 'Erased'
-    """
-    .. deprecated:: 3.2.0
-
-       Will be removed from 3.4.0.  Use string "Erased" instead.
-    """
-
-    INSTALLED = 'Installed'
-    """
-    .. deprecated:: 3.2.0
-
-       Will be removed from 3.4.0.  Use string "Installed" instead.
-    """
-
-    UPDATED = 'Updated'
-    """
-    .. deprecated:: 3.2.0
-
-       Will be removed from 3.4.0.  Use string "Updated" instead.
-    """
-
     STATES = set(["Erased", "Installed", "Updated"])
 
     def parse_content(self, content):
@@ -141,24 +120,6 @@ class YumLog(Parser, list):
             raise SkipComponent
 
         self.__cur_pkgs = dict((k, v[-1]) for k, v in self._pkgs.items())
-
-    @property
-    def pkgs(self):
-        """
-        .. deprecated:: 3.2.0
-
-           Will be removed from 3.4.0.
-        """
-        return dict(self._pkgs)
-
-    @property
-    def data(self):
-        """
-        .. deprecated:: 3.2.0
-
-           Will be removed from 3.4.0.
-        """
-        return self
 
     @property
     def present_packages(self):
