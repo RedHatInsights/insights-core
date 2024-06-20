@@ -83,6 +83,7 @@ class DefaultSpecs(Specs):
     # Dependent specs that aren't in the registry
     block_devices_by_uuid = listdir("/dev/disk/by-uuid/", context=HostContext)
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
+    qemu_kvm_pid = simple_command("/usr/bin/pgrep qemu-kvm")
     openshift_router_pid = simple_command("/usr/bin/pgrep -n openshift-route")
     ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
 
@@ -516,6 +517,7 @@ class DefaultSpecs(Specs):
     puppet_ca_cert_expire_date = simple_command("/usr/bin/openssl x509 -in /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem -enddate -noout")
     pvs_noheadings = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"")
     rhsm_katello_default_ca_cert = simple_command("/usr/bin/openssl x509 -in /etc/rhsm/ca/katello-default-ca.pem -noout -issuer")
+    qemu_kvm_cmdline = foreach_collect(qemu_kvm_pid, "/proc/%s/cmdline")
     qemu_xml = glob_file(r"/etc/libvirt/qemu/*.xml")
     ql2xmaxlun = simple_file("/sys/module/qla2xxx/parameters/ql2xmaxlun")
     ql2xmqsupport = simple_file("/sys/module/qla2xxx/parameters/ql2xmqsupport")
