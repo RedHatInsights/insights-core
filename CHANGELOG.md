@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.29](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.29) (2024-06-20)
+
+- chore: use datasoruce spec to collect blacklist_report ([PR 4127](https://github.com/RedHatInsights/insights-core/pull/4127))
+- FEAT: Add new parser SubscriptionManagerStatus ([PR 4126](https://github.com/RedHatInsights/insights-core/pull/4126))
+- feat: New spec and parser to get the expire date of ssl certificate in rsyslog ([PR 4125](https://github.com/RedHatInsights/insights-core/pull/4125))
+- fix: strip lines before parsing for InstalledProductIDs ([PR 4128](https://github.com/RedHatInsights/insights-core/pull/4128))
+- feat: include JSON format in malware detection results ([PR 4123](https://github.com/RedHatInsights/insights-core/pull/4123))
+- feat: Enhance InstalledProductIDs to support more lines/filters ([PR 4122](https://github.com/RedHatInsights/insights-core/pull/4122))
+- fix: debug print of egg versions doesn't handle corrupted eggs ([PR 4101](https://github.com/RedHatInsights/insights-core/pull/4101))
+
 # [insights-core-3.3.27](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.27) (2024-06-13)
 
 - refactor: move malware_detection to specs.datasources ([PR 4117](https://github.com/RedHatInsights/insights-core/pull/4117))

@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.27
+Version:        3.3.28
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,21 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 20 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.28-1
+- chore: use datasoruce spec to collect blacklist_report (#4127)
+  (xiangceliu@redhat.com)
+- FEAT: Add new parser SubscriptionManagerStatus (#4126) (986222045@qq.com)
+- feat: New spec and parser to get the expire date of ssl certificate in
+  rsyslog (#4125) (44796653+huali027@users.noreply.github.com)
+- fix: strip lines before parsing for InstalledProductIDs (#4128)
+  (44796653+huali027@users.noreply.github.com)
+- feat: include JSON format in malware detection results (#4123)
+  (mslomczy@redhat.com)
+- feat: Enhance InstalledProductIDs to support more lines/filters (#4122)
+  (44796653+huali027@users.noreply.github.com)
+- fix: debug print of egg versions doesn't handle corrupted eggs (#4101)
+  (34436146+grunwmar@users.noreply.github.com)
+
 * Thu Jun 13 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.27-1
 - refactor: move malware_detection to specs.datasources (#4117)
   (xiangceliu@redhat.com)
