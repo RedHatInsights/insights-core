@@ -16,7 +16,7 @@ import signal
 # - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
-from insights.components.rhel_version import IsRhel6
+from insights.components.rhel_version import IsRhel6, IsGtOrRhel86
 from insights.components.satellite import (
     IsSatellite, IsSatellite611,
     IsSatellite614AndLater, IsSatelliteLessThan614)
@@ -109,6 +109,7 @@ class DefaultSpecs(Specs):
     auditctl_status = simple_command("/sbin/auditctl -s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     audispd_conf = simple_file("/etc/audisp/audispd.conf")
+    ausearch_insights_client = simple_command("ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts recent -su insights_client", deps=[IsGtOrRhel86])
     aws_instance_id_doc = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
     aws_instance_id_pkcs7 = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
     aws_public_hostnames = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/meta-data/public-hostname --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
