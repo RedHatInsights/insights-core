@@ -16,8 +16,8 @@ PATH = '/usr/share/xml/scap/ref_id.xml'
 def test_oscap_scan(config, ssg_version, assert_rpms):
     compliance_client = ComplianceClient(config)
     compliance_client._get_inventory_id = lambda: ''
-    compliance_client.get_initial_profiles = lambda: [{'attributes': {'ref_id': 'foo', 'tailored': False}}]
-    compliance_client.get_profiles_matching_os = lambda: []
+    compliance_client.get_system_policies = lambda: [{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}]
+    compliance_client.download_tailoring_file = lambda _: None
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
     compliance_client.archive.tmp_dir = '/tmp'
@@ -66,8 +66,8 @@ def test_oscap_scan_with_obfuscation(config, ssg_version, assert_rpms, tmpdir):
 
     compliance_client = ComplianceClient(config)
     compliance_client._get_inventory_id = lambda: ''
-    compliance_client.get_initial_profiles = lambda: [{'attributes': {'ref_id': 'foo', 'tailored': False}}]
-    compliance_client.get_profiles_matching_os = lambda: []
+    compliance_client.get_system_policies = lambda: [{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}]
+    compliance_client.download_tailoring_file = lambda _: None
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client._results_file = lambda archive_dir, profile: str(results_file)
     compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
@@ -132,8 +132,8 @@ def test_oscap_scan_with_hostname_obfuscation(config, ssg_version, assert_rpms, 
 
     compliance_client = ComplianceClient(config)
     compliance_client._get_inventory_id = lambda: ''
-    compliance_client.get_initial_profiles = lambda: [{'attributes': {'ref_id': 'foo', 'tailored': False}}]
-    compliance_client.get_profiles_matching_os = lambda: []
+    compliance_client.get_system_policies = lambda: [{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}]
+    compliance_client.download_tailoring_file = lambda _: None
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client._results_file = lambda archive_dir, profile: str(results_file)
     compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
@@ -173,8 +173,8 @@ def test_oscap_scan_with_results_repaired(config, assert_rpms, tmpdir):
     compliance_client = ComplianceClient(config)
     compliance_client._ssg_version = '0.1.25'
     compliance_client._get_inventory_id = lambda: ''
-    compliance_client.get_initial_profiles = lambda: [{'attributes': {'ref_id': 'foo', 'tailored': False}}]
-    compliance_client.get_profiles_matching_os = lambda: []
+    compliance_client.get_system_policies = lambda: [{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}]
+    compliance_client.download_tailoring_file = lambda _: None
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client._results_file = lambda archive_dir, profile: str(results_file)
     compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
@@ -193,8 +193,8 @@ def test_oscap_scan_with_results_repaired(config, assert_rpms, tmpdir):
 def test_missing_packages(config, call):
     compliance_client = ComplianceClient(config)
     compliance_client._get_inventory_id = lambda: ''
-    compliance_client.get_initial_profiles = lambda: [{'attributes': {'ref_id': 'foo'}}]
-    compliance_client.get_profiles_matching_os = lambda: []
+    compliance_client.get_system_policies = lambda: [{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}]
+    compliance_client.download_tailoring_file = lambda _: None
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client.run_scan = lambda ref_id, policy_xml: None
     with raises(SystemExit):
@@ -206,8 +206,8 @@ def test_missing_packages(config, call):
 def test_errored_rpm_call(config, call):
     compliance_client = ComplianceClient(config)
     compliance_client._get_inventory_id = lambda: ''
-    compliance_client.get_initial_profiles = lambda: [{'attributes': {'ref_id': 'foo'}}]
-    compliance_client.get_profiles_matching_os = lambda: []
+    compliance_client.get_system_policies = lambda: [{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}]
+    compliance_client.download_tailoring_file = lambda _: None
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client.run_scan = lambda ref_id, policy_xml: None
     with raises(SystemExit):
@@ -231,49 +231,58 @@ def test_get_ssg_version_with_failure(config, call):
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
-def test_get_profiles(config):
+def test_assignable_policies(config):
     compliance_client = ComplianceClient(config)
-    compliance_client.inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
-    assert compliance_client.get_profiles('search string') == [{'attributes': 'data'}]
-    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'search string', 'relationships': 'false'})
+    compliance_client._get_inventory_id = lambda: '068040f1-08c8-43e4-949f-7d6470e9111c'
+    compliance_client.get_system_policies = lambda: []
+    compliance_client.os_major_version = lambda: 9
+    compliance_client.os_minor_version = lambda: 3
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{"id": 123456, "title": "foo"}]})))
+    assert compliance_client.assignable_policies() == 0
+    url = "https://localhost/app/compliance/v2/policies?filter=(os_major_version = 9 and os_minor_version = 3)"
+    compliance_client.conn.session.get.assert_called_with(url)
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
-def test_get_profiles_no_profiles(config):
+def test_policy_link_assign(config):
+    compliance_client = ComplianceClient(config)
+    compliance_client._get_inventory_id = lambda: '068040f1-08c8-43e4-949f-7d6470e9111c'
+    compliance_client.conn.session.patch = Mock(return_value=Mock(status_code=202, json=Mock(return_value={})))
+    policy_id = "d83ddbac-ab56-420b-9e71-878795375af5"
+    assert compliance_client.policy_link(policy_id, 'patch') == 0
+    url = "https://localhost/app/compliance/v2/policies/{0}/systems/{1}".format(policy_id, compliance_client.inventory_id)
+    compliance_client.conn.session.patch.assert_called_with(url)
+
+
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_policy_link_unassign(config):
+    compliance_client = ComplianceClient(config)
+    compliance_client._get_inventory_id = lambda: '068040f1-08c8-43e4-949f-7d6470e9111c'
+    compliance_client.conn.session.delete = Mock(return_value=Mock(status_code=202, json=Mock(return_value={})))
+    policy_id = "d83ddbac-ab56-420b-9e71-878795375af5"
+    assert compliance_client.policy_link(policy_id, 'delete') == 0
+    url = "https://localhost/app/compliance/v2/policies/{0}/systems/{1}".format(policy_id, compliance_client.inventory_id)
+    compliance_client.conn.session.delete.assert_called_with(url)
+
+
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_get_system_policies(config):
     compliance_client = ComplianceClient(config)
     compliance_client.inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': []})))
-    assert compliance_client.get_profiles('search string') == []
-    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'search string', 'relationships': 'false'})
+    assert compliance_client.get_system_policies() == []
+    url = "https://localhost/app/compliance/v2/systems/{0}/policies".format(compliance_client.inventory_id)
+    compliance_client.conn.session.get.assert_called_with(url)
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
-def test_get_profiles_error(config):
+def test_get_system_policies_error(config):
     compliance_client = ComplianceClient(config)
     compliance_client.inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=500))
-    assert compliance_client.get_profiles('search string') == []
-    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'search string', 'relationships': 'false'})
-
-
-@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
-def test_get_initial_profiles(config):
-    compliance_client = ComplianceClient(config)
-    compliance_client.inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
-    assert compliance_client.get_initial_profiles() == [{'attributes': 'data'}]
-    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_ids=068040f1-08c8-43e4-949f-7d6470e9111c canonical=false external=false', 'relationships': 'false'})
-
-
-@patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
-@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
-def test_get_profiles_matching_os(config, os_release_info_mock):
-    compliance_client = ComplianceClient(config)
-    compliance_client.inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
-    assert compliance_client.get_profiles_matching_os() == [{'attributes': 'data'}]
-    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_ids=068040f1-08c8-43e4-949f-7d6470e9111c canonical=false os_minor_version=5', 'relationships': 'false'})
+    assert compliance_client.get_system_policies() == []
+    url = "https://localhost/app/compliance/v2/systems/{0}/policies".format(compliance_client.inventory_id)
+    compliance_client.conn.session.get.assert_called_with(url)
 
 
 @patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
@@ -396,31 +405,16 @@ def test_run_scan_missing_profile(config, call):
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_tailored_file_is_not_downloaded_if_not_needed(config):
     compliance_client = ComplianceClient(config)
-    assert compliance_client.download_tailoring_file({'attributes': {'tailored': False}}) is None
-
-
-@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
-def test_tailored_file_is_not_downloaded_if_tailored_is_missing(config):
-    compliance_client = ComplianceClient(config)
-    assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'ref_id': 'aaaaa'}}) is None
-
-
-@patch("insights.client.apps.compliance.open", new_callable=mock_open)
-@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
-def test_tailored_file_is_downloaded_from_initial_profile_if_os_minor_version_is_missing(config, call):
-    compliance_client = ComplianceClient(config)
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
-    assert 'oscap_tailoring_file-aaaaa' in compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa'}})
-    assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': False, 'ref_id': 'aaaaa'}}) is None
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=204))
+    assert compliance_client.download_tailoring_file({'id': 'foo', 'ref_id': 'aaaaa'}) is None
 
 
 @patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_tailored_file_is_not_downloaded_if_os_minor_version_mismatches(config, os_release_info_mock):
     compliance_client = ComplianceClient(config)
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
-    assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa', 'os_minor_version': '2'}}) is None
-    assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': False, 'ref_id': 'aaaaa', 'os_minor_version': '2'}}) is None
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': []})))
+    assert compliance_client.download_tailoring_file({'id': 'foo', 'ref_id': 'aaaaa', 'os_minor_version': '2'}) is None
 
 
 @patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
@@ -428,9 +422,8 @@ def test_tailored_file_is_not_downloaded_if_os_minor_version_mismatches(config, 
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_tailored_file_is_downloaded_if_needed(config, call, os_release_info_mock):
     compliance_client = ComplianceClient(config)
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
-    assert 'oscap_tailoring_file-aaaaa' in compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa', 'os_minor_version': '5'}})
-    assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': False, 'ref_id': 'aaaaa', 'os_minor_version': '5'}}) is None
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': []})))
+    assert 'oscap_tailoring_file-aaaaa' in compliance_client.download_tailoring_file({'id': 'foo', 'ref_id': 'aaaaa', 'os_minor_version': '5'})
 
 
 @patch("insights.client.apps.compliance.open", new_callable=mock_open)
@@ -438,14 +431,14 @@ def test_tailored_file_is_downloaded_if_needed(config, call, os_release_info_moc
 def test_tailored_file_fails_to_download(config, call):
     compliance_client = ComplianceClient(config)
 
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=403, ok=False, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
-    assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa'}}) is None
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=403, ok=False, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': []})))
+    assert compliance_client.download_tailoring_file({'id': 'foo', 'ref_id': 'aaaaa'}) is None
 
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, headers={"Content-Type": "application/json"}, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
-    assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa'}}) is None
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, headers={"Content-Type": "application/json"}, json=Mock(return_value={'data': []})))
+    assert compliance_client.download_tailoring_file({'id': 'foo', 'ref_id': 'aaaaa'}) is None
 
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, content=None, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
-    assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa'}}) is None
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, content=None, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': []})))
+    assert compliance_client.download_tailoring_file({'id': 'foo', 'ref_id': 'aaaaa'}) is None
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')

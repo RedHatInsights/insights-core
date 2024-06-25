@@ -328,6 +328,21 @@ def collect_and_output(client, config):
     if config.compliance:
         config.payload, config.content_type = ComplianceClient(config).oscap_scan()
 
+    # --compliance-policies was called
+    if config.compliance_policies:
+        result = ComplianceClient(config).assignable_policies()
+        sys.exit(result)
+
+    # --compliance-assign was called
+    if config.compliance_assign:
+        result = ComplianceClient(config).policy_link(config.compliance_assign, 'patch')
+        sys.exit(result)
+
+    # --compliance-unassign was called
+    if config.compliance_unassign:
+        result = ComplianceClient(config).policy_link(config.compliance_unassign, 'delete')
+        sys.exit(result)
+
     # default (below)
     if config.payload:
         insights_archive = config.payload
