@@ -181,17 +181,18 @@ class FileProvider(ContentProvider):
         self.validate()
 
     def validate(self):
-        if not blacklist.allow_file("/" + self.relative_path):
-            log.warning("WARNING: Skipping file %s", "/" + self.relative_path)
-            raise BlacklistedSpec()
-
+        # 1. No Such File
+        if not os.path.exists(self.path):
+            raise ContentException("%s does not exist." % self.path)
+        # 2. No Filters for 'filterable=True' Specs
         if (self.ds and filters.ENABLED and
                 any(s.filterable for s in dr.get_registry_points(self.ds)) and
                 not filters.get_filters(self.ds)):
             raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
-
-        if not os.path.exists(self.path):
-            raise ContentException("%s does not exist." % self.path)
+        # 3. Customer Prohibits Collection
+        if not blacklist.allow_file("/" + self.relative_path):
+            log.warning("WARNING: Skipping file %s", "/" + self.relative_path)
+            raise BlacklistedSpec()
 
         resolved = os.path.realpath(self.path)
         if not resolved.startswith(os.path.realpath(self.root)):
@@ -353,18 +354,19 @@ class CommandOutputProvider(ContentProvider):
         self.relative_path = mangle_command(self.cmd)
 
     def validate(self):
-        if not blacklist.allow_command(self.cmd):
-            log.warning("WARNING: Skipping command %s", self.cmd)
-            raise BlacklistedSpec()
-
+        # 1. No Such Command
+        cmd = shlex.split(self.cmd)[0]
+        if not which(cmd, env=self._env):
+            raise ContentException("Command not found: %s" % cmd)
+        # 2. No Filters for 'filterable=True' Specs
         if (self.ds and filters.ENABLED and
                 any(s.filterable for s in dr.get_registry_points(self.ds)) and
                 not filters.get_filters(self.ds)):
             raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
-
-        cmd = shlex.split(self.cmd)[0]
-        if not which(cmd, env=self._env):
-            raise ContentException("Command not found: %s" % cmd)
+        # 3. Customer Prohibits Collection
+        if not blacklist.allow_command(self.cmd):
+            log.warning("WARNING: Skipping command %s", self.cmd)
+            raise BlacklistedSpec()
 
     def create_args(self):
         command = [shlex.split(self.cmd)]
