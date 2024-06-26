@@ -29,7 +29,7 @@ from insights.util.posix_regex import replace_posix
 logger = logging.getLogger(__name__)
 
 DEFAULT_PASSWORD_REGEXS = [
-    r"(password[a-zA-Z0-9_]*)(\s*\:\s*\"*\s*|\s*\"*\s*=\s*\"\s*|\s*=+\s*|\s*--md5+\s*|\s*)([a-zA-Z0-9_!@#$%^&*()+=/-]*)",
+    r"(password[a-zA-Z0-9_]*)(\s*\:\s*\"*\s*|\s*\"*\s*=\s*\"\s*|\s*=+\s*|\s*--md5+\s*|\s*)([a-zA-Z0-9_!@#$%^&*()+=/-]+)",
     r"(password[a-zA-Z0-9_]*)(\s*\*+\s+)(.+)",
 ]
 """The regex for password removal, which is read from the "/etc/insights-client/.exp.sed"."""
@@ -338,13 +338,11 @@ class Cleaner(object):
             # patterns found, remove it
             return None
         # 2. password removal
-        # TODO - refine the workaround
-        if not line.strip().endswith(".withoutpassword"):  # workaround special lines
-            for regex in DEFAULT_PASSWORD_REGEXS:
-                tmp_line = line
-                line = re.sub(regex, r"\1\2********", tmp_line)
-                if line != tmp_line:
-                    break
+        for regex in DEFAULT_PASSWORD_REGEXS:
+            tmp_line = line
+            line = re.sub(regex, r"\1\2********", tmp_line)
+            if line != tmp_line:
+                break
         # 3. keyword replacement redaction
         return self._sub_keywords(line)
 

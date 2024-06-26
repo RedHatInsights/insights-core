@@ -8,7 +8,7 @@ from insights.client.config import InsightsConfig
 from insights.core.spec_cleaner import Cleaner
 
 test_file_data = 'test\nabcd\n1234\npwd: p4ssw0rd\n'
-test_file_data_sensitive = 'test\nabcd\n1234\npassword: p4ssw0rd\n'
+test_file_data_sensitive = 'test\nabcd\n1234\npassword: p4ssw0rd here\npassword=  p4ssw0rd here\npassword'
 
 
 @patch('insights.client.archive.InsightsArchive', Mock())
@@ -54,14 +54,23 @@ def test_redact_line_changed_password(core_collect, obfuscate):
     test_file = os.path.join(arch.archive_dir, 'test.file')
     with open(test_file, 'w') as t:
         t.write(test_file_data_sensitive)
+    old_data = test_file_data_sensitive.splitlines()
 
     pp = Cleaner(conf, {})
     pp.clean_file(test_file, [])
     # file is changed
+    pwd_line_cnt = 0
     with open(test_file, 'r') as t:
-        data = t.readlines()
-        assert 'p4ssw0rd' not in data[-1]
-        assert '********' in data[-1]
+        new_data = t.readlines()
+        for idx, line in enumerate(old_data):
+            if 'p4ssw0rd' in line:
+                pwd_line_cnt += 1
+                assert 'p4ssw0rd' not in new_data[idx]
+                assert '********' in new_data[idx]
+            if line.endswith('password'):
+                pwd_line_cnt += 1
+                assert line == new_data[idx]
+    assert pwd_line_cnt == 3
     arch.delete_archive_dir()
 
 
