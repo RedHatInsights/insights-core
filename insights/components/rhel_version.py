@@ -39,7 +39,7 @@ class IsRhel(object):
 
 class IsGtRhel(object):
     """
-    This component uses ``RedhatRelease`` combiner to determine the RHEL
+    This component uses ``RedHatRelease`` combiner to determine the RHEL
     version. It then checks if the major version matches the version argument,
     if it doesn't it raises ``SkipComponent``.
 

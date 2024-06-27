@@ -122,6 +122,10 @@ plugins:
         - name: insights.combiners.cloud_provider
           enabled: true
 
+    # needed for the ausearch_insights_client
+        - name: insights.components.rhel_version.IsGtOrRhel86
+          enabled: true
+
     # needed for the cloud related specs
         - name: insights.components.cloud_provider.IsAWS
           enabled: true
@@ -137,6 +141,9 @@ plugins:
           enabled: true
 
     # needed for the Services combiner
+        - name: insights.components.rhel_version.IsRhel6
+          enabled: true
+
         - name: insights.parsers.chkconfig
           enabled: true
 
