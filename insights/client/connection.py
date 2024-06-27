@@ -439,9 +439,18 @@ class InsightsConnection(object):
                         req.status_code)
             logger.debug("HTTP Status Text: %s", req.reason)
             if req.status_code == 401:
-                logger.error("Please ensure that the system is registered "
-                             "with RHSM for CERT auth, or that correct "
-                             "credentials are set in %s for BASIC auth.", self.config.conf)
+                if self.config.authmethod != 'BASIC':
+                    logger.error("This machine has not yet been registered, "
+                                 "\nplease ensure that the system is registered with subscription-manager "
+                                 "and then with insights-client."
+                                 "\n\n1. Register with subscription-manager"
+                                 "\n# subscription-manager register"
+                                 "\n\n2. Register with insights-client"
+                                 "\n# insights-client --register")
+                else:
+                    logger.error("Please ensure that the system is registered "
+                                 "with RHSM for CERT auth, or that correct "
+                                 "credentials are set in %s for BASIC auth.", self.config.conf)
                 logger.log(NETWORK, "HTTP Response Text: %s", req.text)
             if req.status_code == 402:
                 # failed registration because of entitlement limit hit
