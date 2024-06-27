@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.28
+Version:        3.3.29
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 27 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.29-1
+- fix: change the validate order when collecting specs (#4132)
+  (xiangceliu@redhat.com)
+- fix: password regex skip lines end with 'password' (#4130)
+  (xiangceliu@redhat.com)
+- feat: new spec to collect SELinux issues via ausearch (#4129)
+  (xiangceliu@redhat.com)
+- fix: new tag version should be insights-core-3.3.28 (xiangceliu@redhat.com)
+
 * Thu Jun 20 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.28-1
 - chore: use datasoruce spec to collect blacklist_report (#4127)
   (xiangceliu@redhat.com)
