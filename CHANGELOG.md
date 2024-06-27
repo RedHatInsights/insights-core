@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.3.29](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.29) (2024-06-27)
+
+- fix: change the validate order when collecting specs ([PR 4132](https://github.com/RedHatInsights/insights-core/pull/4132))
+- fix: password regex skip lines end with 'password' ([PR 4130](https://github.com/RedHatInsights/insights-core/pull/4130))
+- feat: new spec to collect SELinux issues via ausearch ([PR 4129](https://github.com/RedHatInsights/insights-core/pull/4129))
+
 # [insights-core-3.3.28](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.28) (2024-06-20)
 
 - chore: use datasoruce spec to collect blacklist_report ([PR 4127](https://github.com/RedHatInsights/insights-core/pull/4127))
