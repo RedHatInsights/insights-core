@@ -75,8 +75,8 @@ def compliance(broker):
     Custom datasource to collects content for Insights Compliance
     """
     try:
-        # Only run malware-detection if it was passed as an option to insights-client
         insights_config = broker.get('client_config')
+        # Run compliance only if `--compliance` options are enabled to insights-client
         if not (insights_config and hasattr(insights_config, 'compliance') and insights_config.compliance):
             raise SkipComponent("Only collect compliance data when specifically requested via --compliance option")
 
