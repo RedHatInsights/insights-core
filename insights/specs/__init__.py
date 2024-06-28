@@ -25,6 +25,7 @@ class Specs(SpecSet):
     auditctl_status = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     auditd_conf = RegistryPoint()
     audispd_conf = RegistryPoint()
+    ausearch_insights_client = RegistryPoint(prio=-1)  # The last spec to collect
     authselect_current = RegistryPoint()
     autofs_conf = RegistryPoint()
     avc_cache_threshold = RegistryPoint()
@@ -645,6 +646,7 @@ class Specs(SpecSet):
     rpm_ostree_status = RegistryPoint()
     rpm_pkgs = RegistryPoint(no_obfuscate=['ip'])
     rsyslog_conf = RegistryPoint(filterable=True, multi_output=True)
+    rsyslog_tls_cert_enddate = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     samba = RegistryPoint(filterable=True)
     samba_logs = RegistryPoint(multi_output=True, filterable=True)
     sap_dev_disp = RegistryPoint(multi_output=True, filterable=True)
@@ -725,6 +727,7 @@ class Specs(SpecSet):
     subscription_manager_list_consumed = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     subscription_manager_list_installed = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     subscription_manager_release_show = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    subscription_manager_status = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     sudoers = RegistryPoint(multi_output=True, filterable=True)
     swift_conf = RegistryPoint()
     swift_log = RegistryPoint(filterable=True)

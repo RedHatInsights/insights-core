@@ -16,6 +16,8 @@ MssqlTLSCertExpireDate - command ``openssl x509 -in mssql_tls_cert_file -enddate
 ============================================================================================
 HttpdCertInfoInNSS - command ``certutil -L -d xxx -n xxx``
 ==========================================================
+RsyslogTLSCertExpireDate - command ``openssl x509 -in rsyslog_tls_cert_file -enddate -noout``
+=============================================================================================
 """
 from datetime import datetime
 
@@ -319,3 +321,25 @@ class HttpdCertInfoInNSS(CommandParser, dict):
     def cert_path(self):
         '''Return the certificate path info.'''
         return self.args
+
+
+@parser(Specs.rsyslog_tls_cert_enddate)
+class RsyslogTLSCertExpireDate(CertificateInfo):
+    """
+    .. note::
+        Please refer to its super-class :class:`insights.parsers.ssl_certificate.CertificateInfo` for more
+        details.
+
+    It parses the output of ``openssl x509 -in rsyslog_tls_cert_file -enddate -noout``.
+
+    Sample output of ``openssl x509 -in rsyslog_tls_cert_file -enddate -noout``::
+
+        notAfter=Dec 4 07:04:05 2035 GMT
+
+    Examples:
+        >>> type(rsyslog_date_info)
+        <class 'insights.parsers.ssl_certificate.RsyslogTLSCertExpireDate'>
+        >>> rsyslog_date_info['notAfter'].datetime
+        datetime.datetime(2022, 11, 5, 1, 43, 59)
+    """
+    pass

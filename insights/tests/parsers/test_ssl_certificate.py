@@ -98,6 +98,10 @@ NSS_CERT_BAD_OUTPUT_2 = """
         Issuer: "CN=Certificate Shack,O=huali.node2.redhat.com,C=CN
 """.strip()
 
+RSYSLOG_CERT_EXPIRE_OUTPUT = '''
+notAfter=Nov  5 01:43:59 2022 GMT
+'''
+
 
 def test_certificate_info_exception():
     with pytest.raises(ParseException):
@@ -169,6 +173,7 @@ def test_doc():
     nginx_date_info = ssl_certificate.NginxSSLCertExpireDate(context_wrap(HTTPD_CERT_EXPIRE_INFO, args='/a/b/c.pem'))
     mssql_date_info = ssl_certificate.MssqlTLSCertExpireDate(context_wrap(MSSQL_CERT_EXPIRE_INFO))
     cert_info = ssl_certificate.HttpdCertInfoInNSS(context_wrap(NSS_CERT_OUTPUT))
+    rsyslog_date_info = ssl_certificate.RsyslogTLSCertExpireDate(context_wrap(RSYSLOG_CERT_EXPIRE_OUTPUT))
     globs = {
         'cert': cert,
         'certs': ca_cert,
@@ -177,7 +182,8 @@ def test_doc():
         'date_info': date_info,
         'nginx_date_info': nginx_date_info,
         'mssql_date_info': mssql_date_info,
-        'nss_cert_info': cert_info
+        'nss_cert_info': cert_info,
+        'rsyslog_date_info': rsyslog_date_info
     }
     failed, _ = doctest.testmod(ssl_certificate, globs=globs)
     assert failed == 0
@@ -214,3 +220,9 @@ def test_httpd_cert_info_in_nss_exception():
 
     with pytest.raises(SkipComponent):
         ssl_certificate.HttpdCertInfoInNSS(context_wrap(NSS_CERT_BAD_OUTPUT_2))
+
+
+def test_rsyslog_cert_parser():
+    date_info = ssl_certificate.RsyslogTLSCertExpireDate(context_wrap(RSYSLOG_CERT_EXPIRE_OUTPUT))
+    assert 'notAfter' in date_info
+    assert date_info['notAfter'].str == 'Nov  5 01:43:59 2022'
