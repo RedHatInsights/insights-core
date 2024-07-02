@@ -1,32 +1,14 @@
 from glob import glob
-from insights.client.archive import InsightsArchive
 from insights.client.connection import InsightsConnection
 from insights.client.constants import InsightsConstants as constants
-from insights.client.utilities import os_release_info
 from logging import getLogger
 from re import findall
 from sys import exit
 import tempfile
 from insights.util.subproc import call
 import os
-import os.path
-import pkgutil
 import six
-import sys
-import yaml
 
-# Since XPath expression is not supported by the ElementTree in Python 2.6,
-# import insights.contrib.ElementTree when running python is prior to 2.6 for compatibility.
-# Script insights.contrib.ElementTree is the same with xml.etree.ElementTree in Python 2.7.14
-# Otherwise, import defusedxml.ElementTree to avoid XML vulnerabilities,
-# if dependency not installed import xml.etree.ElementTree instead.
-if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
-    import insights.contrib.ElementTree as ET
-else:
-    try:
-        import defusedxml.ElementTree as ET
-    except:
-        import xml.etree.ElementTree as ET
 
 NONCOMPLIANT_STATUS = 2
 OUT_OF_MEMORY_STATUS = -9  # 247
@@ -45,55 +27,16 @@ logger = getLogger(__name__)
 
 
 class ComplianceClient:
-    def __init__(self, config):
+    def __init__(self, os_version=None, ssg_version=None, config=None):
+        self.inventory_id = None
+        self.os_major, self.os_minor = os_version if os_version else [None, None]
+        self.ssg_version = ssg_version
         self.config = config
         self.conn = InsightsConnection(config)
-        self.archive = InsightsArchive(config)
-        self._ssg_version = None
-
-    def oscap_scan(self):
-        self.inventory_id = self._get_inventory_id()
-        self._assert_oscap_rpms_exist()
-        initial_profiles = self.get_initial_profiles()
-        matching_os_profiles = self.get_profiles_matching_os()
-        profiles = self.profile_union_by_ref_id(matching_os_profiles, initial_profiles)
-        if not profiles:
-            logger.error("System is not associated with any profiles. Assign profiles using the Compliance web UI.\n")
-            exit(constants.sig_kill_bad)
-
-        archive_dir = self.archive.create_archive_dir()
-        results_need_repair = self.results_need_repair()
-
-        for profile in profiles:
-            tailoring_file = self.download_tailoring_file(profile)
-            results_file = self._results_file(archive_dir, profile)
-            self.run_scan(
-                profile['attributes']['ref_id'],
-                self.find_scap_policy(profile['attributes']['ref_id']),
-                results_file,
-                tailoring_file_path=tailoring_file
-            )
-            if self.config.obfuscate:
-                tree = ET.parse(results_file)
-                # Retrieve the list of xpaths that need to be obfuscated
-                xpaths = yaml.load(pkgutil.get_data('insights', 'compliance_obfuscations.yaml'), Loader=yaml.SafeLoader)
-                # Obfuscate IP addresses in the XCCDF report
-                self.obfuscate(tree, xpaths['obfuscate'])
-                if self.config.obfuscate_hostname:
-                    # Obfuscate the hostname in the XCCDF report
-                    self.obfuscate(tree, xpaths['obfuscate_hostname'])
-                # Overwrite the results file with the obfuscations
-                tree.write(results_file)
-            if results_need_repair:
-                self.repair_results(results_file)
-            if tailoring_file:
-                os.remove(tailoring_file)
-
-        return self.archive.create_tar_file(), COMPLIANCE_CONTENT_TYPE
 
     def download_tailoring_file(self, profile):
         if ('tailored' not in profile['attributes'] or profile['attributes']['tailored'] is False or
-                ('os_minor_version' in profile['attributes'] and profile['attributes']['os_minor_version'] != self.os_minor_version())):
+                ('os_minor_version' in profile['attributes'] and profile['attributes']['os_minor_version'] != self.os_minor)):
             return None
 
         # Download tailoring file to pass as argument to run_scan
@@ -137,29 +80,26 @@ class ComplianceClient:
             return []
 
     def get_initial_profiles(self):
-        return self.get_profiles('system_ids={0} canonical=false external=false'.format(self.inventory_id))
+        inventory_id = self._get_inventory_id()
+        return self.get_profiles('system_ids={0} canonical=false external=false'.format(inventory_id))
 
     def get_profiles_matching_os(self):
-        return self.get_profiles('system_ids={0} canonical=false os_minor_version={1}'.format(self.inventory_id, self.os_minor_version()))
+        inventory_id = self._get_inventory_id()
+        return self.get_profiles('system_ids={0} canonical=false os_minor_version={1}'.format(inventory_id, self.os_minor))
 
     def profile_union_by_ref_id(self, prioritized_profiles, merged_profiles):
         profiles = dict((p['attributes']['ref_id'], p) for p in merged_profiles)
         profiles.update(dict((p['attributes']['ref_id'], p) for p in prioritized_profiles))
 
-        return list(profiles.values())
+        profiles = list(profiles.values())
+        if not profiles:
+            logger.error("System is not associated with any profiles. Assign profiles using the Compliance web UI.\n")
+            exit(constants.sig_kill_bad)
 
-    def os_release(self):
-        _, version = os_release_info()
-        return version
-
-    def os_major_version(self):
-        return findall("^[6-9]", self.os_release())[0]
-
-    def os_minor_version(self):
-        return findall("\d+$", self.os_release())[0]
+        return profiles
 
     def profile_files(self):
-        return glob("{0}*rhel{1}-ds.xml".format(POLICY_FILE_LOCATION, self.os_major_version()))
+        return glob("{0}*rhel{1}-ds.xml".format(POLICY_FILE_LOCATION, self.os_major))
 
     def find_scap_policy(self, profile_ref_id):
         grepcmd = 'grep -H ' + profile_ref_id + ' ' + ' '.join(self.profile_files())
@@ -204,25 +144,6 @@ class ComplianceClient:
             logger.error(oscap)
             exit(constants.sig_kill_bad)
 
-    @property
-    def ssg_version(self):
-        if not self._ssg_version:
-            self._ssg_version = self.get_ssg_version()
-        return self._ssg_version
-
-    def get_ssg_version(self):
-        rpmcmd = 'rpm -qa --qf "%{VERSION}" ' + SSG_PACKAGE
-        if not six.PY3:
-            rpmcmd = rpmcmd.encode()
-
-        rc, ssg_version = call(rpmcmd, keep_rc=True)
-        if rc:
-            logger.warning('Tried determinig SSG version but failed: {0}.\n'.format(ssg_version))
-            return
-
-        logger.info('System uses SSG version %s', ssg_version)
-        return ssg_version
-
     # Helper function that traverses through the XCCDF report and replaces the content of each
     # matching xpath with an empty string
     def obfuscate(self, tree, xpaths):
@@ -233,66 +154,35 @@ class ComplianceClient:
     def results_need_repair(self):
         return self.ssg_version in VERSIONS_FOR_REPAIR
 
-    def repair_results(self, results_file):
-        if not os.path.isfile(results_file):
-            return
+    def repair_results(self, results_file, content):
         if not self.ssg_version:
             logger.warning("Couldn't repair SSG version in results file %s", results_file)
             return
 
-        results_file_in = '{0}.in'.format(results_file)
-        os.rename(results_file, results_file_in)
-
-        with open(results_file_in, 'r') as in_file:
-            with open(results_file, 'w') as out_file:
-                is_repaired = self._repair_ssg_version_in_results(
-                    in_file, out_file, self.ssg_version
-                )
-
-        os.remove(results_file_in)
-        if is_repaired:
-            logger.debug('Repaired version in results file %s', results_file)
-        return is_repaired
-
-    def _repair_ssg_version_in_results(self, in_file, out_file, ssg_version):
-        replacement = '<version>{0}</version>'.format(ssg_version)
+        replacement = '<version>{0}</version>'.format(self.ssg_version)
         is_repaired = False
-        for line in in_file:
-            if is_repaired or SNIPPET_TO_FIX not in line:
-                out_file.write(line)
-            else:
-                out_file.write(line.replace(SNIPPET_TO_FIX, replacement))
+        for idx, line in enumerate(content):
+            if not (is_repaired or SNIPPET_TO_FIX not in line):
+                content[idx] = line.replace(SNIPPET_TO_FIX, replacement)
                 is_repaired = True
                 logger.debug(
                     'Substituted "%s" with "%s" in %s',
-                    SNIPPET_TO_FIX, replacement, out_file.name
+                    SNIPPET_TO_FIX, replacement, results_file
                 )
 
-        return is_repaired
+        if is_repaired:
+            logger.debug('Repaired version in results file %s', results_file)
 
-    def _assert_oscap_rpms_exist(self):
-        rpmcmd = 'rpm -qa ' + ' '.join(REQUIRED_PACKAGES)
-        if not six.PY3:
-            rpmcmd = rpmcmd.encode()
-        rc, rpm = call(rpmcmd, keep_rc=True)
-        if rc:
-            logger.error('Tried running rpm -qa but failed: {0}.\n'.format(rpm))
-            exit(constants.sig_kill_bad)
-        else:
-            if len(rpm.strip().split('\n')) < len(REQUIRED_PACKAGES):
-                logger.error('Missing required packages for compliance scanning. Please ensure the following packages are installed: {0}\n'.format(', '.join(REQUIRED_PACKAGES)))
-                exit(constants.sig_kill_bad)
+        return content
 
     def _get_inventory_id(self):
+        if self.inventory_id:
+            return self.inventory_id
+
         systems = self.conn._fetch_system_by_machine_id()
         if type(systems) is list and len(systems) == 1 and 'id' in systems[0]:
-            return systems[0].get('id')
+            self.inventory_id = systems[0].get('id')
+            return self.inventory_id
         else:
             logger.error('Failed to find system in Inventory')
             exit(constants.sig_kill_bad)
-
-    def _results_file(self, archive_dir, profile):
-        return os.path.join(
-            archive_dir,
-            'oscap_results-{0}.xml'.format(profile['attributes']['ref_id'])
-        )

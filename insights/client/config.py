@@ -798,7 +798,7 @@ class InsightsConfig(object):
             self.diagnosis = True
         if self.test_connection:
             self.net_debug = True
-        if self.payload or self.diagnosis or self.compliance or self.check_results or self.checkin:
+        if self.payload or self.diagnosis or self.check_results or self.checkin:
             self.legacy_upload = False
         if self.payload and (self.logging_file == constants.default_log_file):
             self.logging_file = constants.default_payload_log
@@ -820,6 +820,12 @@ class InsightsConfig(object):
             self.core_collect = True
             self.legacy_upload = False
             self._set_app_config()
+        if self.compliance:
+            # Get the manifest for Compliance
+            self.manifest = manifests.get('compliance')
+            self.content_type = content_types.get('compliance')
+            self.core_collect = True
+            self.legacy_upload = False
         if self.output_dir:
             # get full path
             self.output_dir = os.path.abspath(self.output_dir)
