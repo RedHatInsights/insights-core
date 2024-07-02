@@ -14,6 +14,7 @@ class Specs(SpecSet):
 
     # Client App specs
     malware_detection = RegistryPoint()
+    compliance = RegistryPoint()
 
     # Regular collection specs
     abrt_ccpp_conf = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
