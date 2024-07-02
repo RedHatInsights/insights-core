@@ -8,7 +8,7 @@ from datetime import datetime
 from ..formats import Formatter
 from ..specs import Specs
 from ..combiners.hostname import Hostname as combiner_hostname
-from ..parsers.branch_info import BranchInfo
+from ..parsers.client_metadata import BranchInfo
 from ..util import utc
 from . import dr, plugins
 from .context import ExecutionContext
