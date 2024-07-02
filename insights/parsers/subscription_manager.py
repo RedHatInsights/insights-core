@@ -67,15 +67,6 @@ class SubscriptionManagerID(CommandParser, dict):
         self.update(_local_kv_split(content))
 
     @property
-    def data(self):
-        """
-        .. deprecated:: 3.2.3
-
-            Will be removed from 3.4.0. Please use :attr:`identity` instead.
-        """
-        return self.get('system identity')
-
-    @property
     def identity(self):
         """Returns the value of 'system identity'."""
         return self.get('system identity')
