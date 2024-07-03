@@ -83,8 +83,9 @@ def test_sysctl_d_conf():
 def test_sysctl_conf_initramfs():
     r = sysctl.SysctlConfInitramfs(context_wrap(SYSCTL_CONF_INITRAMFS_TEST))
     assert r is not None
-    assert r.get('max_user_watches') == [{'raw_message': 'fs.inotify.max_user_watches=524288'}]
-    assert r.get('key2') == [{'raw_message': 'key2=value2'}, {'raw_message': 'key2_alt=value2_alt'}]
+    assert r.get('max_user_watches')[0]['raw_line'] == 'fs.inotify.max_user_watches=524288'
+    assert r.get('key2')[0]['raw_line'] == 'key2=value2'
+    assert r.get('key2')[1]['raw_line'] == 'key2_alt=value2_alt'
     assert r.get('key3') == []
     assert r.get('key4') == []
 

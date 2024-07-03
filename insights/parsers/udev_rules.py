@@ -17,12 +17,12 @@ UdevRules66MD - files ``/etc/udev/rules.d/66-md-auto-readd.rules``, ``/usr/lib/u
 ----------------------------------------------------------------------------------------------------------------------
 """
 from insights import parser
-from insights.core import LogFileOutput
+from insights.core import TextFileOutput
 from insights.specs import Specs
 
 
 @parser(Specs.udev_fc_wwpn_id_rules)
-class UdevRulesFCWWPN(LogFileOutput):
+class UdevRulesFCWWPN(TextFileOutput):
     """
     Read the content of ``/usr/lib/udev/rules.d/59-fc-wwpn-id.rules`` file.
 
@@ -31,7 +31,7 @@ class UdevRulesFCWWPN(LogFileOutput):
         The syntax of the `.rules` file is complex, and no rules require to
         get the serialized parsed result currently.  An only existing rule's
         supposed to check the syntax of some specific line, so here the
-        :class:`insights.core.LogFileOutput` is the base class.
+        :class:`insights.core.TextFileOutput` is the base class.
 
     Examples:
         >>> type(udev_rules)
@@ -43,7 +43,7 @@ class UdevRulesFCWWPN(LogFileOutput):
 
 
 @parser(Specs.etc_udev_40_redhat_rules)
-class UdevRules40Redhat(LogFileOutput):
+class UdevRules40Redhat(TextFileOutput):
     """
     Read the content of ``40-redhat.rules`` file.
 
@@ -52,7 +52,7 @@ class UdevRules40Redhat(LogFileOutput):
         The syntax of the `.rules` file is complex, and no rules require to
         get the serialized parsed result currently.  An only existing rule's
         supposed to check the syntax of some specific line, so here the
-        :class:`insights.core.LogFileOutput` is the base class.
+        :class:`insights.core.TextFileOutput` is the base class.
 
     Sample input::
 
@@ -74,7 +74,7 @@ class UdevRules40Redhat(LogFileOutput):
 
 
 @parser(Specs.etc_udev_oracle_asm_rules)
-class UdevRulesOracleASM(LogFileOutput):
+class UdevRulesOracleASM(TextFileOutput):
     """
     Read the content of ``/etc/udev/rules.d/*asm*.rules`` file.
 
@@ -83,7 +83,7 @@ class UdevRulesOracleASM(LogFileOutput):
         The syntax of the `.rules` file is complex, and no rules require to
         get the serialized parsed result currently.  An only existing rule's
         supposed to check the syntax of some specific lines, so here the
-        :class:`insights.core.LogFileOutput` is the base class.
+        :class:`insights.core.TextFileOutput` is the base class.
 
     Sample input::
 
@@ -103,14 +103,14 @@ class UdevRulesOracleASM(LogFileOutput):
 
     >>> 'ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"' in udev_oracle_asm_rules.lines
     True
-    >>> udev_oracle_asm_rules.get('ACTION')[0]['raw_message']
+    >>> udev_oracle_asm_rules.get('ACTION')[0]['raw_line']
     'ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"'
     """
     pass
 
 
 @parser(Specs.udev_66_md_rules)
-class UdevRules66MD(LogFileOutput):
+class UdevRules66MD(TextFileOutput):
     """
     Read the content of ``66-md-auto-readd.rules`` file.
 
@@ -119,7 +119,7 @@ class UdevRules66MD(LogFileOutput):
         The syntax of the `.rules` file is complex, and no rules require to
         get the serialized parsed result currently.  This udev rule file is
         collected with filters for some specific lines. Using
-        :class:`insights.core.LogFileOutput` as the base class here.
+        :class:`insights.core.TextFileOutput` as the base class here.
 
     Sample input::
 

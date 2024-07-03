@@ -164,7 +164,7 @@ def test_udev_oracle_asm_rules():
         assert line in result.lines
     actions = result.get('ACTION')
     assert len(actions) == 1
-    assert actions[0]['raw_message'] == 'ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"'
+    assert actions[0]['raw_line'] == 'ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"'
 
 
 def test_udev_66_md_rules():

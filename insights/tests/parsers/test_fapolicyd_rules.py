@@ -14,7 +14,7 @@ deny_audit perm=any pattern=ld_so : all
 def test_udev_rules():
     FapolicydRules.last_scan('test_deny_audit_lo_so1', 'deny_audit perm=any pattern=ld_so : all')
     result = FapolicydRules(context_wrap(CONTENT, path='/etc/fapolicyd/rules.d/30-patterns.rules'))
-    assert result.test_deny_audit_lo_so1.get('raw_message') == 'deny_audit perm=any pattern=ld_so : all'
+    assert result.test_deny_audit_lo_so1.get('raw_line') == 'deny_audit perm=any pattern=ld_so : all'
 
 
 def test_doc():

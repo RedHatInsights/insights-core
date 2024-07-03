@@ -10,11 +10,11 @@ SendmailMC - file ``/etc/mail/sendmail.mc``
 
 from insights.specs import Specs
 from insights import parser
-from insights.core import LogFileOutput
+from insights.core import TextFileOutput
 
 
 @parser(Specs.sendmail_mc)
-class SendmailMC(LogFileOutput):
+class SendmailMC(TextFileOutput):
     """
     Class for parsing ``/etc/mail/sendmail.mc`` file.
 
@@ -41,4 +41,4 @@ class SendmailMC(LogFileOutput):
         <class 'insights.parsers.sendmail.SendmailMC'>
         >>> sendmail_mc_obj.last_scan("null_mx_list_line", "confTRY_NULL_MX_LIST")
     """
-    time_format = None
+    pass

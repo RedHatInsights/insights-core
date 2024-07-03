@@ -22,7 +22,8 @@ SysctlConfInitramfs - command ``lsinitrd``
 ------------------------------------------
 """
 from collections import OrderedDict
-from insights.core import CommandParser, LogFileOutput, Parser
+
+from insights.core import CommandParser, TextFileOutput, Parser
 from insights.core.plugins import parser
 from insights.parsers import split_kv_pairs
 from insights.specs import Specs
@@ -112,21 +113,16 @@ class Sysctl(SysctlBase):
 
 
 @parser(Specs.sysctl_conf_initramfs)
-class SysctlConfInitramfs(CommandParser, LogFileOutput):
+class SysctlConfInitramfs(CommandParser, TextFileOutput):
     """Shared parser for the output of ``lsinitrd`` applied to kdump
     initramfs images to view ``sysctl.conf`` and ``sysctl.d``
     configurations.
 
-    For now, the file is treated as raw lines (as a ``LogFileOutput``
-    parser.  This is because the output of the command, applied to
-    multiple files to examine multiple files does not seem to be
-    unambiguously parsable.
-
-    Since the only plugins requiring the file to date "grep out"
-    certain strings, this approach will suffice.
+    The file is treated as raw lines (as a ``TextFileOutput`` parser, as no
+    serialial parsing result is required for this spec for now.
 
     .. note::
-        Please refer to its super-class :class:`insights.core.LogFileOutput`
+        Please refer to its super-class :class:`insights.core.TextFileOutput`
 
     Sample input::
 
@@ -147,13 +143,12 @@ class SysctlConfInitramfs(CommandParser, LogFileOutput):
 
         initramfs:/etc/sysctl.d/*.conf
         ========================================================================
-        ========================================================================
 
     Examples:
         >>> type(sysctl_initramfs)
         <class 'insights.parsers.sysctl.SysctlConfInitramfs'>
-        >>> sysctl_initramfs.get('max_user_watches')
-        [{'raw_message': 'fs.inotify.max_user_watches=524288'}]
+        >>> sysctl_initramfs.get('max_user_watches')[0]['raw_line']
+        'fs.inotify.max_user_watches=524288'
     """
     def parse_content(self, content):
         # Remove all blank lines and comment lines prior to parsing
