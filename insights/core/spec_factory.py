@@ -96,7 +96,7 @@ class ContentProvider(object):
                     no_redact=no_red)
                 if len(self._content) == 0:
                     log.debug("Skipping %s due to empty after cleaning", "/" + self.relative_path)
-                    raise ContentException("Empty after cleaning")
+                    raise ContentException("Empty after cleaning: %s" % self.path)
             else:
                 log.debug("Skipping cleaning %s", "/" + self.relative_path)
 
@@ -117,7 +117,7 @@ class ContentProvider(object):
                 raise
 
         if len(self._content) == 0:
-            raise ContentException("Empty content")
+            raise ContentException("Empty (after filtering): %s" % self.path)
 
         return self._content
 
