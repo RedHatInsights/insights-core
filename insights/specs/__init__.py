@@ -414,7 +414,7 @@ class Specs(SpecSet):
     lvdisplay = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     lvm_conf = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
     lvm_fullreport = RegistryPoint()
-    lvm_system_devices = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    lvm_system_devices = RegistryPoint(no_obfuscate=['ip'])
     lvmconfig = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     lvs_headings = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     lvs_noheadings = RegistryPoint(no_obfuscate=['hostname', 'ip'])
