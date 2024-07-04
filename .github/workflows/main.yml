@@ -15,9 +15,9 @@ jobs:
         python-versions: [3.6, 3.9, 3.11]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-versions }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-versions }}
     - name: Install dependencies
@@ -29,7 +29,7 @@ jobs:
         flake8 .
     - name: pytest
       run: |
-        pip install 'urllib3<2'
+        pip install 'urllib3'
         pip install -e .[testing]
         pytest
 
@@ -40,9 +40,9 @@ jobs:
       image: python:2.7.18-buster
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python 2.7
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -56,70 +56,21 @@ jobs:
         pip install -e .[testing]
         pytest
 
-  python26-test:
-
-    runs-on: ubuntu-latest
-    container:
-      image: cronosmobi/python2.6:latest
-
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: install dependencies
-      run: |
-        apt-get install -y --no-install-recommends software-properties-common
-        apt-get install -y build-essential git curl unzip file tar
-    - name: build setuptools and pip
-      run: |
-        export PATH=$PATH:/github/home/.local/bin
-        CUR_DIR=$(pwd)
-        mkdir ../tools && cd ../tools
-        curl -L -O https://files.pythonhosted.org/packages/b8/04/be569e393006fa9a2c10ef72ea33133c2902baa115dd1d4279dae55c3b3b/setuptools-36.8.0.zip
-        unzip setuptools-36.8.0.zip && cd setuptools-36.8.0
-        python setup.py install --user && cd ..
-        curl -L -O https://github.com/pypa/pip/archive/refs/tags/9.0.3.tar.gz
-        tar -xvzf 9.0.3.tar.gz && cd pip-9.0.3
-        python setup.py install --user
-        cd ${CUR_DIR}
-    - name: get depenencies
-      run: |
-        export PATH=$PATH:/github/home/.local/bin
-        CUR_DIR=$(pwd)
-        cd ../
-        git clone https://github.com/SteveHNH/jenkins-s2i-example.git pips
-        (cd ./pips/slave26/pip_packages && test -f coverage-4.3.4-cp26-cp26mu-manylinux1_x86_64.whl && mv coverage-4.3.4-cp26-cp26mu-manylinux1_x86_64.whl coverage-4.3.4-py2.py3-none-any.whl)
-        pip install --user --no-index -f ./pips/slave26/pip_packages -r ./pips/slave26/ci_requirements.txt
-        cd ${CUR_DIR}
-        mkdir ../collections_module
-        curl -L -o ./../collections_module/collections.py https://raw.githubusercontent.com/RedHatInsights/insights-core/5c8ca0f2fb3de45908e8d931d40758af34a7997a/.collections.py
-    - name: flake8
-      run: |
-        export PATH=$PATH:/github/home/.local/bin
-        pip install --user -e .[linting] -f ./pips/slave26/pip_packages
-        flake8 .
-    - name: pytest
-      run: |
-        export PATH=$PATH:/github/home/.local/bin
-        pip install --user -e .[testing] -f ./pips/slave26/pip_packages
-        export PYTHONPATH=${PYTHONPATH}:./../collections_module
-        pytest
-
   docs-test:
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v4
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v5
       with:
-        python-version: 3.8
+        python-version: 3.9
     - name: install dependencies
       run: |
         sudo apt-get install pandoc
         python -m pip install --upgrade pip
     - name: docs Test
       run: |
-        pip install docutils==0.17
         pip install -e .[docs]
         sphinx-build -W -b html -qa -E docs docs/_build/html
