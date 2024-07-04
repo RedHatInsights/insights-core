@@ -147,6 +147,7 @@ class DefaultSpecs(Specs):
     chrony_conf = simple_file("/etc/chrony.conf")
     chronyc_sources = simple_command("/usr/bin/chronyc sources")
     cib_xml = simple_file("/var/lib/pacemaker/cib/cib.xml")
+    cifs_debug_data = simple_file("/proc/fs/cifs/DebugData")
     cinder_conf = first_file(["/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf", "/etc/cinder/cinder.conf"])
     cloud_cfg_filtered = cloud_init.cloud_cfg
     cloud_init_custom_network = simple_file("/etc/cloud/cloud.cfg.d/99-custom-networking.cfg")
