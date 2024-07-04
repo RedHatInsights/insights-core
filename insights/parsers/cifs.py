@@ -5,7 +5,7 @@ Get CIFS Info
 This module contains the following parsers:
 
 CIFSDebugData - file ``/proc/fs/cifs/DebugData``
-================================================
+------------------------------------------------
 """
 
 from insights.core import LogFileOutput
@@ -71,9 +71,9 @@ class CIFSDebugData(LogFileOutput):
         >>> from insights.core.filters import add_filter
         >>> from insights.specs import Specs
         >>> add_filter(Specs.cifs_debug_data, 'abc_def_fsf')
-        >>> type(cifg_dd_obj)
+        >>> type(cifs_dd_obj)
         <class 'insights.parsers.cifs.CIFSDebugData'>
-        >>> cifg_dd_obj.last_scan("abc_def_line", "abc_def_fsf")
+        >>> cifs_dd_obj.last_scan("abc_def_line", "abc_def_fsf")
     """
 
     time_format = None
