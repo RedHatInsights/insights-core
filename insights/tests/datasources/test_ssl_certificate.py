@@ -242,9 +242,58 @@ auth,authpriv.* action(type="omfwd" protocol="tcp" target="abc.def.com" port="65
 """
 
 RSYSLOG_CLIENT_TLS_CA_CFG3 = """
+$DefaultNetstreamDriverCAFile /usr/share/pki/ca-trust-source/anchors/ca.cer
+
+template(
+type="string"
+)
+action(
+type = "omfwd"
+queue.type = "LinkedList"
+)
+include(file="/etc/rsyslog.d/*.conf" mode="optional")
+"""
+
+RSYSLOG_CLIENT_TLS_CA_BAD_CFG3 = """
 global(
 DefaultNetstreamDriverCAFile  "/usr/share/pki/ca-trust-source/anchors/ca.cer"
 )
+template(
+type="string"
+)
+action(
+type = "omfwd"
+queue.type = "LinkedList"
+)
+"""
+
+RSYSLOG_CLIENT_TLS_CA_BAD_CFG4 = """
+global(
+DefaultNetstreamDriverCAFile =
+)
+template(
+type="string"
+)
+action(
+type = "omfwd"
+queue.type = "LinkedList"
+)
+"""
+
+RSYSLOG_CLIENT_TLS_CA_BAD_CFG5 = """
+global(
+DefaultNetstreamDriverCAFile
+)
+template(
+type="string"
+)
+action(
+type = "omfwd"
+queue.type = "LinkedList"
+)
+"""
+
+RSYSLOG_CLIENT_TLS_CA_BAD_CFG6 = """
 template(
 type="string"
 )
@@ -414,12 +463,28 @@ def test_rsyslog_ca_certification():
     result = rsyslog_tls_ca_cert_file(broker)
     assert result == '/opt/services/dlc/keystore/public.cert.pem'
 
-
-def test_rsyslog_ca_certification_exception():
     rsys_par = RsyslogConf(context_wrap(RSYSLOG_CLIENT_TLS_CA_CFG3, path='/etc/rsyslog.conf'))
-    rsys_com = RsyslogAllConf([rsys_par])
+    rsys_par2 = RsyslogConf(context_wrap(RSYSLOG_CLIENT_TLS_CA_BAD_CFG6, path='/etc/rsyslog.d/a.conf'))
+    rsys_com = RsyslogAllConf([rsys_par, rsys_par2])
     broker = {
         RsyslogAllConf: rsys_com
     }
-    with pytest.raises(SkipComponent):
-        rsyslog_tls_ca_cert_file(broker)
+    result = rsyslog_tls_ca_cert_file(broker)
+    assert result == '/usr/share/pki/ca-trust-source/anchors/ca.cer'
+
+
+def test_rsyslog_ca_certification_exception():
+    bad_example_confs = [
+        RSYSLOG_CLIENT_TLS_CA_BAD_CFG3,
+        RSYSLOG_CLIENT_TLS_CA_BAD_CFG4,
+        RSYSLOG_CLIENT_TLS_CA_BAD_CFG5,
+        RSYSLOG_CLIENT_TLS_CA_BAD_CFG6
+    ]
+    for bad_conf in bad_example_confs:
+        rsys_par = RsyslogConf(context_wrap(bad_conf, path='/etc/rsyslog.conf'))
+        rsys_com = RsyslogAllConf([rsys_par])
+        broker = {
+            RsyslogAllConf: rsys_com
+        }
+        with pytest.raises(SkipComponent):
+            rsyslog_tls_ca_cert_file(broker)

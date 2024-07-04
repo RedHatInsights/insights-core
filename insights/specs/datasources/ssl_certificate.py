@@ -167,6 +167,11 @@ def rsyslog_tls_ca_cert_file(broker):
                             else:
                                 # example: global( DefaultNetstreamDriverCAFile = "file_path" test = "abc")
                                 name_index = parts.index(part)
-                                if parts[name_index + 1].strip() == '=':
-                                    return parts[name_index + 2].strip('")')
+                                if len(parts) > name_index + 2:
+                                    if parts[name_index + 1].strip() == '=':
+                                        path = parts[name_index + 2].strip('")')
+                                        if path:
+                                            return path
+                                # no need to continue
+                                raise SkipComponent
     raise SkipComponent
