@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.0) (2024-07-04)
+
+- feat: New spec "/proc/fs/cifs/DebugData" and parser ([PR 4138](https://github.com/RedHatInsights/insights-core/pull/4138))
+- fix: lvm_system_devices contains hostname and should be obfuscated ([PR 4135](https://github.com/RedHatInsights/insights-core/pull/4135))
+- chore: refine the msg for empty exception ([PR 4136](https://github.com/RedHatInsights/insights-core/pull/4136))
+- doc: remove the doc-entries of unused parser ([PR 4137](https://github.com/RedHatInsights/insights-core/pull/4137))
+- chore: remove planned deprecations for bumping 3.4.0 ([PR 4134](https://github.com/RedHatInsights/insights-core/pull/4134))
+- fix: add dependencies to manifest for ausearch_insights_client ([PR 4133](https://github.com/RedHatInsights/insights-core/pull/4133))
+- refactor: move compliance to specs.datasources ([PR 4124](https://github.com/RedHatInsights/insights-core/pull/4124))
+
 # [insights-core-3.3.29](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.3.29) (2024-06-27)
 
 - fix: change the validate order when collecting specs ([PR 4132](https://github.com/RedHatInsights/insights-core/pull/4132))

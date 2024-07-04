@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.3.29
+Version:        3.4.0
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jul 04 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.0-1
+- feat: New spec "/proc/fs/cifs/DebugData" and parser (#4138)
+  (44796653+huali027@users.noreply.github.com)
+- fix: lvm_system_devices contains hostname and should be obfuscated (#4135)
+  (xiangceliu@redhat.com)
+- chore: refine the msg for empty exception (#4136) (xiangceliu@redhat.com)
+- doc: remove the doc-entries of unused parser (#4137) (xiangceliu@redhat.com)
+- chore: remove planned deprecations for bumping 3.4.0 (#4134)
+  (xiangceliu@redhat.com)
+- fix: add dependencies to manifest for ausearch_insights_client (#4133)
+  (xiangceliu@redhat.com)
+- refactor: move compliance to specs.datasources (#4124)
+  (xiangceliu@redhat.com)
+
 * Thu Jun 27 2024 Xiangce Liu <xiangceliu@redhat.com> 3.3.29-1
 - fix: change the validate order when collecting specs (#4132)
   (xiangceliu@redhat.com)
