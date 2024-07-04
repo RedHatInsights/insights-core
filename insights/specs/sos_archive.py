@@ -128,6 +128,7 @@ class SosSpecs(Specs):
     keystone_conf = first_file(["/var/lib/config-data/puppet-generated/keystone/etc/keystone/keystone.conf", "/etc/keystone/keystone.conf"])
     keystone_crontab = simple_file("/var/spool/cron/keystone")
     keystone_log = first_file(["/var/log/containers/keystone/keystone.log", "/var/log/keystone/keystone.log"])
+    kubelet_conf = simple_file("/etc/kubernetes/kubelet.conf")
     libvirtd_qemu_log = glob_file(r"/var/log/libvirt/qemu/*.log")
     locale = simple_file("sos_commands/i18n/locale")
     ls_boot = simple_file("sos_commands/boot/ls_-lanR_.boot")
