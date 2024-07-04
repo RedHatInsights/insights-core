@@ -11,7 +11,7 @@ from insights.combiners.rsyslog_confs import RsyslogAllConf
 from insights.specs.datasources.ssl_certificate import (
     httpd_ssl_certificate_files, nginx_ssl_certificate_files,
     mssql_tls_cert_file, httpd_certificate_info_in_nss,
-    rsyslog_tls_cert_file
+    rsyslog_tls_cert_file, rsyslog_tls_ca_cert_file
 )
 from insights.tests import context_wrap
 
@@ -216,6 +216,44 @@ include(file="/etc/rsyslog.d/*.conf" mode="optional")
 *.info;mail.none;authpriv.none;cron.none                /var/log/messages
 """
 
+RSYSLOG_CLIENT_TLS_CA_CFG1 = """
+global(
+DefaultNetstreamDriverCAFile = "/usr/share/pki/ca-trust-source/anchors/ca.cer"
+)
+template(
+type="string"
+)
+action(
+type = "omfwd"
+queue.type = "LinkedList"
+)
+"""
+
+RSYSLOG_CLIENT_TLS_CA_CFG2 = """
+authpriv.*                                              /var/log/secure
+#action(type="omfwd"
+#queue.maxdiskspace="1g"         # 1gb space limit (use as much as possible)
+#queue.type="LinkedList"         # run asynchronously
+# Remote Logging (we use TCP for reliable delivery)
+#Target="remote_host" Port="XXX" Protocol="tcp")
+global(DefaultNetstreamDriverCAFile="/opt/services/dlc/keystore/public.cert.pem")
+auth,authpriv.* action(type="omfwd" protocol="tcp" target="abc.def.com" port="6514"
+    StreamDriver="gtls" StreamDriverMode="1" StreamDriverAuthMode="anon")
+"""
+
+RSYSLOG_CLIENT_TLS_CA_CFG3 = """
+global(
+DefaultNetstreamDriverCAFile  "/usr/share/pki/ca-trust-source/anchors/ca.cer"
+)
+template(
+type="string"
+)
+action(
+type = "omfwd"
+queue.type = "LinkedList"
+)
+"""
+
 
 def test_httpd_certificate():
     conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
@@ -357,3 +395,31 @@ def test_rsyslog_certification_exception():
     }
     with pytest.raises(SkipComponent):
         rsyslog_tls_cert_file(broker)
+
+
+def test_rsyslog_ca_certification():
+    rsys_par = RsyslogConf(context_wrap(RSYSLOG_CLIENT_TLS_CA_CFG1, path='/etc/rsyslog.conf'))
+    rsys_com = RsyslogAllConf([rsys_par])
+    broker = {
+        RsyslogAllConf: rsys_com
+    }
+    result = rsyslog_tls_ca_cert_file(broker)
+    assert result == '/usr/share/pki/ca-trust-source/anchors/ca.cer'
+
+    rsys_par = RsyslogConf(context_wrap(RSYSLOG_CLIENT_TLS_CA_CFG2, path='/etc/rsyslog.conf'))
+    rsys_com = RsyslogAllConf([rsys_par])
+    broker = {
+        RsyslogAllConf: rsys_com
+    }
+    result = rsyslog_tls_ca_cert_file(broker)
+    assert result == '/opt/services/dlc/keystore/public.cert.pem'
+
+
+def test_rsyslog_ca_certification_exception():
+    rsys_par = RsyslogConf(context_wrap(RSYSLOG_CLIENT_TLS_CA_CFG3, path='/etc/rsyslog.conf'))
+    rsys_com = RsyslogAllConf([rsys_par])
+    broker = {
+        RsyslogAllConf: rsys_com
+    }
+    with pytest.raises(SkipComponent):
+        rsyslog_tls_ca_cert_file(broker)

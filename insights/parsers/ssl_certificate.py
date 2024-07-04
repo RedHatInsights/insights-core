@@ -5,19 +5,21 @@ Get SSL Certificate Info
 This module contains the following parsers:
 
 SatelliteCustomCaChain - command ``awk 'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}' /etc/pki/katello/certs/katello-server-ca.crt``
-========================================================================================================================================================================================================================================
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 RhsmKatelloDefaultCACert - command ``openssl x509 -in /etc/rhsm/ca/katello-default-ca.pem -noout -issuer``
-==========================================================================================================
+----------------------------------------------------------------------------------------------------------
 HttpdSSLCertExpireDate - command ``openssl x509 -in httpd_certificate_path -enddate -noout``
-============================================================================================
+--------------------------------------------------------------------------------------------
 NginxSSLCertExpireDate - command ``openssl x509 -in nginx_certificate_path -enddate -noout``
-============================================================================================
+--------------------------------------------------------------------------------------------
 MssqlTLSCertExpireDate - command ``openssl x509 -in mssql_tls_cert_file -enddate -noout``
-============================================================================================
+-----------------------------------------------------------------------------------------
 HttpdCertInfoInNSS - command ``certutil -L -d xxx -n xxx``
-==========================================================
+----------------------------------------------------------
+RsyslogTLSCACertExpireDate - command ``openssl x509 -in rsyslog_tls_ca_cert_file -enddate -noout``
+--------------------------------------------------------------------------------------------------
 RsyslogTLSCertExpireDate - command ``openssl x509 -in rsyslog_tls_cert_file -enddate -noout``
-=============================================================================================
+---------------------------------------------------------------------------------------------
 """
 from datetime import datetime
 
@@ -341,5 +343,27 @@ class RsyslogTLSCertExpireDate(CertificateInfo):
         <class 'insights.parsers.ssl_certificate.RsyslogTLSCertExpireDate'>
         >>> rsyslog_date_info['notAfter'].datetime
         datetime.datetime(2022, 11, 5, 1, 43, 59)
+    """
+    pass
+
+
+@parser(Specs.rsyslog_tls_ca_cert_enddate)
+class RsyslogTLSCACertExpireDate(CertificateInfo):
+    """
+    .. note::
+        Please refer to its super-class :class:`insights.parsers.ssl_certificate.CertificateInfo` for more
+        details.
+
+    It parses the output of ``openssl x509 -in rsyslog_tls_ca_cert_file -enddate -noout``.
+
+    Sample output of ``openssl x509 -in rsyslog_tls_ca_cert_file -enddate -noout``::
+
+        notAfter=Dec 4 07:04:05 2035 GMT
+
+    Examples:
+        >>> type(rsyslog_ca_date_info)
+        <class 'insights.parsers.ssl_certificate.RsyslogTLSCACertExpireDate'>
+        >>> rsyslog_ca_date_info['notAfter'].datetime
+        datetime.datetime(2024, 11, 5, 1, 43, 59)
     """
     pass
