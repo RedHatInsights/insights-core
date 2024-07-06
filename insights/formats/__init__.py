@@ -97,7 +97,7 @@ class EvaluatorFormatterAdapter(FormatterAdapter):
 
     def __init__(self, args=None):
         if args:
-            hn = "insights.combiners.hostname, insights.parsers.branch_info"
+            hn = "insights.combiners.hostname, insights.parsers.client_metadata"
             args.plugins = ",".join([args.plugins, hn]) if args.plugins else hn
             self.missing = args.missing
             self.render_content = args.render_content
