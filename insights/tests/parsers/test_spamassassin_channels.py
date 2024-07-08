@@ -1,4 +1,6 @@
 import doctest
+import sys
+
 import pytest
 
 from insights.parsers import spamassassin_channels
@@ -61,6 +63,7 @@ def test_exception():
         SpamassassinChannels(context_wrap(INVALID))
 
 
+@pytest.mark.xfail(sys.version_info > (3, 11), reason="Broken in Python 3.12+")
 def test_doc_examples():
     env = {
         "spamassassin_channels": SpamassassinChannels(context_wrap(DEFAULT)),

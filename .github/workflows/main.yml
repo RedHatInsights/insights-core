@@ -11,8 +11,9 @@ jobs:
 
     runs-on: ubuntu-20.04
     strategy:
+      fail-fast: false
       matrix:
-        python-versions: [3.6, 3.9, 3.11]
+        python-versions: ["3.6", "3.9", "3.11", "3.12"]
 
     steps:
     - uses: actions/checkout@v4

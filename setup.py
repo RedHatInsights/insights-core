@@ -36,6 +36,7 @@ runtime = set([
     'jinja2; python_version > "2.7"',
     'pyyaml>=3.10,<=3.13; python_version < "2.7"',
     'pyyaml; python_version >= "2.7"',
+    'setuptools; python_version >= "3.12"',
 ])
 
 
@@ -53,7 +54,7 @@ maybe_require("argparse")
 client = set([
     'requests',
     'python-gnupg==0.4.6',
-    'oyaml'
+    'oyaml',
 ])
 
 develop = set([
