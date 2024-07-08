@@ -325,6 +325,7 @@ class Specs(SpecSet):
     krb5 = RegistryPoint(multi_output=True)
     ksmstate = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     ktimer_lockless = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    kubelet_conf = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     kubepods_cpu_quota = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     lastupload = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     leapp_migration_results = RegistryPoint()
