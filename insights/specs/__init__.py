@@ -649,6 +649,7 @@ class Specs(SpecSet):
     rpm_ostree_status = RegistryPoint()
     rpm_pkgs = RegistryPoint(no_obfuscate=['ip'])
     rsyslog_conf = RegistryPoint(filterable=True, multi_output=True)
+    rsyslog_tls_ca_cert_enddate = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     rsyslog_tls_cert_enddate = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     samba = RegistryPoint(filterable=True)
     samba_logs = RegistryPoint(multi_output=True, filterable=True)

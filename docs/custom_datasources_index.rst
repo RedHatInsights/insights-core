@@ -281,7 +281,7 @@ insights.specs.datasources.ssl_certificate
 ------------------------------------------
 
 .. automodule:: insights.specs.datasources.ssl_certificate
-    :members: httpd_certificate_info_in_nss, httpd_ssl_certificate_files, nginx_ssl_certificate_files, mssql_tls_cert_file, rsyslog_tls_cert_file
+    :members: httpd_certificate_info_in_nss, httpd_ssl_certificate_files, nginx_ssl_certificate_files, mssql_tls_cert_file, rsyslog_tls_ca_cert_file, rsyslog_tls_cert_file
     :show-inheritance:
     :undoc-members:
 
