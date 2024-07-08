@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.1) (2024-07-08)
+
+- test: fix py26 test in CI/CD ([PR 4144](https://github.com/RedHatInsights/insights-core/pull/4144))
+- feat: New spec and parser for /etc/kubernetes/kubelet.conf ([PR 4145](https://github.com/RedHatInsights/insights-core/pull/4145))
+- FIX: remove reference for a deprecated module ([PR 4149](https://github.com/RedHatInsights/insights-core/pull/4149))
+- fix: use ubi8 image instead of centos7 in the Dockerfile ([PR 4146](https://github.com/RedHatInsights/insights-core/pull/4146))
+
 # [insights-core-3.4.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.0) (2024-07-04)
 
 - feat: New spec "/proc/fs/cifs/DebugData" and parser ([PR 4138](https://github.com/RedHatInsights/insights-core/pull/4138))

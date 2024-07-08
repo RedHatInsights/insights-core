@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.0
+Version:        3.4.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Mon Jul 08 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.1-1
+- test: fix py26 test in CI/CD (#4144) (xiangceliu@redhat.com)
+- feat: New spec and parser for /etc/kubernetes/kubelet.conf (#4145)
+  (aghodake@redhat.com)
+- FIX: remove reference for a deprecated module (#4149) (#4149)
+  (xy.wissam@gmail.com)
+- fix: use ubi8 image instead of centos7 in the Dockerfile (#4146)
+  (lichen@redhat.com)
+
 * Thu Jul 04 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.0-1
 - feat: New spec "/proc/fs/cifs/DebugData" and parser (#4138)
   (44796653+huali027@users.noreply.github.com)
