@@ -134,3 +134,44 @@ def rsyslog_tls_cert_file(broker):
                         if 'DefaultNetstreamDriverCertFile' in part:
                             return part.split('=')[-1].strip('"')
     raise SkipComponent
+
+
+@datasource(RsyslogAllConf, HostContext)
+def rsyslog_tls_ca_cert_file(broker):
+    """
+    Get the rsyslog tls ca certificate file path configured by "DefaultNetstreamDriverCAFile"
+
+    Arguments:
+        broker: the broker object for the current session
+    Returns:
+        str: Returns the SSL certificate file path configured by "DefaultNetstreamDriverCAFile"
+    Raises:
+        SkipComponent: Raised if "DefaultNetstreamDriverCAFile" isn't found
+    """
+    rsyslog_objs = broker[RsyslogAllConf]
+    for obj in rsyslog_objs.values():
+        for item in obj:
+            if 'DefaultNetstreamDriverCAFile' in item:
+                if '$DefaultNetstreamDriverCAFile' in item:
+                    # basic format
+                    return item.split()[-1].strip()
+                else:
+                    # advanced format
+                    # it is set in global block, and the global line contains all the content in it
+                    parts = item.split()
+                    for part in parts:
+                        if 'DefaultNetstreamDriverCAFile' in part:
+                            # example: global(DefaultNetstreamDriverCAFile="file_path" test="abc")
+                            if '=' in part:
+                                return part.split('=')[-1].strip('")')
+                            else:
+                                # example: global( DefaultNetstreamDriverCAFile = "file_path" test = "abc")
+                                name_index = parts.index(part)
+                                if len(parts) > name_index + 2:
+                                    if parts[name_index + 1].strip() == '=':
+                                        path = parts[name_index + 2].strip('")')
+                                        if path:
+                                            return path
+                                # no need to continue
+                                raise SkipComponent
+    raise SkipComponent

@@ -547,6 +547,7 @@ class DefaultSpecs(Specs):
     rpm_ostree_status = simple_command("/usr/bin/rpm-ostree status --json", signum=signal.SIGTERM)
     rpm_pkgs = rpm_pkgs.pkgs_with_writable_dirs
     rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
+    rsyslog_tls_ca_cert_enddate = command_with_args("/usr/bin/openssl x509 -in %s -enddate -noout", ssl_certificate.rsyslog_tls_ca_cert_file)
     rsyslog_tls_cert_enddate = command_with_args("/usr/bin/openssl x509 -in %s -enddate -noout", ssl_certificate.rsyslog_tls_cert_file)
     samba = simple_file("/etc/samba/smb.conf")
     sap_hana_landscape = foreach_execute(sap_hana_sid_SID_nr, "/bin/su -l %sadm -c 'python /usr/sap/%s/HDB%s/exe/python_support/landscapeHostConfiguration.py'", keep_rc=True)

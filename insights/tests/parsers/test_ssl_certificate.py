@@ -102,6 +102,10 @@ RSYSLOG_CERT_EXPIRE_OUTPUT = '''
 notAfter=Nov  5 01:43:59 2022 GMT
 '''
 
+RSYSLOG_CA_CERT_EXPIRE_OUTPUT = '''
+notAfter=Nov  5 01:43:59 2024 GMT
+'''
+
 
 def test_certificate_info_exception():
     with pytest.raises(ParseException):
@@ -174,6 +178,7 @@ def test_doc():
     mssql_date_info = ssl_certificate.MssqlTLSCertExpireDate(context_wrap(MSSQL_CERT_EXPIRE_INFO))
     cert_info = ssl_certificate.HttpdCertInfoInNSS(context_wrap(NSS_CERT_OUTPUT))
     rsyslog_date_info = ssl_certificate.RsyslogTLSCertExpireDate(context_wrap(RSYSLOG_CERT_EXPIRE_OUTPUT))
+    rsyslog_ca_date_info = ssl_certificate.RsyslogTLSCACertExpireDate(context_wrap(RSYSLOG_CA_CERT_EXPIRE_OUTPUT))
     globs = {
         'cert': cert,
         'certs': ca_cert,
@@ -183,7 +188,8 @@ def test_doc():
         'nginx_date_info': nginx_date_info,
         'mssql_date_info': mssql_date_info,
         'nss_cert_info': cert_info,
-        'rsyslog_date_info': rsyslog_date_info
+        'rsyslog_date_info': rsyslog_date_info,
+        'rsyslog_ca_date_info': rsyslog_ca_date_info
     }
     failed, _ = doctest.testmod(ssl_certificate, globs=globs)
     assert failed == 0
@@ -226,3 +232,9 @@ def test_rsyslog_cert_parser():
     date_info = ssl_certificate.RsyslogTLSCertExpireDate(context_wrap(RSYSLOG_CERT_EXPIRE_OUTPUT))
     assert 'notAfter' in date_info
     assert date_info['notAfter'].str == 'Nov  5 01:43:59 2022'
+
+
+def test_rsyslog_ca_cert_parser():
+    date_info = ssl_certificate.RsyslogTLSCACertExpireDate(context_wrap(RSYSLOG_CA_CERT_EXPIRE_OUTPUT))
+    assert 'notAfter' in date_info
+    assert date_info['notAfter'].str == 'Nov  5 01:43:59 2024'
