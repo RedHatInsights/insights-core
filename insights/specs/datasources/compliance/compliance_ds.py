@@ -43,7 +43,16 @@ else:
 logger = logging.getLogger(__name__)
 
 
-@datasource([OsRelease, RedhatRelease], HostContext)
+@datasource(HostContext)
+def compliance_enabled(broker):
+    insights_config = broker.get('client_config')
+    # Run compliance only if `--compliance` options are enabled to insights-client
+    if not (insights_config and hasattr(insights_config, 'compliance') and insights_config.compliance):
+        raise SkipComponent("Only collect compliance data when specifically requested via --compliance option")
+    return True
+
+
+@datasource(compliance_enabled, [OsRelease, RedhatRelease], HostContext)
 def os_version(broker):
     os_release = None
     if OsRelease in broker:
@@ -55,7 +64,7 @@ def os_version(broker):
     raise SkipComponent('Cannot determine OS Version.')
 
 
-@datasource(InstalledRpms, HostContext)
+@datasource(compliance_enabled, InstalledRpms, HostContext)
 def package_check(broker):
     rpms = broker[InstalledRpms]
     missed = [rpm for rpm in REQUIRED_PACKAGES if rpm not in rpms]
@@ -76,10 +85,6 @@ def compliance(broker):
     """
     try:
         insights_config = broker.get('client_config')
-        # Run compliance only if `--compliance` options are enabled to insights-client
-        if not (insights_config and hasattr(insights_config, 'compliance') and insights_config.compliance):
-            raise SkipComponent("Only collect compliance data when specifically requested via --compliance option")
-
         # Manifest for compliance is wrapped in the 'insights_config'
         # and was set in the `insights.client.config.InsightsConfig._imply_options`
 
