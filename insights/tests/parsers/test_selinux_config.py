@@ -1,3 +1,6 @@
+import doctest
+
+from insights.parsers import selinux_config
 from insights.parsers.selinux_config import SelinuxConfig
 from insights.tests import context_wrap
 
@@ -19,7 +22,15 @@ SELINUXTYPE=targeted
 
 
 def test_selinux_config():
-    selinux_config = SelinuxConfig(context_wrap(SELINUX_CONFIG)).data
-    assert selinux_config["SELINUX"] == 'enforcing'
-    assert selinux_config.get("SELINUXTYPE") == 'targeted'
-    assert len(selinux_config) == 2
+    selinux_conf = SelinuxConfig(context_wrap(SELINUX_CONFIG))
+    assert selinux_conf["SELINUX"] == 'enforcing'
+    assert selinux_conf.get("SELINUXTYPE") == 'targeted'
+    assert len(selinux_conf) == 2
+
+
+def test_doc_examples():
+    env = {
+            'conf': SelinuxConfig(context_wrap(SELINUX_CONFIG))
+          }
+    failed, total = doctest.testmod(selinux_config, globs=env)
+    assert failed == 0

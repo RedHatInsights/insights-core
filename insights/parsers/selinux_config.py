@@ -2,13 +2,14 @@
 SelinuxConfig - file ``/etc/selinux/config``
 ============================================
 """
-from .. import get_active_lines, Parser, parser, LegacyItemAccess
-from . import split_kv_pairs
+from insights.core import Parser
+from insights.core.plugins import parser
+from insights.parsers import split_kv_pairs, get_active_lines
 from insights.specs import Specs
 
 
 @parser(Specs.selinux_config)
-class SelinuxConfig(Parser, LegacyItemAccess):
+class SelinuxConfig(Parser, dict):
     """
     Parse the SELinux configuration file.
 
@@ -32,7 +33,6 @@ class SelinuxConfig(Parser, LegacyItemAccess):
         SELINUXTYPE=targeted
 
     Examples:
-        >>> conf = shared[SelinuxConfig]
         >>> conf['SELINUX']
         'enforcing'
         >>> 'AUTORELABEL' in conf
@@ -40,4 +40,17 @@ class SelinuxConfig(Parser, LegacyItemAccess):
     """
 
     def parse_content(self, content):
-        self.data = split_kv_pairs(get_active_lines(content))
+        self.update(split_kv_pairs(get_active_lines(content)))
+        # TODO: raise Skip when empty
+        # if len(self) == 0:
+        #     raise SkipComponent
+
+    @property
+    def data(self):
+        """
+        .. warning::
+            'data' attribute is deprecated and will be removed from 3.7.0.
+            Please use the :class:`insights.parsers.SelinuxConfig` as a dict
+            instead.
+        """
+        return self
