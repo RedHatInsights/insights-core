@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.1
+Version:        3.4.2
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Mon Jul 08 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.2-1
+- fix: show compliance errors only when compliance is specified (#4152)
+  (xiangceliu@redhat.com)
+
 * Mon Jul 08 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.1-1
 - test: fix py26 test in CI/CD (#4144) (xiangceliu@redhat.com)
 - feat: New spec and parser for /etc/kubernetes/kubelet.conf (#4145)

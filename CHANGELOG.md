@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.2) (2024-07-08)
+
+- fix: show compliance errors only when compliance is specified ([PR 4152](https://github.com/RedHatInsights/insights-core/pull/4152))
+
 # [insights-core-3.4.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.1) (2024-07-08)
 
 - test: fix py26 test in CI/CD ([PR 4144](https://github.com/RedHatInsights/insights-core/pull/4144))
