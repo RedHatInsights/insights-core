@@ -57,17 +57,23 @@ class NmapSsh(CommandParser, dict):
         insights.core.exceptions.SkipComponent: if the output of the ``repquota -agnpuv`` command is empty or the format is not expected.
     """
 
+    _ALGO_SPLITERS = tuple(["_algorithms: (", "_algorithms ("])
+
     def parse_content(self, content):
         data = {}
         current_key = ""
+
         for line in content:
             line_strip = line.strip()
             if not line_strip:
                 continue
 
             if line_strip.startswith("|"):
-                if "algorithms:" in line_strip:
+                if self._ALGO_SPLITERS[0] in line_strip:
                     current_key = line_strip.split(":")[0][1:].strip()
+                    data[current_key] = []
+                elif self._ALGO_SPLITERS[1] in line_strip:
+                    current_key = line_strip.split()[1]
                     data[current_key] = []
                 elif not line_strip.endswith(':'):
                     data[current_key].append(line.split()[-1])
