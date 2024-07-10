@@ -7,6 +7,7 @@ from mock.mock import Mock
 from insights.collect import (
         load_manifest,
         default_manifest,
+        generate_archive_name,
         _parse_broker_exceptions)
 from insights.core.dr import Broker
 from insights.core.exceptions import ContentException
@@ -62,3 +63,8 @@ def test_load_manifest():
     ret = load_manifest(tmpfile.name)
     assert ret == data
     os.remove(tmpfile.name)
+
+
+def test_generate_archive_name():
+    archive_name = generate_archive_name()
+    assert archive_name.startswith("insights-")
