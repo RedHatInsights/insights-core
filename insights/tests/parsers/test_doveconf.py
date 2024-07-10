@@ -6,7 +6,7 @@ from insights.parsers import doveconf
 from insights.parsers.doveconf import Doveconf
 from insights.tests import context_wrap
 
-CONF = """
+CONF = r"""
 # 2.2.36 (1f10bfa63): /etc/dovecot/dovecot.conf
 # OS: Linux 4.18.0-193.el8.x86_64 x86_64 Red Hat Enterprise Linux release 8.2 (Ootpa) 
 # Hostname: localhost

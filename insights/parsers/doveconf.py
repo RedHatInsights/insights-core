@@ -20,7 +20,7 @@ add_filter(Specs.doveconf, [
 
 @parser(Specs.doveconf, continue_on_error=False)
 class Doveconf(ConfigParser):
-    """
+    r"""
     Class for parsing the ``doveconf`` command.
     Sample input::
 

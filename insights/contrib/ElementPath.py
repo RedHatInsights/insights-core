@@ -59,16 +59,17 @@
 import re
 
 xpath_tokenizer_re = re.compile(
-    "("
-    "'[^']*'|\"[^\"]*\"|"
-    "::|"
-    "//?|"
-    "\.\.|"
-    "\(\)|"
-    "[/.*:\[\]\(\)@=])|"
-    "((?:\{[^}]+\})?[^/\[\]\(\)@=\s]+)|"
-    "\s+"
-    )
+    r"("
+    r"'[^']*'|\"[^\"]*\"|"
+    r"::|"
+    r"//?|"
+    r"\.\.|"
+    r"\(\)|"
+    r"[/.*:\[\]\(\)@=])|"
+    r"((?:\{[^}]+\})?[^/\[\]\(\)@=\s]+)|"
+    r"\s+"
+)
+
 
 def xpath_tokenizer(pattern, namespaces=None):
     for token in xpath_tokenizer_re.findall(pattern):

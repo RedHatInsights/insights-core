@@ -43,7 +43,7 @@ class MysqladminStatus(CommandParser):
         >>> result.status['Queries per second avg'] == '1919'
         False
     """
-    pattern = re.compile("(Uptime):.(\d+).(Threads):.(\d+).(Questions):.(\d+).(Slow queries):.(\d+).(Opens):.(\d+).(Flush tables):.(\d+).(Open tables):.(\d+).(Queries per second avg):.(\d+.\d*)")
+    pattern = re.compile(r"(Uptime):.(\d+).(Threads):.(\d+).(Questions):.(\d+).(Slow queries):.(\d+).(Opens):.(\d+).(Flush tables):.(\d+).(Open tables):.(\d+).(Queries per second avg):.(\d+.\d*)")
 
     def grouper(self, iterable, n, fillvalue=None):
         "Collect data into fixed-length chunks or blocks"

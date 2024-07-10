@@ -40,7 +40,7 @@ testinvliadline
 @reboot     test    /usr/sbin/testdd 2>&1 >> /var/log/test.log
 """
 
-CRON_FOREMAN_SAMPLE1 = """
+CRON_FOREMAN_SAMPLE1 = r"""
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
@@ -55,7 +55,7 @@ FOREMAN_HOME=/usr/share/foreman
 0 5 * * 0       foreman    /usr/sbin/foreman-rake reports:weekly 2>&1 | gawk '{ print strftime("[\%Y-\%m-\%d \%H:\%M:\%S]"), $0 }' >>/var/log/foreman/cron.log
 """
 
-CRON_FOREMAN_SAMPLE2 = """
+CRON_FOREMAN_SAMPLE2 = r"""
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 testinvaludline
@@ -66,7 +66,7 @@ testinvaludline
 @reboot foreman /usr/sbin/foreman-rake reports:clean
 """
 
-CRON_FOREMAN_SAMPLE3 = """
+CRON_FOREMAN_SAMPLE3 = r"""
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 

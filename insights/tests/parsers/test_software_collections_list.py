@@ -1,7 +1,7 @@
 from insights.parsers import software_collections_list as parsermodule
 from insights.parsers.software_collections_list import SoftwareCollectionsListInstalled
 from insights.tests import context_wrap
-from doctest import testmod
+import doctest
 
 
 EXAMPLE_IN_DOCS = """
@@ -61,7 +61,7 @@ def _assert_collections(coll_parser, coll_list):
 
 
 def test_module_documentation():
-    failed, total = testmod(parsermodule, globs={
+    failed, total = doctest.testmod(parsermodule, globs={
         "collections": SoftwareCollectionsListInstalled(context_wrap(EXAMPLE_IN_DOCS))
     })
     assert failed == 0

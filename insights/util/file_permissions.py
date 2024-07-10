@@ -21,7 +21,7 @@ class FilePermissions(object):
         Advanced File Permissions - SUID, SGID and Sticky Bit - are not yet correctly parsed.
     """
 
-    _PERMISSIONS_PATTERN = re.compile('''
+    _PERMISSIONS_PATTERN = re.compile(r'''
         ^
         .([-rwxsS]{3})([-rwxsS]{3})([-rwxsS]{3})   # -rwxrwxrwx
         # -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config

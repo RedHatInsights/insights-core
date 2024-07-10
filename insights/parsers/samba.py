@@ -22,7 +22,7 @@ add_filter(Specs.testparm_v_s, ["Server role:"])
 
 @parser(Specs.samba)
 class SambaConfig(IniConfigFile):
-    """
+    r"""
     This parser reads the Samba configuration file ``/etc/samba/smb.conf``, which
     is in standard .ini format, with a couple of notable features:
 

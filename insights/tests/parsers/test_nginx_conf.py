@@ -4,7 +4,7 @@ from insights.parsers import nginx_conf
 from insights.tests import context_wrap
 
 
-NGINXCONF = """
+NGINXCONF = r"""
 user       root;
 worker_processes  5;
 error_log  logs/error.log;
@@ -113,7 +113,7 @@ server{
         }
 }""".strip()
 
-NGINX_SP_NAME = """
+NGINX_SP_NAME = r"""
 http {
     map {
        default                    off;
@@ -185,8 +185,8 @@ def test_nginxconf_empty_quote():
 def test_nginxconf_specail_name():
     nginxconf = nginx_conf.NginxConfPEG(context_wrap(NGINX_SP_NAME))
     assert 'default' in nginxconf['http']['map'].keys()
-    assert '~*\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2)$' in nginxconf['http']['map'].keys()
-    assert nginxconf['http']['map']['~*\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2)$'].value == 'max'
+    assert r'~*\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2)$' in nginxconf['http']['map'].keys()
+    assert nginxconf['http']['map'][r'~*\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2)$'].value == 'max'
 
 
 def test_doc():

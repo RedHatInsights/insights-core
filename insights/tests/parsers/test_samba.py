@@ -1,12 +1,11 @@
 import pytest
-
-from doctest import testmod
+import doctest
 
 from insights.core.exceptions import ParseException
 from insights.parsers import samba
 from insights.tests import context_wrap
 
-SAMBA_CONFIG_DOCUMENTATION = '''
+SAMBA_CONFIG_DOCUMENTATION = r'''
 # This is the main Samba configuration file. You should read the
 # smb.conf(5) manual page in order to understand the options listed
 #...
@@ -45,13 +44,13 @@ SAMBA_CONFIG_DOCUMENTATION = '''
 
 
 def test_documentation():
-    failed, total = testmod(samba, globs={
+    failed, total = doctest.testmod(samba, globs={
         'conf': samba.SambaConfig(context_wrap(SAMBA_CONFIG_DOCUMENTATION)),
     })
     assert failed == 0
 
 
-SAMBA_CONFIG = """
+SAMBA_CONFIG = r"""
 # This is the main Samba configuration file. You should read the
 # smb.conf(5) manual page in order to understand the options listed
 #...
