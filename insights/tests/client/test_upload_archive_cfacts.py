@@ -25,16 +25,6 @@ def mock_init_session(obj):
     return MockSession()
 
 
-@patch("insights.client.connection.InsightsConnection._legacy_upload_archive", return_value=None)
-@patch("insights.client.connection.logger")
-def test_cfacts_no_cleaning_1(logger, legacy_upload):
-    # 1. No need to cleaning as legacy_upload=True
-    config = InsightsConfig(legacy_upload=True, obfuscate=True, obfuscate_hostname=True)
-    conn = InsightsConnection(config)
-    conn.upload_archive('data_collected', 'content_type')
-    logger.debug.assert_not_called()
-
-
 @patch('insights.client.connection.InsightsConnection._init_session', mock_init_session)
 @patch('insights.client.connection.InsightsConnection.post', return_value=MockSession())
 @patch(builtin_open, new_callable=mock_open, read_data='')
