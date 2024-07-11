@@ -486,6 +486,7 @@ class DefaultSpecs(Specs):
     pcp_raw_data = foreach_collect(pcp_raw_files, "%s", save_as="var/log/pcp/pmlogger/", kind=RawFileProvider)
     pcs_quorum_status = simple_command("/usr/sbin/pcs quorum status")
     pcs_status = simple_command("/usr/sbin/pcs status")
+    pidstat = simple_command("/usr/bin/pidstat")
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
     pmlog_summary = command_with_args("/usr/bin/pmlogsummary %s", pmlog_summary_args)
