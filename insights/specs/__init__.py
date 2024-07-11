@@ -565,6 +565,7 @@ class Specs(SpecSet):
     pcs_quorum_status = RegistryPoint()
     pcs_status = RegistryPoint()
     php_ini = RegistryPoint(filterable=True)
+    pidstat = RegistryPoint()
     pluginconf_d = RegistryPoint(multi_output=True)
     pmlog_summary = RegistryPoint(no_obfuscate=['hostname', 'ip'])  # TODO: Remove after 'pcp_raw_data' works
     pmlog_summary_pcp_zeroconf = RegistryPoint(no_obfuscate=['hostname', 'ip'])
