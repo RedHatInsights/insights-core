@@ -283,6 +283,13 @@ plugins:
     # needed by the 'iris_messages_log' spec
         - name: insights.parsers.iris.IrisCpf
           enabled: true
+
+    # needed by the 'sealert' spec
+        - name: insights.parsers.selinux_config.SelinuxConfig
+          enabled: true
+
+        - name: insights.components.selinux.SELinuxEnabled
+          enabled: true
 """.strip()
 
 EXCEPTIONS_TO_REPORT = set([

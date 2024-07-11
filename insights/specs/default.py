@@ -11,7 +11,7 @@ data sources that standard Insights `Parsers` resolve against.
 import logging
 import signal
 
-# TODO: When adding new importings, Please
+# TODO: When adding new importing, Please
 # - keep the modules in sort of alphabet
 # - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
@@ -20,6 +20,7 @@ from insights.components.rhel_version import IsRhel6, IsGtOrRhel86
 from insights.components.satellite import (
     IsSatellite, IsSatellite611,
     IsSatellite614AndLater, IsSatelliteLessThan614)
+from insights.components.selinux import SELinuxEnabled
 from insights.components.virtualization import IsBareMetal
 from insights.core.context import HostContext
 from insights.core.spec_factory import (
@@ -614,7 +615,7 @@ class DefaultSpecs(Specs):
     sctp_asc = simple_file('/proc/net/sctp/assocs')
     sctp_eps = simple_file('/proc/net/sctp/eps')
     sctp_snmp = simple_file('/proc/net/sctp/snmp')
-    sealert = simple_command('/usr/bin/sealert -l "*"')
+    sealert = simple_command('/usr/bin/sealert -l "*"', deps=[SELinuxEnabled])
     secure = simple_file("/var/log/secure")
     selinux_config = simple_file("/etc/selinux/config")
     sendmail_mc = simple_file("/etc/mail/sendmail.mc")
