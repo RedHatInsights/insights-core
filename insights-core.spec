@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.2
+Version:        3.4.3
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,21 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jul 11 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.3-1
+- feat: New spec and parser to get rsyslog CA cert expiration date (#4139)
+  (44796653+huali027@users.noreply.github.com)
+- fix: handle another input format in parser NmapSsh (#4158)
+  (xiaoxwan@redhat.com)
+- feat: replace deprecated datetime.utcnow() usage (#4156)
+  (xiaoxwan@redhat.com)
+- feat: New spec "/usr/bin/pidstat" and parser (#4153)
+  (44796653+huali027@users.noreply.github.com)
+- fix: collect sealert only when SELinux is not disabled (#4150)
+  (xiangceliu@redhat.com)
+- chore(ci): Add Python 3.12 to test matrix (#4151) (mhorky@redhat.com)
+- chore: collect image builder's osbuild.facts (#4119)
+  (sanne.raymaekers@gmail.com)
+
 * Mon Jul 08 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.2-1
 - fix: show compliance errors only when compliance is specified (#4152)
   (xiangceliu@redhat.com)
