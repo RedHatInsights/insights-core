@@ -217,6 +217,7 @@ class InsightsArchiveSpecs(Specs):
     pcp_metrics = simple_file("insights_commands/curl_-s_http_..127.0.0.1_44322.metrics_--connect-timeout_5")
     pcs_quorum_status = simple_file("insights_commands/pcs_quorum_status")
     pcs_status = simple_file("insights_commands/pcs_status")
+    pidstat = simple_file("insights_commands/pidstat")
     pmrep_metrics = first_file(["insights_commands/pmrep_-t_1s_-T_1s_network.interface.out.packets_network.interface.collisions_swap.pagesout_mssql.memory_manager.stolen_server_memory_mssql.memory_manager.total_server_memory_-o_csv", "insights_commands/pmrep_-t_1s_-T_1s_network.interface.out.packets_network.interface.collisions_swap.pagesout_-o_csv"])
     podman_list_containers = simple_file("insights_commands/podman_ps_--all_--no-trunc")
     postconf_builtin = simple_file("insights_commands/postconf_-C_builtin")
