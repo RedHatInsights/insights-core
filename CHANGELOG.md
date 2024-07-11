@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.3) (2024-07-11)
+
+- feat: New spec and parser to get rsyslog CA cert expiration date ([PR 4139](https://github.com/RedHatInsights/insights-core/pull/4139))
+- fix: handle another input format in parser NmapSsh ([PR 4158](https://github.com/RedHatInsights/insights-core/pull/4158))
+- feat: replace deprecated datetime.utcnow() usage ([PR 4156](https://github.com/RedHatInsights/insights-core/pull/4156))
+- feat: New spec "/usr/bin/pidstat" and parser ([PR 4153](https://github.com/RedHatInsights/insights-core/pull/4153))
+- fix: collect sealert only when SELinux is not disabled ([PR 4150](https://github.com/RedHatInsights/insights-core/pull/4150))
+- chore(ci): Add Python 3.12 to test matrix ([PR 4151](https://github.com/RedHatInsights/insights-core/pull/4151))
+- chore: collect image builder's osbuild.facts ([PR 4119](https://github.com/RedHatInsights/insights-core/pull/4119))
+
 # [insights-core-3.4.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.2) (2024-07-08)
 
 - fix: show compliance errors only when compliance is specified ([PR 4152](https://github.com/RedHatInsights/insights-core/pull/4152))
