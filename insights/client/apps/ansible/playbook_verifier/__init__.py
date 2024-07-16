@@ -4,11 +4,13 @@ import hashlib
 import logging
 import os
 import pkgutil
+import sys
 import tempfile
 
 import six
 
 import insights.client.apps.ansible
+from insights.client.apps.ansible.playbook_verifier.serializer import PlaybookSerializer
 from insights.client.apps.ansible.playbook_verifier.contrib import gnupg
 from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel import yaml
 from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.comments import CommentedMap, CommentedSeq
@@ -114,7 +116,9 @@ def serialize_playbook_snippet(snippet):
     """
     if six.PY2:
         return str(normalize_snippet(snippet)).encode("utf-8")
-    return str(snippet).encode("utf-8")
+    if sys.version_info < (3, 12):
+        return str(snippet).encode("utf-8")
+    return PlaybookSerializer.serialize(snippet).encode("utf-8")
 
 
 def hash_playbook_snippet(serialized_snippet):
