@@ -698,6 +698,7 @@ class Specs(SpecSet):
     sctp_snmp = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     sealert = RegistryPoint()
     secure = RegistryPoint(filterable=True)
+    securetty = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     selinux_config = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     selinux_users = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
     sendmail_mc = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
