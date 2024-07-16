@@ -1,3 +1,8 @@
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipComponent
+from insights.parsers import os_release
 from insights.parsers.os_release import OsRelease
 from insights.tests import context_wrap
 
@@ -62,22 +67,31 @@ VARIANT_ID=server
 
 def test_rhel():
     rls = OsRelease(context_wrap(REHL_OS_RELEASE))
-    data = rls.data
-    assert data.get("VARIANT_ID") is None
-    assert data.get("VERSION") == "7.2 (Maipo)"
+    assert rls.get("VARIANT_ID") is None
+    assert rls.get("VERSION") == "7.2 (Maipo)"
 
 
 def test_rhevh():
     rls = OsRelease(context_wrap(RHEVH_RHV40_OS_RELEASE))
-    data = rls.data
-    assert data.get("VARIANT_ID") == "ovirt-node"
-    assert data.get("VERSION") == "7.3"
-    assert data.get("PRETTY_NAME") == "Red Hat Virtualization Host 4.0 (el7.3)"
+    assert rls.get("VARIANT_ID") == "ovirt-node"
+    assert rls.get("VERSION") == "7.3"
+    assert rls.get("PRETTY_NAME") == "Red Hat Virtualization Host 4.0 (el7.3)"
 
 
 def test_fedora24():
     rls = OsRelease(context_wrap(FEDORA_OS_RELEASE))
-    data = rls.data
-    assert data.get("VARIANT_ID") == "server"
-    assert data.get("VERSION") == "24 (Server Edition)"
-    assert data.get("PRETTY_NAME") == "Fedora 24 (Server Edition)"
+    assert rls.get("VARIANT_ID") == "server"
+    assert rls.get("VERSION") == "24 (Server Edition)"
+    assert rls.get("PRETTY_NAME") == "Fedora 24 (Server Edition)"
+
+
+def test_empty():
+    with pytest.raises(SkipComponent):
+        OsRelease(context_wrap(""))
+
+
+def test_examples():
+    release = OsRelease(context_wrap(REHL_OS_RELEASE))
+    globs = {'rls': release}
+    failed, tested = doctest.testmod(os_release, globs=globs)
+    assert failed == 0
