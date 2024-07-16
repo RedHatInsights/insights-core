@@ -724,7 +724,7 @@ class InsightsConfig(object):
                     sys.stdout.write('WARNING: Obfuscation reports will be created alongside the output directory.\n')
         if self.core_collect is False:
             if self._print_errors:
-                sys.stdout.write('WARNING: "core_collect=False" is not longer supported. "core_collect=True" will be used.\n')
+                sys.stdout.write('WARNING: "core_collect=False" is no longer supported. "core_collect=True" will be used.\n')
         if self.output_file:
             if os.path.exists(self.output_file):
                 raise ValueError('File %s already exists.' % self.output_file)

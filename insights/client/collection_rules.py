@@ -12,8 +12,6 @@ import yaml
 
 from six.moves import configparser as ConfigParser
 
-from tempfile import NamedTemporaryFile
-from . import crypto
 from insights.client.constants import InsightsConstants as constants
 
 APP_NAME = constants.app_name
