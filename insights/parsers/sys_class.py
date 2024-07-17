@@ -38,6 +38,6 @@ class TtyConsoleActive(Parser):
         if len(content) > 1:
             raise SkipComponent("This should be an one line file")
         if not content:
-            self.devices = []
+            raise SkipComponent("Empty content.")
         else:
             self.devices = content[0].split()

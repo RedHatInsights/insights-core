@@ -31,11 +31,12 @@ def test_tty_console_active():
     tty_console_active = TtyConsoleActive(context_wrap(TTY_CONSOLE_ACTIVE))
     assert tty_console_active.devices == ['tty0', 'ttyS0']
 
-    tty_console_active = TtyConsoleActive(context_wrap(TTY_CONSOLE_ACTIVE_EMPTY))
-    assert tty_console_active.devices == []
-
 
 def test_class_exceptions():
     with pytest.raises(SkipComponent) as e:
         TtyConsoleActive(context_wrap(TTY_CONSOLE_ACTIVE_MULTI_LINES))
     assert 'This should be an one line file' in str(e)
+
+    with pytest.raises(SkipComponent) as e:
+        TtyConsoleActive(context_wrap(TTY_CONSOLE_ACTIVE_EMPTY))
+    assert 'Empty content' in str(e)
