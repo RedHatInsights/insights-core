@@ -37,7 +37,7 @@ def test_determine_hostname():
 
 
 def test_get_time():
-    time_regex = re.match('\d{4}-\d{2}-\d{2}\D\d{2}:\d{2}:\d{2}\.\d+',
+    time_regex = re.match(r'\d{4}-\d{2}-\d{2}\D\d{2}:\d{2}:\d{2}\.\d+',
                           util.get_time())
     assert time_regex.group(0) is not None
 
@@ -80,7 +80,7 @@ def test_write_to_disk_with_broken_path():
 @patch("insights.client.utilities._get_rhsm_identity", lambda: None)
 def test_generate_machine_id_with_no_subman():
     machine_id_regex = re.match(
-        '\w{8}-\w{4}-\w{4}-\w{4}-\w{12}',
+        r'\w{8}-\w{4}-\w{4}-\w{4}-\w{12}',
         util.generate_machine_id(destination_file='/tmp/testmachineid')
     )
     assert machine_id_regex.group(0) is not None

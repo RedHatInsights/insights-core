@@ -36,8 +36,8 @@ class SubscriptionManagerList(CommandParser):
         record_start_key = ''
         key = ''  # The key currently in use
 
-        key_val_re = re.compile('^(?P<key>\w[\w\s]+\w):\s+(?P<value>\w.*)$')
-        cont_val_re = re.compile('^\s+(?P<value>\w.*)$')
+        key_val_re = re.compile(r'^(?P<key>\w[\w\s]+\w):\s+(?P<value>\w.*)$')
+        cont_val_re = re.compile(r'^\s+(?P<value>\w.*)$')
 
         # The first line that matches the key_val_re is treated as the start
         # of a record.  The header doesn't match because it doesn't have a

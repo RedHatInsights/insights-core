@@ -1,4 +1,4 @@
-"""
+r"""
 MulticastQuerier - command ``find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;``
 ============================================================================================================
 
@@ -42,7 +42,7 @@ from insights.specs import Specs
 
 @parser(Specs.multicast_querier)
 class MulticastQuerier(CommandParser):
-    """
+    r"""
     Parse the output of the command:
 
     `find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;`

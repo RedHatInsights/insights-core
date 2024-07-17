@@ -1,7 +1,7 @@
 from insights.parsers import nfs_exports as parsermodule
 from insights.parsers.nfs_exports import NFSExports, NFSExportsD
 from insights.tests import context_wrap
-from doctest import testmod
+import doctest
 
 EXPORTS = """
 /home/utcs/shared/ro                    @group(ro,sync)   ins1.example.com(rw,sync,no_root_squash) ins2.example.com(rw,sync,no_root_squash)
@@ -16,7 +16,7 @@ EXPORTS = """
 
 
 def test_module_documentation():
-    failed, total = testmod(parsermodule, globs={
+    failed, total = doctest.testmod(parsermodule, globs={
         "exports": NFSExports(context_wrap(EXPORTS))
     })
     assert failed == 0

@@ -15,7 +15,7 @@ from insights.specs import Specs
 
 
 class CronFile(Parser):
-    """
+    r"""
     It parses the file at ``/etc/cron.d/*```.
 
     Each row of the file is converted into a dictionary with keys for each field.
@@ -156,7 +156,7 @@ class CronFile(Parser):
 
 @parser(Specs.cron_foreman)
 class CronForeman(CronFile):
-    """
+    r"""
     Parse the ``/etc/cron.d/foreman`` file.
 
     Sample input::

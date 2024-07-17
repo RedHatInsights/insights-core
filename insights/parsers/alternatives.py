@@ -24,7 +24,7 @@ class AlternativesOutput(CommandParser):
          slave keytool: /usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/keytool
          slave policytool: /usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/policytool
          slave rmid: /usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/rmid
-        Current `best' version is /usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java.
+        Current 'best' version is /usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java.
 
     Lines are interpreted this way:
 
@@ -36,7 +36,7 @@ class AlternativesOutput(CommandParser):
       alternative path and its priority.
     * Lines starting with 'slave *program*: *path*' are recorded against the
       alternative path.
-    * Lines starting with 'Current \`best' version is' indicate the default
+    * Lines starting with "Current 'best' version is" indicate the default
       choice of an 'auto' status alternative.
 
     The output of ``alternatives --display *program*`` can only ever list one
