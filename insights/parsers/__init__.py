@@ -157,7 +157,8 @@ def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=", us
 
 
 def unsplit_lines(lines, cont_char='\\', keep_cont_char=False):
-    """Recombine lines having a continuation character at end.
+    r"""
+    Recombine lines having a continuation character at end.
 
     Generator that recombines lines in the list that have the char `cont_char`
     at the end of a line.  If `cont_char` is found in a line then then

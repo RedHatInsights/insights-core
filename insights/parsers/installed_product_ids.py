@@ -1,4 +1,4 @@
-"""
+r"""
 Installed product IDs
 =====================
 
@@ -18,7 +18,7 @@ add_filter(Specs.subscription_manager_installed_product_ids, ['ID:', 'Product Ce
 
 @parser(Specs.subscription_manager_installed_product_ids)
 class InstalledProductIDs(CommandParser):
-    """
+    r"""
     Parses the output of the comand::
 
         find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;

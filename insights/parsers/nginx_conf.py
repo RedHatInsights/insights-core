@@ -24,7 +24,7 @@ from insights.specs import Specs
 
 @parser(Specs.nginx_conf)
 class NginxConfPEG(ConfigParser):
-    """
+    r"""
     Parse the keyword-and-value of a Nginx configuration file.
 
     Example nginx.conf file::

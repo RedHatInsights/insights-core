@@ -75,7 +75,7 @@ def glob2re(pat):
                 res = '%s[%s]' % (res, stuff)
         else:
             res = res + re.escape(c)
-    return res + '\Z(?ms)'
+    return res + r'\Z(?ms)'
 
 
 def parse_args():

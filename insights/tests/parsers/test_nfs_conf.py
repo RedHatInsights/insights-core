@@ -1,7 +1,7 @@
 from insights.parsers import nfs_conf as nfs_conf_parser
 from insights.parsers.nfs_conf import NFSConf
 from insights.tests import context_wrap
-from doctest import testmod
+import doctest
 
 NFS_CONF_1 = """
 #
@@ -149,7 +149,7 @@ def test_nfs_exports_empty():
 
 
 def test_module_documentation():
-    failed, total = testmod(nfs_conf_parser, globs={
+    failed, total = doctest.testmod(nfs_conf_parser, globs={
         "nfs_conf": NFSConf(context_wrap(NFS_CONF_MODDOC))
     })
     assert failed == 0
