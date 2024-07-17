@@ -3,7 +3,7 @@ from insights.tests.parsers.test_nfs_exports import EXPORTS
 from insights.combiners import nfs_exports
 from insights.tests import context_wrap
 
-from doctest import testmod
+import doctest
 
 EXPORTS_D_EXTRAS = """
 /mnt/work       *(rw,sync)
@@ -28,7 +28,7 @@ combined = nfs_exports.AllNFSExports(nfs_exportsf, nfs_exportsd)
 
 
 def test_nfs_exports_docs():
-    failed, total = testmod(nfs_exports, globs={'all_nfs': combined})
+    failed, total = doctest.testmod(nfs_exports, globs={'all_nfs': combined})
     assert failed == 0
 
 

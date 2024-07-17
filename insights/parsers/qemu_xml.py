@@ -30,7 +30,7 @@ class BaseQemuXML(XMLParser):
         super(BaseQemuXML, self).parse_content(content)
 
         # Setting vm_name attribute
-        if self.dom and self.get_elements('./domain/name'):
+        if self.dom is not None and len(self.get_elements('./domain/name')):
             self.vm_name = self.get_elements('./domain/name')[0].text
         else:
             self.vm_name = self.data.get('name', None)
@@ -297,7 +297,7 @@ class OpenStackInstanceXML(BaseQemuXML):
         # Parse OpenStack Compute(Nova) metadata
         ns = {'nova': 'http://openstack.org/xmlns/libvirt/nova/1.0'}
         self.nova = {}
-        if self.dom and self.get_elements('./metadata'):
+        if self.dom is not None and len(self.get_elements('./metadata')):
             for i in self.get_elements('./metadata')[0]:
                 self.nova['version'] = i.findall('nova:package', ns)[0].get('version')
 

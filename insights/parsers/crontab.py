@@ -8,7 +8,7 @@ from insights.specs import Specs
 
 
 def _make_cron_re():
-    """
+    r"""
     Make the regular expression that matches a crontab 'cron' line.
 
     Each field has a set of allowed values, and can then be in a range, and be
@@ -22,7 +22,7 @@ def _make_cron_re():
     a dictionary later.
     """
     range_ = r"{val}(?:-{val}(?:/\d+)?)?"
-    template = r"(?P<{name}>" + "(?:\*(?:/\d+)?|{r}(?:,{r})*)".format(r=range_) + ")\s+"
+    template = r"(?P<{name}>" + r"(?:\*(?:/\d+)?|{r}(?:,{r})*)".format(r=range_) + r")\s+"
     return (
         r'^\s*' +
         template.format(name='minute', val=r'(?:\d|[012345]\d)') +
@@ -35,7 +35,7 @@ def _make_cron_re():
 
 
 class CrontabL(CommandParser):
-    """
+    r"""
     Parses output of ``crontab -l`` command.
 
     Each row of the crontab is converted into a dictionary with keys for each field.

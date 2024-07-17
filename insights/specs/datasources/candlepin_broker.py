@@ -44,7 +44,7 @@ def candlepin_broker(broker):
         ``insights cat --no-header candlepin_broker``
 
     Returns:
-        str: XML string after removeing sensitive information.
+        str: XML string after removing sensitive information.
 
     Raises:
         SkipComponent: When the path does not exist or any exception occurs.
@@ -66,7 +66,7 @@ def candlepin_broker(broker):
             if passwd_ele is not None:
                 core_ele.remove(passwd_ele)
             acc_ele = core_ele.find('acceptors')
-            if acc_ele:
+            if acc_ele is not None and len(acc_ele):
                 core_ele.remove(acc_ele)
             return DatasourceProvider(
                 content=[line for line in ET.tostring(root).decode('utf-8').splitlines() if line.strip()],

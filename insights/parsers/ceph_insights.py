@@ -52,8 +52,8 @@ class CephInsights(CommandParser):
         True
     """
     IGNORE_RE = [
-         "\*\*\* DEVELOPER MODE",
-         "\d+-\d+-\d+.+WARNING: all dangerous"
+         r"\*\*\* DEVELOPER MODE",
+         r"\d+-\d+-\d+.+WARNING: all dangerous"
     ]
 
     bad_lines = [

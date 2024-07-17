@@ -2,7 +2,7 @@ from insights.parsers.engine_config import EngineConfigAll
 from insights.tests import context_wrap
 
 
-ENGINE_CONFIG_ALL_OUTPUT = """
+ENGINE_CONFIG_ALL_OUTPUT = r"""
 AffinityRulesEnforcementManagerEnabled: true version: general
 AffinityRulesEnforcementManagerRegularInterval: 1 version: general
 AsyncTaskPollingRate: 10 version: general
