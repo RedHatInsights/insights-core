@@ -691,6 +691,7 @@ class DefaultSpecs(Specs):
     timedatectl_status = simple_command('/usr/bin/timedatectl status')
     tmpfilesd = glob_file(["/etc/tmpfiles.d/*.conf", "/usr/lib/tmpfiles.d/*.conf", "/run/tmpfiles.d/*.conf"])
     tomcat_vdc_fallback = simple_command("/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +")
+    tty_console_active = simple_file("sys/class/tty/console/active")
     tuned_adm = simple_command("/usr/sbin/tuned-adm list")
     udev_66_md_rules = first_file(["/etc/udev/rules.d/66-md-auto-readd.rules", "/usr/lib/udev/rules.d/66-md-auto-readd.rules"])
     udev_fc_wwpn_id_rules = simple_file("/usr/lib/udev/rules.d/59-fc-wwpn-id.rules")

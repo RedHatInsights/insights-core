@@ -795,6 +795,7 @@ class Specs(SpecSet):
     tomcat_vdc_fallback = RegistryPoint()
     tomcat_vdc_targeted = RegistryPoint(multi_output=True)
     tomcat_web_xml = RegistryPoint(multi_output=True)
+    tty_console_active = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     tuned_adm = RegistryPoint()
     tuned_conf = RegistryPoint()
     udev_66_md_rules = RegistryPoint(filterable=True)
