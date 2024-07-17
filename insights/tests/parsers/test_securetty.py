@@ -1,4 +1,7 @@
 import doctest
+import pytest
+
+from insights.core.exceptions import SkipComponent
 from insights.parsers import securetty
 from insights.parsers.securetty import Securetty
 from insights.tests import context_wrap
@@ -18,9 +21,12 @@ def test_securetty():
     securetty = Securetty(context_wrap(SECURETTY))
     assert len(securetty.terminals) == 4
     assert securetty.terminals == ['console', 'tty1', 'tty2', 'tty3']
-    securetty = Securetty(context_wrap(SECURETTY_EMPTY))
-    assert len(securetty.terminals) == 0
-    assert securetty.terminals == []
+
+
+def test_class_exceptions():
+    with pytest.raises(SkipComponent) as e:
+        Securetty(context_wrap(SECURETTY_EMPTY))
+    assert "No terminals found." in str(e)
 
 
 def test_doc():
