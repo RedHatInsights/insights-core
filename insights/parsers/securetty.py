@@ -4,6 +4,7 @@ Secure -  file ``/etc/securetty``
 """
 from insights.core import Parser
 from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 
@@ -30,7 +31,5 @@ class Securetty(Parser):
 
     def parse_content(self, content):
         self.terminals = []
-        for line in content:
-            if not line or line.startswith('#'):
-                continue
+        for line in get_active_lines(content):
             self.terminals.append(line)
