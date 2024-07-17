@@ -55,7 +55,7 @@ if sys.version_info[0] == 3:
 
 
 def extract_iface_name_from_path(path, name):
-    """
+    r"""
     Extract the 'real' interface name from the path name.  Basically this
     puts the '@' back in the name in place of the underscore, where the name
     contains a '.' or contains 'macvtap' or 'macvlan'.

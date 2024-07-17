@@ -3,7 +3,7 @@ from insights.tests import context_wrap
 import doctest
 
 
-MULTIPATH_V4_LL_INFO = """
+MULTIPATH_V4_LL_INFO = r"""
 ===== paths list =====
 uuid hcil    dev dev_t pri dm_st chk_st vend/prod/rev       dev_st
      0:0:0:0 sda 8:0   -1  undef ready  VMware,Virtual disk running
@@ -73,7 +73,7 @@ mpathc (test_with_no_devs) dm-1 uninitialized
 size=10G features='0' hwhandler='0' wp=rw
 """.strip()
 
-MULTIPATH_V4_LL_INFO_RHEL_5 = """
+MULTIPATH_V4_LL_INFO_RHEL_5 = r"""
 sdz: size = 293601280
 sdz: vendor = DGC
 sdz: product = RAID 5

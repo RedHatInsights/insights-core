@@ -4,7 +4,7 @@ from insights.parsers.cifs import CIFSDebugData
 from insights.tests import context_wrap
 
 
-CIFS_DEBUG_DATA_CONTENT = """
+CIFS_DEBUG_DATA_CONTENT = r"""
 DFS origin full path: \\ad.abc.com\DFSROOT\ame1
 DFS leaf full path:   \\CVXDFAVB1\DFSRoot\ame1
 """
@@ -16,7 +16,7 @@ def test_cifs_debug_data():
     cifs_dd_obj = CIFSDebugData(context_wrap(CIFS_DEBUG_DATA_CONTENT))
 
     assert cifs_dd_obj.test_dfs_origin_test
-    assert cifs_dd_obj.test_dfs_origin_test.get('raw_message') == "DFS origin full path: \\ad.abc.com\DFSROOT\ame1"
+    assert cifs_dd_obj.test_dfs_origin_test.get('raw_message') == r"DFS origin full path: \\ad.abc.com\DFSROOT\ame1"
 
 
 def test_doc():

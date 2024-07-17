@@ -4,7 +4,7 @@ from insights.core.context import OSP
 from insights.parsers import manila_conf
 from insights.tests import context_wrap
 
-MANILA_CONTENT = """
+MANILA_CONTENT = r"""
 [DEFAULT]
 
 #
