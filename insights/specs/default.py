@@ -660,6 +660,7 @@ class DefaultSpecs(Specs):
     sysconfig_nfs = simple_file("/etc/sysconfig/nfs")
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
     sysconfig_oracleasm = simple_file("/etc/sysconfig/oracleasm")
+    sysconfig_pcsd = simple_file("/etc/sysconfig/pcsd")
     sysconfig_prelink = simple_file("/etc/sysconfig/prelink")
     sysconfig_sbd = simple_file("/etc/sysconfig/sbd")
     sysconfig_sshd = simple_file("/etc/sysconfig/sshd")

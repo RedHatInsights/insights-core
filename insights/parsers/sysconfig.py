@@ -86,6 +86,9 @@ GrubSysconfig - files ``/etc/sysconfig/grub``
 
 OracleasmSysconfig - files ``/etc/sysconfig/oracleasm``
 -------------------------------------------------------
+
+Pcsd - files ``/etc/sysconfig/pcsd``
+------------------------------------
 """
 
 
@@ -792,6 +795,32 @@ class OracleasmSysconfig(SysconfigOptions):
         True
         >>> 'ORACLEASM_SCANEXCLUDE_1' in oracleasm_syscfg
         False
+
+    """
+    pass
+
+
+@parser(Specs.sysconfig_pcsd)
+class PcsdSysconfig(SysconfigOptions):
+    """
+    Class to parse the ``/etc/sysconfig/pcsd``
+
+    Typical content example::
+
+        # Set PCSD_DEBUG to true for advanced pcsd debugging information
+        PCSD_DEBUG=false
+        # Set DISABLE_GUI to true to disable GUI frontend in pcsd
+        PCSD_DISABLE_GUI=false
+        # Set web UI sesions lifetime in seconds
+        PCSD_SESSION_LIFETIME=3600
+
+    Examples:
+        >>> pcsd_syscfg.get('PCSD_DEBUG')
+        'false'
+        >>> 'PCSD_DISABLE_GUI' in pcsd_syscfg
+        True
+        >>> pcsd_syscfg.get('PCSD_SESSION_LIFETIME')
+        '3600'
 
     """
     pass
