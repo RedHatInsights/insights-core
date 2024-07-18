@@ -207,7 +207,7 @@ class IdentityDomain(object):
                 dtype = DomainTypes.AD_SSSD
                 srv = ServerSoftware.AD
                 domain = conf.get("ad_domain", name)
-                realm = conf.get("krb5_domain", domain.upper())
+                realm = conf.get("krb5_realm", domain.upper())
             elif id_provider == "ipa":
                 if ipa is None or not ipa.is_client:
                     # unsupported configuration
@@ -215,7 +215,7 @@ class IdentityDomain(object):
                 dtype = DomainTypes.IPA
                 srv = ServerSoftware.IPA
                 domain = conf.get("ipa_domain", name)
-                realm = conf.get("krb5_domain", domain.upper())
+                realm = conf.get("krb5_realm", domain.upper())
                 ipa_mode = IPAMode.IPA_SERVER if ipa.is_server else IPAMode.IPA_CLIENT
             elif id_provider == "ldap":
                 if auth_provider == "ldap":
