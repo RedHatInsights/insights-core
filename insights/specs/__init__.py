@@ -341,6 +341,7 @@ class Specs(SpecSet):
     limits_conf = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     locale = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     localtime = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    login_pam_conf = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     logrotate_conf = RegistryPoint(multi_output=True)
     losetup = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     lpfc_max_luns = RegistryPoint(no_obfuscate=['hostname', 'ip'])
