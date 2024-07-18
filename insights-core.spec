@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.3
+Version:        3.4.4
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,24 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jul 18 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.4-1
+- feat: Add spec etc_sysconfig_pcs and parser (#4167) (jiazhang@redhat.com)
+- feat: New spec "/sys/class/tty/console/active" and parser (#4165)
+  (30404410+qinpingli@users.noreply.github.com)
+- feat: New spec "/etc/securetty" and parser (#4166)
+  (30404410+qinpingli@users.noreply.github.com)
+- feat: New spec "/etc/pam.d/login" and parser (#4164)
+  (30404410+qinpingli@users.noreply.github.com)
+- chore: remove collection of cups_pdd (#4168) (xiangceliu@redhat.com)
+- chore: re-write the OsRelease parser (#4163) (xiangceliu@redhat.com)
+- doc(README): Python 2.6 unsupported announcement (#4161)
+  (xiangceliu@redhat.com)
+- fix: all SyntaxWarning and some of the DeprecationWarning (#4154)
+  (xiangceliu@redhat.com)
+- feat: collect the file /run/cloud-init/cloud.cfg for analytics (#4155)
+  (lichen@redhat.com)
+- fix: Serialize playbooks manually on Python 3.12+ (#4120) (mhorky@redhat.com)
+
 * Thu Jul 11 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.3-1
 - feat: New spec and parser to get rsyslog CA cert expiration date (#4139)
   (44796653+huali027@users.noreply.github.com)

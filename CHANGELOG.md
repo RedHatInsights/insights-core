@@ -2,6 +2,19 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.4) (2024-07-18)
+
+- feat: Add spec etc_sysconfig_pcs and parser ([PR 4167](https://github.com/RedHatInsights/insights-core/pull/4167))
+- feat: New spec "/sys/class/tty/console/active" and parser ([PR 4165](https://github.com/RedHatInsights/insights-core/pull/4165))
+- feat: New spec "/etc/securetty" and parser ([PR 4166](https://github.com/RedHatInsights/insights-core/pull/4166))
+- feat: New spec "/etc/pam.d/login" and parser ([PR 4164](https://github.com/RedHatInsights/insights-core/pull/4164))
+- chore: remove collection of cups_pdd ([PR 4168](https://github.com/RedHatInsights/insights-core/pull/4168))
+- chore: re-write the OsRelease parser ([PR 4163](https://github.com/RedHatInsights/insights-core/pull/4163))
+- doc(README): Python 2.6 unsupported announcement ([PR 4161](https://github.com/RedHatInsights/insights-core/pull/4161))
+- fix: all SyntaxWarning and some of the DeprecationWarning ([PR 4154](https://github.com/RedHatInsights/insights-core/pull/4154))
+- feat: collect the file /run/cloud-init/cloud.cfg for analytics ([PR 4155](https://github.com/RedHatInsights/insights-core/pull/4155))
+- fix: Serialize playbooks manually on Python 3.12+ ([PR 4120](https://github.com/RedHatInsights/insights-core/pull/4120))
+
 # [insights-core-3.4.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.3) (2024-07-11)
 
 - feat: New spec and parser to get rsyslog CA cert expiration date ([PR 4139](https://github.com/RedHatInsights/insights-core/pull/4139))
