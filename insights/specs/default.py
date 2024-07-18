@@ -639,6 +639,7 @@ class DefaultSpecs(Specs):
     sshd_config_perms = simple_command("/bin/ls -lH /etc/ssh/sshd_config")
     sshd_test_mode = simple_command("/usr/sbin/sshd -T")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
+    sssd_conf_d = glob_file("/etc/sssd/conf.d/*.conf")
     subscription_manager_facts = simple_command("/usr/sbin/subscription-manager facts",
                                                 override_env={"LC_ALL": "C.UTF-8"})
     subscription_manager_id = simple_command("/usr/sbin/subscription-manager identity",  # use "/usr/sbin" here, BZ#1690529

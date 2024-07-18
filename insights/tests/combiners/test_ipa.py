@@ -2,7 +2,7 @@ from insights.combiners.ipa import IPA
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.ipa_conf import IPAConfig
 from insights.parsers.redhat_release import RedhatRelease
-from insights.parsers.sssd_conf import SSSD_Config
+from insights.parsers.sssd_conf import SSSDConf
 
 from insights.tests import context_wrap
 
@@ -89,11 +89,11 @@ def test_ipa():
     redhat_release = RedhatRelease(context_wrap(REDHAT_RELEASE_RHEL))
 
     rpms_client = InstalledRpms(context_wrap(IPA_RPMS_CLIENT))
-    sssd_conf_client = SSSD_Config(context_wrap(SSSD_CONF_CLIENT))
+    sssd_conf_client = SSSDConf(context_wrap(SSSD_CONF_CLIENT))
     ipa_conf_client = IPAConfig(context_wrap(IPA_DEFAULT_CONF_CLIENT))
 
     rpms_server = InstalledRpms(context_wrap(IPA_RPMS_SERVER))
-    sssd_conf_server = SSSD_Config(context_wrap(SSSD_CONF_SERVER))
+    sssd_conf_server = SSSDConf(context_wrap(SSSD_CONF_SERVER))
     ipa_conf_server = IPAConfig(context_wrap(IPA_DEFAULT_CONF_SERVER))
 
     ipa_client = IPA(

@@ -728,6 +728,7 @@ class Specs(SpecSet):
     sshd_config_perms = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     sshd_test_mode = RegistryPoint(filterable=True)
     sssd_config = RegistryPoint()
+    sssd_conf_d = RegistryPoint(multi_output=True)
     sssd_logs = RegistryPoint(multi_output=True, filterable=True)
     sys_block_queue_stable_writes = RegistryPoint(multi_output=True)
     subscription_manager_facts = RegistryPoint(filterable=True)

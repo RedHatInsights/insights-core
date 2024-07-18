@@ -49,7 +49,7 @@ from insights.core.exceptions import SkipComponent
 from insights.core.plugins import combiner
 from insights.combiners.ipa import IPA
 from insights.parsers.samba import SambaConfigs
-from insights.parsers.sssd_conf import SSSD_Config
+from insights.combiners.sssd_conf import SSSDConfAll
 from insights.combiners.krb5 import AllKrb5Conf
 
 
@@ -124,7 +124,7 @@ Attributes:
 """
 
 
-@combiner(optional=[SSSD_Config, AllKrb5Conf, IPA, SambaConfigs])
+@combiner(optional=[SSSDConfAll, AllKrb5Conf, IPA, SambaConfigs])
 class IdentityDomain(object):
     """
     A combiner for identity domains.
@@ -186,7 +186,7 @@ class IdentityDomain(object):
         Supports id_providers "ad", "ipa", and "ldap".
         """
         id_auth_providers = set(["ldap", "krb5", "ipa", "ad", "proxy"])
-        for name in sssd.domains:
+        for name in sssd.enabled_domains:
             if "/" in name:
                 # Ignore trusted domain (subdomain) configuration. Subdomain
                 # settings are configured as

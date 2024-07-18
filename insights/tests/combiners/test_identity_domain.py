@@ -16,7 +16,8 @@ from insights.parsers.ipa_conf import IPAConfig
 from insights.parsers.krb5 import Krb5Configuration
 from insights.parsers.redhat_release import RedhatRelease
 from insights.parsers.samba import SambaConfigs
-from insights.parsers.sssd_conf import SSSD_Config
+from insights.parsers.sssd_conf import SSSDConf
+from insights.combiners.sssd_conf import SSSDConfAll
 from insights.tests import context_wrap
 
 KRB5_CONF = """
@@ -203,7 +204,11 @@ def test_identity_domain_sssd():
     krb5 = AllKrb5Conf(
         [Krb5Configuration(context_wrap(KRB5_CONF, path="/etc/krb5.conf"))]
     )
-    sssd = SSSD_Config(context_wrap(SSSD_CONF, path="/etc/sssd/sssd.conf"))
+    sssd_conf = SSSDConf(context_wrap(SSSD_CONF, path="/etc/sssd/sssd.conf"))
+    sssd = SSSDConfAll(
+        sssd_conf,
+        []
+    )
     redhat_release = RedhatRelease(context_wrap(REDHAT_RELEASE_RHEL))
     rpms_client = InstalledRpms(context_wrap(IPA_RPMS_CLIENT))
     ipa_conf = IPAConfig(context_wrap(IPA_DEFAULT_CONF, path="/etc/ipa/default.conf"))

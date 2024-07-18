@@ -7,10 +7,10 @@ from insights.core.exceptions import SkipComponent
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.redhat_release import RedhatRelease
 from insights.parsers.ipa_conf import IPAConfig
-from insights.parsers.sssd_conf import SSSD_Config
+from insights.combiners.sssd_conf import SSSDConfAll
 
 
-@combiner(IPAConfig, SSSD_Config, InstalledRpms, RedhatRelease)
+@combiner(IPAConfig, SSSDConfAll, InstalledRpms, RedhatRelease)
 class IPA(object):
     """Combiner for IPA, SSSD, and installed RPMs
 
