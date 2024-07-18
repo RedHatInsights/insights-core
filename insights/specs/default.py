@@ -619,6 +619,7 @@ class DefaultSpecs(Specs):
     sctp_snmp = simple_file('/proc/net/sctp/snmp')
     sealert = simple_command('/usr/bin/sealert -l "*"', deps=[SELinuxEnabled])
     secure = simple_file("/var/log/secure")
+    securetty = simple_file("/etc/securetty")
     selinux_config = simple_file("/etc/selinux/config")
     sendmail_mc = simple_file("/etc/mail/sendmail.mc")
     sestatus = simple_command("/usr/sbin/sestatus -b")
