@@ -17,6 +17,7 @@ from insights.parsers.sysconfig import GrubSysconfig
 from insights.parsers.sysconfig import OracleasmSysconfig
 from insights.parsers.sysconfig import NfsSysconfig
 from insights.parsers.sysconfig import StonithSysconfig
+from insights.parsers.sysconfig import PcsdSysconfig
 import doctest
 
 
@@ -224,6 +225,17 @@ SBD_WATCHDOG_DEV=/dev/watchdog
 SBD_WATCHDOG_TIMEOUT=5
 """.strip()
 
+PCSD_SYSCONFIG = """
+# Set PCSD_DEBUG to true for advanced pcsd debugging information
+PCSD_DEBUG=false
+# Set DISABLE_GUI to true to disable GUI frontend in pcsd
+PCSD_DISABLE_GUI=false
+# Set web UI sesions lifetime in seconds
+PCSD_SESSION_LIFETIME=3600
+# List of IP addresses pcsd should bind to delimited by ',' character
+#PCSD_BIND_ADDR='::'
+""".strip()
+
 
 def test_sysconfig_doc():
     env = {
@@ -252,7 +264,8 @@ def test_sysconfig_doc():
             'nfs_syscfg': NfsSysconfig(context_wrap(NFS_SYSCONFIG)),
             'grub_syscfg': GrubSysconfig(context_wrap(GRUB_SYSCONFIG)),
             'oracleasm_syscfg': OracleasmSysconfig(context_wrap(ORACLEASM_SYSCONFIG)),
-            'stonith_syscfg': StonithSysconfig(context_wrap(STONITH_CONFIG))
+            'stonith_syscfg': StonithSysconfig(context_wrap(STONITH_CONFIG)),
+            'pcsd_syscfg': PcsdSysconfig(context_wrap(PCSD_SYSCONFIG)),
           }
     failed, total = doctest.testmod(sysconfig, globs=env)
     assert failed == 0

@@ -759,6 +759,7 @@ class Specs(SpecSet):
     sysconfig_nfs = RegistryPoint()
     sysconfig_ntpd = RegistryPoint()
     sysconfig_oracleasm = RegistryPoint()
+    sysconfig_pcsd = RegistryPoint()
     sysconfig_prelink = RegistryPoint()
     sysconfig_sbd = RegistryPoint()
     sysconfig_sshd = RegistryPoint()
