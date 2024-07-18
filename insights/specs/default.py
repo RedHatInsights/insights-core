@@ -331,6 +331,7 @@ class DefaultSpecs(Specs):
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
     limits_conf = glob_file(["/etc/security/limits.conf", "/etc/security/limits.d/*.conf"])
     localtime = simple_command("/usr/bin/file -L /etc/localtime")
+    login_pam_conf = simple_file("/etc/pam.d/login")
     logrotate_conf = glob_file(["/etc/logrotate.conf", "/etc/logrotate.d/*"])
     losetup = simple_command("/usr/sbin/losetup -l")
     lpfc_max_luns = simple_file("/sys/module/lpfc/parameters/lpfc_max_luns")
