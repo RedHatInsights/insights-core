@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.4
+Version:        3.4.5
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jul 18 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.5-1
+- feat(pgp): Use crypto.py during Egg and Collection verification (#4131)
+  (mhorky@redhat.com)
+
 * Thu Jul 18 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.4-1
 - feat: Add spec etc_sysconfig_pcs and parser (#4167) (jiazhang@redhat.com)
 - feat: New spec "/sys/class/tty/console/active" and parser (#4165)

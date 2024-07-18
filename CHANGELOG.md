@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.5) (2024-07-18)
+
+- feat(pgp): Use crypto.py during Egg and Collection verification ([PR 4131](https://github.com/RedHatInsights/insights-core/pull/4131))
+
 # [insights-core-3.4.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.4) (2024-07-18)
 
 - feat: Add spec etc_sysconfig_pcs and parser ([PR 4167](https://github.com/RedHatInsights/insights-core/pull/4167))
