@@ -69,12 +69,8 @@ Server role: ROLE_DOMAIN_MEMBER
     idmap config * : backend = tdb
 """
 
-REDHAT_RELEASE_RHEL = """
-Red Hat Enterprise Linux release 9.2 (Plow)
-"""
-
 IPA_RPMS_CLIENT = """
-ipa-client-4.10.1-6.el9.x86_64
+sssd-2.9.1-1.el9.x86_64
 """
 
 IPA_DEFAULT_CONF = """
@@ -209,10 +205,9 @@ def test_identity_domain_sssd():
         sssd_conf,
         []
     )
-    redhat_release = RedhatRelease(context_wrap(REDHAT_RELEASE_RHEL))
     rpms_client = InstalledRpms(context_wrap(IPA_RPMS_CLIENT))
     ipa_conf = IPAConfig(context_wrap(IPA_DEFAULT_CONF, path="/etc/ipa/default.conf"))
-    ipa = IPA(ipa_conf, sssd, rpms_client, redhat_release)
+    ipa = IPA(ipa_conf, sssd, rpms_client)
 
     identity_domain = IdentityDomain(sssd, krb5, ipa, None)
 
