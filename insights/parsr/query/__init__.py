@@ -105,6 +105,13 @@ class Entry(object):
         Allows queries based on attribute access so long as they don't conflict
         with members of the Entry class itself.
         """
+        if name.startswith("__") and name.endswith("__"):
+            raise AttributeError(
+                "'{cls}' object has no attribute '{attr}'".format(
+                    cls=self.__class__.__name__, attr=name
+                )
+            )
+
         if name == "name" and self._name is not None:
             return self._name
 
