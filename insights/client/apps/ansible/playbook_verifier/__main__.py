@@ -18,10 +18,11 @@ try:
         print(raw_playbook)
         exit(0)
 
-    playbook = load_playbook_yaml(raw_playbook)[0]  # type: dict
-    verified_playbook = verify(playbook)  # type: dict
+    plays = load_playbook_yaml(raw_playbook)  # type: list[dict]
+    for play in plays:
+        _ = verify(play)
 except PlaybookVerificationError as err:
-    sys.stderr.write(err.message)
+    sys.stderr.write(err.message + "\n")
     sys.exit(constants.sig_kill_bad)
 
 print(raw_playbook)
