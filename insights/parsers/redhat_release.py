@@ -75,9 +75,19 @@ class RedhatRelease(Parser):
             "code_name": code_name.strip().strip('()') if code_name is not None else None
         }
 
-        self.is_rhel = 'red hat enterprise linux' in self.parsed['product'].lower()
-        self.is_centos = 'centos' in self.parsed['product'].lower()
-        self.is_fedora = 'fedora' in self.parsed['product'].lower()
+        product_lower = product.lower()
+        if 'red hat enterprise linux' in product_lower or 'red hat enterprise virtual' in product_lower:
+            self.short_product = 'RHEL'
+        elif 'centos' in product_lower:
+            self.short_product = 'CentOS'
+        elif 'fedora' in product_lower:
+            self.short_product = 'Fedora'
+        else:
+            self.short_product = 'Unknown'
+
+        self.is_rhel = (self.short_product == 'RHEL')
+        self.is_centos = (self.short_product == 'CentOS')
+        self.is_fedora = (self.short_product == 'Fedora')
 
         v_parts = self.parsed['version'].split('.')
         self.major = int(v_parts[0]) if v_parts[0].isdigit() else None
