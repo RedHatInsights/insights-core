@@ -259,7 +259,7 @@ def get_play_revocation_list(revoked_plays_yaml):
     :param revoked_plays_yaml: The YAML containing hashes of revoked plays.
     :type revoked_plays_yaml: bytes
     :returns: Revocation entries in a form of `name:hash`.
-    :rtype: dict[str, str]
+    :rtype: list[dict[str, str]]
     """
     try:
         # We know the structure of the YAML will stay like this:
@@ -303,7 +303,7 @@ def verify(play):
         raise PlaybookVerificationError("Empty plays cannot be verified.")
 
     revocation_list_file_content = pkgutil.get_data('insights', 'revoked_playbooks.yaml')  # type: bytes
-    revocation_list = get_play_revocation_list(revocation_list_file_content)  # type: dict[str, str]
+    revocation_list = get_play_revocation_list(revocation_list_file_content)  # type: list[dict[str, str]]
 
     verified, play_hash = verify_play(play)  # type: ..., str
 
