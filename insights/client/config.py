@@ -338,16 +338,6 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': os.path.join(constants.default_conf_dir, 'file-content-redaction.yaml')
     },
-    'reregister': {
-        'default': False,
-        'opt': ['--force-reregister'],
-        'help': ('This flag is deprecated and it will be removed in a future release.'
-                 'Forcefully reregister this machine to Red Hat.'
-                 'Please use `insights-client --unregister && insights-client --register `instead'),
-        'action': 'store_true',
-        'group': 'debug',
-        'dest': 'reregister'
-    },
     'retries': {
         'default': 1,
         'opt': ['--retry'],
@@ -704,11 +694,6 @@ class InsightsConfig(object):
         if self.analyze_container:
             raise ValueError(
                 '--analyze-container is no longer supported.')
-        if self.reregister:
-            raise ValueError(
-                "`force-reregistration` has been deprecated. Please use `insights-client "
-                "--unregister && insights-client --register` instead",
-            )
         if self.use_atomic:
             raise ValueError(
                 '--use-atomic is no longer supported.')
