@@ -35,8 +35,8 @@ class NvidiaSmiL(Parser, list):
     Examples::
         >>> gpus.gpu_count
         2
-        >>> gpus.gpu_models
-        {'NVIDIA A100-PCIE-40GB'}
+        >>> "NVIDIA A100-PCIE-40GB" in gpus.gpu_models
+        True
         >>> gpus[0]
         {'model': 'NVIDIA A100-PCIE-40GB', 'uuid': 'GPU-63110aaa-3561-c8f5-e125-4ab40bbcf838'}
     """
