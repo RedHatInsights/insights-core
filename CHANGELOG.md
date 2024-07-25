@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.6) (2024-07-25)
+
+- fix: Remove --force-reregister command ([PR 4162](https://github.com/RedHatInsights/insights-core/pull/4162))
+- feat: update specs for parser crictl_logs ([PR 4171](https://github.com/RedHatInsights/insights-core/pull/4171))
+- feat: add parser for spec nvidia_smi_l ([PR 4174](https://github.com/RedHatInsights/insights-core/pull/4174))
+
 # [insights-core-3.4.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.5) (2024-07-18)
 
 - feat(pgp): Use crypto.py during Egg and Collection verification ([PR 4131](https://github.com/RedHatInsights/insights-core/pull/4131))

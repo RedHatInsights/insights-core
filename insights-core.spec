@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.5
+Version:        3.4.6
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jul 25 2024 Lizhong Chen <lichen@redhat.com> 3.4.6-1
+- fix: remove --force-reregister command (#4162) (stomsa@redhat.com)
+- feat: update specs for parser crictl_logs (#4171)
+  (87797511+mohitkumarrh@users.noreply.github.com)
+- feat: add parser for spec nvidia_smi_l (#4174) (xiaoxwan@redhat.com)
+
 * Thu Jul 18 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.5-1
 - feat(pgp): Use crypto.py during Egg and Collection verification (#4131)
   (mhorky@redhat.com)
