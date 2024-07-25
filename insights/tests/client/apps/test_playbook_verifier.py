@@ -126,7 +126,7 @@ class TestErrors:
 
     @patch('insights.client.apps.ansible.playbook_verifier.contrib.gnupg.GPG.verify_data')
     def test_playbook_verification_success(self, mock_method):
-        mock_method.return_value = True
+        mock_method.return_value = mock.MagicMock(valid=True, status="mocked status")
         fake_playbook = {
             'name': "test playbook",
             'vars': {
