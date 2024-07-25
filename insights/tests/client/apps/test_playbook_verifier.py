@@ -360,6 +360,19 @@ class TestPlaybookSerializer:
         result = playbook_verifier.PlaybookSerializer.serialize(source)
         assert result == expected
 
+    @pytest.mark.parametrize(
+        "source,expected",
+        [
+            ("no quote", "'no quote'"),
+            ("single'quote", '''"single'quote"'''),
+            ("double\"quote", """'double"quote'"""),
+            ("both\"'quotes", r"""'both"\'quotes'""")
+        ]
+    )
+    def test_strings(self, source, expected):
+        result = playbook_verifier.PlaybookSerializer.serialize(source)
+        assert result == expected
+
 
 @SKIP_BELOW_27
 class TestSerializePlaybookSnippet:

@@ -1,7 +1,12 @@
+import logging
+
+import six
 from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.comments import (
     CommentedMap,
     CommentedSeq,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class PlaybookSerializer:
@@ -26,7 +31,33 @@ class PlaybookSerializer:
             return cls._list(value)
         if isinstance(value, int) or isinstance(value, float):
             return str(value)
+        if isinstance(value, six.string_types):
+            return cls._str(value)
+
+        logger.debug("Value type not recognized, it may misbehave: {value} ({typ})".format(
+            value=value, typ=type(value).__name__)
+        )
         return "'" + str(value) + "'"
+
+    @classmethod
+    def _str(cls, value):
+        """
+        :type value: str
+        :rtype: str
+        """
+        # no quote      'no quote'
+        # single'quote  "single'quote"
+        # double"quote  'double"quote'
+        # both"'quotes  'both"\'quotes'
+
+        quote = "'"
+        if "'" in value:
+            if '"' not in value:
+                quote = '"'
+            else:
+                value = value.replace("'", "\\'")
+
+        return quote + value + quote
 
     @classmethod
     def _dict(cls, value):
