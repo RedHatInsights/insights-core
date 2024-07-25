@@ -1,0 +1,55 @@
+# Steps required to get your system ready to use the Insights Client:
+# 1. Yum install the insights-client
+# 2. Register the insights-client
+# 3. Modify file permissions
+- name: Insights Setup
+  hosts: localhost
+  become: yes
+  vars:
+    insights_signature_exclude: /hosts,/vars/insights_signature
+    insights_signature: !!binary |
+      TFMwdExTMUNSVWRKVGlCUVIxQWdVMGxIVGtGVVZWSkZMUzB0TFMwS1ZtVnljMmx2YmpvZ1IyNTFV
+      RWNnZGpFS0NtbFJTVlpCZDFWQldUbG1jbHBqZG5jMU9FUXJhalZ3VGtGUmFrWjFaeTh2WTJJMWMw
+      MVJkWEpPZG5oM05rMTRSVXRtUW1OU1MxbzBNVzVPUzBkRlFYQUtaVTh2VkZka00ySlVZVVZQYjBK
+      bUx6RXpiVlUyUVRGWlJYQlJaM3BFTWtwMWFqVlNWWEJVT0RSdWJHazNMMWRMVDFwMmJURjRWR28w
+      YTNWRWVXSlROQXB6TUZBd1pWRnBXR1V3ZUVwQmFVeDRRVkJ2Y25KRVlsbFNWR0Y2YVRNemJucENS
+      bkIyVVVoMmEybG9hRFpVYkM5TWNITjZURXREZDNSSFZVWk5kazVxQ21wVFRGbFJXV0o1YlZWVFZ6
+      RnBXR0ZyTW5SSU9FbEtaVTU2VFRWSmJFTm5TM1UzYVRsdVVUYzFORWswV0hFeFFUbEpOMGRJVG1J
+      MU1WaFpkRTVyWm5vS1EwdzNRVk0zVHpCcGEwaGhZblJxSzJWdGIyWlhjVkJ4VVdwamRsUlZNa1Ey
+      YldaMk1YRnNXRWhITjBSaU4zTmxWRk5hUW1oS1JuUkhOVk51Um5oMU1ncHJiMFZrVjJoV1dYZFNN
+      MDlZWmtoWVRXcEdjVTEzWlROT2NuaHhaR2d6VWpRMlJ6Tk5WVk5zZGtSVlIwdzFUVzFqYWsweFNt
+      TnZVSHBWWkdnMmRFeFdDbXhWZEhKVlJuVmxkbkJNYmxad1NFczRUemhWU0VOdGVHNTRNSGhQWTFW
+      Wk5XZHlVMmhOYTAwMVlUVkhRa0ZvVVdOYU9FNXVZME5ETmpGTVNsRnFhM2NLUW1Vck1sVlhlSFZ6
+      TW1sclFsUjJWeTlDYUVsRlRFTmtORUZSYmxGdFYxRXJkVmhTVUdJd2RHTkNVMVZDVlVOTVNERmpS
+      VTgyWjFoWGNrUlRUbWxUTWdwd2VHdDNURnBKYlRSbGN6TXdVbWd3V0ZCeFZUVm1iazE0YTFaTlFX
+      VmhOVlV4V0ZwdFkwUnpNeTlaUVRCNmFFbEJaRVJET0doelMxTkVURkJJUmtKdUNtVmxNRVJXUkdk
+      SksycFVaUzlSUkhkMk0yMWpiRk0yWVUxMmFYVlJaa05uWjJkV1ZtOXFURTVJU2paNGVtNVZjMFl4
+      WVRoVVZ6YzNkMlJyYkdkcWNrc0tPVlV5V0VabFJISm9iWFpxZGxWcmFXY3JlbEJLYTBwYWNXUmtk
+      MHBVZEV4UWMwbGlOMFpFYjB0UFIwSXJiR3BSY1RkMFlURTBUR2R2YURZck1IaGxVd292VFZsb056
+      WlRUWEp4UlQwS1BXZ3JOMEVLTFMwdExTMUZUa1FnVUVkUUlGTkpSMDVCVkZWU1JTMHRMUzB0Q2c9
+      PQ==
+  tasks:
+    - name: Install latest insights-client, rhc, rhc-worker-playbook
+      ansible.builtin.package:
+        name:
+          - insights-client
+          - rhc
+          - rhc-worker-playbook
+        state: latest
+      when:
+        - ansible_facts.ansible_cmdline.ostree is undefined
+
+# With legacy_upload=True: Insights API says this machine is NOT registered.
+# With legacy_upload=False: This host is unregistered.
+    - name: Get insights-client's status
+      command: insights-client --status
+      changed_when: false
+      failed_when: false
+      register: result
+    - name: Register insights-client
+      command: insights-client --register
+      when: '"NOT registered" in result.stdout or "unregistered" in result.stdout'
+
+# insights_remove.yml stops and disables insights-client.timer, but leaves host registered.
+    - name: Schedule insights-client runs
+      command: insights-client --enable-schedule
