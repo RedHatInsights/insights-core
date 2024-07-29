@@ -782,7 +782,7 @@ class JSONParser(Parser, LegacyItemAccess):
     def parse_content(self, content):
         try:
             if isinstance(content, list):
-                self.data = json.loads('\n'.join(content))
+                self.data = json.loads("[" + ','.join(content) +  "]")
             else:
                 self.data = json.loads(content)
         except:
