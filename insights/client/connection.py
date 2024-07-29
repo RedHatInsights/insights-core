@@ -33,7 +33,6 @@ from .utilities import (determine_hostname,
                         size_in_mb)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
-from .url_cache import URLCache
 from insights import package_info
 from insights.client.collection_rules import InsightsUploadConf
 from insights.core.spec_cleaner import Cleaner
@@ -1048,46 +1047,16 @@ class InsightsConnection(object):
             return None
         return res.json()
 
-    def _cached_get(self, url):
-        '''
-            Submits a GET request to @url, caching the result, and returning
-            the response body, if any. It makes the response status code opaque
-            to the caller.
-
-            Returns: bytes
-        '''
-        cache = URLCache("/var/cache/insights/cache.dat")
-
-        headers = {}
-        item = cache.get(url)
-        if item is not None:
-            headers["If-None-Match"] = item.etag
-
-        res = self.get(url, headers=headers)
-
-        if res.status_code in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
-            if res.status_code == requests.codes.OK:
-                if "ETag" in res.headers and len(res.content) > 0:
-                    cache.set(url, res.headers["ETag"], res.content)
-                    cache.save()
-            item = cache.get(url)
-            if item is None:
-                return res.content
-            else:
-                return item.content
-        else:
-            return None
-
     def get_advisor_report(self):
         '''
             Retrieve advisor report
         '''
         url = self.inventory_url + "/hosts?insights_id=%s" % generate_machine_id()
-        content = self._cached_get(url)
-        if content is None:
+        res = self.get(url)
+        if res.status_code not in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
             return None
 
-        host_details = json.loads(content)
+        host_details = json.loads(res.content)
         if host_details["total"] < 1:
             _host_not_found()
         if host_details["total"] > 1:
@@ -1097,20 +1066,20 @@ class InsightsConnection(object):
             os.makedirs("/var/lib/insights", mode=0o755)
 
         with open("/var/lib/insights/host-details.json", mode="w+b") as f:
-            f.write(content)
+            f.write(res.content)
             logger.debug("Wrote \"/var/lib/insights/host-details.json\"")
 
         host_id = host_details["results"][0]["id"]
         url = self.base_url + "/insights/v1/system/%s/reports/" % host_id
-        content = self._cached_get(url)
-        if content is None:
+        res = self.get(url)
+        if res.status_code not in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
             return None
 
         with open("/var/lib/insights/insights-details.json", mode="w+b") as f:
-            f.write(content)
+            f.write(res.content)
             logger.debug("Wrote \"/var/lib/insights/insights-details.json\"")
 
-        return json.loads(content)
+        return json.loads(res.content)
 
     def checkin(self):
         '''
