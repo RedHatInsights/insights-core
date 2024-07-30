@@ -126,7 +126,8 @@ class ContentProvider(object):
         # Clean Spec Content when writing it down to disk and before uploading
         self._clean_content()
         with open(dst, "wb") as f:
-            f.write("\n".join(self.content).encode('utf-8'))
+            content = "\n".join(self.content)
+            f.write(content.encode('utf-8') if six.PY3 else content)
 
         self.loaded = False
 
