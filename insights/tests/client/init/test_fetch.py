@@ -47,6 +47,7 @@ def test_request_forced(insights_client):
 @patch('insights.client.InsightsClient._fetch', Mock())
 @patch('insights.client.os.path', Mock())
 @patch('insights.client.tempfile', Mock())
+@patch('insights.client.InsightsClient.delete_tmpdir', Mock())
 @patch('insights.client.InsightsClient.get_egg_url', return_value='/testvalue')
 @patch('insights.client.write_data_to_file')
 def test_egg_release_written(write_data_to_file, get_egg_url, insights_client):
@@ -60,6 +61,7 @@ def test_egg_release_written(write_data_to_file, get_egg_url, insights_client):
 @patch('insights.client.InsightsClient._fetch')
 @patch('insights.client.os.path', Mock())
 @patch('insights.client.tempfile', Mock())
+@patch('insights.client.InsightsClient.delete_tmpdir', Mock())
 @patch('insights.client.InsightsClient.get_egg_url', return_value='/testvalue')
 @patch('insights.client.write_data_to_file')
 def test_egg_release_error(write_data_to_file, get_egg_url, _fetch, insights_client):
