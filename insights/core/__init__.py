@@ -774,7 +774,6 @@ class YAMLParser(Parser, LegacyItemAccess):
             msg = "%s couldn't parse yaml." % name
             six.reraise(ParseException, ParseException(msg), tb)
 
-
 class JSONParser(Parser, LegacyItemAccess):
     """
     A parser class that reads JSON files.  Base your own parser on this.
@@ -782,7 +781,35 @@ class JSONParser(Parser, LegacyItemAccess):
     def parse_content(self, content):
         try:
             if isinstance(content, list):
-                self.data = json.loads("[" + ','.join(content) +  "]")
+                self.data = json.loads('\n'.join(content))
+            else:
+                self.data = json.loads(content)
+        except:
+            # If content is empty then raise a skip exception instead of a parse exception.
+            if not content:
+                raise SkipComponent("Empty output.")
+            else:
+                tb = sys.exc_info()[2]
+                cls = self.__class__
+                name = ".".join([cls.__module__, cls.__name__])
+                msg = "%s couldn't parse json." % name
+                six.reraise(ParseException, ParseException(msg), tb)
+        # Kept for backwards compatibility;
+        # JSONParser used to raise an exception for valid "null" JSON string
+        if self.data is None:
+            raise SkipComponent("Empty input")
+
+
+class JSONLParser(JSONParser):
+    """
+    An JSONParser with extended capabilities to process jsonl content as well as json content.
+    - Note the behavior of JSONLParser differes from that of the JSONParser only when processing multiple json items.
+    """
+    def parse_content(self, content):
+        """ Overrides the parse function of JSONParser to extend its capabilities for parsing jsonl content. """
+        try:
+            if isinstance(content, list):
+                self.data = json.loads(f"[ {','.join(content)} ]")
             else:
                 self.data = json.loads(content)
         except:
