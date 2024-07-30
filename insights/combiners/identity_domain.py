@@ -278,7 +278,7 @@ class IdentityDomain(object):
 
     def _parse_krb5(self, krb5):
         """Parse krb5.conf to detect additional generic Kerberos realms"""
-        for realm in krb5.realms:
+        for realm in sorted(krb5.realms):
             if realm in self._realms:
                 continue
 
