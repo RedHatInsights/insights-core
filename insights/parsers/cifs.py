@@ -8,13 +8,13 @@ CIFSDebugData - file ``/proc/fs/cifs/DebugData``
 ------------------------------------------------
 """
 
-from insights.core import LogFileOutput
+from insights.core import TextFileOutput
 from insights.specs import Specs
 from insights.core.plugins import parser
 
 
 @parser(Specs.cifs_debug_data)
-class CIFSDebugData(LogFileOutput):
+class CIFSDebugData(TextFileOutput):
     r"""
     Parse the ``/proc/fs/cifs/DebugData`` file.
     Filter is added to the spec.
@@ -75,5 +75,4 @@ class CIFSDebugData(LogFileOutput):
         <class 'insights.parsers.cifs.CIFSDebugData'>
         >>> cifs_dd_obj.last_scan("abc_def_line", "abc_def_fsf")
     """
-
-    time_format = None
+    pass
