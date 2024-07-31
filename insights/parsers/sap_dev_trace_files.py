@@ -10,28 +10,15 @@ SapDevDisp - Files ``/usr/sap/SID/SNAME/work/dev_disp``
 SapDevRd - Files ``/usr/sap/SID/SNAME/work/dev_rd``
 ---------------------------------------------------
 """
-from insights.core import LogFileOutput
-from insights.core.exceptions import ParseException
+from insights.core import TextFileOutput
 from insights.core.plugins import parser
 from insights.specs import Specs
 
 
-class SapDevTraceFile(LogFileOutput):
+class SapDevTraceFile(TextFileOutput):
     """
     The Base class for parsing the SAP trace files.
     """
-
-    def get_after(self, *args, **kwargs):
-        """
-        .. warning::
-            The ``get_after`` function is not supported by this Parser because
-            of the structure of the SAP trace files are totally different with
-            the log files expected by the base class``LogFileOutput``.
-
-        Raises:
-            ParseException: Always raises ParseException.
-        """
-        raise ParseException("get_after() is not supported by this Parser.")
 
     @property
     def sid(self):

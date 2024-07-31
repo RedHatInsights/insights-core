@@ -926,77 +926,63 @@ class Scannable(six.with_metaclass(ScanMeta, Parser)):
                 scanner(self, obj)
 
 
-class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
+class TextFileOutput(six.with_metaclass(ScanMeta, Parser)):
     """
-    Class for parsing log file content.
+    Class for parsing gerenal text file content.
 
-    Log file content is stored in raw format in the ``lines`` attribute.
+    File content is stored in raw format in the ``lines`` attribute.
 
-    Assume the log file content is::
+    Assume the text file content is::
 
-        Log file line one
-        Log file line two
-        Log file line three, and more
-
-    Examples:
-        >>> class MyLogger(LogFileOutput):
-        ...     pass
-        >>> MyLogger.keep_scan('get_one', 'one')
-        >>> MyLogger.keep_scan('get_three_and_more', ['three', 'more'])
-        >>> MyLogger.keep_scan('get_one_or_two', ['one', 'two'], check=any)
-        >>> MyLogger.last_scan('last_line_contains_file', 'file')
-        >>> MyLogger.keep_scan('last_2_lines_contain_file', 'file', num=2, reverse=True)
-        >>> MyLogger.keep_scan('last_3_lines_contain_line_and_t', ['line', 't'], num=3, reverse=True)
-        >>> MyLogger.token_scan('find_more', 'more')
-        >>> MyLogger.token_scan('find_four_and_more', ['four', 'more'])
-        >>> MyLogger.token_scan('find_four_or_more', ['four', 'more'], check=any)
-        >>> my_logger = MyLogger(context_wrap(contents, path='/var/log/mylog'))
-        >>> my_logger.file_path
-        '/var/log/mylog'
-        >>> my_logger.file_name
-        'mylog'
-        >>> my_logger.get('two')
-        [{'raw_message': 'Log file line two'}]
-        >>> 'line three,' in my_logger
-        True
-        >>> my_logger.get(['three', 'more'])
-        [{'raw_message': 'Log file line three, and more'}]
-        >>> my_logger.lines[0]
-        'Log file line one'
-        >>> my_logger.get_one
-        [{'raw_message': 'Log file line one'}]
-        >>> my_logger.get_three_and_more == my_logger.get(['three', 'more'])
-        True
-        >>> my_logger.last_line_contains_file
-        {'raw_message': 'Log file line three, and more'}
-        >>> len(my_logger.last_2_lines_contain_file)
-        2
-        >>> len(my_logger.last_3_lines_contain_line_and_t)  # Only 2 lines contain 'line' and 't'
-        2
-        >>> my_logger.find_more
-        True
-        >>> my_logger.find_four_and_more
-        False
-        >>> my_logger.find_four_or_more
-        True
+        Text file line one
+        Text file line two
+        Text file line three, and more
 
     Attributes:
-        lines (list): List of the lines from the log file content.
+        lines (list): List of the lines from the text file content.
+
+    Examples:
+        >>> class MyTexter(TextFileOutput):
+        >>> MyTexter.keep_scan('get_one', 'one')
+        >>> MyTexter.keep_scan('get_three_and_more', ['three', 'more'])
+        >>> MyTexter.keep_scan('get_one_or_two', ['one', 'two'], check=any)
+        >>> MyTexter.last_scan('last_line_contains_file', 'file')
+        >>> MyTexter.keep_scan('last_2_lines_contain_file', 'file', num=2, reverse=True)
+        >>> MyTexter.keep_scan('last_3_lines_contain_line_and_t', ['line', 't'], num=3, reverse=True)
+        >>> MyTexter.token_scan('find_more', 'more')
+        >>> MyTexter.token_scan('find_four_and_more', ['four', 'more'])
+        >>> MyTexter.token_scan('find_four_or_more', ['four', 'more'], check=any)
+        >>> my_texter = MyTexter(context_wrap(contents, path='/var/log/text.txt'))
+        >>> my_texter.file_path
+        '/var/log/text.txt'
+        >>> my_texter.file_name
+        'text.txt'
+        >>> my_texter.get('two')
+        [{'raw_line': 'Text file line two'}]
+        >>> 'line three,' in my_texter
+        True
+        >>> my_texter.get(['three', 'more'])
+        [{'raw_line': 'Text file line three, and more'}]
+        >>> my_texter.lines[0]
+        'Text file line one'
+        >>> my_texter.get_one
+        [{'raw_line': 'Text file line one'}]
+        >>> my_texter.get_three_and_more == my_texter.get(['three', 'more'])
+        True
+        >>> my_texter.last_line_contains_file
+        {'raw_line': 'Text file line three, and more'}
+        >>> len(my_texter.last_2_lines_contain_file)
+        2
+        >>> len(my_texter.last_3_lines_contain_line_and_t)  # Only 2 lines contain 'line' and 't'
+        2
+        >>> my_texter.find_more
+        True
+        >>> my_texter.find_four_and_more
+        False
+        >>> my_texter.find_four_or_more
+        True
 
     """
-
-    time_format = '%Y-%m-%d %H:%M:%S'
-    """
-    The timestamp format assumed for the log files.  A subclass can override
-    this for files that have a different timestamp format.  This can be:
-
-    * A string in `strptime()` format.
-    * A list of `strptime()` strings.
-    * A dictionary with each item's value being a `strptime()` string.  This
-      allows the item keys to provide some form of documentation.
-    * A None value when there is no timestamp info in the log file
-    """
-
     def parse_content(self, content):
         """
         Use all the defined scanners to search the log file, setting the
@@ -1017,9 +1003,13 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
     def _parse_line(self, line):
         """
         Parse the line into a dictionary and return it. Only wrap with
-        `raw_message` by default.
+        `raw_line` by default.
+
+        .. warning::
+            The key `raw_message` is deprecated and will be removed from
+            version `3.7.0`
         """
-        return {'raw_message': line}
+        return {'raw_line': line, 'raw_message': line}
 
     def _valid_search(self, s, check=all):
         """
@@ -1146,6 +1136,37 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
             return ret[0] if ret else dict()
 
         cls.scan(result_key, _scan)
+
+
+class LogFileOutput(TextFileOutput):
+    """
+    Class for parsing log file content.  For more details check it's super
+    class parser :py:class:`TextFileOutput`.
+
+    An extra `get_after` method is provided in this `LogFileOutput`, it
+    depends on the `time_format` static variable, to ensure the
+    `get_after` method work, the `time_format` should be pre-defined according
+    to the time format used in the log file.
+    """
+
+    time_format = '%Y-%m-%d %H:%M:%S'
+    """
+    The timestamp format assumed for the log files.  A subclass can override
+    this for files that have a different timestamp format.  This can be:
+
+    * A string in `strptime()` format.
+    * A list of `strptime()` strings.
+    * A dictionary with each item's value being a `strptime()` string.  This
+      allows the item keys to provide some form of documentation.
+    * A None value when there is no timestamp info in the log file
+    """
+
+    def _parse_line(self, line):
+        """
+        Parse the line into a dictionary and return it. Only wrap with
+        `raw_message` by default.
+        """
+        return {'raw_message': line}
 
     def get_after(self, timestamp, s=None):
         """

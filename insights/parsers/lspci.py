@@ -14,7 +14,7 @@ LsPciVmmkn - Command ``lspci -vmmkn``
 """
 import re
 
-from insights.core import CommandParser, LogFileOutput
+from insights.core import CommandParser, TextFileOutput
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
@@ -22,7 +22,7 @@ from insights.specs import Specs
 
 
 @parser(Specs.lspci)
-class LsPci(CommandParser, LogFileOutput):
+class LsPci(CommandParser, TextFileOutput):
     """
     Class to parse the PCI device information gathered from the
     ``/sbin/lspci -k`` command.
@@ -49,7 +49,7 @@ class LsPci(CommandParser, LogFileOutput):
     Examples:
         >>> type(lspci)
         <class 'insights.parsers.lspci.LsPci'>
-        >>> lspci.get("Intel Corporation")[0]['raw_message']
+        >>> lspci.get("Intel Corporation")[0]['raw_line']
         '00:00.0 Host bridge: Intel Corporation 5500 I/O Hub to ESI Port (rev 13)'
         >>> len(lspci.get("Network controller"))
         1
