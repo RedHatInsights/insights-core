@@ -22,6 +22,9 @@ from insights.core.spec_factory import (
         foreach_collect, foreach_execute,
         glob_file, simple_command, simple_file, first_file, first_of)
 
+import insights.contrib.ElementTree as ET
+
+
 here = os.path.abspath(os.path.dirname(__file__))
 
 DATA = """
@@ -140,7 +143,10 @@ class Stuff(Specs):
 
     @datasource(HostContext)
     def read_a_file(broker):
-        with open(this_file, 'r') as f:
+        tree = ET.parse(here + '/vcs.xml')
+        print('---------------------------', tree)
+        tree.write(here + '/vcs_1.xml')
+        with open(here + '/vcs_1.xml', 'r') as f:
             content = [l.rstrip("\n") for l in f]
             return DatasourceProvider(
                     content=content,
