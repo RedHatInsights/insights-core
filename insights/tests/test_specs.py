@@ -107,6 +107,7 @@ class Specs(SpecSet):
     empty_orig = RegistryPoint()
     empty_after_filter = RegistryPoint(filterable=True)
     empty_after_redact = RegistryPoint()
+    read_from_file_ds = RegistryPoint()
 
 
 class Stuff(Specs):
@@ -137,6 +138,16 @@ class Stuff(Specs):
     empty_after_filter = simple_file(test_empty_after_filter)
     empty_after_redact = simple_file(test_empty_after_redact)
 
+    @datasource(HostContext)
+    def read_a_file(broker):
+        with open(this_file, 'r') as f:
+            content = [l.rstrip("\n") for l in f]
+            return DatasourceProvider(
+                    content=content,
+                    relative_path='insights_commands/a_test_ds')
+
+    read_from_file_ds = read_a_file
+
 
 class stage(dr.ComponentType):
     def invoke(self, broker):
@@ -153,6 +164,7 @@ class stage(dr.ComponentType):
     Stuff.smpl_file_w_filter,
     Stuff.first_file_spec_w_filter,
     Stuff.first_of_spec_w_filter,
+    Stuff.read_from_file_ds,
     optional=[Stuff.no_such_cmd,
               Stuff.empty_orig,
               Stuff.empty_after_filter,
@@ -168,6 +180,7 @@ def dostuff(broker):
     assert Stuff.smpl_file_w_filter in broker
     assert Stuff.first_file_spec_w_filter in broker
     assert Stuff.first_of_spec_w_filter in broker
+    assert Stuff.read_from_file_ds in broker
 
     assert Stuff.empty_orig not in broker
     assert Stuff.empty_after_filter not in broker
@@ -378,7 +391,7 @@ def test_specs_collect(obfuscate):
                         else:
                             # "filter" works in archive result files
                             assert len(org_content) > len(new_content)
-    assert count == 14  # Number of Specs
+    assert count == 15  # Number of Specs
 
     arch.delete_archive_dir()
 

@@ -127,7 +127,7 @@ class ContentProvider(object):
         self._clean_content()
         with open(dst, "wb") as f:
             content = "\n".join(self.content)
-            f.write(content.encode('utf-8') if six.PY3 else content)
+            f.write(content.encode('utf-8'))
 
         self.loaded = False
 
