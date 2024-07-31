@@ -188,7 +188,6 @@ class FileProvider(ContentProvider):
         if isinstance(self.ctx, HostContext):
             # 2.1 No Filters for 'filterable=True' Specs
             if (self.ds and filters.ENABLED and
-                    isinstance(self.ctx, HostContext) and
                     any(s.filterable for s in dr.get_registry_points(self.ds)) and
                     not filters.get_filters(self.ds)):
                 raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
