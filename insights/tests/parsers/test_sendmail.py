@@ -26,7 +26,7 @@ def test_sendmail_mc():
     sendmail_mc_obj = SendmailMC(context_wrap(SENDMAIL_MC_CONTENT))
 
     assert sendmail_mc_obj.confTO_CONNECT_line
-    assert sendmail_mc_obj.confTO_CONNECT_line.get('raw_message') == "define(`confTO_CONNECT', `1m')dnl"
+    assert sendmail_mc_obj.confTO_CONNECT_line.get('raw_line') == "define(`confTO_CONNECT', `1m')dnl"
 
 
 def test_doc():

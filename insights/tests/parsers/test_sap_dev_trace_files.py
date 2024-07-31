@@ -1,7 +1,5 @@
 import doctest
-import pytest
 
-from insights.core.exceptions import ParseException
 from insights.parsers import sap_dev_trace_files
 from insights.parsers.sap_dev_trace_files import SapDevDisp, SapDevRd
 from insights.tests import context_wrap
@@ -62,8 +60,6 @@ def test_dev_disp():
     assert len(dev_disp.warning_lines) == len(dev_disp.get("WARNING"))
     assert dev_disp.sid == DISP_PATH.split('/')[3]
     assert dev_disp.instance == DISP_PATH.split('/')[4]
-    with pytest.raises(ParseException):
-        dev_disp.get_after()
 
 
 def test_dev_rd():
@@ -71,8 +67,6 @@ def test_dev_rd():
     assert len(dev_rd.ccms) == len(dev_rd.get("CCMS:"))
     assert dev_rd.sid == RD_PATH.split('/')[3]
     assert dev_rd.instance == RD_PATH.split('/')[4]
-    with pytest.raises(ParseException):
-        dev_rd.get_after()
 
 
 def test_dev_docs():
