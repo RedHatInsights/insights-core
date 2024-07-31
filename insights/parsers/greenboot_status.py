@@ -29,6 +29,7 @@ class GreenbootStatus(LogFileOutput):
     .. note::
         Please refer to the super-class :class:`insights.core.LogFileOutput`
     """
+    time_format = "MMM dd HH:mm:ss"
 
 
 GreenbootStatus.token_scan("green", _green)
