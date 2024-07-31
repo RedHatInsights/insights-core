@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 # flake8: noqa: E402
 import os
+import collections
 import pkgutil
 import sys
 
@@ -319,41 +320,57 @@ class TestExcludeDynamicElements:
         assert excinfo.value.message == expected
 
 
+@SKIP_BELOW_27
 class TestPlaybookSerializer:
+
     def test_list(self):
         source = ["value1", "value2"]
-        result = playbook_verifier.PlaybookSerializer._list(source)
+        result = playbook_verifier.PlaybookSerializer.serialize(source)
         expected = "['value1', 'value2']"
         assert result == expected
 
-    def test_dict_single(self):
+    def test_dict_single_key(self):
         source = {"key": "value"}
-        result = playbook_verifier.PlaybookSerializer._dict(source)
+        result = playbook_verifier.PlaybookSerializer.serialize(source)
         expected = "ordereddict([('key', 'value')])"
         assert result == expected
 
-    def test_dict_list(self):
+    def test_dict_value_list(self):
         source = {"key": ["value1", "value2"]}
-        result = playbook_verifier.PlaybookSerializer._dict(source)
+        result = playbook_verifier.PlaybookSerializer.serialize(source)
         expected = "ordereddict([('key', ['value1', 'value2'])])"
         assert result == expected
 
-    def test_dict_mixed(self):
-        source = {"key": "key", "value": ["value1", "value2"]}
-        result = playbook_verifier.PlaybookSerializer._dict(source)
+    # Python 2.7 dictionaries do not keep insertion order, we have to use OrderedDicts.
+
+    def test_dict_mixed_value_types(self):
+        source = collections.OrderedDict([("key", "key"), ("value", ["value1", "value2"])])
+        result = playbook_verifier.PlaybookSerializer.serialize(source)
         expected = "ordereddict([('key', 'key'), ('value', ['value1', 'value2'])])"
         assert result == expected
 
-    def test_dict_multiple(self):
-        source = {"key": "key", "value": "value"}
-        result = playbook_verifier.PlaybookSerializer._dict(source)
+    def test_dict_multiple_keys(self):
+        source = collections.OrderedDict([("key", "key"), ("value", "value")])
+        result = playbook_verifier.PlaybookSerializer.serialize(source)
         expected = "ordereddict([('key', 'key'), ('value', 'value')])"
         assert result == expected
 
-    def test_numbers(self):
-        source = {"integer": 37, "float": 17.93233901}
-        result = playbook_verifier.PlaybookSerializer._dict(source)
-        expected = "ordereddict([('integer', 37), ('float', 17.93233901)])"
+    @pytest.mark.parametrize("source,expected", [(37, "37"), (17.93233901, "17.93233901")])
+    def test_numbers(self, source, expected):
+        result = playbook_verifier.PlaybookSerializer.serialize(source)
+        assert result == expected
+
+    @pytest.mark.parametrize(
+        "source,expected",
+        [
+            ("no quote", "'no quote'"),
+            ("single'quote", '''"single'quote"'''),
+            ("double\"quote", """'double"quote'"""),
+            ("both\"'quotes", r"""'both"\'quotes'""")
+        ]
+    )
+    def test_strings(self, source, expected):
+        result = playbook_verifier.PlaybookSerializer.serialize(source)
         assert result == expected
 
 
