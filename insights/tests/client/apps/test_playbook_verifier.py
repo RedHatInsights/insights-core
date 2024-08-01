@@ -18,7 +18,7 @@ from pytest import raises
 if sys.version_info > (2, 6):
     from insights.client.constants import InsightsConstants as constants
     from insights.client.apps.ansible import playbook_verifier
-    from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError, get_playbook_snippet_revocation_list, normalize_snippet, load_playbook_yaml  # noqa
+    from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError, get_play_revocation_list, normalize_play_py2, load_playbook_yaml  # noqa
 
 
 SKIP_BELOW_27 = pytest.mark.skipif(sys.version_info < (2, 7), reason="Unsupported; needs Python 2.7+ or 3.6+")
@@ -27,27 +27,27 @@ SKIP_ON_3 = pytest.mark.skipif(sys.version_info[0] > 2, reason="Only required in
 
 @SKIP_BELOW_27
 class TestErrors:
-    @patch("insights.client.apps.ansible.playbook_verifier.get_playbook_snippet_revocation_list", return_value=[])
+    @patch("insights.client.apps.ansible.playbook_verifier.get_play_revocation_list", return_value=[])
     def test_vars_not_found_error(self, mock_method):
-        vars_error = "The playbook snippet doesn't have a section 'vars'."
+        vars_error = "Play doesn't have a section 'vars'."
         fake_playbook = {'name': "test playbook"}
 
         with raises(PlaybookVerificationError) as error:
             verify(fake_playbook)
         assert vars_error in str(error.value)
 
-    @patch("insights.client.apps.ansible.playbook_verifier.get_playbook_snippet_revocation_list", return_value=[])
+    @patch("insights.client.apps.ansible.playbook_verifier.get_play_revocation_list", return_value=[])
     def test_empty_vars_error(self, mock_method):
-        sig_error = "The playbook snippet doesn't have a section 'vars'."
+        sig_error = "Play doesn't have a section 'vars'."
         fake_playbook = {'name': "test playbook", 'vars': None}
 
         with raises(PlaybookVerificationError) as error:
             verify(fake_playbook)
         assert sig_error in str(error.value)
 
-    @patch("insights.client.apps.ansible.playbook_verifier.get_playbook_snippet_revocation_list", return_value=[])
+    @patch("insights.client.apps.ansible.playbook_verifier.get_play_revocation_list", return_value=[])
     def test_signature_not_found_error(self, mock_method):
-        sig_error = "The playbook snippet doesn't contain the Insights signature."
+        sig_error = "Play doesn't contain the Insights signature."
         fake_playbook = {'name': "test playbook", 'vars': {}}
 
         with raises(PlaybookVerificationError) as error:
@@ -108,10 +108,10 @@ class TestErrors:
                 except OSError:
                     pass
 
-    @patch('insights.client.apps.ansible.playbook_verifier.verify_playbook_snippet', return_value=([], []))
-    @patch('insights.client.apps.ansible.playbook_verifier.get_playbook_snippet_revocation_list', return_value=[])
+    @patch('insights.client.apps.ansible.playbook_verifier.verify_play', return_value=([], []))
+    @patch('insights.client.apps.ansible.playbook_verifier.get_play_revocation_list', return_value=[])
     def test_playbook_verification_error(self, call_1, call_2):
-        key_error = "Template 'test playbook' has invalid signature"
+        key_error = "Play 'test playbook' has invalid signature"
         fake_playbook = {
             'name': "test playbook",
             'vars': {
@@ -150,29 +150,29 @@ class TestErrors:
                 except OSError:
                     pass
 
-    # get_playbook_snippet_revocation_list can't load list
+    # get_play_revocation_list can't load list
     @patch('insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.YAML.load', side_effect=Exception())
     def test_revocation_list_not_found(self, mock_method):
-        load_error = "Could not load snippet revocation list."
+        load_error = "Could not load play revocation list."
 
         with raises(PlaybookVerificationError) as error:
-            get_playbook_snippet_revocation_list(pkgutil.get_data('insights', 'revoked_playbooks.yaml'))
+            get_play_revocation_list(pkgutil.get_data('insights', 'revoked_playbooks.yaml'))
 
         assert load_error in str(error.value)
 
     # revocation list signature invalid
-    @patch('insights.client.apps.ansible.playbook_verifier.verify_playbook_snippet', return_value=(None, 0xdeadbeef))
+    @patch('insights.client.apps.ansible.playbook_verifier.verify_play', return_value=(None, 0xdeadbeef))
     def test_revocation_list_signature_invalid(self, mock_method):
         load_error = "List of revocation signatures is invalid."
 
         with raises(PlaybookVerificationError) as error:
-            get_playbook_snippet_revocation_list(pkgutil.get_data('insights', 'revoked_playbooks.yaml'))
+            get_play_revocation_list(pkgutil.get_data('insights', 'revoked_playbooks.yaml'))
 
         assert load_error in str(error.value)
 
     # revocation list empty
     @patch('insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.YAML.load', return_value=[{}])
-    @patch('insights.client.apps.ansible.playbook_verifier.verify_playbook_snippet', return_value=(True, 0xdeadbeef))
+    @patch('insights.client.apps.ansible.playbook_verifier.verify_play', return_value=(True, 0xdeadbeef))
     def test_revocation_list_empty(self, call_1, call_2):
         fake_playbook = {
             'name': "test playbook",
@@ -188,9 +188,9 @@ class TestErrors:
     # playbook on revoked list
     @patch('insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.YAML.load',
            return_value=[{'revoked_playbooks': [{'name': 'banned book', 'hash': 'deadbeef'}]}])
-    @patch('insights.client.apps.ansible.playbook_verifier.verify_playbook_snippet', return_value=(True, bytearray.fromhex(u'deadbeef')))
+    @patch('insights.client.apps.ansible.playbook_verifier.verify_play', return_value=(True, bytearray.fromhex(u'deadbeef')))
     def test_revoked_playbook(self, call_1, call_2):
-        revoked_error = "Template 'test playbook' is on the revoked list."
+        revoked_error = "Play 'test playbook' is on the revoked list."
         fake_playbook = {
             'name': "test playbook",
             'vars': {
@@ -224,7 +224,7 @@ def test_normalize_snippet():
         }
     }
 
-    assert normalize_snippet(snippet) == want
+    assert normalize_play_py2(snippet) == want
 
 
 @SKIP_BELOW_27
@@ -267,7 +267,7 @@ class TestExcludeDynamicElements:
     def test_missing_vars(self):
         source = {}
         expected = (
-            "The playbook snippet does not have the key 'vars/insights_signature_exclude', "
+            "Play does not have the key 'vars/insights_signature_exclude', "
             "dynamic exclusion cannot be performed."
         )
         with pytest.raises(PlaybookVerificationError) as excinfo:
@@ -277,7 +277,7 @@ class TestExcludeDynamicElements:
     def test_missing_vars_exclude(self):
         source = {"vars": {"insights_signature": b""}}
         expected = (
-            "The playbook snippet does not have the key 'vars/insights_signature_exclude', "
+            "Play does not have the key 'vars/insights_signature_exclude', "
             "dynamic exclusion cannot be performed."
         )
         with pytest.raises(PlaybookVerificationError) as excinfo:
@@ -391,7 +391,7 @@ class TestSerializePlaybookSnippet:
             b"])"
         )
         playbooks = playbook_verifier.load_playbook_yaml(raw)  # type: list[dict]
-        result = playbook_verifier.serialize_playbook_snippet(playbooks[0])  # type: bytes
+        result = playbook_verifier.serialize_play(playbooks[0])  # type: bytes
         assert result == expected
 
     def test_small(self):
@@ -417,7 +417,7 @@ class TestSerializePlaybookSnippet:
         )
 
         playbooks = playbook_verifier.load_playbook_yaml(raw_playbook)  # type: list[dict]
-        result = playbook_verifier.serialize_playbook_snippet(playbooks[0])  # type: bytes
+        result = playbook_verifier.serialize_play(playbooks[0])  # type: bytes
         assert result == expected
 
     def test_real(self):
@@ -428,17 +428,17 @@ class TestSerializePlaybookSnippet:
         with open("{}/playbooks/insights_remove.serialized.bin".format(parent), "rb") as f:
             expected = f.read()  # type: bytes
 
-        result = playbook_verifier.serialize_playbook_snippet(playbook)  # type: bytes
+        result = playbook_verifier.serialize_play(playbook)  # type: bytes
         assert result == expected
 
 
 @SKIP_BELOW_27
 class TestGetPlaybookSnippetRevocationList:
     @mock.patch(
-        "insights.client.apps.ansible.playbook_verifier.verify_playbook_snippet",
+        "insights.client.apps.ansible.playbook_verifier.verify_play",
         return_value=(True, b"snippet hash"),
     )
-    def test_ok(self, mocked_verify_playbook_snippet):
+    def test_ok(self, mocked_verify_play):
         revoked_playbooks = (
             b"---\n"
             b"- name: revocation list\n"
@@ -453,10 +453,10 @@ class TestGetPlaybookSnippetRevocationList:
             b"    - name: b.yml hash8b\n"
             b"      hash: hash64b\n"
         )
-        revocation_list = playbook_verifier.get_playbook_snippet_revocation_list(revoked_playbooks)
+        revocation_list = playbook_verifier.get_play_revocation_list(revoked_playbooks)
         expected = [{"name": "a.yml hash8a", "hash": "hash64a"}, {"name": "b.yml hash8b", "hash": "hash64b"}]
 
-        assert mocked_verify_playbook_snippet.call_count == 1
+        assert mocked_verify_play.call_count == 1
         assert revocation_list == expected
 
     def test_malformed(self):
@@ -468,14 +468,14 @@ class TestGetPlaybookSnippetRevocationList:
             b"text that should not be here"
         )
         with pytest.raises(playbook_verifier.PlaybookVerificationError) as excinfo:
-            playbook_verifier.get_playbook_snippet_revocation_list(revoked_playbooks)
+            playbook_verifier.get_play_revocation_list(revoked_playbooks)
         assert "Could not load" in excinfo.value.message
 
     @mock.patch(
-        "insights.client.apps.ansible.playbook_verifier.verify_playbook_snippet",
+        "insights.client.apps.ansible.playbook_verifier.verify_play",
         return_value=(False, b"snippet hash"),
     )
-    def test_invalid_signature(self, mocked_verify_playbook_snippet):
+    def test_invalid_signature(self, mocked_verify_play):
         revoked_playbooks = (
             b"---\n"
             b"- name: foo\n"
@@ -483,9 +483,9 @@ class TestGetPlaybookSnippetRevocationList:
             b"    key: value\n"
         )
         with pytest.raises(playbook_verifier.PlaybookVerificationError) as excinfo:
-            playbook_verifier.get_playbook_snippet_revocation_list(revoked_playbooks)
+            playbook_verifier.get_play_revocation_list(revoked_playbooks)
         assert "invalid" in excinfo.value.message
-        assert mocked_verify_playbook_snippet.call_count == 1
+        assert mocked_verify_play.call_count == 1
 
 
 @SKIP_BELOW_27
@@ -498,5 +498,5 @@ class TestHashPlaybookSnippets:
         with open("{}/playbooks/insights_remove.digest.bin".format(parent), "rb") as f:
             expected = f.read()  # type: bytes
 
-        result = playbook_verifier.hash_playbook_snippet(serialized_playbook)  # type: bytes
+        result = playbook_verifier.hash_play(serialized_playbook)  # type: bytes
         assert result == expected
