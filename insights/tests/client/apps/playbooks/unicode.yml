@@ -1,0 +1,44 @@
+---
+- name: The legend says one day Unicode will just work
+  hosts: localhost
+  become: yes
+  vars:
+    insights_signature_exclude: /hosts,/vars/insights_signature
+    insights_signature: !!binary |
+      TFMwdExTMUNSVWRKVGlCUVIxQWdVMGxIVGtGVVZWSkZMUzB0TFMwS1ZtVnljMmx2YmpvZ1IyNTFV
+      RWNnZGpFS0NtbFJTV05DUVVGQ1EwRkJSMEpSU20xdGJpODFRVUZ2U2tWTmRuYzFPRVFyYWpWd1Rr
+      bFVkMUF2TTFkdWFGWjNPVmRoZDFoSVMwTXhTR0pEVkhSRGNsQUtPR1JPY2xveFZuUmlla2xXUkd3
+      NFQwTkZZVVJQYzNOSU4xbDFUMDVxU1haMGVGUlNOVXBxTHpKYVkyZFVhMnRRYzJwRkwwYzRaRlZq
+      Tm1kUE1GbDViUXBpUTJreFprSm9XVkZIVW1sdVZUbHpiME5yWlU5UlVYQnFZVVZSUVRoME1XZHli
+      VEI1TVRKTGVXcERkVGQ2WmxSR1EyMXFiSEpDVEVjM2RsbEdkMlZRQ2xneFp6VkpPSHB1TkN0Mk0w
+      WTNhbXhFWVZseVdTOWhhM1EzTTBVeVNEVk1aVllyTWxoblQzTk5WblZMUXpGd1JGVm9NV3RqYkRk
+      V00yVjNRV3RtWlhZS1ZWbG5Ta3BHYzJ0MmFVNXlSVGRrV0hSRFRYY3liRkpwYkVselNIa3hNRFpP
+      S3l0VWJYQTROMVpTTTNWU09XWlBNRFpRU1ZsRFRUVnhORXhHYzFCVFZBcDZRMFJESzFST1NESXJV
+      akF6WjJ0WGVFaFRUMlZtVjBscVRqUnNWakJzUkd0dFNEaEdaM1ZGZFdSbFYzWkthMVpaZG5OMVJH
+      NUtVbE5sVDBWYVUzSkxDa3hrYUVJMlFWYzFlbHBKV25Wb1FXeDJWRTE2YjFoMlJ6TXhRbHBpTkho
+      VlVqRjFZWEZaVjNkaU4yVkhkaXRzTlhoSmFVUnNORzV5ZHpWUlR6SjZlbGdLVmpKVmRXdE1RM1Z5
+      TUd4UVptSTVWblFyWjI1VmJYbzBhbVpCYVU1UVlUQm9SRzAxWldWU1luWlJhSGs0V0hsSFZEQXJR
+      a0phYldoelVXSTJSRkZNUXdwRWJGZHpXbFZJU3pRdkwzTlRVMjFCVEM5V1FuQnBTR0ZpU1VkRlVV
+      dFVOR2RMWlhSaWJYcFFhRXB0TjNWbE1uWXJORlJqVlRCMmIzQmFMMUZOU25wM0NuaFFaVzlGVWpC
+      c0x6UklaVWhUU0VjcmRtMXJkakZUU0ZWdmFXcEVWUzlETjNGUGN6bGtNVXM0V1Zsc2RsUkJjbXhV
+      U1ZseE4yMUZUMkphTHpsSlpFNEthREExYzBOWk5sRnRSM05yZEV0TVNrTTJWVGhFWm05R1VHeFJi
+      MGhIUWpOWE9ITXhVVVZqV0RObmVITmhiVWgxYW5sRlZUbG1kbUpLVURKR1oyOXhWQXBIVW5GMGNs
+      aHZZblJIYm5aU1dtUTNVbXB1VXdvOVpYVXhZZ290TFMwdExVVk9SQ0JRUjFBZ1UwbEhUa0ZVVlZK
+      RkxTMHRMUzBL
+  tasks:
+    - name: Not all languages are as boring as English /s
+      ansible.builtin.find:
+        paths:
+          # I'm mostly just copying stuff off Wikipedia
+          - /tříštivá/hrušeň
+          - /ご飯が熱い。/彼は変だ。
+          - /电脑/汉堡包
+          - /אני פה/הוא אכל את העוגה/
+          - /تَكَاتَبْنَا/كيف حالك؟/
+
+    - name: Linux supports emojis in paths. Now you know.
+      ansible.builtin.find:
+        paths:
+          - /🍏/👨🏼‍🚀/
+          - /usr/bin/🙀
+          - /var/lib/ඞ/

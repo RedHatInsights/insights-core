@@ -126,7 +126,7 @@ class TestErrors:
 
     @patch('insights.client.apps.ansible.playbook_verifier.contrib.gnupg.GPG.verify_data')
     def test_playbook_verification_success(self, mock_method):
-        mock_method.return_value = True
+        mock_method.return_value = mock.MagicMock(valid=True, status="mocked status")
         fake_playbook = {
             'name': "test playbook",
             'vars': {
@@ -420,12 +420,18 @@ class TestSerializePlaybookSnippet:
         result = playbook_verifier.serialize_play(playbooks[0])  # type: bytes
         assert result == expected
 
-    def test_real(self):
+    @pytest.mark.parametrize("filename", ("insights_setup", "insights_remove", "document-from-hell", "unicode"))
+    def test_real(self, filename):
+        if filename == "unicode" and sys.version_info < (3, 0):
+            raise pytest.skip("Playbooks containing unicode are not supported in Python 2 systems")
+        if filename == "unicode" and sys.version_info >= (3, 12):
+            raise pytest.xfail("Known RFE in Unicode serialization.")
+
         parent = os.path.dirname(__file__)  # type: str
-        with open("{}/playbooks/insights_remove.yml".format(parent), "r") as f:
+        with open("{parent}/playbooks/{filename}.yml".format(parent=parent, filename=filename), "r") as f:
             playbooks = load_playbook_yaml(f.read())  # type: list[dict]
         playbook = playbook_verifier.exclude_dynamic_elements(playbooks[0])  # type: dict
-        with open("{}/playbooks/insights_remove.serialized.bin".format(parent), "rb") as f:
+        with open("{parent}/playbooks/{filename}.serialized.bin".format(parent=parent, filename=filename), "rb") as f:
             expected = f.read()  # type: bytes
 
         result = playbook_verifier.serialize_play(playbook)  # type: bytes
@@ -490,12 +496,13 @@ class TestGetPlaybookSnippetRevocationList:
 
 @SKIP_BELOW_27
 class TestHashPlaybookSnippets:
-    def test_real(self):
+    @pytest.mark.parametrize("filename", ("insights_remove", "document-from-hell", "unicode"))
+    def test_real(self, filename):
         parent = os.path.dirname(__file__)  # type: str
-        with open("{}/playbooks/insights_remove.serialized.bin".format(parent), "rb") as f:
+        with open("{parent}/playbooks/{filename}.serialized.bin".format(parent=parent, filename=filename), "rb") as f:
             serialized_playbook = f.read()  # type: bytes
 
-        with open("{}/playbooks/insights_remove.digest.bin".format(parent), "rb") as f:
+        with open("{parent}/playbooks/{filename}.digest.bin".format(parent=parent, filename=filename), "rb") as f:
             expected = f.read()  # type: bytes
 
         result = playbook_verifier.hash_play(serialized_playbook)  # type: bytes
