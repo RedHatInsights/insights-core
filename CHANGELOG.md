@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.7) (2024-08-01)
+
+- test: Add more playbooks to verifier's test suite ([PR 4170](https://github.com/RedHatInsights/insights-core/pull/4170))
+- feat: Iterate over all plays in a playbook ([PR 4169](https://github.com/RedHatInsights/insights-core/pull/4169))
+- fix: 'filterable' specs were skipped incorrectly when running plugins ([PR 4176](https://github.com/RedHatInsights/insights-core/pull/4176))
+- fix: Properly serialize playbook strings containing quote marks ([PR 4175](https://github.com/RedHatInsights/insights-core/pull/4175))
+- fix: do not encode(utf-8) when writing spec content to disk in py2 ([PR 4179](https://github.com/RedHatInsights/insights-core/pull/4179))
+- feat: introduce a new TextFileOutput base parser ([PR 4148](https://github.com/RedHatInsights/insights-core/pull/4148))
+- fix: Prevent test teardown issues of fast_fetch ([PR 4172](https://github.com/RedHatInsights/insights-core/pull/4172))
+- feat: drop URLCache and associated code ([PR 4173](https://github.com/RedHatInsights/insights-core/pull/4173))
+
 # [insights-core-3.4.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.6) (2024-07-25)
 
 - fix: Remove --force-reregister command ([PR 4162](https://github.com/RedHatInsights/insights-core/pull/4162))

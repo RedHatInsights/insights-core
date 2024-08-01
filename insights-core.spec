@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.6
+Version:        3.4.7
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 01 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.7-1
+- test: Add more playbooks to verifier's test suite (#4170) (mhorky@redhat.com)
+- feat: Iterate over all plays in a playbook (#4169) (mhorky@redhat.com)
+- fix: 'filterable' specs were skipped incorrectly when running plugins (#4176)
+  (xiangceliu@redhat.com)
+- fix: Properly serialize playbook strings containing quote marks (#4175)
+  (mhorky@redhat.com)
+- fix: do not encode(utf-8) when writing spec content to disk in py2 (#4179)
+  (xiangceliu@redhat.com)
+- feat: introduce a new TextFileOutput base parser (#4148)
+  (xiangceliu@redhat.com)
+- fix: Prevent test teardown issues of fast_fetch (#4172) (mhorky@redhat.com)
+- feat: drop URLCache and associated code (#4173) (ptoscano@redhat.com)
+
 * Thu Jul 25 2024 Lizhong Chen <lichen@redhat.com> 3.4.6-1
 - fix: remove --force-reregister command (#4162) (stomsa@redhat.com)
 - feat: update specs for parser crictl_logs (#4171)
