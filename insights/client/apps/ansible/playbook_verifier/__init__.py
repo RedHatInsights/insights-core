@@ -32,6 +32,7 @@ PLAYBOOK_DYNAMIC_LABELS = ['hosts', 'vars']
 PUBLIC_KEY_PATH = pkgutil.get_data(insights.client.apps.ansible.__name__, 'playbook_verifier/public.gpg')
 
 logger = logging.getLogger(__name__)
+logging.getLogger('insights.client.apps.ansible.playbook_verifier.contrib').setLevel(logging.INFO)
 
 
 class PlaybookVerificationError(Exception):
@@ -214,6 +215,9 @@ def execute_verification(play, encoded_signature):
     :returns: Result of the GPG verification and a hash of the play.
     :rtype: Tuple[..., bytes]
     """
+    play_name = play.get("name", "unnamed")  # type: str
+    logger.debug("Play '{play_name}' is being validated".format(play_name=play_name))
+
     gpg = gnupg.GPG(gnupghome=constants.insights_core_lib_dir)
     serialized_play = serialize_play(play)
     play_hash = hash_play(serialized_play)
@@ -229,6 +233,9 @@ def execute_verification(play, encoded_signature):
     result = gpg.verify_data(fn, play_hash)
     os.unlink(fn)
 
+    logger.debug("Play '{play_name}' validation result: valid={valid}, status={status}".format(
+        play_name=play_name, valid=result.valid, status=result.status
+    ))
     return result, play_hash
 
 
@@ -304,6 +311,7 @@ def verify(play):
 
     revocation_list_file_content = pkgutil.get_data('insights', 'revoked_playbooks.yaml')  # type: bytes
     revocation_list = get_play_revocation_list(revocation_list_file_content)  # type: list[dict[str, str]]
+    logger.debug("List of revoked playbooks was loaded.")
 
     verified, play_hash = verify_play(play)  # type: ..., str
 

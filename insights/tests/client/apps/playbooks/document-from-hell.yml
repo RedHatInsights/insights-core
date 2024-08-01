@@ -1,0 +1,61 @@
+# Content of this document was inspired by the great article
+# "The yaml document from hell" by Ruud van Asseldonk. Give it a read at
+# https://ruudvanasseldonk.com/2023/01/11/the-yaml-document-from-hell
+---
+- name: The Document From Hell
+  hosts: localhost
+  vars:
+    insights_signature_exclude: /hosts,/vars/insights_signature
+    insights_signature: !!binary |
+      TFMwdExTMUNSVWRKVGlCUVIxQWdVMGxIVGtGVVZWSkZMUzB0TFMwS1ZtVnljMmx2YmpvZ1IyNTFV
+      RWNnZGpFS0NtbFJTV05DUVVGQ1EwRkJSMEpSU20xdGNIbEVRVUZ2U2tWTmRuYzFPRVFyYWpWd1Rs
+      SkVkMUF2YW04dmNuSm1VVGRQTjJKeFYwOXBWa0V6ZUVaT2F6WUtTblJVUkhwc2FISnFWRmt4V1VV
+      M1JISm5jR0pLV0VGNWRuaERiSEl4WVRaTFNVSlVVMUpRYVVkMWMwVmFjREIwUlhoYWNqbENjUzh5
+      TWxCSFpFOUxSUXBOU0hkdVRIWjBNbEJwV25WSGIwbGhZVFY2UTI1R1NEUk9aREpPYm5wUGJXUnJW
+      VUkzWW14d1NFcENVRmx5TkZjcmFITkJSSE5ET1c0eFNqUjJhSE5UQ2xOUk9GZDJaMUZaYUdGUWVt
+      dzJjV3QwTVdFelkwNVdMMEZNY1Zsd1ptcEtjVGQwV0dkYVlsTTVMM3BNV1VoUmJqSmlkemRRZFdW
+      RlpESnZTUzl4UTJNS1VYbERiRFpMYzB3dmJYRlBSR2hOUjA5d1RGQllaek5VYUVGNVZrVkZUVk5z
+      ZEd0bmRIQkVabkZ1UW5nelZHaENiMGxPUkdReFNtOUVXSEJZYVVKb2R3cGhiM0pFYVZWT1JVZEpP
+      RE13TW1GaVVsSjBlV05EY2pScWEzVXZaVzVLUW5wUmR6SkZiVUl2ZW5aV1JEZHZVV1Z1VTJVelVX
+      cEhVRnBJWjJac1RURjRDbXR1V0dwcWRIYzFSRWxzWVVJMmRHbFZWSEZpYmxkV1ppdE1WRGRrWjBS
+      NFZ6RTVaaThyZFdabVpYWktkVWt6ZUdVeWMxaFJjVlZvUTBFeWFHVmpZa2dLV0ZseVlrNDFTMlpP
+      U1VSb1JqQjNkemxDZDBncmFqbFJOWEJRWlZCM1pEZFdOME52Y2tSMlpVWkhPRUpsUVhwTFduY3pN
+      alJ6YUVObFRWUjNSRVoyWmdwaVVFdEpjVEpLUzI0NU4yVlRZVTFPWkU5cWVqZGtiamhoYUUxM1Qy
+      cFlURWRCVFVob2NtMHZVM0ZzVFM5R1owMUVhVTFvZFM5V1ZXaHhVMk5qZVVaVkNscFNVbk15WVRR
+      NU5UZExWR2xTYTBkYWJqWkJiVVl3YUdKSFRWcE5WVXROZWtaWlVXNWpaMnByUjJKSVNVVk1OVTlp
+      Tm1sTWRVUlJUMUJhV0hSU1dHMEtibGhKYXpGS2EzbExkMVk0Y0VWbWJrY3ZRWEpOVGxrcmFWWnNU
+      WFpKZUVoNVRUWkxPR0oyY1ZOWWJUWTJhRzAyYkZadFRWY3lXRlU0ZG1sRFJIUXphZ3AwVmtsMGJH
+      OXpUM2N5YVV4cE5uQTVkRlJyVGdvOVowZzRPUW90TFMwdExVVk9SQ0JRUjFBZ1UwbEhUa0ZVVlZK
+      RkxTMHRMUzBL
+
+    ports: # '22:22' may be 1342 in base-60
+      - 22:22
+      - 80:80
+      - 443:443
+    regions: # 'no' may parse as boolean
+      - is
+      - no
+      - se
+    flush_cache: # 'on' may parse as boolean
+      on: [push, memory_pressure]
+    allow_postgres_versions: # second two may be floats instead of strings
+      - 9.5.25
+      - 9.6.24
+      - 10.23
+      - 12.13
+    ways_to_say_true: # https://yaml.org/type/bool.html
+      - y
+      - Y
+      - yes
+      - Yes
+      - YES
+      - true
+      - True
+      - TRUE
+      - on
+      - On
+      - ON
+
+  tasks:
+    - ansible.builtin.debug:
+        message: What a mess.
