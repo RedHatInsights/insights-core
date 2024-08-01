@@ -1,8 +1,10 @@
+import os
 from insights.core import dr
 from insights.core import Parser
 from insights.core.exceptions import ParseException, ContentException
 from insights.core.plugins import datasource, parser, rule, make_info
-from insights.core.spec_factory import DatasourceProvider, RegistryPoint, SpecSet
+from insights.core.spec_factory import (
+        DatasourceProvider, RegistryPoint, SpecSet, TextFileProvider)
 
 from insights.tests import InputData
 from insights.tests import run_input_data
@@ -16,11 +18,18 @@ class Specs(SpecSet):
     the_ce_data = RegistryPoint()
     the_ex_data = RegistryPoint()
     the_ds_data = RegistryPoint()
+    the_ft_data = RegistryPoint(filterable=True)
 
 
 @datasource()
 def SomeData(broker):
     return DatasourceProvider("invalid data", "dummy")
+
+
+@datasource()
+def FilterData(broker):
+    return TextFileProvider(os.path.abspath(__file__).rstrip("c"),
+            ds=Specs.the_ft_data)
 
 
 class TestSpecs(Specs):
@@ -32,6 +41,7 @@ class TestSpecs(Specs):
     def the_ex_data(broker):
         raise Exception(EXPECTED_MSG_2)
     the_ds_data = SomeData
+    the_ft_data = FilterData
 
 
 @parser(Specs.the_ds_data)
@@ -40,8 +50,14 @@ class SomeParser(Parser):
         raise ParseException(EXPECTED_MSG_3)
 
 
+@parser(Specs.the_ft_data)
+class FilterSpecParser(Parser):
+    def parse_content(self, content):
+        return content
+
+
 @rule(Specs.the_ce_data, Specs.the_ex_data)
-def report(dt):
+def report(ce, ex):
     return make_info('INFO_1')
 
 #
@@ -81,3 +97,14 @@ def test_broker_parse_exception():
     assert type(tb) is str
     assert "Traceback" in tb
     assert EXPECTED_MSG_3 in tb
+
+
+def test_no_filter_exception():
+    # No "add_filter" to Specs.the_ft_data or FilterSpecParser
+    broker = run_input_data(FilterSpecParser, InputData())
+    # Parser can be run, when no 'add_filter" for 'filterable' specs
+    assert Specs.the_ft_data in broker
+    assert 'def test_no_filter_exception():' in broker[Specs.the_ft_data].content
+    # and NO "no filter exception"
+    exs = broker.exceptions[Specs.the_ft_data]
+    assert len(exs) == 0
