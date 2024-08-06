@@ -65,6 +65,31 @@ VARIANT_ID=server
 """.strip()
 
 
+OS_RELEASE_RHEL_AI = """
+NAME="Red Hat Enterprise Linux"
+VERSION="9.20240630.0.4 (Plow)"
+ID="rhel"
+ID_LIKE="fedora"
+VERSION_ID="9.4"
+PLATFORM_ID="platform:el9"
+PRETTY_NAME="Red Hat Enterprise Linux 9.20240630.0.4 (Plow)"
+ANSI_COLOR="0;31"
+LOGO="fedora-logo-icon"
+CPE_NAME="cpe:/o:redhat:enterprise_linux:9::baseos"
+HOME_URL="https://www.redhat.com/"
+DOCUMENTATION_URL="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9"
+BUG_REPORT_URL="https://bugzilla.redhat.com/"
+REDHAT_BUGZILLA_PRODUCT="Red Hat Enterprise Linux 9"
+REDHAT_BUGZILLA_PRODUCT_VERSION=9.4
+REDHAT_SUPPORT_PRODUCT="Red Hat Enterprise Linux"
+REDHAT_SUPPORT_PRODUCT_VERSION="9.4"
+OSTREE_VERSION='9.20240630.0'
+VARIANT_ID=rhel_ai
+VARIANT="RHEL AI"
+BUILD_ID='v1.1.3'
+""".strip()
+
+
 def test_rhel():
     rls = OsRelease(context_wrap(REHL_OS_RELEASE))
     assert rls.get("VARIANT_ID") is None
@@ -83,6 +108,13 @@ def test_fedora24():
     assert rls.get("VARIANT_ID") == "server"
     assert rls.get("VERSION") == "24 (Server Edition)"
     assert rls.get("PRETTY_NAME") == "Fedora 24 (Server Edition)"
+
+
+def test_rhel_ai():
+    rls = OsRelease(context_wrap(OS_RELEASE_RHEL_AI))
+    assert rls.get("VARIANT_ID") == "rhel_ai"
+    assert rls.get("VARIANT") == "RHEL AI"
+    assert rls.get("BUILD_ID") == "v1.1.3"
 
 
 def test_empty():
