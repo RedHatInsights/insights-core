@@ -55,7 +55,7 @@ class OsRelease(Parser, dict):
         for line in get_active_lines(content):
             k, _, v = line.partition("=")
             if _ == "=" and k:
-                data[k] = v.strip('"') if v else None
+                data[k] = v.strip('"\'') if v else None
         if not data:
             raise SkipComponent
         self.update(data)
