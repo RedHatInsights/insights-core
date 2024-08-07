@@ -374,17 +374,6 @@ class InsightsClient(object):
             shutil.rmtree(self.tmpdir, True)
 
     @_net
-    def update_rules(self):
-        """
-            returns (dict): new client rules
-        """
-        if self.config.offline or not self.config.auto_update:
-            logger.debug("Bypassing rule update due to config "
-                "running in offline mode or auto updating turned off.")
-        else:
-            return client.update_rules(self.config, self.connection)
-
-    @_net
     def collect(self):
         # return collection results
         tar_file = client.collect(self.config)
@@ -650,7 +639,6 @@ class InsightsClient(object):
         logger.info("For a full list of insights-core datasources, please refer to https://insights-core.readthedocs.io/en/latest/specs_catalog.html")
         logger.info("The items in General Datasources can be selected for omission by adding them to the 'components' section of file-redaction.yaml")
         logger.info("When specifying these items in file-redaction.yaml, they must be prefixed with 'insights.specs.default.DefaultSpecs.', i.e. 'insights.specs.default.DefaultSpecs.httpd_V'")
-        logger.info("This information applies only to Insights Core collection. To use Core collection, set core_collect=True in %s", self.config.conf)
 
     @_net
     def checkin(self):
