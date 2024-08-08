@@ -2,6 +2,7 @@
 from insights.parsr.iniparser import parse_doc
 from insights.parsr.query import last
 from six import PY2
+from copy import deepcopy
 
 
 DATA = """
@@ -86,3 +87,10 @@ def test_unicode():
     else:
         assert res["workspace"]["datacenter"][last].value == "1-???"
         assert res["workspace"]["folder"][last].value == '"/1-???/xxxxxxxxx"'
+
+
+def test_deepcopy():
+    res = parse_doc(DATA, None)
+
+    # This should not throw an exception
+    deepcopy(res)
