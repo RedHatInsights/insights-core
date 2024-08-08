@@ -49,7 +49,7 @@ from insights.core.exceptions import SkipComponent
 from insights.core.plugins import combiner
 from insights.combiners.ipa import IPA
 from insights.parsers.samba import SambaConfigs
-from insights.parsers.sssd_conf import SSSD_Config
+from insights.combiners.sssd_conf import SSSDConfAll
 from insights.combiners.krb5 import AllKrb5Conf
 
 
@@ -124,7 +124,7 @@ Attributes:
 """
 
 
-@combiner(optional=[SSSD_Config, AllKrb5Conf, IPA, SambaConfigs])
+@combiner(optional=[SSSDConfAll, AllKrb5Conf, IPA, SambaConfigs])
 class IdentityDomain(object):
     """
     A combiner for identity domains.
@@ -186,7 +186,7 @@ class IdentityDomain(object):
         Supports id_providers "ad", "ipa", and "ldap".
         """
         id_auth_providers = set(["ldap", "krb5", "ipa", "ad", "proxy"])
-        for name in sssd.domains:
+        for name in sssd.enabled_domains:
             if "/" in name:
                 # Ignore trusted domain (subdomain) configuration. Subdomain
                 # settings are configured as
@@ -207,7 +207,7 @@ class IdentityDomain(object):
                 dtype = DomainTypes.AD_SSSD
                 srv = ServerSoftware.AD
                 domain = conf.get("ad_domain", name)
-                realm = conf.get("krb5_domain", domain.upper())
+                realm = conf.get("krb5_realm", domain.upper())
             elif id_provider == "ipa":
                 if ipa is None or not ipa.is_client:
                     # unsupported configuration
@@ -215,7 +215,7 @@ class IdentityDomain(object):
                 dtype = DomainTypes.IPA
                 srv = ServerSoftware.IPA
                 domain = conf.get("ipa_domain", name)
-                realm = conf.get("krb5_domain", domain.upper())
+                realm = conf.get("krb5_realm", domain.upper())
                 ipa_mode = IPAMode.IPA_SERVER if ipa.is_server else IPAMode.IPA_CLIENT
             elif id_provider == "ldap":
                 if auth_provider == "ldap":
@@ -278,7 +278,10 @@ class IdentityDomain(object):
 
     def _parse_krb5(self, krb5):
         """Parse krb5.conf to detect additional generic Kerberos realms"""
-        for realm in krb5.realms:
+        for realm in sorted(krb5.realms):
+            if realm in self._realms:
+                continue
+
             self._add_domaininfo(
                 realm.lower(),
                 DomainTypes.KRB5,

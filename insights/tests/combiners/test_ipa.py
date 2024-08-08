@@ -1,122 +1,144 @@
+import textwrap
+
+import pytest
+
 from insights.combiners.ipa import IPA
+from insights.combiners.sssd_conf import SSSDConfAll
+from insights.core.exceptions import SkipComponent
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.ipa_conf import IPAConfig
-from insights.parsers.redhat_release import RedhatRelease
-from insights.parsers.sssd_conf import SSSD_Config
-
+from insights.parsers.sssd_conf import SSSDConf
 from insights.tests import context_wrap
 
-REDHAT_RELEASE_RHEL = """
-Red Hat Enterprise Linux release 9.2 (Plow)
-"""
 
-IPA_RPMS_CLIENT = """
-ipa-client-4.10.1-6.el9.x86_64
-"""
+@pytest.mark.parametrize("sssd_domain", ["ipa.test", "IPA"])
+def test_ipa__server(sssd_domain):
+    ipa_conf = textwrap.dedent(
+        """
+        [global]
+        host = server.ipa.test
+        basedn = dc=ipahcc,dc=test
+        realm = ipa.test
+        domain = ipa.test
+        xmlrpc_uri = https://server.ipa.test/ipa/xml
+        ldap_uri = ldapi://%2Frun%2Fslapd-IPAHCC-TEST.socket
+        mode = production
+        enable_ra = True
+        ra_plugin = dogtag
+        dogtag_version = 10
+        """
+    ).strip()
 
-IPA_RPMS_SERVER = """
-ipa-client-4.10.1-6.el9.x86_64
-ipa-server-4.10.1-6.el9.x86_64
-"""
+    sssd_conf = textwrap.dedent(
+        """
+        [sssd]
+        domains = {domain}
 
-SSSD_CONF_SERVER = """
-[domain/ipa.test]
-id_provider = ipa
-ipa_server_mode = True
-ipa_server = server.ipa.test
-ipa_domain = ipa.test
-ipa_hostname = server.ipa.test
-auth_provider = ipa
-chpass_provider = ipa
-access_provider = ipa
-cache_credentials = True
-ldap_tls_cacert = /etc/ipa/ca.crt
-krb5_store_password_if_offline = True
-sudo_provider = ipa
-autofs_provider = ipa
-subdomains_provider = ipa
-session_provider = ipa
-hostid_provider = ipa
+        [domain/{domain}]
+        id_provider = ipa
+        ipa_server_mode = True
+        """.format(
+            domain=sssd_domain
+        )
+    ).strip()
 
-[sssd]
-domains = ipa.test
-"""
-
-IPA_DEFAULT_CONF_SERVER = """
-[global]
-host = server.ipa.test
-basedn = dc=ipahcc,dc=test
-realm = ipa.test
-domain = ipa.test
-xmlrpc_uri = https://server.ipa.test/ipa/xml
-ldap_uri = ldapi://%2Frun%2Fslapd-IPAHCC-TEST.socket
-mode = production
-enable_ra = True
-ra_plugin = dogtag
-dogtag_version = 10
-"""
-
-SSSD_CONF_CLIENT = """
-[domain/ipa.test]
-id_provider = ipa
-ipa_server = _srv_, server.ipa.test
-ipa_domain = ipa.test
-ipa_hostname = client91.ipa.test
-auth_provider = ipa
-chpass_provider = ipa
-access_provider = ipa
-cache_credentials = True
-ldap_tls_cacert = /etc/ipa/ca.crt
-krb5_store_password_if_offline = True
-
-[sssd]
-domains = ipa.test
-"""
-
-IPA_DEFAULT_CONF_CLIENT = """
-[global]
-basedn = dc=ipahcc,dc=test
-realm = ipa.test
-domain = ipa.test
-server = server.ipa.test
-host = client91.ipa.test
-xmlrpc_uri = https://server.ipa.test/ipa/xml
-enable_ra = True
-"""
-
-
-def test_ipa():
-    redhat_release = RedhatRelease(context_wrap(REDHAT_RELEASE_RHEL))
-
-    rpms_client = InstalledRpms(context_wrap(IPA_RPMS_CLIENT))
-    sssd_conf_client = SSSD_Config(context_wrap(SSSD_CONF_CLIENT))
-    ipa_conf_client = IPAConfig(context_wrap(IPA_DEFAULT_CONF_CLIENT))
-
-    rpms_server = InstalledRpms(context_wrap(IPA_RPMS_SERVER))
-    sssd_conf_server = SSSD_Config(context_wrap(SSSD_CONF_SERVER))
-    ipa_conf_server = IPAConfig(context_wrap(IPA_DEFAULT_CONF_SERVER))
-
-    ipa_client = IPA(
-        ipa_conf_client, sssd_conf_client, rpms_client, redhat_release
+    rpms = InstalledRpms(context_wrap("sssd-2.9.1-1.el9.x86_64"))
+    ipa_conf = IPAConfig(context_wrap(ipa_conf))
+    sssd_conf = SSSDConfAll(
+        SSSDConf(context_wrap(sssd_conf, "/etc/sssd/sssd.conf")), []
     )
-    assert ipa_client.sssd_conf.domains == [ipa_client.ipa_conf.domain]
-    assert ipa_client._is_client is None
-    assert ipa_client._is_server is None
-    assert ipa_client.is_client
-    assert ipa_client._is_client
-    assert not ipa_client.is_server
-    assert not ipa_client._is_server
 
-    ipa_server = IPA(
-        ipa_conf_server, sssd_conf_server, rpms_server, redhat_release
-    )
-    assert ipa_server.sssd_conf.domains == [ipa_server.ipa_conf.domain]
-    assert ipa_server.is_client
-    assert ipa_server.is_server
+    ipa = IPA(ipa_conf, sssd_conf, rpms)
 
-    ipa_mixed = IPA(
-        ipa_conf_client, sssd_conf_server, rpms_client, redhat_release
+    assert ipa.sssd_ipa_domains == [sssd_domain]
+    assert ipa.is_server
+    assert ipa.is_client
+
+
+@pytest.mark.parametrize("sssd_domain", ["ipa.test", "IPA"])
+@pytest.mark.parametrize(
+    "explicit_server_mode", [True, False], ids=["server_mode_set", "server_mode_unset"]
+)
+@pytest.mark.parametrize(
+    "multidomain", [True, False], ids=["multidomain", "singledomain"]
+)
+def test_ipa__client(sssd_domain, explicit_server_mode, multidomain):
+    ipa_conf = textwrap.dedent(
+        """
+        [global]
+        basedn = dc=ipahcc,dc=test
+        realm = ipa.test
+        domain = ipa.test
+        server = server.ipa.test
+        host = client91.ipa.test
+        xmlrpc_uri = https://server.ipa.test/ipa/xml
+        enable_ra = True
+        """
+    ).strip()
+
+    sssd_conf = textwrap.dedent(
+        """
+        [sssd]
+        domains = {domain}
+
+        [domain/{domain}]
+        id_provider = ipa
+        """.format(
+            domain=sssd_domain
+        )
+    ).strip()
+
+    if explicit_server_mode:
+        sssd_conf += "\nipa_server_mode = false"
+
+    if multidomain:
+        sssd_conf += "\n\n[domain/ad]\nid_provider=ad"
+
+    rpms = InstalledRpms(context_wrap("sssd-2.9.1-1.el9.x86_64"))
+    ipa_conf = IPAConfig(context_wrap(ipa_conf))
+    sssd_conf = SSSDConfAll(
+        SSSDConf(context_wrap(sssd_conf, "/etc/sssd/sssd.conf")), []
     )
-    assert ipa_mixed.sssd_conf.domains == [ipa_mixed.ipa_conf.domain]
-    assert ipa_mixed.is_client
-    assert not ipa_mixed.is_server
+
+    ipa = IPA(ipa_conf, sssd_conf, rpms)
+
+    assert ipa.sssd_ipa_domains == [sssd_domain]
+    assert not ipa.is_server
+    assert ipa.is_client
+
+
+@pytest.mark.parametrize("sssd_domain", ["ipa.test", "IPA"])
+def test_ipa__raises_skip(sssd_domain):
+    ipa_conf = textwrap.dedent(
+        """
+        [global]
+        basedn = dc=ipahcc,dc=test
+        realm = ipa.test
+        domain = ipa.test
+        server = server.ipa.test
+        host = client91.ipa.test
+        xmlrpc_uri = https://server.ipa.test/ipa/xml
+        enable_ra = True
+        """
+    ).strip()
+
+    sssd_conf = textwrap.dedent(
+        """
+        [sssd]
+        domains = {domain}
+
+        [domain/{domain}]
+        id_provider = ipa
+        """.format(
+            domain=sssd_domain
+        )
+    ).strip()
+
+    rpms = InstalledRpms(context_wrap("other-package-2.9.1-1.el9.x86_64"))
+    ipa_conf = IPAConfig(context_wrap(ipa_conf))
+    sssd_conf = SSSDConfAll(
+        SSSDConf(context_wrap(sssd_conf, "/etc/sssd/sssd.conf")), []
+    )
+
+    with pytest.raises(SkipComponent):
+        IPA(ipa_conf, sssd_conf, rpms)
