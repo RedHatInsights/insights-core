@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.8](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.8) (2024-08-08)
+
+- Fix and test IdM related parsers and combiners ([PR 4178](https://github.com/RedHatInsights/insights-core/pull/4178))
+- fix: insights-client failed, when --group was used ([PR 4070](https://github.com/RedHatInsights/insights-core/pull/4070))
+- fix: single quoted string parse of os_release ([PR 4184](https://github.com/RedHatInsights/insights-core/pull/4184))
+- fix: Run subshells with LC_ALL=C.UTF-8 ([PR 4182](https://github.com/RedHatInsights/insights-core/pull/4182))
+
 # [insights-core-3.4.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.7) (2024-08-01)
 
 - test: Add more playbooks to verifier's test suite ([PR 4170](https://github.com/RedHatInsights/insights-core/pull/4170))

@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.7
+Version:        3.4.8
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,13 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 08 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.8-1
+- Fix and test IdM related parsers and combiners (#4178) (pbrezina@redhat.com)
+- fix: insights-client failed, when --group was used (#4070)
+  (jhnidek@redhat.com)
+- fix: single quoted string parse of os_release (#4184) (xiaoxwan@redhat.com)
+- fix: Run subshells with LC_ALL=C.UTF-8 (#4182) (mhorky@redhat.com)
+
 * Thu Aug 01 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.7-1
 - test: Add more playbooks to verifier's test suite (#4170) (mhorky@redhat.com)
 - feat: Iterate over all plays in a playbook (#4169) (mhorky@redhat.com)
