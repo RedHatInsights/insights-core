@@ -227,7 +227,8 @@ def _legacy_handle_registration(config, pconn):
         else:
             # not yet registered
             logger.info('This machine has not yet been registered. '
-                        'Use --register to register this machine.')
+                        'Use --register to register this machine.'
+                        '\n# insights-client --register')
         return False
 
 
