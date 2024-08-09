@@ -8,7 +8,7 @@ except Exception:
 from pytest import raises
 from tempfile import NamedTemporaryFile
 
-from insights.core.exceptions import SkipComponent, ContentException
+from insights.core.exceptions import SkipComponent
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.os_release import OsRelease
 from insights.parsers.redhat_release import RedhatRelease
@@ -84,6 +84,7 @@ def test_package_check():
         assert "openscap" in msg
 
 
+@patch("insights.core.spec_factory.log")
 @patch("insights.specs.datasources.compliance.InsightsConnection")
 @patch("insights.specs.datasources.compliance.ComplianceClient.get_initial_profiles",
         return_value=[{'attributes': {'ref_id': 'foo', 'tailored': False}}])
@@ -91,16 +92,17 @@ def test_package_check():
         return_value=[])
 @patch("insights.specs.datasources.compliance.ComplianceClient.run_scan",
         return_value=None)
+@patch("insights.specs.datasources.compliance.ComplianceClient.find_scap_policy",
+        return_value='test.xml')
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz', obfuscate=False)
-def test_compliance_ds(config, run_scan, pm_os, init_p, conn):
+def test_compliance_ds(config, _xml, run_scan, pm_os, init_p, conn, log):
     conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
     broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
     ret = compliance(broker)
     assert len(ret) == 1
     assert ret[0].relative_path == 'oscap_results-foo.xml'
-    with raises(ContentException) as ce:
-        ret[0].content
-        assert "Empty content" in str(ce)
+    assert ret[0].content == []
+    log.debug.assert_called_once_with('File is empty (after filtering): %s', '/' + ret[0].relative_path)
 
 
 @patch("insights.specs.datasources.compliance.compliance_ds.NamedTemporaryFile")
@@ -111,8 +113,10 @@ def test_compliance_ds(config, run_scan, pm_os, init_p, conn):
         return_value=[])
 @patch("insights.specs.datasources.compliance.ComplianceClient.run_scan",
         return_value=None)
+@patch("insights.specs.datasources.compliance.ComplianceClient.find_scap_policy",
+        return_value='test.xml')
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz', obfuscate=True)
-def test_compliance_ds_with_obfuscation(config, run_scan, pm_os, init_p, conn, ntmpf):
+def test_compliance_ds_with_obfuscation(config, _xml, run_scan, pm_os, init_p, conn, ntmpf):
     tmp_file = NamedTemporaryFile(mode='w', delete=False)
     tmp_file.write("""
 <xml>
@@ -181,8 +185,10 @@ def test_compliance_ds_with_obfuscation(config, run_scan, pm_os, init_p, conn, n
         return_value=[])
 @patch("insights.specs.datasources.compliance.ComplianceClient.run_scan",
         return_value=None)
+@patch("insights.specs.datasources.compliance.ComplianceClient.find_scap_policy",
+        return_value='test.xml')
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz', obfuscate=True, obfuscate_hostname=True)
-def test_compliance_ds_with_hostname_obfuscation(config, run_scan, pm_os, init_p, conn, ntmpf):
+def test_compliance_ds_with_hostname_obfuscation(config, _xml, run_scan, pm_os, init_p, conn, ntmpf):
     tmp_file = NamedTemporaryFile(mode='w', delete=False)
     tmp_file.write("""
 <xml>
@@ -266,8 +272,10 @@ def test_compliance_ds_with_hostname_obfuscation(config, run_scan, pm_os, init_p
         return_value=[])
 @patch("insights.specs.datasources.compliance.ComplianceClient.run_scan",
         return_value=None)
+@patch("insights.specs.datasources.compliance.ComplianceClient.find_scap_policy",
+        return_value='test.xml')
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz')
-def test_compliance_ds_with_results_repaired(config, run_scan, pm_os, init_p, conn, ntmpf):
+def test_compliance_ds_with_results_repaired(config, _xml, run_scan, pm_os, init_p, conn, ntmpf):
     tmp_file = NamedTemporaryFile(mode='w', delete=False)
     tmp_file.write("""
 <xml>
