@@ -95,7 +95,7 @@ class ContentProvider(object):
                     obf_funcs=self.cleaner.get_obfuscate_functions(self.relative_path, no_obf),
                     no_redact=no_red)
                 if len(self._content) == 0:
-                    log.debug("Skipping %s due to empty after cleaning", "/" + self.relative_path)
+                    log.debug("Skipping %s due to empty after cleaning", self.path)
                     raise ContentException("Empty after cleaning: %s" % self.path)
             else:
                 log.debug("Skipping cleaning %s", "/" + self.relative_path)
@@ -117,7 +117,10 @@ class ContentProvider(object):
                 raise
 
         if len(self._content) == 0:
-            raise ContentException("Empty (after filtering): %s" % self.path)
+            log.debug("File is empty (after filtering): %s", self.path)
+            if isinstance(self.ctx, HostContext):
+                # Do not collect empty spec
+                raise ContentException("Empty (after filtering): %s" % self.path)
 
         return self._content
 
