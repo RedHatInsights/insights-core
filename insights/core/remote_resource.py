@@ -44,10 +44,11 @@ class RemoteResource(object):
         Returns:
             response: (HttpResponse): Response object from requests.get api request
         """
-
-        certificate_path = certificate_path if certificate_path else False
-        return self.session.get(url, params=params, headers=headers, verify=certificate_path, auth=auth,
-                            timeout=self.timeout)
+        if certificate_path:
+            return self.session.get(url, params=params, headers=headers,
+                    verify=certificate_path, auth=auth, timeout=self.timeout)
+        return self.session.get(url, params=params, headers=headers,
+                auth=auth, timeout=self.timeout)
 
 
 class CachedRemoteResource(RemoteResource):
