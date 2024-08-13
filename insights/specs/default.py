@@ -112,7 +112,7 @@ class DefaultSpecs(Specs):
     auditctl_status = simple_command("/sbin/auditctl -s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     audispd_conf = simple_file("/etc/audisp/audispd.conf")
-    ausearch_insights_client = simple_command("/usr/sbin/ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts recent -su insights_client", deps=[IsGtOrRhel86], keep_rc=True)
+    ausearch_insights_client = simple_command("/usr/sbin/ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts recent -su insights_client --input-logs", deps=[IsGtOrRhel86], keep_rc=True)
     aws_instance_id_doc = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
     aws_instance_id_pkcs7 = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
     aws_public_hostnames = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/meta-data/public-hostname --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
