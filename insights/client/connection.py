@@ -413,7 +413,7 @@ class InsightsConnection(object):
                 logger.info("Connectivity tests completed with some errors")
                 print("See %s for more details." % self.config.logging_file)
                 rc = 1
-        except requests.ConnectionError as exc:
+        except REQUEST_FAILED_EXCEPTIONS as exc:
             print(exc)
             logger.error('Connectivity test failed! '
                          'Please check your network configuration')
