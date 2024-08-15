@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.8
+Version:        3.4.9
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,13 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 15 2024 Lizhong Chen <lichen@redhat.com> 3.4.9-1
+- fix: Snyk CWE-295 issue in remote_resource module (#4188)
+  (xiangceliu@redhat.com)
+- fix: ausearch spec takes audit.log as input instead of stdin (#4186)
+  (xiangceliu@redhat.com)
+- chore: Skip empty spec only when collecting (#4183) (xiangceliu@redhat.com)
+
 * Thu Aug 08 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.8-1
 - Fix and test IdM related parsers and combiners (#4178) (pbrezina@redhat.com)
 - fix: insights-client failed, when --group was used (#4070)

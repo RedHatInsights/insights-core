@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.9](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.9) (2024-08-15)
+
+- fix: Snyk CWE-295 issue in remote_resource module ([PR 4188](https://github.com/RedHatInsights/insights-core/pull/4188))
+- fix: ausearch spec takes audit.log as input instead of stdin ([PR 4186](https://github.com/RedHatInsights/insights-core/pull/4186))
+- chore: Skip empty spec only when collecting ([PR 4183](https://github.com/RedHatInsights/insights-core/pull/4183))
+
 # [insights-core-3.4.8](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.8) (2024-08-08)
 
 - Fix and test IdM related parsers and combiners ([PR 4178](https://github.com/RedHatInsights/insights-core/pull/4178))
