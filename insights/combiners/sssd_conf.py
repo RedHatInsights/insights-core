@@ -8,20 +8,34 @@ configuration snippets from /etc/sssd/conf.d.
 
 from copy import deepcopy
 
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import combiner
 from insights.parsers.sssd_conf import SSSDConf, SSSDConfd
 
 
-@combiner(SSSDConf, SSSDConfd)
+@combiner(optional=[SSSDConf, SSSDConfd])
 class SSSDConfAll(object):
     """
     Provides access to complete SSSD configuration: /etc/sssd/sssd.conf with
     merged configuration snippets from /etc/sssd/conf.d.
     """
-    def __init__(self, sssd_conf, sssd_conf_d):
-        self.config = deepcopy(sssd_conf)
 
-        for parser in sorted(sssd_conf_d, key=lambda x: x.file_name):
+    def __init__(self, sssd_conf=None, sssd_conf_d=None):
+        if sssd_conf is None and not sssd_conf_d:
+            raise SkipComponent("SSSD is not configured")
+
+        conf = sssd_conf
+        conf_d = []
+
+        if sssd_conf_d is not None:
+            conf_d = sorted(sssd_conf_d, key=lambda x: x.file_name)
+
+        if conf is None:
+            conf = conf_d.pop(0)
+
+        self.config = deepcopy(conf)
+
+        for parser in conf_d:
             if parser.file_name.startswith("."):
                 continue
 

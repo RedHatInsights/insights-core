@@ -1,6 +1,8 @@
 import textwrap
+import pytest
 
 from insights.combiners.sssd_conf import SSSDConfAll
+from insights.core.exceptions import SkipComponent
 from insights.parsers.sssd_conf import SSSDConf
 from insights.tests import context_wrap
 
@@ -185,6 +187,91 @@ def test_sssd_conf_all__conf_d():
     }
     assert sssd_conf_all.domain_config("c") == {"enabled": "true"}
     assert "domain/d" not in sssd_conf_all.config
+
+
+def test_sssd_conf_all__missing_conf_d():
+    conf = textwrap.dedent(
+        """
+        [sssd]
+        domains = a, b
+
+        [domain/a]
+        id_provider = ldap
+
+        [domain/b]
+        id_provider = ipa
+        """
+    ).strip()
+
+    sssd_conf = SSSDConf(context_wrap(conf, path="/etc/sssd/sssd.conf"))
+    sssd_conf_all = SSSDConfAll(sssd_conf, None)
+
+    assert sssd_conf_all.enabled_domains == ["a", "b"]
+    assert sssd_conf_all.domain_config("a") == {"id_provider": "ldap"}
+    assert sssd_conf_all.domain_config("b") == {"id_provider": "ipa"}
+
+
+def test_sssd_conf_all__missing_conf__one_snippet():
+    # set main config
+    conf_d_1 = textwrap.dedent(
+        """
+        [sssd]
+        domains = a, b
+
+        [domain/a]
+        id_provider = ldap
+
+        [domain/b]
+        id_provider = ipa
+        """
+    ).strip()
+
+    sssd_conf_d_1 = SSSDConf(context_wrap(conf_d_1, path="/etc/sssd/conf.d/1.conf"))
+    sssd_conf_all = SSSDConfAll(None, [sssd_conf_d_1])
+
+    assert sssd_conf_all.enabled_domains == ["a", "b"]
+    assert sssd_conf_all.domain_config("a") == {"id_provider": "ldap"}
+    assert sssd_conf_all.domain_config("b") == {"id_provider": "ipa"}
+
+
+def test_sssd_conf_all__missing_conf__two_snippets():
+    # set main config
+    conf_d_1 = textwrap.dedent(
+        """
+        [sssd]
+        domains = a, b
+
+        [domain/a]
+        id_provider = ldap
+
+        [domain/b]
+        id_provider = ipa
+        """
+    ).strip()
+
+    # overwrite domain a config
+    conf_d_2 = textwrap.dedent(
+        """
+        [domain/a]
+        id_provider = ipa
+        """
+    ).strip()
+
+    sssd_conf_d_1 = SSSDConf(context_wrap(conf_d_1, path="/etc/sssd/conf.d/1.conf"))
+    sssd_conf_d_2 = SSSDConf(context_wrap(conf_d_2, path="/etc/sssd/conf.d/2.conf"))
+    sssd_conf_all = SSSDConfAll(None, [sssd_conf_d_1, sssd_conf_d_2])
+
+    assert sssd_conf_all.enabled_domains == ["a", "b"]
+    assert sssd_conf_all.domain_config("a") == {"id_provider": "ipa"}
+    assert sssd_conf_all.domain_config("b") == {"id_provider": "ipa"}
+
+
+def test_sssd_conf_all__missing_all():
+    with pytest.raises(SkipComponent):
+        SSSDConfAll(None, None)
+
+    with pytest.raises(SkipComponent):
+        SSSDConfAll(None, [])
 
 
 def test_sssd_conf_all__domain_getters():
