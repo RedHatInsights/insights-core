@@ -403,6 +403,8 @@ class Specs(SpecSet):
     ls_var_spool_postfix_maildrop = RegistryPoint()
     ls_var_tmp = RegistryPoint(filterable=True)
     ls_var_www = RegistryPoint()
+    lsattr = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    lsattr_files_or_dirs = RegistryPoint(filterable=True)
     lsblk = RegistryPoint()
     lsblk_pairs = RegistryPoint()
     lscpu = RegistryPoint(no_obfuscate=['hostname', 'ip'])
