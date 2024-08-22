@@ -622,6 +622,7 @@ class Specs(SpecSet):
     readlink_e_etc_mtab = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     readlink_e_shift_cert_client = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     readlink_e_shift_cert_server = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    rear_local_conf = RegistryPoint(filterable=True)
     recvq_socket_buffer = RegistryPoint()
     redhat_release = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     repquota_agnpuv = RegistryPoint(no_obfuscate=['hostname', 'ip'])
