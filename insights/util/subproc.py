@@ -10,6 +10,11 @@ from subprocess import Popen, PIPE, STDOUT
 from insights.core.exceptions import CalledProcessError
 from insights.util import which
 
+try:
+    from subprocess import DEVNULL
+except:
+    DEVNULL = open(os.devnull, 'w')
+
 log = logging.getLogger(__name__)
 
 
@@ -57,9 +62,9 @@ class Pipeline(object):
     def _build_pipes(self, out_stream=PIPE):
         log.debug("Executing: %s" % str(self.cmds))
         if len(self.cmds) == 1:
-            return Popen(self.cmds[0], bufsize=self.bufsize, stderr=STDOUT, stdout=out_stream, env=self.env)
+            return Popen(self.cmds[0], bufsize=self.bufsize, stdin=DEVNULL, stderr=STDOUT, stdout=out_stream, env=self.env)
 
-        stdout = Popen(self.cmds[0], bufsize=self.bufsize, stderr=STDOUT, stdout=PIPE, env=self.env).stdout
+        stdout = Popen(self.cmds[0], bufsize=self.bufsize, stdin=DEVNULL, stderr=STDOUT, stdout=PIPE, env=self.env).stdout
         last = len(self.cmds) - 2
         for i, arg in enumerate(self.cmds[1:]):
             if i < last:
