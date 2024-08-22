@@ -18,7 +18,7 @@ from insights.core.filters import add_filter
 from insights.core.plugins import datasource
 from insights.core.spec_cleaner import Cleaner
 from insights.core.spec_factory import (
-        DatasourceProvider, RegistryPoint, SpecSet,
+        DatasourceProvider, RegistryPoint, SpecSet, command_with_args,
         foreach_collect, foreach_execute,
         glob_file, simple_command, simple_file, first_file, first_of)
 
@@ -94,8 +94,11 @@ def max_globs():
 
 class Specs(SpecSet):
     many_glob = RegistryPoint(multi_output=True, no_redact=True)
+    many_glob_filter = RegistryPoint(multi_output=True, no_redact=True, filterable=True)
     many_foreach_exe = RegistryPoint(multi_output=True)
+    many_foreach_exe_filter = RegistryPoint(multi_output=True, filterable=True)
     many_foreach_clc = RegistryPoint(multi_output=True)
+    many_foreach_clc_filter = RegistryPoint(multi_output=True, filterable=True)
     smpl_cmd = RegistryPoint()
     smpl_cmd_w_filter = RegistryPoint(filterable=True)
     smpl_file = RegistryPoint()
@@ -107,18 +110,32 @@ class Specs(SpecSet):
     empty_orig = RegistryPoint()
     empty_after_filter = RegistryPoint(filterable=True)
     empty_after_redact = RegistryPoint()
+    cmd_w_args_filter = RegistryPoint(filterable=True)
 
 
 class Stuff(Specs):
-    many_glob = glob_file(here + "/test*.py")
+    many_glob = glob_file(here + "/test_a*.py")
+    many_glob_filter = glob_file(here + "/test_b*.py")
 
     @datasource(HostContext)
-    def files(broker):
+    def files0(broker):
         """ Return a list of directories from the spec filter """
         return [here + "/__init__.py", here + "/integration.py"]
 
-    many_foreach_exe = foreach_execute(files, 'ls %s')
-    many_foreach_clc = foreach_collect(files, "%s", no_redact=True)
+    @datasource(HostContext)
+    def files1(broker):
+        """ Return a list of directories from the spec filter """
+        return [here + "/test_test.py", here + "/test_taglang.py"]
+
+    @datasource(HostContext)
+    def files2(broker):
+        """ Return a list of directories from the spec filter """
+        return ' '.join([here + "/test_test.py", here + "/test_taglang.py"])
+
+    many_foreach_exe = foreach_execute(files0, 'ls -t %s')
+    many_foreach_exe_filter = foreach_execute(files1, 'ls -l %s')
+    many_foreach_clc = foreach_collect(files0, "%s", no_redact=True)
+    many_foreach_clc_filter = foreach_collect(files1, "%s", no_redact=True)
     smpl_cmd = simple_command("/usr/bin/uptime")
     smpl_cmd_w_filter = simple_command("echo -n ' hello 1'")
     smpl_file = simple_file(here + "/helpers.py")
@@ -136,6 +153,7 @@ class Stuff(Specs):
     empty_orig = simple_file(test_empty_file)
     empty_after_filter = simple_file(test_empty_after_filter)
     empty_after_redact = simple_file(test_empty_after_redact)
+    cmd_w_args_filter = command_with_args('ls -lt %s', files2)
 
 
 class stage(dr.ComponentType):
@@ -145,14 +163,18 @@ class stage(dr.ComponentType):
 
 @stage(
     Stuff.many_glob,
+    Stuff.many_glob_filter,
     Stuff.many_foreach_exe,
+    Stuff.many_foreach_exe_filter,
     Stuff.many_foreach_clc,
+    Stuff.many_foreach_clc_filter,
     Stuff.smpl_cmd,
     Stuff.smpl_cmd_w_filter,
     Stuff.smpl_file,
     Stuff.smpl_file_w_filter,
     Stuff.first_file_spec_w_filter,
     Stuff.first_of_spec_w_filter,
+    Stuff.cmd_w_args_filter,
     optional=[Stuff.no_such_cmd,
               Stuff.empty_orig,
               Stuff.empty_after_filter,
@@ -160,14 +182,18 @@ class stage(dr.ComponentType):
               Stuff.no_such_file, ])
 def dostuff(broker):
     assert Stuff.many_glob in broker
+    assert Stuff.many_glob_filter in broker
     assert Stuff.many_foreach_exe in broker
+    assert Stuff.many_foreach_exe_filter in broker
     assert Stuff.many_foreach_clc in broker
+    assert Stuff.many_foreach_clc_filter in broker
     assert Stuff.smpl_cmd in broker
     assert Stuff.smpl_cmd_w_filter in broker
     assert Stuff.smpl_file in broker
     assert Stuff.smpl_file_w_filter in broker
     assert Stuff.first_file_spec_w_filter in broker
     assert Stuff.first_of_spec_w_filter in broker
+    assert Stuff.cmd_w_args_filter in broker
 
     assert Stuff.empty_orig not in broker
     assert Stuff.empty_after_filter not in broker
@@ -207,6 +233,10 @@ def teardown_function(func):
         del filters.FILTERS[Stuff.smpl_file_w_filter]
         del filters.FILTERS[Stuff.first_file_spec_w_filter]
         del filters.FILTERS[Stuff.first_of_spec_w_filter]
+        del filters.FILTERS[Stuff.many_glob_filter]
+        del filters.FILTERS[Stuff.many_foreach_exe_filter]
+        del filters.FILTERS[Stuff.many_foreach_clc_filter]
+        del filters.FILTERS[Stuff.cmd_w_args_filter]
 
     if func == test_specs_collect:
         os.remove(test_empty_file)
@@ -215,11 +245,15 @@ def teardown_function(func):
 
 
 def test_spec_factory():
+    add_filter(Stuff.many_glob_filter, " ")
+    add_filter(Stuff.many_foreach_exe_filter, " ")
+    add_filter(Stuff.many_foreach_clc_filter, " ")
     add_filter(Stuff.smpl_cmd_w_filter, " hello ")
     add_filter(Stuff.smpl_file_w_filter, "def get")
     add_filter(Stuff.first_file_spec_w_filter, ["def report_", "rhel"])
     add_filter(Stuff.first_of_spec_w_filter, ["def test", " hello "])
     add_filter(Stuff.empty_after_filter, " hello ")
+    add_filter(Stuff.cmd_w_args_filter, [" ", ":"])
     broker = dr.Broker()
     broker[HostContext] = HostContext()
     broker['cleaner'] = Cleaner(None, None)
@@ -244,11 +278,15 @@ def test_spec_factory():
 
 
 def test_line_terminators():
+    add_filter(Stuff.many_glob_filter, " ")
+    add_filter(Stuff.many_foreach_exe_filter, " ")
+    add_filter(Stuff.many_foreach_clc_filter, " ")
     add_filter(Stuff.smpl_cmd_w_filter, " hello ")
     add_filter(Stuff.smpl_file_w_filter, "def get")
     add_filter(Stuff.first_file_spec_w_filter, ["def report_", "rhel"])
     add_filter(Stuff.first_of_spec_w_filter, ["def test", " hello "])
     add_filter(Stuff.empty_after_filter, " hello ")
+    add_filter(Stuff.cmd_w_args_filter, [" ", ":"])
     broker = dr.Broker()
     broker[HostContext] = HostContext()
     broker['cleaner'] = Cleaner(None, None)
@@ -305,17 +343,29 @@ def test_exp_no_filters():
                 exception_cnt += 100
             elif "first_of_spec_w_filter" in str(spec):
                 exception_cnt += 1000
-    assert exception_cnt == 1111
+            elif "many_glob_filter" in str(spec):
+                exception_cnt += 10000
+            elif "many_foreach_exe_filter" in str(spec):
+                exception_cnt += 100000
+            elif "many_foreach_clc_filter" in str(spec):
+                exception_cnt += 1000000
+            elif "cmd_w_args_filter" in str(spec):
+                exception_cnt += 10000000
+    assert exception_cnt == 11111111
 
 
 @pytest.mark.parametrize("obfuscate", [True, False])
 @patch('insights.core.spec_cleaner.Cleaner.generate_report', Mock())
 def test_specs_collect(obfuscate):
+    add_filter(Stuff.many_glob_filter, " ")
+    add_filter(Stuff.many_foreach_exe_filter, " ")
+    add_filter(Stuff.many_foreach_clc_filter, " ")
     add_filter(Stuff.smpl_cmd_w_filter, " hello ")
     add_filter(Stuff.smpl_file_w_filter, "def get")
     add_filter(Stuff.first_file_spec_w_filter, [" hello ", "Test"])
     add_filter(Stuff.first_of_spec_w_filter, ["def test", " hello "])
     add_filter(Stuff.empty_after_filter, " hello ")
+    add_filter(Stuff.cmd_w_args_filter, [" ", ":"])
     # Preparation
     manifest = collect.load_manifest(specs_manifest)
     for pkg in manifest.get("plugins", {}).get("packages", []):
@@ -378,7 +428,7 @@ def test_specs_collect(obfuscate):
                         else:
                             # "filter" works in archive result files
                             assert len(org_content) > len(new_content)
-    assert count == 14  # Number of Specs
+    assert count == 18  # Number of Specs
 
     arch.delete_archive_dir()
 
