@@ -705,6 +705,8 @@ class glob_file(object):
                     results.append(self.kind(
                         path[len(root):], root=root, save_as=self.save_as,
                         ds=self, ctx=ctx, cleaner=cleaner))
+                except NoFilterException as nfe:
+                    raise nfe
                 except Exception:
                     log.debug(traceback.format_exc())
         if results:
@@ -967,6 +969,8 @@ class command_with_args(object):
                     inherit_env=self.inherit_env,
                     override_env=self.override_env, signum=self.signum,
                     cleaner=cleaner)
+        except NoFilterException as nfe:
+            raise nfe
         except ContentException as ce:
             log.debug(ce)
         except Exception:
@@ -1044,6 +1048,8 @@ class foreach_execute(object):
                         override_env=self.override_env, signum=self.signum,
                         cleaner=cleaner)
                 result.append(cop)
+            except NoFilterException as nfe:
+                raise nfe
             except ContentException as ce:
                 log.debug(ce)
             except Exception:
@@ -1107,6 +1113,8 @@ class foreach_collect(object):
                     result.append(self.kind(
                         p[len(root):], root=root, save_as=self.save_as,
                         ds=self, ctx=ctx, cleaner=cleaner))
+                except NoFilterException as nfe:
+                    raise nfe
                 except Exception:
                     log.debug(traceback.format_exc())
         if result:
@@ -1172,6 +1180,8 @@ class container_execute(foreach_execute):
                         inherit_env=self.inherit_env, override_env=self.override_env,
                         signum=self.signum, cleaner=cleaner)
                 result.append(ccp)
+            except NoFilterException as nfe:
+                raise nfe
             except Exception:
                 log.debug(traceback.format_exc())
         if result:
@@ -1238,6 +1248,8 @@ class container_collect(foreach_execute):
                         override_env=self.override_env, signum=self.signum,
                         cleaner=cleaner)
                 result.append(cfp)
+            except NoFilterException as nfe:
+                raise nfe
             except Exception:
                 log.debug(traceback.format_exc())
         if result:
