@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.9
+Version:        3.4.10
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,21 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 22 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.10-1
+- doc(README): remove the Py26 unsupported announcement (#4199)
+  (xiangceliu@redhat.com)
+- fix: correct NoFilterException in all datasource functions (#4197)
+  (xiangceliu@redhat.com)
+- FEAT: Add new parser RearLocalConf (#4198) (986222045@qq.com)
+- fix: pass stdin=DEVNULL to Popen to avoid eating stdin from pipes (#4189)
+  (xiangceliu@redhat.com)
+- feat: New spec "lsattr <paths>" and its parser (#4193)
+  (44796653+huali027@users.noreply.github.com)
+- feat(ci): add workflow to build egg for PRs and pushes (#4190)
+  (ptoscano@redhat.com)
+- fix: handle non-existing configuration in SSSDConfAll (#4192)
+  (pbrezina@redhat.com)
+
 * Thu Aug 15 2024 Lizhong Chen <lichen@redhat.com> 3.4.9-1
 - fix: Snyk CWE-295 issue in remote_resource module (#4188)
   (xiangceliu@redhat.com)

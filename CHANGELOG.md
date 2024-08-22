@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.10](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.10) (2024-08-22)
+
+- doc(README): remove the Py26 unsupported announcement ([PR 4199](https://github.com/RedHatInsights/insights-core/pull/4199))
+- fix: correct NoFilterException in all datasource functions ([PR 4197](https://github.com/RedHatInsights/insights-core/pull/4197))
+- FEAT: Add new parser RearLocalConf ([PR 4198](https://github.com/RedHatInsights/insights-core/pull/4198))
+- fix: pass stdin=DEVNULL to Popen to avoid eating stdin from pipes ([PR 4189](https://github.com/RedHatInsights/insights-core/pull/4189))
+- feat: New spec "lsattr <paths>" and its parser ([PR 4193](https://github.com/RedHatInsights/insights-core/pull/4193))
+- feat(ci): add workflow to build egg for PRs and pushes ([PR 4190](https://github.com/RedHatInsights/insights-core/pull/4190))
+- fix: handle non-existing configuration in SSSDConfAll ([PR 4192](https://github.com/RedHatInsights/insights-core/pull/4192))
+
 # [insights-core-3.4.9](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.9) (2024-08-15)
 
 - fix: Snyk CWE-295 issue in remote_resource module ([PR 4188](https://github.com/RedHatInsights/insights-core/pull/4188))
