@@ -533,6 +533,7 @@ class DefaultSpecs(Specs):
     readlink_e_etc_mtab = simple_command("/usr/bin/readlink -e /etc/mtab")
     readlink_e_shift_cert_client = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem")
     readlink_e_shift_cert_server = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem")
+    rear_local_conf = simple_file("/etc/rear/local.conf")
     redhat_release = simple_file("/etc/redhat-release")
     repquota_agnpuv = simple_command("/usr/sbin/repquota -agnpuv")
     resolv_conf = simple_file("/etc/resolv.conf")
