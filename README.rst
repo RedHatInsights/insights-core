@@ -1,6 +1,3 @@
-⚠️ Python 2.6 will no longer be supported from ``Sep. 1st, 2024``. From then on, using insights-core in Python 2.6 environments is not supported.⚠️ 
-==================================================================================================================================================
-
 =============
 Insights Core
 =============
