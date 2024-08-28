@@ -349,7 +349,7 @@ class InsightsConnection(object):
                 else:
                     logger.info("Connection failed")
                     return False
-            except requests.ConnectionError as exc:
+            except REQUEST_FAILED_EXCEPTIONS as exc:
                 last_ex = exc
                 logger.error(
                     "Could not successfully connect to: %s", test_url + ext)
@@ -381,13 +381,11 @@ class InsightsConnection(object):
             else:
                 logger.info("Connection failed")
                 return False
-        except requests.ConnectionError as exc:
-            last_ex = exc
+        except REQUEST_FAILED_EXCEPTIONS as exc:
             logger.error(
                 "Could not successfully connect to: %s", url)
             print(exc)
-        if last_ex:
-            raise last_ex
+            raise exc
 
     def test_connection(self, rc=0):
         """
@@ -413,8 +411,7 @@ class InsightsConnection(object):
                 logger.info("Connectivity tests completed with some errors")
                 print("See %s for more details." % self.config.logging_file)
                 rc = 1
-        except requests.ConnectionError as exc:
-            print(exc)
+        except requests.ConnectionError:
             logger.error('Connectivity test failed! '
                          'Please check your network configuration')
             print('Additional information may be in %s' % self.config.logging_file)
