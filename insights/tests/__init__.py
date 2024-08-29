@@ -71,6 +71,8 @@ DEFAULT_HOSTNAME = "hostname.example.com"
 
 MAKE_NONE_RESULT = make_none()
 
+_UNDEFINED = object()
+
 
 def _beautify_deep_compare_diff(result, expected):
     if not (isinstance(result, dict) and isinstance(expected, dict)):
@@ -153,7 +155,7 @@ COMPONENT_FILTERED_PARSERS = {
 
 
 def run_test(component, input_data,
-             expected=None, return_make_none=False, do_filter=True):
+             expected=_UNDEFINED, return_make_none=False, do_filter=True):
     """
     Arguments:
         component: The insights component need to test.
@@ -189,7 +191,7 @@ def run_test(component, input_data,
 
     broker = run_input_data(component, input_data)
     result = broker.get(component)
-    if expected:
+    if expected is not _UNDEFINED:
         deep_compare(result, expected)
     elif result == MAKE_NONE_RESULT and not return_make_none:
         # Convert make_none() result to None as default unless
