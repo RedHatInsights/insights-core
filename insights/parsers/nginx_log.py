@@ -78,7 +78,7 @@ class ContainerNginxErrorLog(ContainerParser, NginxErrorLog):
         >>> container_nginx_error_log.container_id
         '2869b4e2541c'
         >>> container_nginx_error_log.image
-        'registry.access.redhat.com/ubi8/nginx-120'
+        'reg.host.example.com/ubi8/nginx-120'
         >>> container_nginx_error_log.lines[0]
         '2022/04/02 04:07:59 [warn] 1591#1591: *697425 an upstream response is buffered to a temporary file /var/lib/nginx/tmp/uwsgi/2/25/0000003252 while reading upstream, client: 10.245.136.148, server: _, request: "GET /api/v2/hosts/?not__name=localhost&page_size=400&page=46 HTTP/1.1", upstream: "uwsgi://unix:/var/run/tower/uwsgi.sock:", host: "host.example.com"'
         >>> '711881' in container_nginx_error_log
