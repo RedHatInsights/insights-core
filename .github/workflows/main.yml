@@ -54,7 +54,7 @@ jobs:
       with:
         fetch-depth: 2
     - name: Get Changed files
-      run: git diff --name-only -r HEAD^1 HEAD | grep -e "insights/.*\.py" | egrep "tests/|tools/|contrib/|parsr/|formats/|plugins/" > changes
+      run: git diff --name-only --diff-filter=AM -r HEAD^1 HEAD | grep -e "insights/.*\.py" | egrep -v "tests/|tools/|contrib/|parsr/|formats/|plugins/" > changes
       continue-on-error: true
     - uses: actions/setup-python@v5
     - uses: actions/download-artifact@master
