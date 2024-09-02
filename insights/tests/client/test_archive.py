@@ -1,5 +1,6 @@
 import time
 from insights.client.archive import InsightsArchive
+from insights.client.config import InsightsConfig
 from mock.mock import patch, Mock, call
 from unittest import TestCase
 from pytest import raises
@@ -220,16 +221,16 @@ class TestInsightsArchive(TestCase):
         archive.get_full_archive_path('test')
         create_archive_dir.assert_called_once()
 
+    @patch('insights.client.archive.os.path.join', return_value=test_archive_dir)
+    @patch('insights.client.archive.os.path.isdir', return_value=False)
+    @patch('insights.client.archive.shutil.copytree', return_value=None)
+    @patch('insights.client.archive.InsightsArchive.cleanup_previous_archive', return_value=None)
     @patch('insights.client.archive.InsightsArchive.create_archive_dir', return_value=test_archive_dir)
-    @patch('insights.client.archive.os.path.join', Mock())
-    @patch('insights.client.archive.os.path.isdir', Mock())
-    @patch('insights.client.archive.shutil.copytree', Mock())
-    @patch('insights.client.archive.InsightsArchive.cleanup_previous_archive', Mock())
-    def test_copy_dir(self, create_archive_dir, _, __):
+    def test_copy_dir(self, create_archive_dir, _1, _2, _3, _4, _5, _6):
         '''
         Verify create_archive_dir is called when calling copy_dir
         '''
-        archive = InsightsArchive(Mock())
+        archive = InsightsArchive(InsightsConfig())
         archive.copy_dir('test')
         create_archive_dir.assert_called_once()
 
