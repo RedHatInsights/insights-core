@@ -438,9 +438,12 @@ class InsightsConnection(object):
                         req.status_code)
             logger.debug("HTTP Status Text: %s", req.reason)
             if req.status_code == 401:
-                logger.error("Please ensure that the system is registered "
-                             "with RHSM for CERT auth, or that correct "
-                             "credentials are set in %s for BASIC auth.", self.config.conf)
+                if self.config.authmethod == "BASIC":
+                    logger.error("Please ensure that the system is registered "
+                    "with RHSM for CERT auth, or that correct "
+                    "credentials are set in %s for BASIC auth.", self.config.conf)
+                else:
+                    logger.debug("Registration failed by 401 error.")
                 logger.log(NETWORK, "HTTP Response Text: %s", req.text)
             if req.status_code == 402:
                 # failed registration because of entitlement limit hit
