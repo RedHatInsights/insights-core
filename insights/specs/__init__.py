@@ -677,6 +677,7 @@ class Specs(SpecSet):
     satellite_custom_hiera = RegistryPoint()
     satellite_enabled_features = RegistryPoint()
     satellite_ignore_source_rpms_repos = RegistryPoint()
+    satellite_host_facts_count = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     satellite_katello_repos_with_muliple_ref = RegistryPoint()
     satellite_logs_table_size = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     satellite_missed_pulp_agent_queues = RegistryPoint()

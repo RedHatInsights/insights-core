@@ -10,6 +10,8 @@ SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from
 -----------------------------------------------------------------------------------------------------------
 SatelliteCoreTaskReservedResourceCount - command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``
 -------------------------------------------------------------------------------------------------------------------------------
+SatelliteHostFactsCount - command ``psql -d foreman -c 'select count(*) from fact_names' --csv``
+------------------------------------------------------------------------------------------------
 SatelliteIgnoreSourceRpmsRepos - command ``psql -d foreman -c "select id, name from katello_root_repositories where ignorable_content like '%srpm%' and mirroring_policy='mirror_complete'" --csv``
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteKatellloReposWithMultipleRef - command ``psql -d foreman -c "select repository_href, count(*) from katello_repository_references group by repository_href having count(*) > 1;" --csv``
@@ -215,6 +217,25 @@ class SatelliteCoreTaskReservedResourceCount(SatellitePostgreSQLQuery):
         <class 'insights.parsers.satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount'>
         >>> tasks[0]['count']
         '0'
+    """
+    columns = ['count']
+
+
+@parser(Specs.satellite_host_facts_count)
+class SatelliteHostFactsCount(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d foreman -c 'select count(*) from fact_names' --csv``.
+
+    Sample output::
+
+        count
+        12121
+
+    Examples:
+        >>> type(host_facts_obj)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteHostFactsCount'>
+        >>> host_facts_obj[0]['count']
+        '12121'
     """
     columns = ['count']
 
