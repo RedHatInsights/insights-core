@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.11](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.11) (2024-09-05)
+
+- feat: New spec and parser for host facts count of Satellite ([PR 4206](https://github.com/RedHatInsights/insights-core/pull/4206))
+- test: fix test_copy_dir for coverage test ([PR 4204](https://github.com/RedHatInsights/insights-core/pull/4204))
+
 # [insights-core-3.4.10](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.10) (2024-08-22)
 
 - doc(README): remove the Py26 unsupported announcement ([PR 4199](https://github.com/RedHatInsights/insights-core/pull/4199))

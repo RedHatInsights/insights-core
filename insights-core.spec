@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.10
+Version:        3.4.11
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,11 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Sep 05 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.11-1
+- feat: New spec and parser for host facts count of Satellite (#4206)
+  (44796653+huali027@users.noreply.github.com)
+- test: fix test_copy_dir for coverage test (#4204) (xiangceliu@redhat.com)
+
 * Thu Aug 22 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.10-1
 - doc(README): remove the Py26 unsupported announcement (#4199)
   (xiangceliu@redhat.com)
