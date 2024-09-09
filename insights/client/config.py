@@ -130,6 +130,27 @@ DEFAULT_OPTS = {
         'action': 'store_true',
         'group': 'actions'
     },
+    'compliance_policies': {
+        'default': False,
+        'opt': ['--compliance-policies'],
+        'help': 'List the compliance policies assignable to the system',
+        'action': 'store_true',
+        'group': 'actions'
+    },
+    'compliance_assign': {
+        'default': None,
+        'opt': ['--compliance-assign'],
+        'help': 'Assign the system to a compliance policy with the specified ID',
+        'action': 'store',
+        'group': 'actions'
+    },
+    'compliance_unassign': {
+        'default': None,
+        'opt': ['--compliance-unassign'],
+        'help': 'Unassign the system from a compliance policy with the specified ID',
+        'action': 'store',
+        'group': 'actions'
+    },
     'compressor': {
         'default': 'gz',
         'opt': ['--compressor'],

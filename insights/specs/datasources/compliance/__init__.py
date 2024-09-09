@@ -28,75 +28,51 @@ logger = getLogger(__name__)
 
 class ComplianceClient:
     def __init__(self, os_version=None, ssg_version=None, config=None):
-        self.inventory_id = None
+        self._inventory_id = None
         self.os_major, self.os_minor = os_version if os_version else [None, None]
         self.ssg_version = ssg_version
         self.config = config
         self.conn = InsightsConnection(config)
 
-    def download_tailoring_file(self, profile):
-        if ('tailored' not in profile['attributes'] or profile['attributes']['tailored'] is False or
-                ('os_minor_version' in profile['attributes'] and profile['attributes']['os_minor_version'] != self.os_minor)):
+    def download_tailoring_file(self, policy):
+        if ('os_minor_version' in policy and policy['os_minor_version'] != self.os_minor):
             return None
 
         # Download tailoring file to pass as argument to run_scan
         logger.debug(
-            "Policy {0} is a tailored policy. Starting tailoring file download...".format(profile['attributes']['ref_id'])
+            "Checking if policy {0} is a tailored policy. Starting tailoring file download...".format(policy['ref_id'])
         )
         tailoring_file_path = tempfile.mkstemp(
-            prefix='oscap_tailoring_file-{0}.'.format(profile['attributes']['ref_id']),
+            prefix='oscap_tailoring_file-{0}.'.format(policy['ref_id']),
             suffix='.xml',
             dir='/var/tmp'
         )[1]
         response = self.conn.session.get(
-            "https://{0}/compliance/profiles/{1}/tailoring_file".format(self.config.base_url, profile['id'])
+            "https://{0}/compliance/v2/policies/{1}/tailorings/{2}/tailoring_file".format(self.config.base_url, policy['id'], self.os_minor)
         )
         logger.debug("Response code: {0}".format(response.status_code))
 
+        if response.status_code == 204:
+            logger.debug("Policy {0} is not tailored, continuing with default rule and value selections...".format(policy['ref_id']))
+            return None
+
         if not response.ok:
-            logger.info("Something went wrong during downloading the tailoring file of {0}. The expected status code is 200, got {1}".format(profile['attributes']['ref_id'], response.status_code))
+            logger.debug("Something went wrong during downloading the tailoring file of {0}. The expected status code is 200, got {1}".format(policy['ref_id'], response.status_code))
             return None
 
         if response.content is None or response.headers['Content-Type'] != "application/xml":
-            logger.info("Problem with the content of the downloaded tailoring file of {0}. The expected format is xml, got {1}".format(profile['attributes']['ref_id'], response.headers['Content-Type']))
+            logger.debug(response.content)
+            logger.debug(response.return_value)
+            logger.debug("Problem with the content of the downloaded tailoring file of {0}. The expected format is xml, got {1}".format(policy['ref_id'], response.headers['Content-Type']))
             return None
 
         with open(tailoring_file_path, mode="w+b") as f:
             f.write(response.content)
-            logger.info("Saved tailoring file for {0} to {1}".format(profile['attributes']['ref_id'], tailoring_file_path))
+            logger.info("Saved tailoring file for {0} to {1}".format(policy['ref_id'], tailoring_file_path))
 
-        logger.debug("Policy {0} tailoring file download finished".format(profile['attributes']['ref_id']))
+        logger.debug("Policy {0} tailoring file download finished".format(policy['ref_id']))
 
         return tailoring_file_path
-
-    def get_profiles(self, search):
-        response = self.conn.session.get("https://{0}/compliance/profiles".format(self.config.base_url),
-                                         params={'search': search, 'relationships': 'false'})
-        logger.debug("Content of the response: {0} - {1}".format(response,
-                                                                 response.content))
-        if response.status_code == 200:
-            return response.json().get('data', [])
-        else:
-            return []
-
-    def get_initial_profiles(self):
-        inventory_id = self._get_inventory_id()
-        return self.get_profiles('system_ids={0} canonical=false external=false'.format(inventory_id))
-
-    def get_profiles_matching_os(self):
-        inventory_id = self._get_inventory_id()
-        return self.get_profiles('system_ids={0} canonical=false os_minor_version={1}'.format(inventory_id, self.os_minor))
-
-    def profile_union_by_ref_id(self, prioritized_profiles, merged_profiles):
-        profiles = dict((p['attributes']['ref_id'], p) for p in merged_profiles)
-        profiles.update(dict((p['attributes']['ref_id'], p) for p in prioritized_profiles))
-
-        profiles = list(profiles.values())
-        if not profiles:
-            logger.error("System is not associated with any profiles. Assign profiles using the Compliance web UI.\n")
-            exit(constants.sig_kill_bad)
-
-        return profiles
 
     def profile_files(self):
         return glob("{0}*rhel{1}-ds.xml".format(POLICY_FILE_LOCATION, self.os_major))
@@ -175,14 +151,57 @@ class ComplianceClient:
 
         return content
 
-    def _get_inventory_id(self):
-        if self.inventory_id:
-            return self.inventory_id
+    @property
+    def inventory_id(self):
+        if self._inventory_id:
+            return self._inventory_id
 
         systems = self.conn._fetch_system_by_machine_id()
         if type(systems) is list and len(systems) == 1 and 'id' in systems[0]:
-            self.inventory_id = systems[0].get('id')
-            return self.inventory_id
+            self._inventory_id = systems[0].get('id')
+            return self._inventory_id
         else:
             logger.error('Failed to find system in Inventory')
             exit(constants.sig_kill_bad)
+
+    def assignable_policies(self):
+        url = "https://{0}/compliance/v2/policies?filter=(os_major_version = {1} and os_minor_version = {2})"
+        response = self.conn.session.get(url.format(self.config.base_url, self.os_major, self.os_minor))
+        logger.debug("Content of the response {0} - {1}".format(response, response.content))
+        assigned_policies = [item["id"] for item in self.get_system_policies()]
+
+        if response.status_code == 200:
+            policies = response.json().get('data', [])
+            if not policies:
+                logger.warning("System is not assignable to any policy. Create supported policy using the Compliance web UI.\n")
+                return constants.sig_kill_bad
+            else:
+                print("Assigned     ID" + " " * 39 + "Title")
+                for policy in policies:
+                    is_assigned = policy['id'] in assigned_policies
+                    print("%-12s %-40s %s" % (is_assigned, policy['id'], policy['title']))
+            return 0
+        else:
+            logger.error("An error has occured while communicating with the API.\n")
+            return constants.sig_kill_bad
+
+    def policy_link(self, policy_id, dir):
+        url = "https://{0}/compliance/v2/policies/{1}/systems/{2}"
+        response = getattr(self.conn.session, dir)(url.format(self.config.base_url, policy_id, self.inventory_id))
+        logger.debug("Content of the response {0} - {1}".format(response, response.content))
+
+        if response.status_code == 202:
+            logger.info("Operation completed successfully.\n")
+            return 0
+        else:
+            logger.error("An error has occured while communicating with the API.\n")
+            return constants.sig_kill_bad
+
+    def get_system_policies(self):
+        response = self.conn.session.get("https://{0}/compliance/v2/systems/{1}/policies".format(self.config.base_url, self.inventory_id))
+        logger.debug("Content of the response {0} - {1}".format(response, response.content))
+
+        if response.status_code == 200:
+            return response.json().get('data', [])
+        else:
+            return []
