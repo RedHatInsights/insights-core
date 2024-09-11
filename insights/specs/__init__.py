@@ -91,7 +91,6 @@ class Specs(SpecSet):
     cinder_volume_log = RegistryPoint(filterable=True)
     cloud_cfg = RegistryPoint(filterable=True)
     cloud_cfg_filtered = RegistryPoint()
-    cloud_init_cfg_run = RegistryPoint()
     cloud_init_custom_network = RegistryPoint()
     cloud_init_log = RegistryPoint(filterable=True)
     cluster_conf = RegistryPoint(filterable=True)
