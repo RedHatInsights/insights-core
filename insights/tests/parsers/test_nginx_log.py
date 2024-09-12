@@ -28,12 +28,12 @@ def test_container_nginx_error_log():
         context_wrap(
             NGINX_ERROR_LOG,
             container_id='2869b4e2541c',
-            image='registry.access.redhat.com/ubi8/nginx-120',
+            image='reg.host.example.com/ubi8/nginx-120',
             engine='podman',
             path='insights_containers/2869b4e2541c/var/log/nginx/error.log'
         )
     )
-    assert container_error_log.image == "registry.access.redhat.com/ubi8/nginx-120"
+    assert container_error_log.image == "reg.host.example.com/ubi8/nginx-120"
     assert container_error_log.engine == "podman"
     assert container_error_log.container_id == "2869b4e2541c"
     assert len(container_error_log.lines) == 6
@@ -49,7 +49,7 @@ def test_doc():
             context_wrap(
                 NGINX_ERROR_LOG,
                 container_id='2869b4e2541c',
-                image='registry.access.redhat.com/ubi8/nginx-120',
+                image='reg.host.example.com/ubi8/nginx-120',
                 engine='podman'
             )
         )
