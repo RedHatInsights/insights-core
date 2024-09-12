@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.12](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.12) (2024-09-12)
+
+- Fix skipped assertions for itests ([PR 4207](https://github.com/RedHatInsights/insights-core/pull/4207))
+- feat(ci): add coverage check for changed python file ([PR 4200](https://github.com/RedHatInsights/insights-core/pull/4200))
+- spec: stop collecting cloud_init_cfg_run ([PR 4212](https://github.com/RedHatInsights/insights-core/pull/4212))
+- chore: add sensitive data checkpoint to PR template ([PR 4210](https://github.com/RedHatInsights/insights-core/pull/4210))
+
 # [insights-core-3.4.11](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.11) (2024-09-05)
 
 - feat: New spec and parser for host facts count of Satellite ([PR 4206](https://github.com/RedHatInsights/insights-core/pull/4206))

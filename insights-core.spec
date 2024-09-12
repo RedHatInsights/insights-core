@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.11
+Version:        3.4.12
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,14 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Sep 12 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.12-1
+- Fix skipped assertions for itests (#4207) (loleary@redhat.com)
+- feat(ci): add coverage check for changed python file (#4200)
+  (xiangceliu@redhat.com)
+- spec: stop collecting cloud_init_cfg_run (#4212) (xiangceliu@redhat.com)
+- chore: add sensitive data checkpoint to PR template (#4210)
+  (xiangceliu@redhat.com)
+
 * Thu Sep 05 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.11-1
 - feat: New spec and parser for host facts count of Satellite (#4206)
   (44796653+huali027@users.noreply.github.com)
