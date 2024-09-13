@@ -90,6 +90,19 @@ data_lines_ssl_conf = """
 Listen 443 https
 """.strip()
 
+data_lines_httpd_conf_section_test = """
+ServerRoot "/etc/httpd"
+<IfModule mod_security2.c>
+    # ModSecurity Core Rules Set and Local configuration
+    IncludeOptional modsecurity.d/*.conf
+</IfModule>
+""".strip()
+
+data_lines_crs_setup_conf = """
+SecAction \
+    "id:900990,\
+""".strip()
+
 
 @patch("os.path.isfile", return_value=True)
 @patch("os.path.isdir", return_value=True)
@@ -101,6 +114,18 @@ def test_httpd_conf_files(m_open, m_glob, m_isdir, m_isfile):
     broker = {HostContext: None}
     result = httpd_configuration_files(broker)
     assert result == set(['/etc/httpd/conf.d/ssl.conf', '/etc/httpd/conf/httpd.conf'])
+
+
+@patch("os.path.isfile", return_value=True)
+@patch("os.path.isdir", return_value=True)
+@patch("glob.glob", return_value=["/etc/httpd/modsecurity.d/crs-setup.conf"])
+@patch(builtin_open, new_callable=mock_open, read_data=data_lines_httpd_conf_section_test)
+def test_httpd_conf_files_section(m_open, m_glob, m_isdir, m_isfile):
+    handlers = (m_open.return_value, mock_open(read_data=data_lines_crs_setup_conf).return_value)
+    m_open.side_effect = handlers
+    broker = {HostContext: None}
+    result = httpd_configuration_files(broker)
+    assert result == set(['/etc/httpd/conf/httpd.conf'])
 
 
 @patch("os.path.isfile", return_value=True)
