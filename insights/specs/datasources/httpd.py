@@ -131,10 +131,7 @@ def httpd_configuration_files(broker):
         SkipComponent: there is no httpd configuration file
     """
     httpd_root = '/etc/httpd'
-    all_paths = get_httpd_configuration_files(httpd_root)
-    if all_paths:
-        return all_paths
-    raise SkipComponent
+    return get_httpd_configuration_files(httpd_root)
 
 
 @datasource(HostContext)
@@ -149,10 +146,7 @@ def httpd24_scl_configuration_files(broker):
         SkipComponent: there is no httpd24 slc configuration file
     """
     httpd_root = '/opt/rh/httpd24/root/etc/httpd'
-    all_paths = get_httpd_configuration_files(httpd_root)
-    if all_paths:
-        return all_paths
-    raise SkipComponent
+    return get_httpd_configuration_files(httpd_root)
 
 
 @datasource(HostContext)
@@ -167,7 +161,4 @@ def httpd24_scl_jbcs_configuration_files(broker):
         SkipComponent: there is no httpd24 slc jbcs configuration file
     """
     httpd_root = '/opt/rh/jbcs-httpd24/root/etc/httpd'
-    all_paths = get_httpd_configuration_files(httpd_root)
-    if all_paths:
-        return all_paths
-    raise SkipComponent
+    return get_httpd_configuration_files(httpd_root)
