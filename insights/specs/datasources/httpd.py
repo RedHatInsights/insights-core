@@ -73,13 +73,12 @@ def _get_all_include_conf(root, glob_path):
                     _includes = None
                     section_number = 0
                     for line in cfp.readlines():
+                        line = line.strip()
                         if line.startswith("<") and not line.startswith("</"):
                             section_number = section_number + 1
                         if line.startswith("</"):
                             section_number = section_number - 1
-                        if section_number > 0:
-                            continue
-                        if line.strip().startswith("Include"):
+                        if section_number == 0 and line.startswith("Include"):
                             _includes = line.split()[-1].strip('"\'')
                             _paths.update(_get_all_include_conf(root, _includes))
             if os.path.isdir(conf):
@@ -101,16 +100,15 @@ def get_httpd_configuration_files(httpd_root):
             all_paths.add(main_httpd_conf)
             section_number = 0
             for line in cfp.readlines():
+                line = line.strip()
                 if line.startswith("<") and not line.startswith("</"):
                     section_number = section_number + 1
                 if line.startswith("</"):
                     section_number = section_number - 1
-                if section_number > 0:
-                    continue
-                if line.strip().startswith("ServerRoot"):
+                if line.startswith("ServerRoot"):
                     server_root = line.strip().split()[-1].strip().strip('"\'')
-                elif line.strip().startswith("Include"):
-                    includes = line.strip().split()[-1].strip('"\'')
+                elif section_number == 0 and line.startswith("Include"):
+                    includes = line.split()[-1].strip('"\'')
                     # For multiple "Include" directives, all of them will be included
                     all_paths.update(_get_all_include_conf(server_root, includes))
     except Exception:
