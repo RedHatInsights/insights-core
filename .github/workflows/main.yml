@@ -68,6 +68,19 @@ jobs:
         mv ./coverage_json/coverage.json ./coverage.json
         python insights/tools/coverage.py changes
 
+  gitleaks:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE}} # Only required for Organizations
+
   python27-test:
 
     runs-on: ubuntu-latest
