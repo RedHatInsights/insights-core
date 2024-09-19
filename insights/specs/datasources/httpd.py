@@ -71,8 +71,14 @@ def _get_all_include_conf(root, glob_path):
                 _paths.add(conf)
                 with open(conf) as cfp:
                     _includes = None
+                    section_number = 0
                     for line in cfp.readlines():
-                        if line.strip().startswith("Include"):
+                        line = line.strip()
+                        if line.startswith("</"):
+                            section_number = section_number - 1
+                        elif line.startswith("<"):
+                            section_number = section_number + 1
+                        if section_number == 0 and (line.startswith("Include ") or line.startswith("IncludeOptional ")):
                             _includes = line.split()[-1].strip('"\'')
                             _paths.update(_get_all_include_conf(root, _includes))
             if os.path.isdir(conf):
@@ -92,11 +98,17 @@ def get_httpd_configuration_files(httpd_root):
             server_root = httpd_root
             # Add it only when it exists
             all_paths.add(main_httpd_conf)
+            section_number = 0
             for line in cfp.readlines():
-                if line.strip().startswith("ServerRoot"):
+                line = line.strip()
+                if line.startswith("</"):
+                    section_number = section_number - 1
+                elif line.startswith("<"):
+                    section_number = section_number + 1
+                if line.startswith("ServerRoot "):
                     server_root = line.strip().split()[-1].strip().strip('"\'')
-                elif line.strip().startswith("Include"):
-                    includes = line.strip().split()[-1].strip('"\'')
+                elif section_number == 0 and (line.startswith("Include ") or line.startswith("IncludeOptional ")):
+                    includes = line.split()[-1].strip('"\'')
                     # For multiple "Include" directives, all of them will be included
                     all_paths.update(_get_all_include_conf(server_root, includes))
     except Exception:
@@ -117,10 +129,7 @@ def httpd_configuration_files(broker):
         SkipComponent: there is no httpd configuration file
     """
     httpd_root = '/etc/httpd'
-    all_paths = get_httpd_configuration_files(httpd_root)
-    if all_paths:
-        return all_paths
-    raise SkipComponent
+    return get_httpd_configuration_files(httpd_root)
 
 
 @datasource(HostContext)
@@ -135,10 +144,7 @@ def httpd24_scl_configuration_files(broker):
         SkipComponent: there is no httpd24 slc configuration file
     """
     httpd_root = '/opt/rh/httpd24/root/etc/httpd'
-    all_paths = get_httpd_configuration_files(httpd_root)
-    if all_paths:
-        return all_paths
-    raise SkipComponent
+    return get_httpd_configuration_files(httpd_root)
 
 
 @datasource(HostContext)
@@ -153,7 +159,4 @@ def httpd24_scl_jbcs_configuration_files(broker):
         SkipComponent: there is no httpd24 slc jbcs configuration file
     """
     httpd_root = '/opt/rh/jbcs-httpd24/root/etc/httpd'
-    all_paths = get_httpd_configuration_files(httpd_root)
-    if all_paths:
-        return all_paths
-    raise SkipComponent
+    return get_httpd_configuration_files(httpd_root)
