@@ -74,10 +74,10 @@ def _get_all_include_conf(root, glob_path):
                     section_number = 0
                     for line in cfp.readlines():
                         line = line.strip()
-                        if line.startswith("<") and not line.startswith("</"):
-                            section_number = section_number + 1
-                        elif line.startswith("</"):
+                        if line.startswith("</"):
                             section_number = section_number - 1
+                        elif line.startswith("<"):
+                            section_number = section_number + 1
                         if section_number == 0 and (line.startswith("Include ") or line.startswith("IncludeOptional ")):
                             _includes = line.split()[-1].strip('"\'')
                             _paths.update(_get_all_include_conf(root, _includes))
@@ -101,10 +101,10 @@ def get_httpd_configuration_files(httpd_root):
             section_number = 0
             for line in cfp.readlines():
                 line = line.strip()
-                if line.startswith("<") and not line.startswith("</"):
-                    section_number = section_number + 1
-                elif line.startswith("</"):
+                if line.startswith("</"):
                     section_number = section_number - 1
+                elif line.startswith("<"):
+                    section_number = section_number + 1
                 if line.startswith("ServerRoot "):
                     server_root = line.strip().split()[-1].strip().strip('"\'')
                 elif section_number == 0 and (line.startswith("Include ") or line.startswith("IncludeOptional ")):
