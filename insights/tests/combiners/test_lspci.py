@@ -166,6 +166,69 @@ Module: mlx5_core
 NUMANode:       0
 """
 
+LSPCI_K_3 = """
+pcilib: Error reading /sys/bus/pci/devices/0000:00:0c.0/label: Operation not permitted
+pcilib: Error reading /sys/bus/pci/devices/0000:00:0e.0/label: Operation not permitted
+00:00.0 System peripheral: Intel Corporation Ice Lake Memory Map/VT-d (rev 20)
+	Subsystem: Dell Device 0b73
+bb:00.0 Processing accelerators: Habana Labs Ltd. Gaudi2 AI Training Accelerator (rev 01)
+	Subsystem: Habana Labs Ltd. Gaudi2 AI Training Accelerator
+	Kernel driver in use: habanalabs
+	Kernel modules: habanalabs
+cb:00.0 Processing accelerators: Habana Labs Ltd. Gaudi2 AI Training Accelerator (rev 01)
+	Subsystem: Habana Labs Ltd. Gaudi2 AI Training Accelerator
+	Kernel driver in use: habanalabs
+	Kernel modules: habanalabs
+db:00.0 Processing accelerators: Habana Labs Ltd. Gaudi2 AI Training Accelerator (rev 01)
+	Subsystem: Habana Labs Ltd. Gaudi2 AI Training Accelerator
+	Kernel driver in use: habanalabs
+	Kernel modules: habanalabs
+""".strip()  # noqa
+
+LSPCI_V_3 = """
+Slot:	00:00.0
+Class:	0880
+Vendor:	8086
+Device:	09a2
+SVendor:	1028
+SDevice:	0b73
+Rev:	20
+NUMANode:	0
+
+Slot:	bb:00.0
+Class:	1200
+Vendor:	1da3
+Device:	1020
+SVendor:	1da3
+SDevice:	1020
+Rev:	01
+Driver:	habanalabs
+Module:	habanalabs
+NUMANode:	1
+
+Slot:	cb:00.0
+Class:	1200
+Vendor:	1da3
+Device:	1020
+SVendor:	1da3
+SDevice:	1020
+Rev:	01
+Driver:	habanalabs
+Module:	habanalabs
+NUMANode:	1
+
+Slot:	db:00.0
+Class:	1200
+Vendor:	1da3
+Device:	1020
+SVendor:	1da3
+SDevice:	1020
+Rev:	01
+Driver:	habanalabs
+Module:	habanalabs
+NUMANode:	1
+""".strip()  # noqa
+
 
 def test_lspci_k():
     lspci_k = LsPciParser(context_wrap(LSPCI_K))
@@ -269,6 +332,55 @@ def test_lspci_both_long_slot():
     assert sorted(lspci_vmmkn[-1].keys()) == sorted(['Class', 'Device',
             'Driver', 'Module', 'Rev', 'SDevice', 'SVendor', 'Slot', 'Vendor',
             'PhySlot', 'NUMANode'])
+
+
+def test_lspci_both_2():
+    lspci_vmmkn = LsPciVmmkn(context_wrap(LSPCI_V_3))
+    lspci_k = LsPciParser(context_wrap(LSPCI_K_3))
+    lspci = LsPci(lspci_k, lspci_vmmkn)
+    assert sorted(lspci.pci_dev_list) == ['00:00.0', 'bb:00.0', 'cb:00.0', 'db:00.0']
+    assert lspci.search(Slot='bb:00.0') == [{
+        'Slot': 'bb:00.0',
+        'Module': ['habanalabs', ],
+        'Driver': 'habanalabs',
+        'Class': '1200',
+        'Vendor': '1da3',
+        'Device': '1020',
+        'Rev': '01',
+        'Dev_Details': 'Processing accelerators: Habana Labs Ltd. Gaudi2 AI Training Accelerator (rev 01)',
+        'SVendor': '1da3',
+        'SDevice': '1020',
+        'Subsystem': 'Habana Labs Ltd. Gaudi2 AI Training Accelerator',
+        'NUMANode': '1',
+    }, ]
+    assert lspci.search(Slot='cb:00.0') == [{
+        'Slot': 'cb:00.0',
+        'Module': ['habanalabs', ],
+        'Driver': 'habanalabs',
+        'Class': '1200',
+        'Vendor': '1da3',
+        'Device': '1020',
+        'Rev': '01',
+        'Dev_Details': 'Processing accelerators: Habana Labs Ltd. Gaudi2 AI Training Accelerator (rev 01)',
+        'SVendor': '1da3',
+        'SDevice': '1020',
+        'Subsystem': 'Habana Labs Ltd. Gaudi2 AI Training Accelerator',
+        'NUMANode': '1',
+    }, ]
+    assert lspci.search(Slot='db:00.0') == [{
+        'Slot': 'db:00.0',
+        'Module': ['habanalabs', ],
+        'Driver': 'habanalabs',
+        'Class': '1200',
+        'Vendor': '1da3',
+        'Device': '1020',
+        'Rev': '01',
+        'Dev_Details': 'Processing accelerators: Habana Labs Ltd. Gaudi2 AI Training Accelerator (rev 01)',
+        'SVendor': '1da3',
+        'SDevice': '1020',
+        'Subsystem': 'Habana Labs Ltd. Gaudi2 AI Training Accelerator',
+        'NUMANode': '1',
+    }, ]
 
 
 def test_doc_examples():
