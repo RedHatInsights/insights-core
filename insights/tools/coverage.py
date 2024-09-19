@@ -34,7 +34,7 @@ with open(sys.argv[1]) as fp:
 
 if not changed_files:
     log.info("===================================================================")
-    log.info("No coverage check is required for this PR.")
+    log.info("No coverage check is required for this change.")
     sys.exit(0)
 
 log.info(f"File(s) need to check coverage:")
@@ -43,21 +43,29 @@ for chf in changed_files:
 
 log.info("===================================================================")
 log.info(f"Total Coverage: {coverage_report.totals.percent_covered_display.value}%")
+log.info("-------------------------------------------------------------------")
 
 okay_flag = True
 missed_cov_files = []
+log.info("File(s) Coverage:")
 for chf in changed_files:
     cov = coverage_report.find(chf).summary.percent_covered_display.value
-    if cov and int(cov) != 100:
-        okay_flag = False
-        missed_cov_files.append((chf, cov))
+    if cov:
+        if int(cov) != 100:
+            okay_flag = False
+            missed_cov_files.append((chf, cov))
+        else:
+            log.info(f"  - {chf}: {cov}%")
+
 
 if not okay_flag:
-    log.info("File(s) Missing Coverage:")
+    log.info("")
     for chf, cov in missed_cov_files:
         log.info(f"  - {chf}: {cov}%")
-    log.info(f"Use 'pytest --cov' to check the detailed coverage.")
+    log.info("-------------------------------------------------------------------")
+    log.info(f"Check details of coverage less than 100% with 'pytest --cov'.")
     sys.exit(1)
 
-log.info("Coverage is fine")
+log.info("-------------------------------------------------------------------")
+log.info("Coverage of this change is fine.")
 sys.exit(0)
