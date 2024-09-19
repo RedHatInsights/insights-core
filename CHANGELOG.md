@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.13](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.13) (2024-09-19)
+
+- test: refine the messages for coverage check in CI/CD ([PR 4213](https://github.com/RedHatInsights/insights-core/pull/4213))
+- Enhance datasource httpd ignore include expanded inner ([PR 4214](https://github.com/RedHatInsights/insights-core/pull/4214))
+
 # [insights-core-3.4.12](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.12) (2024-09-12)
 
 - Fix skipped assertions for itests ([PR 4207](https://github.com/RedHatInsights/insights-core/pull/4207))

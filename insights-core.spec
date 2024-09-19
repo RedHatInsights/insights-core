@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.12
+Version:        3.4.13
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Sep 19 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.13-1
+- test: refine the messages for coverage check in CI/CD (#4213)
+  (xiangceliu@redhat.com)
+- Enhance datasource httpd ignore include expanded inner (#4214)
+  (jiazhang@redhat.com)
+
 * Thu Sep 12 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.12-1
 - Fix skipped assertions for itests (#4207) (loleary@redhat.com)
 - feat(ci): add coverage check for changed python file (#4200)
