@@ -123,7 +123,7 @@ class LsPci(list):
             for dev in lspci_vmmkn:
                 # use the local copy to prevent from writing back to the parser
                 dev_t = dev.copy()
-                if lspci_k and dev['Slot'] in lspci_k.data or '0000:' + dev['Slot'] in lspci_k.data:
+                if lspci_k and (dev['Slot'] in lspci_k.data or '0000:' + dev['Slot'] in lspci_k.data):
                     # use the local copy to prevent from writing back to the parser
                     dev_k = [v for v in lspci_k.data.values() if v['Slot'].endswith(dev['Slot'])][0].copy()
                     # Since the 'lspci -k' is a more common command than the
