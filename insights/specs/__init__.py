@@ -756,6 +756,7 @@ class Specs(SpecSet):
     sysconfig_httpd = RegistryPoint()
     sysconfig_irqbalance = RegistryPoint()
     sysconfig_kdump = RegistryPoint()
+    sysconfig_kernel = RegistryPoint()
     sysconfig_libvirt_guests = RegistryPoint()
     sysconfig_memcached = RegistryPoint()
     sysconfig_mongod = RegistryPoint(multi_output=True)

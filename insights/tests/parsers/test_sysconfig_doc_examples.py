@@ -2,6 +2,7 @@ from insights.tests import context_wrap
 from insights.parsers import sysconfig
 from insights.parsers.sysconfig import ChronydSysconfig, DockerSysconfig, DockerSysconfigStorage
 from insights.parsers.sysconfig import HttpdSysconfig, IrqbalanceSysconfig
+from insights.parsers.sysconfig import KernelSysconfig
 from insights.parsers.sysconfig import LibvirtGuestsSysconfig, MemcachedSysconfig
 from insights.parsers.sysconfig import MongodSysconfig, NtpdSysconfig
 from insights.parsers.sysconfig import PrelinkSysconfig, VirtWhoSysconfig
@@ -236,6 +237,15 @@ PCSD_SESSION_LIFETIME=3600
 #PCSD_BIND_ADDR='::'
 """.strip()
 
+KERNEL_SYSCONFIG = """
+# UPDATEDEFAULT specifies if new-kernel-pkg should make
+# new kernels the default
+UPDATEDEFAULT=yes
+
+# DEFAULTKERNEL specifies the default kernel package type
+DEFAULTKERNEL=kernel
+""".strip()
+
 
 def test_sysconfig_doc():
     env = {
@@ -266,6 +276,7 @@ def test_sysconfig_doc():
             'oracleasm_syscfg': OracleasmSysconfig(context_wrap(ORACLEASM_SYSCONFIG)),
             'stonith_syscfg': StonithSysconfig(context_wrap(STONITH_CONFIG)),
             'pcsd_syscfg': PcsdSysconfig(context_wrap(PCSD_SYSCONFIG)),
+            'kernel_syscfg': KernelSysconfig(context_wrap(KERNEL_SYSCONFIG)),
           }
     failed, total = doctest.testmod(sysconfig, globs=env)
     assert failed == 0

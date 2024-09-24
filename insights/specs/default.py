@@ -661,6 +661,7 @@ class DefaultSpecs(Specs):
     sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
     sysconfig_grub = simple_file("/etc/default/grub")  # This is the file where the "/etc/sysconfig/grub" point to
     sysconfig_kdump = simple_file("etc/sysconfig/kdump")
+    sysconfig_kernel = simple_file("etc/sysconfig/kernel")
     sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
     sysconfig_network = simple_file("etc/sysconfig/network")
     sysconfig_nfs = simple_file("/etc/sysconfig/nfs")
