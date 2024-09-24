@@ -122,8 +122,8 @@ class LsPci(list):
         if lspci_vmmkn:
             for dev in lspci_vmmkn:
                 # use the local copy to prevent from writing back to the parser
-                dev = dev.copy()
-                if lspci_k and dev['Slot'] in lspci_k:
+                dev_t = dev.copy()
+                if lspci_k and (dev['Slot'] in lspci_k.data or '0000:' + dev['Slot'] in lspci_k.data):
                     # use the local copy to prevent from writing back to the parser
                     dev_k = [v for v in lspci_k.data.values() if v['Slot'].endswith(dev['Slot'])][0].copy()
                     # Since the 'lspci -k' is a more common command than the
@@ -133,8 +133,9 @@ class LsPci(list):
                     # dev_k.pop('Slot') if 'Slot' in dev_k else None
                     dev_k.pop('Kernel driver in use') if 'Kernel driver in use' in dev_k else None
                     dev_k.pop('Kernel modules') if 'Kernel modules' in dev_k else None
-                    dev.update(dev_k)
-                self.append(dev)
+                    dev_t.update(dev_k)
+
+                self.append(dev_t)
             self._pci_dev_list = (lspci_k if lspci_k else lspci_vmmkn).pci_dev_list
         else:
             for dev in lspci_k.data.values():
