@@ -413,6 +413,9 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
             continue
 
         if upload.status_code in (200, 202):
+            # Write to last upload file
+            write_to_disk(constants.last_upload_results_file, upload.text)
+            os.chmod(constants.last_upload_results_file, 0o644)
             write_to_disk(constants.lastupload_file)
             os.chmod(constants.lastupload_file, 0o644)
             msg_name = determine_hostname(config.display_name)
