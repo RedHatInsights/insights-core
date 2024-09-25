@@ -43,18 +43,17 @@ def httpd_certificate_info_in_nss(broker):
             with open(conf) as a_f:
                 for line in a_f.readlines():
                     line = line.strip()
-                    if line.startswith('#'):
-                        continue
                     if line.startswith('<VirtualHost'):
                         virtual_host_start = True
+                        continue
                     if virtual_host_start:
                         if line.startswith('NSSEngine'):
                             nss_engine = line.split()[-1].lower().strip('"\'')
-                        if line.startswith('NSSCertificateDatabase'):
+                        elif line.startswith('NSSCertificateDatabase'):
                             nss_database = line.split()[-1].lower().strip('"\'')
-                        if line.startswith('NSSNickname'):
+                        elif line.startswith('NSSNickname'):
                             cert_name = line.split()[-1].lower().strip('"\'')
-                        if line.startswith('</VirtualHost>'):
+                        elif line.startswith('</VirtualHost>'):
                             if nss_engine == 'on' and nss_database and cert_name:
                                 path_pairs.append((nss_database, cert_name))
                             virtual_host_start = False
@@ -87,16 +86,15 @@ def httpd_ssl_certificate_files(broker):
             with open(conf) as a_f:
                 for line in a_f.readlines():
                     line = line.strip()
-                    if line.startswith('#'):
-                        continue
                     if line.startswith('<VirtualHost'):
                         virtual_host_start = True
+                        continue
                     if virtual_host_start:
                         if line.startswith('SSLEngine'):
                             ssl_engine = line.split()[-1].lower().strip('"\'')
-                        if line.startswith('SSLCertificateFile'):
+                        elif line.startswith('SSLCertificateFile'):
                             ssl_cert = line.strip().split()[-1].strip('"\'')
-                        if line.startswith('</VirtualHost>'):
+                        elif line.startswith('</VirtualHost>'):
                             if ssl_engine == 'on' and ssl_cert:
                                 ssl_certs.add(ssl_cert)
                             virtual_host_start = False
