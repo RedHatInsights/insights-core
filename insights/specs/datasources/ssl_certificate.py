@@ -1,25 +1,17 @@
 """
 Custom datasource to get ssl certificate file path.
 """
-import os
 
 from insights.combiners.nginx_conf import NginxConfTree
+from insights.combiners.rsyslog_confs import RsyslogAllConf
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
 from insights.parsers.mssql_conf import MsSQLConf
-from insights.combiners.rsyslog_confs import RsyslogAllConf
-from insights.specs import Specs
 from insights.specs.datasources import httpd
 
 
-class LocalSpecs(Specs):
-    """ Local specs used by httpd_certificate_info_in_nss and httpd_ssl_certificate_files datasource """
-
-    httpd_files = httpd.httpd_configuration_files
-
-
-@datasource(LocalSpecs.httpd_files, HostContext)
+@datasource(httpd.httpd_configuration_files, HostContext)
 def httpd_certificate_info_in_nss(broker):
     """
     Get the certificate info configured in nss database
@@ -34,36 +26,35 @@ def httpd_certificate_info_in_nss(broker):
         SkipComponent: Raised when NSSEngine isn't enabled or "NSSCertificateDatabase" and
             "NSSNickname" directives aren't found
     """
-    confs = broker[LocalSpecs.httpd_files]
+    confs = broker[httpd.httpd_configuration_files]
     path_pairs = []
     nss_engine = nss_database = cert_name = None
     virtual_host_start = False
     for conf in confs:
-        if os.path.exists(conf):
-            with open(conf) as a_f:
-                for line in a_f.readlines():
-                    line = line.strip()
-                    if line.startswith('<VirtualHost'):
-                        virtual_host_start = True
-                        continue
-                    if virtual_host_start:
-                        if line.startswith('NSSEngine'):
-                            nss_engine = line.split()[-1].lower().strip('"\'')
-                        elif line.startswith('NSSCertificateDatabase'):
-                            nss_database = line.split()[-1].lower().strip('"\'')
-                        elif line.startswith('NSSNickname'):
-                            cert_name = line.split()[-1].lower().strip('"\'')
-                        elif line.startswith('</VirtualHost>'):
-                            if nss_engine == 'on' and nss_database and cert_name:
-                                path_pairs.append((nss_database, cert_name))
-                            virtual_host_start = False
-                            nss_engine = nss_database = cert_name = None
+        with open(conf) as a_f:
+            for line in a_f.readlines():
+                line = line.strip()
+                if line.startswith('<VirtualHost'):
+                    virtual_host_start = True
+                    continue
+                if virtual_host_start:
+                    if line.startswith('NSSEngine'):
+                        nss_engine = line.split()[-1].lower().strip('"\'')
+                    elif line.startswith('NSSCertificateDatabase'):
+                        nss_database = line.split()[-1].lower().strip('"\'')
+                    elif line.startswith('NSSNickname'):
+                        cert_name = line.split()[-1].lower().strip('"\'')
+                    elif line.startswith('</VirtualHost>'):
+                        if nss_engine == 'on' and nss_database and cert_name:
+                            path_pairs.append((nss_database, cert_name))
+                        virtual_host_start = False
+                        nss_engine = nss_database = cert_name = None
     if path_pairs:
         return path_pairs
     raise SkipComponent
 
 
-@datasource(LocalSpecs.httpd_files, HostContext)
+@datasource(httpd.httpd_configuration_files, HostContext)
 def httpd_ssl_certificate_files(broker):
     """
     Get the httpd SSL certificate file path configured by "SSLCertificateFile"
@@ -77,28 +68,27 @@ def httpd_ssl_certificate_files(broker):
     Raises:
         SkipComponent: Raised if "SSLCertificateFile" directive isn't found
     """
-    confs = broker[LocalSpecs.httpd_files]
+    confs = broker[httpd.httpd_configuration_files]
     ssl_engine = ssl_cert = None
     ssl_certs = set()
     virtual_host_start = False
     for conf in confs:
-        if os.path.exists(conf):
-            with open(conf) as a_f:
-                for line in a_f.readlines():
-                    line = line.strip()
-                    if line.startswith('<VirtualHost'):
-                        virtual_host_start = True
-                        continue
-                    if virtual_host_start:
-                        if line.startswith('SSLEngine'):
-                            ssl_engine = line.split()[-1].lower().strip('"\'')
-                        elif line.startswith('SSLCertificateFile'):
-                            ssl_cert = line.strip().split()[-1].strip('"\'')
-                        elif line.startswith('</VirtualHost>'):
-                            if ssl_engine == 'on' and ssl_cert:
-                                ssl_certs.add(ssl_cert)
-                            virtual_host_start = False
-                            ssl_engine = ssl_cert = None
+        with open(conf) as a_f:
+            for line in a_f.readlines():
+                line = line.strip()
+                if line.startswith('<VirtualHost'):
+                    virtual_host_start = True
+                    continue
+                if virtual_host_start:
+                    if line.startswith('SSLEngine'):
+                        ssl_engine = line.split()[-1].lower().strip('"\'')
+                    elif line.startswith('SSLCertificateFile'):
+                        ssl_cert = line.strip().split()[-1].strip('"\'')
+                    elif line.startswith('</VirtualHost>'):
+                        if ssl_engine == 'on' and ssl_cert:
+                            ssl_certs.add(ssl_cert)
+                        virtual_host_start = False
+                        ssl_engine = ssl_cert = None
     if ssl_certs:
         return sorted(ssl_certs)
     raise SkipComponent

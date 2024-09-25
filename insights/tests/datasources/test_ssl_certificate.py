@@ -9,13 +9,13 @@ except Exception:
     builtin_open = "__builtin__.open"
 
 from insights.combiners.nginx_conf import NginxConfTree
+from insights.combiners.rsyslog_confs import RsyslogAllConf
 from insights.core.exceptions import SkipComponent
 from insights.parsers.mssql_conf import MsSQLConf
 from insights.parsers.nginx_conf import NginxConfPEG
 from insights.parsers.rsyslog_conf import RsyslogConf
-from insights.combiners.rsyslog_confs import RsyslogAllConf
+from insights.specs.datasources import httpd
 from insights.specs.datasources.ssl_certificate import (
-    LocalSpecs,
     httpd_ssl_certificate_files, nginx_ssl_certificate_files,
     mssql_tls_cert_file, httpd_certificate_info_in_nss,
     rsyslog_tls_cert_file, rsyslog_tls_ca_cert_file
@@ -320,29 +320,18 @@ queue.type = "LinkedList"
 def test_httpd_certificate(m_open, m_exist):
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_SSL_CONF).return_value]
     broker = {
-        LocalSpecs.httpd_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/ssl.conf'}
+        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/ssl.conf'}
     }
     result = httpd_ssl_certificate_files(broker)
     assert result == ['/etc/pki/katello/certs/gént-katello-apache.crt']
 
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_SSL_CONF_2).return_value]
     broker = {
-        LocalSpecs.httpd_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/ssl.conf'}
+        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/ssl.conf'}
     }
     result = httpd_ssl_certificate_files(broker)
     # "/etc/pki/katello/certs/katello-apache_e.crt" not in the result
     assert result == ['/etc/pki/katello/certs/katello-apache.crt', '/etc/pki/katello/certs/katello-apache_d.crt']
-
-
-@patch("os.path.exists", return_value=False)
-@patch(builtin_open, new_callable=mock_open, read_data=HTTPD_CONF)
-def test_httpd_certificate_file_not_exists(m_open, m_exist):
-    m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_SSL_CONF).return_value]
-    broker = {
-        LocalSpecs.httpd_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/ssl.conf'}
-    }
-    with pytest.raises(SkipComponent):
-        httpd_ssl_certificate_files(broker)
 
 
 def test_nginx_certificate():
@@ -372,14 +361,14 @@ def test_nginx_certificate():
 def test_httpd_ssl_cert_exception(m_open, m_exists):
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_CONF_WITHOUT_SSL).return_value]
     broker1 = {
-        LocalSpecs.httpd_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/no_ssl.conf'}
+        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/no_ssl.conf'}
     }
     with pytest.raises(SkipComponent):
         httpd_ssl_certificate_files(broker1)
 
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_SSL_CONF_NO_VALUE).return_value]
     broker2 = {
-        LocalSpecs.httpd_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/no_ssl.conf'}
+        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/no_ssl.conf'}
     }
     with pytest.raises(SkipComponent):
         httpd_ssl_certificate_files(broker2)
@@ -419,21 +408,10 @@ def test_mssql_tls_no_cert_exception():
 def test_httpd_certificate_info_in_nss(m_open, m_exists):
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_WITH_NSS).return_value]
     broker = {
-        LocalSpecs.httpd_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/nss.conf'}
+        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/nss.conf'}
     }
     result = httpd_certificate_info_in_nss(broker)
     assert result == [('/etc/httpd/aliasa', 'testcertaê'), ('/etc/httpd/aliasb', 'testcertb')]
-
-
-@patch("os.path.exists", return_value=False)
-@patch(builtin_open, new_callable=mock_open, read_data=HTTPD_CONF)
-def test_httpd_certificate_info_in_nss_file_not_exists(m_open, m_exists):
-    m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_WITH_NSS).return_value]
-    broker = {
-        LocalSpecs.httpd_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/nss.conf'}
-    }
-    with pytest.raises(SkipComponent):
-        httpd_certificate_info_in_nss(broker)
 
 
 @patch("os.path.exists", return_value=True)
@@ -441,7 +419,7 @@ def test_httpd_certificate_info_in_nss_file_not_exists(m_open, m_exists):
 def test_httpd_certificate_info_in_nss_exception(m_open, m_exists):
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_WITH_NSS_OFF).return_value]
     broker = {
-        LocalSpecs.httpd_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/nss.conf'}
+        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/nss.conf'}
     }
     with pytest.raises(SkipComponent):
         httpd_certificate_info_in_nss(broker)
