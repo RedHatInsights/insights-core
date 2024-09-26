@@ -36,6 +36,9 @@ IrqbalanceSysconfig - file ``/etc/sysconfig/irqbalance``
 KdumpSysconfig - file ``/etc/sysconfig/kdump``
 ----------------------------------------------
 
+KernelSysconfig - file ``/etc/sysconfig/kernel``
+------------------------------------------------
+
 LibvirtGuestsSysconfig - file ``/etc/sysconfig/libvirt-guests``
 ---------------------------------------------------------------
 
@@ -348,6 +351,29 @@ class KdumpSysconfig(SysconfigOptions):
         super(KdumpSysconfig, self).parse_content(content)
         for key in self.KDUMP_KEYS:
             setattr(self, key, self.data.get(key, ''))
+
+
+@parser(Specs.sysconfig_kernel)
+class KernelSysconfig(SysconfigOptions):
+    """
+    This parser reads data from the ``/etc/sysconfig/kernel`` file.
+
+    Typical content example::
+
+        # UPDATEDEFAULT specifies if new-kernel-pkg should make
+        # new kernels the default
+        UPDATEDEFAULT=yes
+
+        # DEFAULTKERNEL specifies the default kernel package type
+        DEFAULTKERNEL=kernel
+
+    Examples:
+        >>> kernel_syscfg.get('UPDATEDEFAULT')
+        'yes'
+        >>> 'DEFAULTKERNEL' in kernel_syscfg
+        True
+    """
+    pass
 
 
 @parser(Specs.sysconfig_libvirt_guests)
