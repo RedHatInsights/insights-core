@@ -1,13 +1,20 @@
-import pytest
+# -*- coding: utf-8 -*-
 
-from insights.combiners.httpd_conf import HttpdConfTree
+import pytest
+try:
+    from unittest.mock import patch, mock_open
+    builtin_open = "builtins.open"
+except Exception:
+    from mock import patch, mock_open
+    builtin_open = "__builtin__.open"
+
 from insights.combiners.nginx_conf import NginxConfTree
+from insights.combiners.rsyslog_confs import RsyslogAllConf
 from insights.core.exceptions import SkipComponent
-from insights.parsers.httpd_conf import HttpdConf
 from insights.parsers.mssql_conf import MsSQLConf
 from insights.parsers.nginx_conf import NginxConfPEG
 from insights.parsers.rsyslog_conf import RsyslogConf
-from insights.combiners.rsyslog_confs import RsyslogAllConf
+from insights.specs.datasources import httpd
 from insights.specs.datasources.ssl_certificate import (
     httpd_ssl_certificate_files, nginx_ssl_certificate_files,
     mssql_tls_cert_file, httpd_certificate_info_in_nss,
@@ -26,7 +33,7 @@ HTTPD_SSL_CONF = """
 <VirtualHost *:443>
   ## SSL directives
   SSLEngine on
-  SSLCertificateFile      "/etc/pki/katello/certs/katello-apache.crt"
+  SSLCertificateFile      "/etc/pki/katello/certs/gént-katello-apache.crt"
   SSLCertificateKeyFile   "/etc/pki/katello/private/katello-apache.key"
   SSLCertificateChainFile "/etc/pki/katello/certs/katello-server-ca.crt"
   SSLVerifyClient         optional
@@ -41,6 +48,7 @@ HTTPD_SSL_CONF_2 = """
   ## SSL directives
   ServerName a.b.c.com
   SSLEngine on
+  # SSLCertificateFile    "/etc/pki/katello/certs/old_katello-apache.crt"
   SSLCertificateFile      "/etc/pki/katello/certs/katello-apache.crt"
   SSLCertificateKeyFile   "/etc/pki/katello/private/katello-apache.key"
   SSLCertificateChainFile "/etc/pki/katello/certs/katello-server-ca.crt"
@@ -53,6 +61,7 @@ HTTPD_SSL_CONF_2 = """
   ## SSL directives
   ServerName  d.c.e.com
   SSLEngine on
+  # bellow is SSLCertificateFile configuration
   SSLCertificateFile      "/etc/pki/katello/certs/katello-apache_d.crt"
   SSLCertificateKeyFile   "/etc/pki/katello/private/katello-apache_d.key"
   SSLCertificateChainFile "/etc/pki/katello/certs/katello-server-ca_d.crt"
@@ -162,8 +171,10 @@ Listen 8443
 <VirtualHost _default_:8443>
 ServerName www.examplea.com:8443
 NSSEngine on
+# NSSCertificateDatabase old_path
 NSSCertificateDatabase /etc/httpd/aliasa
-NSSNickname testcerta
+# bellow is the NSSNickname configuration
+NSSNickname testcertaê
 </VirtualHost>
 <VirtualHost :8443>
 ServerName www.exampleb.com:8443
@@ -304,23 +315,19 @@ queue.type = "LinkedList"
 """
 
 
-def test_httpd_certificate():
-    conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
-    conf2 = HttpdConf(context_wrap(HTTPD_SSL_CONF, path='/etc/httpd/conf.d/ssl.conf'))
-    conf_tree = HttpdConfTree([conf1, conf2])
-
+@patch("os.path.exists", return_value=True)
+@patch(builtin_open, new_callable=mock_open, read_data=HTTPD_CONF)
+def test_httpd_certificate(m_open, m_exist):
+    m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_SSL_CONF).return_value]
     broker = {
-        HttpdConfTree: conf_tree
+        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/ssl.conf'}
     }
     result = httpd_ssl_certificate_files(broker)
-    assert result == ['/etc/pki/katello/certs/katello-apache.crt']
+    assert result == ['/etc/pki/katello/certs/gént-katello-apache.crt']
 
-    conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
-    conf2 = HttpdConf(context_wrap(HTTPD_SSL_CONF_2, path='/etc/httpd/conf.d/ssl.conf'))
-    conf_tree = HttpdConfTree([conf1, conf2])
-
+    m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_SSL_CONF_2).return_value]
     broker = {
-        HttpdConfTree: conf_tree
+        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/ssl.conf'}
     }
     result = httpd_ssl_certificate_files(broker)
     # "/etc/pki/katello/certs/katello-apache_e.crt" not in the result
@@ -349,21 +356,21 @@ def test_nginx_certificate():
     assert result == ['/a/b/www.example.com.crt', '/a/b/www.example.com.cecdsa.crt', '/a/b/www.example.org.crt']
 
 
-def test_httpd_ssl_cert_exception():
-    conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
-    conf2 = HttpdConf(context_wrap(HTTPD_CONF_WITHOUT_SSL, path='/etc/httpd/conf.d/no_ssl.conf'))
-    conf_tree = HttpdConfTree([conf1, conf2])
+@patch("os.path.exists", return_value=True)
+@patch(builtin_open, new_callable=mock_open, read_data=HTTPD_CONF)
+def test_httpd_ssl_cert_exception(m_open, m_exists):
+    m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_CONF_WITHOUT_SSL).return_value]
     broker1 = {
-        HttpdConfTree: conf_tree
-    }
-    conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
-    conf2 = HttpdConf(context_wrap(HTTPD_SSL_CONF_NO_VALUE, path='/etc/httpd/conf.d/no_ssl.conf'))
-    conf_tree = HttpdConfTree([conf1, conf2])
-    broker2 = {
-        HttpdConfTree: conf_tree
+        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/no_ssl.conf'}
     }
     with pytest.raises(SkipComponent):
         httpd_ssl_certificate_files(broker1)
+
+    m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_SSL_CONF_NO_VALUE).return_value]
+    broker2 = {
+        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/no_ssl.conf'}
+    }
+    with pytest.raises(SkipComponent):
         httpd_ssl_certificate_files(broker2)
 
 
@@ -396,23 +403,23 @@ def test_mssql_tls_no_cert_exception():
         mssql_tls_cert_file(broker1)
 
 
-def test_httpd_certificate_info_in_nss():
-    conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
-    conf2 = HttpdConf(context_wrap(HTTPD_WITH_NSS, path='/etc/httpd/conf.d/nss.conf'))
-    conf_tree = HttpdConfTree([conf1, conf2])
+@patch("os.path.exists", return_value=True)
+@patch(builtin_open, new_callable=mock_open, read_data=HTTPD_CONF)
+def test_httpd_certificate_info_in_nss(m_open, m_exists):
+    m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_WITH_NSS).return_value]
     broker = {
-        HttpdConfTree: conf_tree
+        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/nss.conf'}
     }
     result = httpd_certificate_info_in_nss(broker)
-    assert result == [('/etc/httpd/aliasa', 'testcerta'), ('/etc/httpd/aliasb', 'testcertb')]
+    assert result == [('/etc/httpd/aliasa', 'testcertaê'), ('/etc/httpd/aliasb', 'testcertb')]
 
 
-def test_httpd_certificate_info_in_nss_exception():
-    conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
-    conf2 = HttpdConf(context_wrap(HTTPD_WITH_NSS_OFF, path='/etc/httpd/conf.d/nss.conf'))
-    conf_tree = HttpdConfTree([conf1, conf2])
+@patch("os.path.exists", return_value=True)
+@patch(builtin_open, new_callable=mock_open, read_data=HTTPD_CONF)
+def test_httpd_certificate_info_in_nss_exception(m_open, m_exists):
+    m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_WITH_NSS_OFF).return_value]
     broker = {
-        HttpdConfTree: conf_tree
+        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/nss.conf'}
     }
     with pytest.raises(SkipComponent):
         httpd_certificate_info_in_nss(broker)
