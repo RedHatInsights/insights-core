@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.13
+Version:        3.4.14
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,16 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Sep 26 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.14-1
+- fix: ssl_certificate no longer depends on HttpdConfTree (#4220)
+  (44796653+huali027@users.noreply.github.com)
+- feat: add spec and parser for etc_sysconfig_kernel (#4221)
+  (xiaoxwan@redhat.com)
+- feat(client): write .last-upload.results also after non-legacy uploads
+  (#4217) (ptoscano@redhat.com)
+- fix: Fix issue 4218 in lspci combiner (#4219)
+  (20520336+bfahr@users.noreply.github.com)
+
 * Thu Sep 19 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.13-1
 - test: refine the messages for coverage check in CI/CD (#4213)
   (xiangceliu@redhat.com)

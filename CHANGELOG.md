@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.14](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.14) (2024-09-26)
+
+- fix: ssl_certificate no longer depends on HttpdConfTree ([PR 4220](https://github.com/RedHatInsights/insights-core/pull/4220))
+- feat: add spec and parser for etc_sysconfig_kernel ([PR 4221](https://github.com/RedHatInsights/insights-core/pull/4221))
+- feat(client): write .last-upload.results also after non-legacy uploads ([PR 4217](https://github.com/RedHatInsights/insights-core/pull/4217))
+- fix: Fix issue 4218 in lspci combiner ([PR 4219](https://github.com/RedHatInsights/insights-core/pull/4219))
+
 # [insights-core-3.4.13](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.13) (2024-09-19)
 
 - test: refine the messages for coverage check in CI/CD ([PR 4213](https://github.com/RedHatInsights/insights-core/pull/4213))
