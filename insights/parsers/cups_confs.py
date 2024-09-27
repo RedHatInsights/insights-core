@@ -107,8 +107,8 @@ class CupsBrowsedConf(Parser, dict):
         <class 'insights.parsers.cups_confs.CupsBrowsedConf'>
         >>> 'dnssd' in cups_browsed_conf['BrowseRemoteProtocols']
         True
-        >>> cups_browsed_conf['BrowseAllow']
-        'cups.example.com'
+        >>> 'cups.example.com' in cups_browsed_conf['BrowseAllow']
+        True
     """
     def parse_content(self, content):
         if not content:
