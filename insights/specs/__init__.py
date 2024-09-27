@@ -124,6 +124,7 @@ class Specs(SpecSet):
     crypto_policies_state_current = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     cryptsetup_luksDump = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     cupsd_conf = RegistryPoint()
+    cups_browsed_conf = RegistryPoint()
     cups_files_conf = RegistryPoint()
     cups_ppd = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     current_clocksource = RegistryPoint(no_obfuscate=['hostname', 'ip'])
