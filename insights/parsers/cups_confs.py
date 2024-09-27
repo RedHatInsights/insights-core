@@ -6,6 +6,8 @@ Parsers provided by this module are:
 
 CupsdConf - file ``/etc/cups/cupsd.conf``
 -----------------------------------------
+CupsBrowsedConf - file ``/etc/cups/cups-browsed.conf``
+------------------------------------------------------
 CupsFilesConf - file ``/etc/cups/cups-files.conf``
 --------------------------------------------------
 """
@@ -88,6 +90,40 @@ class CupsdConf(ConfigParser):
             content = "\n".join(content)
         result = self.parse(content)[0]
         return Entry(children=result, src=self)
+
+
+@parser(Specs.cups_browsed_conf)
+class CupsBrowsedConf(Parser, dict):
+    """
+    Class for parsing the file ``/etc/cups/cups-browsed.conf``
+
+    Sample file content::
+
+        BrowseRemoteProtocols dnssd cups
+        BrowseAllow cups.example.com
+
+    Examples:
+        >>> type(cups_browsed_conf)
+        <class 'insights.parsers.cups_confs.CupsBrowsedConf'>
+        >>> 'dnssd' in cups_browsed_conf['BrowseRemoteProtocols']
+        True
+        >>> 'cups.example.com' in cups_browsed_conf['BrowseAllow']
+        True
+    """
+    def parse_content(self, content):
+        if not content:
+            raise ParseException('Empty Content')
+
+        for line in get_active_lines(content):
+            k, v = [i.strip() for i in line.split(None, 1)]
+            if k not in self:
+                self[k] = v if len(v.split()) == 1 else v.split()
+            else:
+                _v = self[k]
+                _v = [_v] if not isinstance(_v, list) else _v
+                if v not in _v:
+                    _v.append(v)
+                    self[k] = _v
 
 
 @parser(Specs.cups_files_conf)
