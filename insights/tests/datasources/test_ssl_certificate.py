@@ -320,14 +320,14 @@ queue.type = "LinkedList"
 def test_httpd_certificate(m_open, m_exist):
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_SSL_CONF).return_value]
     broker = {
-        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/ssl.conf'}
+        httpd.httpd_configuration_files: ['/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/ssl.conf']
     }
     result = httpd_ssl_certificate_files(broker)
     assert result == ['/etc/pki/katello/certs/gént-katello-apache.crt']
 
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_SSL_CONF_2).return_value]
     broker = {
-        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/ssl.conf'}
+        httpd.httpd_configuration_files: ['/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/ssl.conf']
     }
     result = httpd_ssl_certificate_files(broker)
     # "/etc/pki/katello/certs/katello-apache_e.crt" not in the result
@@ -361,14 +361,14 @@ def test_nginx_certificate():
 def test_httpd_ssl_cert_exception(m_open, m_exists):
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_CONF_WITHOUT_SSL).return_value]
     broker1 = {
-        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/no_ssl.conf'}
+        httpd.httpd_configuration_files: ['/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/no_ssl.conf']
     }
     with pytest.raises(SkipComponent):
         httpd_ssl_certificate_files(broker1)
 
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_SSL_CONF_NO_VALUE).return_value]
     broker2 = {
-        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/no_ssl.conf'}
+        httpd.httpd_configuration_files: ['/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/no_ssl.conf']
     }
     with pytest.raises(SkipComponent):
         httpd_ssl_certificate_files(broker2)
@@ -408,7 +408,7 @@ def test_mssql_tls_no_cert_exception():
 def test_httpd_certificate_info_in_nss(m_open, m_exists):
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_WITH_NSS).return_value]
     broker = {
-        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/nss.conf'}
+        httpd.httpd_configuration_files: ['/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/nss.conf']
     }
     result = httpd_certificate_info_in_nss(broker)
     assert result == [('/etc/httpd/aliasa', 'testcertaê'), ('/etc/httpd/aliasb', 'testcertb')]
@@ -419,7 +419,7 @@ def test_httpd_certificate_info_in_nss(m_open, m_exists):
 def test_httpd_certificate_info_in_nss_exception(m_open, m_exists):
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_WITH_NSS_OFF).return_value]
     broker = {
-        httpd.httpd_configuration_files: {'/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/nss.conf'}
+        httpd.httpd_configuration_files: ['/etc/httpd/conf/httpd.conf', '/etc/httpd/conf.d/nss.conf']
     }
     with pytest.raises(SkipComponent):
         httpd_certificate_info_in_nss(broker)
