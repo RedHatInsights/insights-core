@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.15) (2024-09-27)
+
+- feat: Add spec cups_browsed_conf ([PR 4227](https://github.com/RedHatInsights/insights-core/pull/4227))
+- Revert "feat(client): write .last-upload.results also after non-legacy upload…" ([PR 4228](https://github.com/RedHatInsights/insights-core/pull/4228))
+
 # [insights-core-3.4.14](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.14) (2024-09-26)
 
 - fix: ssl_certificate no longer depends on HttpdConfTree ([PR 4220](https://github.com/RedHatInsights/insights-core/pull/4220))
