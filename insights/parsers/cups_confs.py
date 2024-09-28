@@ -96,6 +96,7 @@ class CupsdConf(ConfigParser):
 class CupsBrowsedConf(Parser, dict):
     """
     Class for parsing the file ``/etc/cups/cups-browsed.conf``
+
     .. note::
 
         The admin can add multiple directives into the configuration file, and restart service without issue.
