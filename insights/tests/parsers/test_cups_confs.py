@@ -132,6 +132,7 @@ CUPS_BROWSED_CONF = """
 # Can use DNSSD and/or CUPS and/or LDAP, or 'none' for neither.
 
 BrowseRemoteProtocols dnssd cups
+BrowseRemoteProtocols none
 BrowseAllow 192.168.0.1
 BrowseAllow 192.168.0.255
 BrowseAllow cups.example.com
@@ -176,8 +177,8 @@ def test_cups_browsed_files_conf():
     result = CupsBrowsedConf(context_wrap(CUPS_BROWSED_CONF))
     assert len(result) == 2
     assert 'BrowseRemoteProtocols' in result
-    assert result['BrowseRemoteProtocols'] == ['dnssd', 'cups']
-    assert sorted(result['BrowseAllow']) == sorted(['192.168.0.1', '192.168.0.255', 'cups.example.com'])
+    assert result['BrowseRemoteProtocols'] == ['dnssd cups', 'none']
+    assert result['BrowseAllow'] == ['192.168.0.1', '192.168.0.255', 'cups.example.com', '192.168.0.255']
 
 
 def test_cups_browsed_conf_empty():
