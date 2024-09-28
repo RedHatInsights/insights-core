@@ -97,6 +97,13 @@ class CupsBrowsedConf(Parser, dict):
     """
     Class for parsing the file ``/etc/cups/cups-browsed.conf``
 
+    .. note::
+
+        The admin can add multiple directives into the configuration file, and restart service without issue.
+        However, item like BrowseRemoteProtocols only works for the last one, and the item like BrowseAllow works
+        for all directives. So the values of each directives will get stored to a list with the original order,
+        and duplicated values will be kept without de-duplication.
+
     Sample file content::
 
         BrowseRemoteProtocols dnssd cups
@@ -105,7 +112,7 @@ class CupsBrowsedConf(Parser, dict):
     Examples:
         >>> type(cups_browsed_conf)
         <class 'insights.parsers.cups_confs.CupsBrowsedConf'>
-        >>> 'dnssd' in cups_browsed_conf['BrowseRemoteProtocols']
+        >>> 'dnssd cups' in cups_browsed_conf['BrowseRemoteProtocols']
         True
         >>> 'cups.example.com' in cups_browsed_conf['BrowseAllow']
         True
@@ -117,13 +124,9 @@ class CupsBrowsedConf(Parser, dict):
         for line in get_active_lines(content):
             k, v = [i.strip() for i in line.split(None, 1)]
             if k not in self:
-                self[k] = v if len(v.split()) == 1 else v.split()
+                self[k] = [v]
             else:
-                _v = self[k]
-                _v = [_v] if not isinstance(_v, list) else _v
-                if v not in _v:
-                    _v.append(v)
-                    self[k] = _v
+                self[k].append(v)
 
 
 @parser(Specs.cups_files_conf)
