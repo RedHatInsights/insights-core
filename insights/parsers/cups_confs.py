@@ -96,6 +96,12 @@ class CupsdConf(ConfigParser):
 class CupsBrowsedConf(Parser, dict):
     """
     Class for parsing the file ``/etc/cups/cups-browsed.conf``
+    .. note::
+
+        The admin can add multiple directives into the configuration file, and restart service without issue.
+        However, item like BrowseRemoteProtocols only works for the last one, and the item like BrowseAllow works
+        for all directives. So the values of each directives will get stored to a list with the original order,
+        and duplicated values will be kept without de-duplication.
 
     Sample file content::
 
