@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.16](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.16) (2024-09-28)
+
+- fix: Update value format of CupsBrowsedConf ([PR 4230](https://github.com/RedHatInsights/insights-core/pull/4230))
+
 # [insights-core-3.4.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.15) (2024-09-27)
 
 - feat: Add spec cups_browsed_conf ([PR 4227](https://github.com/RedHatInsights/insights-core/pull/4227))

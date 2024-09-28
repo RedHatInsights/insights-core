@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.15
+Version:        3.4.16
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,9 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Sat Sep 28 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.16-1
+- fix: Update value format of CupsBrowsedConf (#4230) (jiazhang@redhat.com)
+
 * Fri Sep 27 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.15-1
 - feat: Add spec cups_browsed_conf (#4227) (jiazhang@redhat.com)
 - Revert "feat(client): write .last-upload.results also after non-legacy
