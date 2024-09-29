@@ -940,7 +940,7 @@ class command_with_args(object):
                  deps=None, split=True, keep_rc=False, timeout=None,
                  inherit_env=None, override_env=None, signum=None, **kwargs):
         deps = deps if deps is not None else []
-        self.cmd = cmd
+        self.cmd = cmd if six.PY3 else str(cmd)
         self.provider = provider
         self.save_as = save_as.strip("/") if save_as else None  # strip as a relative file path
         self.context = context
