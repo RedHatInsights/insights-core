@@ -167,13 +167,6 @@ plugins:
         - name: insights.combiners.ps
           enabled: true
 
-    # needed for httpd_certificate
-        - name: insights.combiners.httpd_conf.HttpdConfTree
-          enabled: true
-
-        - name: insights.parsers.httpd_conf.HttpdConf
-          enabled: true
-
     # needed for httpd_on_nfs
         - name: insights.parsers.mount.ProcMounts
           enabled: true

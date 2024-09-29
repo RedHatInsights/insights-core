@@ -199,12 +199,11 @@ class TestInsightsArchive(TestCase):
         archive.get_full_archive_path('test')
         create_archive_dir.assert_called_once()
 
-    @patch('insights.client.archive.os.path.join', return_value=test_archive_dir)
     @patch('insights.client.archive.os.path.isdir', return_value=False)
     @patch('insights.client.archive.shutil.copytree', return_value=None)
     @patch('insights.client.archive.InsightsArchive.cleanup_previous_archive', return_value=None)
     @patch('insights.client.archive.InsightsArchive.create_archive_dir', return_value=test_archive_dir)
-    def test_copy_dir(self, create_archive_dir, _1, _2, _3, _4, _5, _6):
+    def test_copy_dir(self, create_archive_dir, _1, _2, _3, _4, _5):
         '''
         Verify create_archive_dir is called when calling copy_dir
         '''

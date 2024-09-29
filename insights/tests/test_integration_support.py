@@ -52,7 +52,7 @@ def test_run_test_parser_is_not_used():
     """
     input_data = InputData("fake_input")
     input_data.add(Specs.dmesg, "FAKE_CONTENT")
-    result = run_test(parser_is_not_used, input_data, None)
+    result = run_test(parser_is_not_used, input_data)
     # No Exception raised
     assert result
 
@@ -65,7 +65,7 @@ def test_run_test_parser_is_filtered():
     """
     input_data = InputData("fake_input")
     input_data.add(Specs.dmesg, "FAKE_CONTENT")
-    result = run_test(parser_is_filtered, input_data, None)
+    result = run_test(parser_is_filtered, input_data)
     # No Exception raised
     assert result
 

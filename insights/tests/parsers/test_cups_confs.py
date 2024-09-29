@@ -3,7 +3,7 @@ import pytest
 
 from insights.core.exceptions import ParseException
 from insights.parsers import cups_confs
-from insights.parsers.cups_confs import CupsdConf, CupsFilesConf
+from insights.parsers.cups_confs import CupsdConf, CupsFilesConf, CupsBrowsedConf
 from insights.parsr.query import first, last
 from insights.tests import context_wrap
 
@@ -127,6 +127,22 @@ CUPS_FILES_CONF_EMPTY = """
 """.strip()
 
 
+CUPS_BROWSED_CONF = """
+# Which protocols will we use to discover printers on the network?
+# Can use DNSSD and/or CUPS and/or LDAP, or 'none' for neither.
+
+BrowseRemoteProtocols dnssd cups
+BrowseRemoteProtocols none
+BrowseAllow 192.168.0.1
+BrowseAllow 192.168.0.255
+BrowseAllow cups.example.com
+BrowseAllow 192.168.0.255
+""".strip()
+
+CUPS_BROWSED_CONF_CONF_EMPTY = """
+""".strip()
+
+
 def test_cupsd_conf():
     context = context_wrap(CUPSD_CONF)
     result = CupsdConf(context)
@@ -151,16 +167,31 @@ def test_cups_files_conf():
     assert result['AccessLog'] == 'syslog'
 
 
-def test_cups_files_conf_empyt():
+def test_cups_files_conf_empty():
     with pytest.raises(ParseException) as exc:
         CupsFilesConf(context_wrap(CUPS_FILES_CONF_EMPTY))
+    assert str(exc.value) == "Empty Content"
+
+
+def test_cups_browsed_files_conf():
+    result = CupsBrowsedConf(context_wrap(CUPS_BROWSED_CONF))
+    assert len(result) == 2
+    assert 'BrowseRemoteProtocols' in result
+    assert result['BrowseRemoteProtocols'] == ['dnssd cups', 'none']
+    assert result['BrowseAllow'] == ['192.168.0.1', '192.168.0.255', 'cups.example.com', '192.168.0.255']
+
+
+def test_cups_browsed_conf_empty():
+    with pytest.raises(ParseException) as exc:
+        CupsBrowsedConf(context_wrap(CUPS_BROWSED_CONF_CONF_EMPTY))
     assert str(exc.value) == "Empty Content"
 
 
 def test_doc():
     env = {
         'cupsd_conf': CupsdConf(context_wrap(CUPSD_CONF_EXAMPLE)),
-        'cups_files_conf': CupsFilesConf(context_wrap(CUPS_FILES_CONF))
+        'cups_files_conf': CupsFilesConf(context_wrap(CUPS_FILES_CONF)),
+        'cups_browsed_conf': CupsBrowsedConf(context_wrap(CUPS_BROWSED_CONF))
     }
     failed, total = doctest.testmod(cups_confs, globs=env)
     assert failed == 0

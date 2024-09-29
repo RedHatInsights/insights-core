@@ -152,7 +152,6 @@ class DefaultSpecs(Specs):
     cinder_conf = first_file(["/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf", "/etc/cinder/cinder.conf"])
     cloud_cfg_filtered = cloud_init.cloud_cfg
     cloud_init_custom_network = simple_file("/etc/cloud/cloud.cfg.d/99-custom-networking.cfg")
-    cloud_init_cfg_run = simple_file("/run/cloud-init/cloud.cfg")
     cloud_init_log = simple_file("/var/log/cloud-init.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
     cmdline = simple_file("/proc/cmdline")
@@ -177,6 +176,7 @@ class DefaultSpecs(Specs):
     crypto_policies_state_current = simple_file("/etc/crypto-policies/state/current")
     cryptsetup_luksDump = luks_devices.luks_data_sources
     cupsd_conf = simple_file("/etc/cups/cupsd.conf")
+    cups_browsed_conf = simple_file("/etc/cups/cups-browsed.conf")
     cups_files_conf = simple_file("/etc/cups/cups-files.conf")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
@@ -662,6 +662,7 @@ class DefaultSpecs(Specs):
     sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
     sysconfig_grub = simple_file("/etc/default/grub")  # This is the file where the "/etc/sysconfig/grub" point to
     sysconfig_kdump = simple_file("etc/sysconfig/kdump")
+    sysconfig_kernel = simple_file("etc/sysconfig/kernel")
     sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
     sysconfig_network = simple_file("etc/sysconfig/network")
     sysconfig_nfs = simple_file("/etc/sysconfig/nfs")
@@ -705,7 +706,10 @@ class DefaultSpecs(Specs):
     tuned_adm = simple_command("/usr/sbin/tuned-adm list")
     udev_66_md_rules = first_file(["/etc/udev/rules.d/66-md-auto-readd.rules", "/usr/lib/udev/rules.d/66-md-auto-readd.rules"])
     udev_fc_wwpn_id_rules = simple_file("/usr/lib/udev/rules.d/59-fc-wwpn-id.rules")
-    uname = simple_command("/usr/bin/uname -a")
+    uname = first_of([
+        simple_command("/usr/bin/uname -a"),
+        simple_command("/bin/uname -a")  # RHEL 6
+    ])
     up2date = simple_file("/etc/sysconfig/rhn/up2date")
     up2date_log = simple_file("/var/log/up2date")
     uptime = simple_command("/usr/bin/uptime")

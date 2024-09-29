@@ -1,11 +1,15 @@
+import doctest
 import pytest
-import warnings
-from insights.parsers import uname
-from insights.tests import context_wrap
+
+try:
+    from unittest.mock import patch
+except Exception:
+    from mock import patch
 
 from distutils.version import LooseVersion, StrictVersion
 
-import doctest
+from insights.parsers import uname
+from insights.tests import context_wrap
 
 
 UNAME1 = "Linux foo.example.com 2.6.32-504.el6.x86_64 #1 SMP Tue Sep 16 01:56:35 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux"
@@ -240,45 +244,46 @@ def test_fixed_by():
     assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-220.1.el6', '2.6.32-600.el6')
 
 
-def test_fixed_by_warning():
+@patch("insights.parsers.uname.warnings.warn")
+def test_fixed_by_warning(warn):
     # For all remaining tests, cause the comparation warnings
     # to always be caught, and ignore other warnings.
-    warning_msg = "Comparison of distribution part will be ingored"
-    warnings.simplefilter("ignore")
-    warnings.filterwarnings("always", message=warning_msg)
-    with warnings.catch_warnings(record=True) as w:
+    warning_msg = "Comparison of distribution part will be ignored."
+    u = uname.Uname.from_uname_str("Linux qqhrycsq2 2.6.32-504.el6.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
+    # should be no comparation warning reported
+    assert [] == u.fixed_by('2.6.32-220.1.el6', '2.6.32-504.el6')
+    warn.reset_mock()
 
-        u = uname.Uname.from_uname_str("Linux qqhrycsq2 2.6.32-504.el6.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
-        # should be no comparation warning reported
-        assert [] == u.fixed_by('2.6.32-220.1.el6', '2.6.32-504.el6')
-        assert len(w) == 0
+    # fixes without distribution part
+    assert [] == u.fixed_by('2.6.32-504')
+    warn.assert_any_call(warning_msg)
+    warn.reset_mock()
 
-        # fixes without distribution part
-        assert [] == u.fixed_by('2.6.32-504')
-        assert len(w) == 1
+    # fixes only has kernel version part
+    assert [] == u.fixed_by('2.6.32-')
+    warn.assert_any_call(warning_msg)
+    warn.reset_mock()
 
-        # fixes only has kernel version part
-        assert [] == u.fixed_by('2.6.32-')
-        assert len(w) == 2
+    # introduce without distribution part
+    assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-504')
+    warn.assert_any_call(warning_msg)
+    warn.reset_mock()
 
-        # introduce without distribution part
-        assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-504')
-        assert len(w) == 3
+    # introduce only has kernel version part
+    assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-')
+    warn.assert_any_call(warning_msg)
+    warn.reset_mock()
 
-        # introduce only has kernel version part
-        assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-')
-        assert len(w) == 4
+    # fixes without distribution part
+    rt_u = uname.Uname.from_uname_str("Linux qqhrycsq2 4.18.0-305.rt7.72.el8.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
+    assert [] == rt_u.fixed_by('4.18.0-305.rt7.72')
+    warn.assert_any_call(warning_msg)
+    warn.reset_mock()
 
-        rt_u = uname.Uname.from_uname_str("Linux qqhrycsq2 4.18.0-305.rt7.72.el8.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
-        # fixes without distribution part
-        assert [] == rt_u.fixed_by('4.18.0-305.rt7.72')
-        assert len(w) == 5
-
-        # introduce without distribution part
-        assert ['4.18.0-307.rt7.72.el8'] == rt_u.fixed_by('4.18.0-307.rt7.72.el8', introduced_in='4.18.0-305.rt7.72')
-        assert len(w) == 6
-
-    warnings.resetwarnings()
+    # introduce without distribution part
+    assert ['4.18.0-307.rt7.72.el8'] == rt_u.fixed_by('4.18.0-307.rt7.72.el8', introduced_in='4.18.0-305.rt7.72')
+    warn.assert_any_call(warning_msg)
+    warn.reset_mock()
 
 
 def test_unknown_release():

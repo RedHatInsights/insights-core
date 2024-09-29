@@ -21,6 +21,7 @@ from insights.core.spec_factory import (
         DatasourceProvider, RegistryPoint, SpecSet, command_with_args,
         foreach_collect, foreach_execute,
         glob_file, simple_command, simple_file, first_file, first_of)
+from insights.specs.default import _make_rpm_formatter
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -436,3 +437,11 @@ def test_specs_collect(obfuscate):
     dr.COMPONENTS = defaultdict(lambda: defaultdict(set))
     dr.TYPE_OBSERVERS = defaultdict(set)
     dr.ENABLED = defaultdict(lambda: True)
+
+
+def test_specs_default_module_utils():
+    rpm_formatter = _make_rpm_formatter([
+        '"name":"%{NAME}"',
+        '"version":"%{VERSION}"'
+    ])
+    assert ',"version":' in rpm_formatter
