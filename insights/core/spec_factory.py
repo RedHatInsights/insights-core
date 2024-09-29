@@ -334,7 +334,7 @@ class CommandOutputProvider(ContentProvider):
                  args=None, split=True, keep_rc=False, ds=None, timeout=None,
                  inherit_env=None, override_env=None, signum=None, cleaner=None):
         super(CommandOutputProvider, self).__init__()
-        self.cmd = cmd
+        self.cmd = cmd if six.PY3 else str(cmd)
         self.root = root
         self.save_as = save_as
         self.ctx = ctx
