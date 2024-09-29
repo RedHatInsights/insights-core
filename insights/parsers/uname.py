@@ -36,10 +36,12 @@ kernel strings::
     False
 
 """
+import warnings
 
 from collections import namedtuple
 from distutils.version import LooseVersion, StrictVersion
-from .. import parser, CommandParser
+
+from insights import parser, CommandParser
 from insights.core.context import Context
 from insights.specs import Specs
 
@@ -416,8 +418,7 @@ class Uname(CommandParser):
         is_o_with_dist = o_release_parts[-1].startswith(dist_opts)
         if not (is_s_with_dist ^ is_o_with_dist):
             return self._lv_release, other._lv_release
-        import warnings
-        warnings.warn('Comparison of distribution part will be ingored.')
+        warnings.warn('Comparison of distribution part will be ignored.')
         s_release = (
             self._lv_release.vstring if not is_s_with_dist
             else pad_release(".".join(s_release_parts[:-1]), len(s_release_parts))
