@@ -706,7 +706,10 @@ class DefaultSpecs(Specs):
     tuned_adm = simple_command("/usr/sbin/tuned-adm list")
     udev_66_md_rules = first_file(["/etc/udev/rules.d/66-md-auto-readd.rules", "/usr/lib/udev/rules.d/66-md-auto-readd.rules"])
     udev_fc_wwpn_id_rules = simple_file("/usr/lib/udev/rules.d/59-fc-wwpn-id.rules")
-    uname = simple_command("/usr/bin/uname -a")
+    uname = first_of([
+        simple_command("/usr/bin/uname -a"),
+        simple_command("/bin/uname -a")  # RHEL 6
+    ])
     up2date = simple_file("/etc/sysconfig/rhn/up2date")
     up2date_log = simple_file("/var/log/up2date")
     uptime = simple_command("/usr/bin/uptime")
