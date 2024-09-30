@@ -232,7 +232,7 @@ def tags(broker):
         # --START--
         # NOTE:
         # The following code is from the following function
-        # - insights.client.data_collector.DataCollector._write_tags
+        # - insights.client.core_collector.CoreCollector._write_tags
         # Please keep them consistence before removing that.
         def f(k, v):
             if type(v) is list:

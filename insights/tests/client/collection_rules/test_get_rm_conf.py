@@ -333,54 +333,6 @@ def test_rm_conf_old_load_ok(isfile, verify):
     assert result == {'commands': ['/bin/ls', 'ethtool_i'], 'files': ['/etc/test'], 'patterns': ['abc123', 'def456'], 'keywords': ['key1', 'key2', 'key3']}
 
 
-@patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={"test": "test"}))
-@patch('insights.client.collection_rules.InsightsUploadConf.get_conf_file')
-def test_rm_conf_NOT_loads_uploader_json_core_collect(get_conf_file):
-    '''
-    Verify that get_conf_file() is NOT called from
-    get_rm_conf() when core_collect==True
-    '''
-    upload_conf = insights_upload_conf(core_collect=True)
-    upload_conf.get_rm_conf()
-    get_conf_file.assert_not_called()
-
-
-@patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={"test": "test"}))
-@patch('insights.client.collection_rules.InsightsUploadConf.get_conf_file')
-def test_rm_conf_no_load_uploader_json_classic_collect(get_conf_file):
-    '''
-    Verify that get_conf_file() is NOT called from
-    get_rm_conf() when core_collect==False
-    '''
-    upload_conf = insights_upload_conf(core_collect=False)
-    upload_conf.get_rm_conf()
-    get_conf_file.assert_not_called()
-
-
-@patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={"files": "/etc/insights-client/machine-id"}))
-@patch('insights.client.collection_rules.InsightsUploadConf.get_conf_file')
-@patch("insights.client.collection_rules.logger.warning")
-def test_rm_conf_skipped_machine_id_file(warning, get_conf_file):
-    '''
-    Verify that '/etc/insights-client/machine-id' is set in file-redaction.yaml[files]
-    '''
-    upload_conf = insights_upload_conf()
-    upload_conf.get_rm_conf()
-    warning.assert_called_once_with("WARNING: Spec machine_id will be skipped for redaction; as it would cause issues, please remove it from %s.", "/etc/insights-client/file-redaction.yaml")
-
-
-@patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={"components": "insights.specs.default.DefaultSpecs.machine_id"}))
-@patch('insights.client.collection_rules.InsightsUploadConf.get_conf_file')
-@patch("insights.client.collection_rules.logger.warning")
-def test_rm_conf_skipped_machine_id_component(warning, get_conf_file):
-    '''
-    Verify that 'insights.specs.default.DefaultSpecs.machine_id' is set in file-redaction.yaml[components]
-    '''
-    upload_conf = insights_upload_conf()
-    upload_conf.get_rm_conf()
-    warning.assert_called_once_with("WARNING: Spec machine_id will be skipped for redaction; as it would cause issues, please remove it from %s.", "/etc/insights-client/file-redaction.yaml")
-
-
 # @patch('insights.client.collection_rules.verify_permissions', return_value=True)
 # @patch_isfile(True)
 # def test_rm_conf_old_load_bad(isfile, verify):

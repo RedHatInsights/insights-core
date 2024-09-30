@@ -6,7 +6,6 @@ from __future__ import absolute_import
 import atexit
 import logging
 import os
-import re
 import shlex
 import shutil
 import subprocess
@@ -18,7 +17,6 @@ import uuid
 from signal import SIGTERM, signal
 
 from insights.client.constants import InsightsConstants as constants
-from insights.client.insights_spec import InsightsFile, InsightsCommand
 from insights.client.utilities import determine_hostname, _expand_paths, write_data_to_file
 
 logger = logging.getLogger(__name__)
@@ -34,7 +32,6 @@ class InsightsArchive(object):
         tmp_dir         - a temporary directory in /var/tmp
         archive_dir     - location to collect archive data inside tmp_dir
         archive_name    - filename of the archive and archive_dir
-        cmd_dir         - insights_commands directory inside archive_dir
         compressor      - tar compression flag to use
         tar_file        - path of the final archive file
     """
@@ -67,7 +64,6 @@ class InsightsArchive(object):
         # classic collection and compliance needs these
         # core collection will set "archive_dir" on its own
         self.archive_dir = None
-        self.cmd_dir = None
 
         self.compressor = config.compressor
         self.archive_stored = None
@@ -90,18 +86,6 @@ class InsightsArchive(object):
             os.makedirs(archive_dir, 0o700)
         self.archive_dir = archive_dir
         return self.archive_dir
-
-    def create_command_dir(self):
-        """
-        Create the "insights_commands" dir
-        """
-        self.create_archive_dir()
-        cmd_dir = os.path.join(self.archive_dir, "insights_commands")
-        logger.debug('Creating command directory %s...', cmd_dir)
-        if not os.path.exists(cmd_dir):
-            os.makedirs(cmd_dir, 0o700)
-        self.cmd_dir = cmd_dir
-        return self.cmd_dir
 
     def get_full_archive_path(self, path):
         """
@@ -202,29 +186,6 @@ class InsightsArchive(object):
         if self.archive_dir:
             logger.debug("Deleting: " + self.archive_dir)
             shutil.rmtree(self.archive_dir, True)
-
-    def add_to_archive(self, spec, cleaner=None, spec_info=None):
-        '''
-        Add files and commands to archive
-        Use InsightsSpec.get_output() to get data
-        '''
-        ab_regex = [
-            "^timeout: failed to run command .+: No such file or directory$",
-            "^Missing Dependencies:"
-        ]
-        if isinstance(spec, InsightsCommand):
-            archive_path = os.path.join(self.cmd_dir, spec.archive_path.lstrip('/'))
-        if isinstance(spec, InsightsFile):
-            archive_path = self.get_full_archive_path(spec.archive_path.lstrip('/'))
-        output = spec.get_output()
-        if output and not any(re.search(rg, output) for rg in ab_regex):
-            write_data_to_file(output, archive_path)
-            if cleaner:
-                no_obfuscate, no_redact = spec_info if spec_info else ([], False)
-                # Redact and Obfuscate for data collection
-                cleaner.clean_file(archive_path,
-                                   no_obfuscate=no_obfuscate,
-                                   no_redact=no_redact)
 
     def add_metadata_to_archive(self, metadata, meta_path):
         '''

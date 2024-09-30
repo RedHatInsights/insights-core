@@ -18,10 +18,8 @@ from .utilities import (generate_machine_id,
                         determine_hostname,
                         get_version_info)
 from .collection_rules import InsightsUploadConf
-from .data_collector import DataCollector
 from .core_collector import CoreCollector
 from .connection import InsightsConnection
-from .archive import InsightsArchive
 from .support import registration_check
 from .constants import InsightsConstants as constants
 
@@ -308,15 +306,6 @@ def get_machine_id():
     return generate_machine_id()
 
 
-def update_rules(config, pconn):
-    if not pconn:
-        raise ValueError('ERROR: Cannot update rules in --offline mode. '
-                         'Disable auto_update in config file.')
-
-    pc = InsightsUploadConf(config, conn=pconn)
-    return pc.get_conf_update()
-
-
 def get_branch_info(config):
     """
     Get branch info for a system
@@ -335,15 +324,9 @@ def collect(config):
     All the heavy lifting done here
     """
     pc = InsightsUploadConf(config)
-    archive = InsightsArchive(config)
+    dc = CoreCollector(config)
 
-    if config.core_collect:
-        dc = CoreCollector(config, archive)
-    else:
-        dc = DataCollector(config, archive, spec_conf=pc.get_conf_file())
-
-    logger.info('Starting to collect Insights data for %s',
-                determine_hostname(config.display_name))
+    logger.info('Starting to collect Insights data for %s' % determine_hostname(config.display_name))
 
     dc.run_collection(pc.get_rm_conf(),
                       get_branch_info(config),

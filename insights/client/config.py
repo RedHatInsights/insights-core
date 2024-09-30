@@ -6,8 +6,6 @@ import copy
 import six
 import sys
 from six.moves import configparser as ConfigParser
-from distutils.version import LooseVersion
-from .utilities import get_version_info
 from insights.specs.datasources.manifests import manifests, content_types
 
 try:
@@ -16,23 +14,6 @@ except:
     from constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
-
-
-def _core_collect_default():
-    '''
-    Core collection should be disabled by default, unless
-    the RPM version 3.1 or above
-    '''
-    rpm_version = get_version_info()['client_version']
-    if not rpm_version:
-        # problem getting the version, default to False
-        return False
-    if LooseVersion(rpm_version) < LooseVersion(constants.core_collect_rpm_version):
-        # rpm version is older than the core collection release
-        return False
-    else:
-        # rpm version is equal to or newer than the core collection release
-        return True
 
 
 DEFAULT_OPTS = {
@@ -162,7 +143,7 @@ DEFAULT_OPTS = {
         'action': 'store'
     },
     'core_collect': {
-        'default': False
+        'default': True
     },
     'egg_path': {
         # non-CLI
@@ -489,11 +470,6 @@ class InsightsConfig(object):
         self._init_attrs = copy.copy(dir(self))
         self._update_dict(DEFAULT_KVS)
 
-        # initialize the real default for core_collect here
-        #   instead of inside DEFAULT_KVS because calling
-        #   this function at the module scope ignores unit test mocks
-        self.core_collect = _core_collect_default()
-
         if args:
             self._update_dict(args[0])
         self._update_dict(kwargs)
@@ -746,6 +722,9 @@ class InsightsConfig(object):
             if self.obfuscate:
                 if self._print_errors:
                     sys.stdout.write('WARNING: Obfuscation reports will be created alongside the output directory.\n')
+        if self.core_collect is False:
+            if self._print_errors:
+                sys.stdout.write('WARNING: "core_collect=False" is no longer supported. "core_collect=True" will be used.\n')
         if self.output_file:
             if os.path.exists(self.output_file):
                 raise ValueError('File %s already exists.' % self.output_file)
@@ -777,8 +756,6 @@ class InsightsConfig(object):
         self.to_json = self.to_json or self.analyze_container
         self.register = self.register and not self.offline
         self.keep_archive = self.keep_archive or self.no_upload
-        # TODO: remove this when discarding legacy data collection (data_collector)
-        self.rhsm_facts_file = constants.rhsm_facts_file
         if self.to_json and self.quiet:
             self.diagnosis = True
         if self.test_connection:
@@ -802,7 +779,6 @@ class InsightsConfig(object):
             # Get the manifest for the specified app
             self.manifest = manifests.get(self.app)
             self.content_type = content_types.get(self.app)
-            self.core_collect = True
             self.legacy_upload = False
             self._set_app_config()
         if self.compliance:

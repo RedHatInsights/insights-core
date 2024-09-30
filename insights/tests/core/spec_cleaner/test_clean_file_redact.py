@@ -12,23 +12,6 @@ test_file_data_sensitive = 'test\nabcd\n1234\npassword: p4ssw0rd here\npassword=
 
 
 @patch('insights.client.archive.InsightsArchive', Mock())
-@patch('insights.client.insights_spec.InsightsCommand', Mock())
-@patch('insights.client.insights_spec.InsightsFile', Mock())
-@patch('insights.client.data_collector.DataCollector._parse_command_spec', Mock())
-@patch('insights.client.data_collector.DataCollector._parse_file_spec', Mock())
-@patch('insights.client.data_collector.DataCollector._parse_glob_spec', Mock())
-def test_redact_classic():
-    '''
-    Verify redact is filled during classic collection
-    '''
-    conf = InsightsConfig()
-    rm_conf = {'test': 'test'}
-    pp = Cleaner(conf, rm_conf)
-    assert pp.redact['exclude'] == []
-    assert pp.redact['regex'] is False
-
-
-@patch('insights.client.archive.InsightsArchive', Mock())
 @patch('insights.client.core_collector.CoreCollector._write_branch_info', Mock())
 @patch('insights.client.core_collector.CoreCollector._write_display_name', Mock())
 @patch('insights.client.core_collector.CoreCollector._write_version_info', Mock())
@@ -36,7 +19,7 @@ def test_redact_classic():
 @patch('insights.client.core_collector.CoreCollector._write_blacklist_report', Mock())
 @patch('insights.client.core_collector.collect.collect', Mock(return_value=('/var/tmp/testarchive/insights-test', {})))
 def test_redact_core():
-    conf = InsightsConfig(core_collect=True)
+    conf = InsightsConfig()
     rm_conf = {'test': 'test'}
     pp = Cleaner(conf, rm_conf)
     assert pp.redact['exclude'] == []
@@ -44,9 +27,8 @@ def test_redact_core():
 
 
 @mark.parametrize("obfuscate", [True, False])
-@mark.parametrize("core_collect", [True, False])
-def test_redact_line_changed_password(core_collect, obfuscate):
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+def test_redact_line_changed_password(obfuscate):
+    conf = InsightsConfig(obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -75,9 +57,8 @@ def test_redact_line_changed_password(core_collect, obfuscate):
 
 
 @mark.parametrize("obfuscate", [True, False])
-@mark.parametrize("core_collect", [True, False])
-def test_redact_keyword_empty_not_change(core_collect, obfuscate):
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+def test_redact_keyword_empty_not_change(obfuscate):
+    conf = InsightsConfig(obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -95,9 +76,8 @@ def test_redact_keyword_empty_not_change(core_collect, obfuscate):
 
 
 @mark.parametrize("obfuscate", [True, False])
-@mark.parametrize("core_collect", [True, False])
-def test_redact_keyword_changed_keyword(core_collect, obfuscate):
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+def test_redact_keyword_changed_keyword(obfuscate):
+    conf = InsightsConfig(obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -117,9 +97,8 @@ def test_redact_keyword_changed_keyword(core_collect, obfuscate):
 
 
 @mark.parametrize("obfuscate", [True, False])
-@mark.parametrize("core_collect", [True, False])
-def test_redact_keyword_no_such_keyword_to_change(core_collect, obfuscate):
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+def test_redact_keyword_no_such_keyword_to_change(obfuscate):
+    conf = InsightsConfig(obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -137,9 +116,8 @@ def test_redact_keyword_no_such_keyword_to_change(core_collect, obfuscate):
 
 
 @mark.parametrize("obfuscate", [True, False])
-@mark.parametrize("core_collect", [True, False])
-def test_redact_keyword_disabled_by_no_redact(core_collect, obfuscate):
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+def test_redact_keyword_disabled_by_no_redact(obfuscate):
+    conf = InsightsConfig(obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -163,19 +141,17 @@ def test_redact_keyword_disabled_by_no_redact(core_collect, obfuscate):
     ),
 ])
 @mark.parametrize("obfuscate", [True, False])
-@mark.parametrize("core_collect", [True, False])
-def test_redact_line_keyword_extract_cases(core_collect, obfuscate, line, expected):
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+def test_redact_line_keyword_extract_cases(obfuscate, line, expected):
+    conf = InsightsConfig(obfuscate=obfuscate)
     pp = Cleaner(conf, {'keywords': ['name', 'day']})
     actual = pp._redact_line(line)
     assert actual == expected
 
 
-@mark.parametrize("core_collect", [True, False])
-def test_redact_line_keyword_with_hostname_and_ip(core_collect):
+def test_redact_line_keyword_with_hostname_and_ip():
     hostname = 'test1.abc.com'
     line = "test1.abc.com, 10.0.0.1, test1.abc.loc, 20.1.4.7, smtp.abc.com, what's your name?, what day is today?"
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=True, obfuscate_hostname=True, hostname=hostname)
+    conf = InsightsConfig(obfuscate=True, obfuscate_hostname=True, hostname=hostname)
     pp = Cleaner(conf, {'keywords': ['name', 'day']}, hostname)
     result = pp._redact_line(line)
     assert 'test1.abc.com' in result  # hostname is not processed in _redact_line
@@ -188,9 +164,8 @@ def test_redact_line_keyword_with_hostname_and_ip(core_collect):
 
 
 @mark.parametrize("obfuscate", [True, False])
-@mark.parametrize("core_collect", [True, False])
-def test_redact_patterns_exclude_regex(core_collect, obfuscate):
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+def test_redact_patterns_exclude_regex(obfuscate):
+    conf = InsightsConfig(obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -210,9 +185,8 @@ def test_redact_patterns_exclude_regex(core_collect, obfuscate):
 
 
 @mark.parametrize("obfuscate", [True, False])
-@mark.parametrize("core_collect", [True, False])
-def test_redact_file_empty(core_collect, obfuscate):
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+def test_redact_file_empty(obfuscate):
+    conf = InsightsConfig(obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -230,9 +204,8 @@ def test_redact_file_empty(core_collect, obfuscate):
 
 
 @mark.parametrize("obfuscate", [True, False])
-@mark.parametrize("core_collect", [True, False])
-def test_redact_patterns_exclude_no_regex(core_collect, obfuscate):
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+def test_redact_patterns_exclude_no_regex(obfuscate):
+    conf = InsightsConfig(obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -252,9 +225,8 @@ def test_redact_patterns_exclude_no_regex(core_collect, obfuscate):
 
 
 @mark.parametrize("obfuscate", [True, False])
-@mark.parametrize("core_collect", [True, False])
-def test_redact_patterns_exclude_empty(core_collect, obfuscate):
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+def test_redact_patterns_exclude_empty(obfuscate):
+    conf = InsightsConfig(obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -273,9 +245,8 @@ def test_redact_patterns_exclude_empty(core_collect, obfuscate):
 
 
 @mark.parametrize("obfuscate", [True, False])
-@mark.parametrize("core_collect", [True, False])
-def test_redact_exclude_none(core_collect, obfuscate):
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+def test_redact_exclude_none(obfuscate):
+    conf = InsightsConfig(obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
