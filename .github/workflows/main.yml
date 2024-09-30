@@ -146,3 +146,19 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  greeting:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/first-interaction@v1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        pr-message: |-
+          # Greetings!
+
+          Thanks for contributing to insights-core.
+          To make sure your code is compliant with the guide, please go
+          through the [Contributing](https://github.com/RedHatInsights/insights-core/blob/master/CONTRIBUTING.md#contributing)
+          and review your code first.
