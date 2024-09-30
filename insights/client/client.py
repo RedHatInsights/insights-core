@@ -16,7 +16,8 @@ from .utilities import (generate_machine_id,
                         write_unregistered_file,
                         delete_cache_files,
                         determine_hostname,
-                        get_version_info)
+                        get_version_info,
+                        _get_rhsm_identity)
 from .collection_rules import InsightsUploadConf
 from .data_collector import DataCollector
 from .core_collector import CoreCollector
@@ -179,7 +180,18 @@ def _legacy_handle_registration(config, pconn):
         logger.info("Machine-id found, insights-client can not be registered."
                     " Please, unregister insights-client first: `insights-client --unregister`")
         return False
-
+    if config.authmethod != "BASIC":
+        if not _get_rhsm_identity() and check['status'] is False:
+            logger.info("This machine has not yet been registered, please ensure "
+                            "that the system is\nregistered with subscription-manager "
+                            "and then with insights-client.\n"
+                            "\n1. Register with subscription-manager"
+                            "\n# subscription-manager register\n"
+                            "\n2. Register with insights-client"
+                            "\n# insights-client --register")   
+            return False
+    
+    
     logger.debug('Machine-id: %s', generate_machine_id())
 
     for m in check['messages']:
@@ -227,7 +239,9 @@ def _legacy_handle_registration(config, pconn):
         else:
             # not yet registered
             logger.info('This machine has not yet been registered. '
-                        'Use --register to register this machine.')
+                        'Use --register to register this machine.\n'
+                        '# insights-client --register')
+            write_to_disk(constants.machine_id_file, delete=True)
         return False
 
 
