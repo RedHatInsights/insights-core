@@ -159,4 +159,6 @@ jobs:
           # Greetings!
 
           Thanks for contributing to insights-core.
-          To ensure your PR being accepted, go through the [Contributing](https://github.com/RedHatInsights/insights-core/blob/master/CONTRIBUTING.md#contributing) guide first.
+          To make sure your code is compliant with the guide, please go
+          through the [Contributing](https://github.com/RedHatInsights/insights-core/blob/master/CONTRIBUTING.md#contributing)
+          and review your code first.
