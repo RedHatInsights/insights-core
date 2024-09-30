@@ -198,16 +198,17 @@ The following checklist is used when reviewing pull requests
 ### General (all submissions)
 
 - Commit messages are useful and properly formatted
-- No sensitive personally identifiable information (PII) is included
+- No sensitive personally identifiable information (PII) is included in any
+  types of files nor docstring
 - Unit tests validate the code submission
 - One commit, or at most only a handful.  More than five commits should
   be heavily questioned
 
-#### About sensitive PII
+#### About Sensitive PII
 - To find out more about sensitive PII, refer to
-  [Sensitive PII versus non-sensitive PII](https://www.ibm.com/topics/pii#Sensitive+PII+versus+non-sensitive+PII)
+  [Sensitive vs. Nonsensitive PII](https://www.investopedia.com/terms/p/personally-identifiable-information-pii.asp#toc-sensitive-vs-nonsensitive-pii)
 - [Gitleaks Action](https://github.com/gitleaks/gitleaks-action) is used in
-  insights-core to prevent hard-coded sensitive PII from leaking.
+  insights-core to prevent hard-coded sensitive PII leak
 
 
 ### Component (Datasources, Components, Parsers, and Combiners)
@@ -224,7 +225,7 @@ The following checklist is used when reviewing pull requests
   generation in archives used for integration testing and product
   demonstrations.
   - 100% branch coverage is recommended
-  - [Codecov Actions](https://github.com/codecov/codecov-action) is used in
+  - [Codecov Action](https://github.com/codecov/codecov-action) is used in
     insights-core. You can check the project coverage report [here](https://app.codecov.io/gh/RedHatInsights/insights-core)
     or check the PR's detailed coverage in your PR page.
 
