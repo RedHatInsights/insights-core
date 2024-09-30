@@ -27,20 +27,23 @@ Or, alternatively, using HTTPS:
 Initialize a virtualenv:
 
     cd insights-core
-    virtualenv .
+    python3 -m venv .python3
+    source .python3/bin/activate
+    pip install --upgrade pip
 
 Install the project and its dependencies:
 
-    bin/pip install -e .
+    pip install -e .
 
 Install a rule repository:
 
-    bin/pip install -e path/to/rule/repo
+    pip install -e path/to/rule/repo
 
 
 ## Contributor Setup
 
-If you wish to contribute to the insights-core project you'll need to create a fork in github.
+If you wish to contribute to the insights-core project you'll need to create a
+fork in GitHub.
 
 1. Clone your fork:
 
@@ -56,22 +59,11 @@ using the following commands:
     git pull upstream master
     git push origin master
 
-### Python 2
+### Python
 
-To get the project setup for Python 2, use the following commands
+To setup the project virtualenv, use the following commands
 
-    mkdir .python2
-    virtualenv .python2  # Make sure you're using the python2 runtime
-    source .python2/bin/activate
-    pip install --upgrade pip
-    pip install -e .[develop]
-
-
-### Python 3
-
-To setup the project for Python 3, use the following commands
-
-    mkdir .python3
+    cd insights-core
     python3 -m venv .python3
     source .python3/bin/activate
     pip install --upgrade pip
@@ -92,7 +84,7 @@ And they can be found under `docs/_build/html`.
 
 ## Contributor Submissions
 
-Contributors should submit changes to the code via github "Pull
+Contributors should submit changes to the code via GitHub "Pull
 Requests."  One would normally start a new contribution with a branch
 from the current master branch of the upstream project.
 
@@ -101,9 +93,9 @@ from the current master branch of the upstream project.
 2. Make a branch on the fork.  Use a branch name that would be
    meaningful as it will be part of a default commit message when the
    topic branch is merged into the upstream project
-   
+
        git checkout -b your-topic
-   
+
 3. Make contributions on the topic branch.  This project uses the
    [DCO](https://developercertificate.org/) to manage contributions. Commits
    must be signed by you in order to be accepted. To sign a commit simply add
@@ -133,7 +125,7 @@ from the current master branch of the upstream project.
    of the topic branch.  Again, such manipulations change history and
    require a `--force` push.
 
-6. When ready, use the github UI to submit a pull request.  Fill out
+6. When ready, use the GitHub UI to submit a pull request.  Fill out
    the information requested in the PR template.  If your PR fixes an
    issue make sure to reference the issue using a
    [keyword](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword)
@@ -206,17 +198,25 @@ The following checklist is used when reviewing pull requests
 ### General (all submissions)
 
 - Commit messages are useful and properly formatted
+- No sensitive personally identifiable information (PII) is included in any
+  types of files nor docstring
 - Unit tests validate the code submission
 - One commit, or at most only a handful.  More than five commits should
   be heavily questioned
 
+#### About Sensitive PII
+- To find out more about sensitive PII, refer to
+  [Sensitive vs. Nonsensitive PII](https://www.investopedia.com/terms/p/personally-identifiable-information-pii.asp#toc-sensitive-vs-nonsensitive-pii)
+- [Gitleaks Action](https://github.com/gitleaks/gitleaks-action) is used in
+  insights-core to prevent hard-coded sensitive PII leak
 
-### Parsers
 
-- Parser is properly documented and should include:
+### Component (Datasources, Components, Parsers, and Combiners)
+
+- Component is properly documented and should include:
    - Example input
-   - The resulting data structure represented by the parser
-   - Parser usage is clear to a user with some knowledge of the domain
+   - The resulting data structure represented by the component
+   - Component usage is clear to a user with some knowledge of the domain
      without needing to examine the code itself
    - Meaning and usage of an "empty" (falsy data object) is clear
 
@@ -224,6 +224,10 @@ The following checklist is used when reviewing pull requests
   reasonable examples of input data. Test data should be usable in the
   generation in archives used for integration testing and product
   demonstrations.
+  - 100% branch coverage is recommended
+  - [Codecov Action](https://github.com/codecov/codecov-action) is used in
+    insights-core. You can check the project coverage report [here](https://app.codecov.io/gh/RedHatInsights/insights-core)
+    or check the PR's detailed coverage in your PR page.
 
-- Parsers do not expose a ``defaultdict`` or any other data structure that
+- Do not expose a ``defaultdict`` or any other data structure that
   would mutate as a side effect of accessing the object.
