@@ -21,8 +21,7 @@ import six
 import socket
 import struct
 
-# TODO: getting RHSM facts file from the InsightsConstants directly
-# from insights.client.constants import InsightsConstants as constants
+from insights.client.constants import InsightsConstants as constants
 from insights.util.hostname import determine_hostname
 from insights.util.posix_regex import replace_posix
 
@@ -423,8 +422,8 @@ class Cleaner(object):
                 logger.warning(e)
                 raise Exception("Error: Cannot Write to File: %s" % _file)
 
-    def generate_rhsm_facts(self, rhsm_facts_file):
-        logger.info('Writing RHSM facts to %s ...', rhsm_facts_file)
+    def generate_rhsm_facts(self):
+        logger.info('Writing RHSM facts to %s ...', constants.rhsm_facts_file)
 
         hn_block = []
         for k, v in self.hn_db.items():
@@ -451,7 +450,7 @@ class Cleaner(object):
             'insights_client.keywords': json.dumps(kw_block),
         }
 
-        write_report(facts, rhsm_facts_file)
+        write_report(facts, constants.rhsm_facts_file)
 
     def generate_ip_report(self, archive_name):
         try:
@@ -501,9 +500,9 @@ class Cleaner(object):
 
         logger.info('Completed Keyword Report.')
 
-    def generate_report(self, archive_name, rhsm_facts_file):
+    def generate_report(self, archive_name):
         # Always generate the rhsm.facts files
-        self.generate_rhsm_facts(rhsm_facts_file)
+        self.generate_rhsm_facts()
         if 'ip' in self.obfuscate:
             self.generate_ip_report(archive_name)
         if 'hostname' in self.obfuscate:

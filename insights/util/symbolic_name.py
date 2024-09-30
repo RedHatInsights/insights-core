@@ -1,5 +1,11 @@
 """
 A method to get the spec name of some special symbolic_name in the uploader.json
+
+.. warning::
+
+    deprecated, will be removed around Sep 1st, 2024
+
+
 """
 
 SPECIAL_SYMBOLIC_NAME_IN_UPLODER_JSON = {
