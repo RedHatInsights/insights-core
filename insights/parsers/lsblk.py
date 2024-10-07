@@ -134,6 +134,12 @@ class BlockDevice(object):
     def __eq__(self, other):
         return self.data == other
 
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def keys(self):
+        return self.data.keys()
+
     def iteritems(self):
         return self.items()
 

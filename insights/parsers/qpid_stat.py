@@ -70,7 +70,7 @@ class QpidStat(CommandParser):
             (list): A list of subscriptions that matched the search criteria.
 
         """
-        return keyword_search(self.data, **kwargs)
+        return keyword_search(self.data, parent=self, **kwargs)
 
 
 @parser(Specs.qpid_stat_q)

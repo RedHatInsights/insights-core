@@ -76,6 +76,9 @@ class AttributeAsDict(object):
         for k, v in self.__dict__.items():
             yield k, v
 
+    def keys(self):
+        return self.__dict__.keys()
+
 
 class MountOpts(AttributeAsDict):
     """
@@ -130,7 +133,8 @@ class MountEntry(AttributeAsDict):
         filesystem (str): Name of filesystem of mounted device (Deprecated, use
                 `mount_source` instead)
     """
-    pass
+    def __repr__(self):
+        return "<MountEntry '{mc}'>".format(mc=self.mount_clause)
 
 
 class MountedFileSystems(CommandParser):
@@ -211,7 +215,7 @@ class MountedFileSystems(CommandParser):
         Returns:
             (list): The list of mount points matching the given criteria.
         """
-        return keyword_search(self.rows, **kwargs)
+        return keyword_search(self.rows, parent=self, **kwargs)
 
 
 @parser(Specs.mount)
