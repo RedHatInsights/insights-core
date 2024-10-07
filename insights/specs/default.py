@@ -31,7 +31,7 @@ from insights.core.spec_factory import (
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds, db2,
-    dir_list, eap_reports, ethernet, httpd, intersystems, ipcs, kernel,
+    dir_list, eap_reports, env, ethernet, httpd, intersystems, ipcs, kernel,
     kernel_module_list, leapp, lpstat, ls, lsattr, luks_devices, machine_ids,
     md5chk, mdadm, mount as mount_ds, package_provides,
     ps as ps_datasource, rpm_pkgs, sap, satellite_missed_queues,
@@ -325,6 +325,7 @@ class DefaultSpecs(Specs):
     lastupload = glob_file(["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"])
     leapp_migration_results = leapp.migration_results
     leapp_report = leapp.leapp_report
+    ld_library_path_of_global = env.ld_library_path_of_global
     ld_library_path_of_user = sap.ld_library_path_of_user
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")

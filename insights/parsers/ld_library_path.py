@@ -64,3 +64,31 @@ class UserLdLibraryPath(Parser, list):
             raise SkipComponent("LD_LIBRARY_PATH not set.")
 
         self.extend(llds)
+
+
+@parser(Specs.ld_library_path_of_global)
+class GlobalLdLibraryPath(Parser):
+    """
+    Class to parse the datasource ``ld_library_path_of_global`` output.
+
+    Sample output of datasource looks like::
+        /etc/environment
+        /etc/env.d/test.conf
+        /root/.bash_profile
+
+    This is a list of files that define the global LD_LIBRARY_PATH environment.
+
+    Examples:
+        >>> type(global_ld_library_path)
+        <class 'insights.parsers.ld_library_path.GlobalLdLibraryPath'>
+        >>> global_ld_library_path.in_files[0]
+        '/etc/environment'
+        >>> len(global_ld_library_path.in_files)
+        3
+
+    Attributes:
+        stats (list): a list of files that define the global LD_LIBRARY_PATH environment.
+    """
+
+    def parse_content(self, content):
+        self.in_files = content

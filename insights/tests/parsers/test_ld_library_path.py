@@ -4,6 +4,7 @@ import pytest
 from insights.core.exceptions import SkipComponent
 from insights.parsers import ld_library_path
 from insights.parsers.ld_library_path import UserLdLibraryPath
+from insights.parsers.ld_library_path import GlobalLdLibraryPath
 from insights.tests import context_wrap
 
 LD_LIBRARY_PATH_EMPTY = """
@@ -26,6 +27,12 @@ sr3adm
 rh1adm ''
 """.strip()  # noqa: W391
 
+GLOBAL_LD_LIBRARY_PATH = """
+/etc/environment
+/etc/env.d/test.conf
+/root/.bash_profile
+""".strip()
+
 
 def test_ld_library_path():
     ret = UserLdLibraryPath(context_wrap(LD_LIBRARY_PATH))
@@ -44,6 +51,13 @@ def test_ld_library_path():
         assert p in ret[1].path
 
 
+def test_global_ld_library_path():
+    items = GlobalLdLibraryPath(context_wrap(GLOBAL_LD_LIBRARY_PATH))
+    assert items is not None
+    assert len(items.in_files) == 3
+    assert items.in_files[0] == "/etc/environment"
+
+
 def test_empty_and_invalid():
     with pytest.raises(SkipComponent):
         UserLdLibraryPath(context_wrap(LD_LIBRARY_PATH_EMPTY))
@@ -52,6 +66,7 @@ def test_empty_and_invalid():
 def test_doc_examples():
     env = {
         'ld_lib_path': UserLdLibraryPath(context_wrap(LD_LIBRARY_PATH_DOC)),
+        'global_ld_library_path': GlobalLdLibraryPath(context_wrap(GLOBAL_LD_LIBRARY_PATH)),
     }
     failed, total = doctest.testmod(ld_library_path, globs=env)
     assert failed == 0
