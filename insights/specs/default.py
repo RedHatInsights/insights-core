@@ -323,9 +323,9 @@ class DefaultSpecs(Specs):
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
     lastupload = glob_file(["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"])
+    ld_library_path_global_conf = env.ld_library_path_global_conf
     leapp_migration_results = leapp.migration_results
     leapp_report = leapp.leapp_report
-    ld_library_path_global_conf = env.ld_library_path_global_conf
     ld_library_path_of_user = sap.ld_library_path_of_user
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")

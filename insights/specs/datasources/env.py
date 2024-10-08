@@ -1,6 +1,7 @@
 """
 Custom datasources for environments.
 """
+
 import re
 import os
 
@@ -13,8 +14,9 @@ from insights.core.spec_factory import DatasourceProvider
 @datasource(HostContext)
 def ld_library_path_global_conf(broker):
     """
-    This datasource gets the LD_LIBRARY_PATH enviorment setting for root user,
-    if it's set, then reads the following config files:
+    This datasource gets the LD_LIBRARY_PATH enviorment setting for root user.
+
+    If it's set, then reads the following config files:
       * /etc/environment
       * /etc/env.d/*
       * /etc/profile
@@ -34,9 +36,11 @@ def ld_library_path_global_conf(broker):
     The output of this datasource looks like:
         /etc/environment
         /root/.profile
+
     Returns:
         str: Returns a multiline string, each line represent a config file. Not return
              the value of enviorment, because it might include sensitive information.
+
     Raises:
         SkipComponent: When any exception occurs.
     """
