@@ -95,7 +95,7 @@ insights.specs.datasources.env
 ------------------------------
 
 .. automodule:: insights.specs.datasources.env
-    :members: ld_library_path_of_global
+    :members: ld_library_path_global_conf
     :show-inheritance:
     :undoc-members:
 

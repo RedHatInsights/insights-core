@@ -2,7 +2,7 @@ import pytest
 from mock.mock import patch, mock_open
 from insights.core.dr import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.env import ld_library_path_of_global
+from insights.specs.datasources.env import ld_library_path_global_conf
 
 ENV_FILE_1 = """
 LD_LIBRARY_PATH="/path/to/test"
@@ -34,7 +34,7 @@ ENV_CONFIG = {
     "/root/.tcshrc": {"content": "", "isfile": True, "isdir": False}
 }
 
-RELATIVE_PATH = 'insights_commands/ld_library_path_of_global'
+RELATIVE_PATH = 'insights_commands/ld_library_path_global_conf'
 
 EXPECTED_RESULT = """
 /etc/environment
@@ -60,11 +60,11 @@ def _isdir_return_value(name):
 @patch('os.path.isfile', side_effect=_isfile_side_effect)
 @patch('os.path.isdir', return_value=_isdir_return_value)
 @patch('os.listdir')
-def test_ld_library_path_of_global(mock_listdir, mock_isdir, mock_isfile, mock_exists, mock_ds_open):
+def test_ld_library_path_global_conf(mock_listdir, mock_isdir, mock_isfile, mock_exists, mock_ds_open):
     mock_listdir.return_value = ["test.conf"]
 
     broker = {}
-    result = ld_library_path_of_global(broker)
+    result = ld_library_path_global_conf(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
     expected = DatasourceProvider(content=EXPECTED_RESULT, relative_path=RELATIVE_PATH)
@@ -74,10 +74,10 @@ def test_ld_library_path_of_global(mock_listdir, mock_isdir, mock_isfile, mock_e
 
 
 @patch('os.path.exists', return_value=False)
-def test_ld_library_path_of_global_without_env_files(mock_exists):
+def test_ld_library_path_global_conf_without_env_files(mock_exists):
     broker = {}
     with pytest.raises(SkipComponent) as e:
-        ld_library_path_of_global(broker)
+        ld_library_path_global_conf(broker)
     assert 'SkipComponent' in str(e)
 
 
@@ -86,11 +86,11 @@ def test_ld_library_path_of_global_without_env_files(mock_exists):
 @patch('os.path.isfile', side_effect=_isfile_side_effect)
 @patch('os.path.isdir', return_value=_isdir_return_value)
 @patch('os.listdir')
-def test_ld_library_path_of_global_all_env_files_are_empty(mock_listdir,
+def test_ld_library_path_global_conf_all_env_files_are_empty(mock_listdir,
         mock_isdir, mock_isfile, mock_exists, mock_ds_open):
     mock_listdir.return_value = ["test.conf"]
 
     broker = {}
     with pytest.raises(SkipComponent) as e:
-        ld_library_path_of_global(broker)
+        ld_library_path_global_conf(broker)
     assert 'SkipComponent' in str(e)

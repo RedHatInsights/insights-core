@@ -332,7 +332,7 @@ class Specs(SpecSet):
     lastupload = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     leapp_migration_results = RegistryPoint()
     leapp_report = RegistryPoint()
-    ld_library_path_of_global = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    ld_library_path_global_conf = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     ld_library_path_of_user = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     ldif_config = RegistryPoint(multi_output=True)
     libssh_client_config = RegistryPoint(filterable=True)

@@ -66,10 +66,10 @@ class UserLdLibraryPath(Parser, list):
         self.extend(llds)
 
 
-@parser(Specs.ld_library_path_of_global)
-class GlobalLdLibraryPath(Parser):
+@parser(Specs.ld_library_path_global_conf)
+class GlobalLdLibraryPathConf(Parser):
     """
-    Class to parse the datasource ``ld_library_path_of_global`` output.
+    Class to parse the datasource ``ld_library_path_global_conf`` output.
 
     Sample output of datasource looks like::
         /etc/environment
@@ -79,11 +79,11 @@ class GlobalLdLibraryPath(Parser):
     This is a list of files that define the global LD_LIBRARY_PATH environment.
 
     Examples:
-        >>> type(global_ld_library_path)
-        <class 'insights.parsers.ld_library_path.GlobalLdLibraryPath'>
-        >>> global_ld_library_path.in_files[0]
+        >>> type(global_ld_library_path_conf)
+        <class 'insights.parsers.ld_library_path.GlobalLdLibraryPathConf'>
+        >>> global_ld_library_path_conf.in_files[0]
         '/etc/environment'
-        >>> len(global_ld_library_path.in_files)
+        >>> len(global_ld_library_path_conf.in_files)
         3
 
     Attributes:

@@ -11,7 +11,7 @@ from insights.core.spec_factory import DatasourceProvider
 
 
 @datasource(HostContext)
-def ld_library_path_of_global(broker):
+def ld_library_path_global_conf(broker):
     """
     This datasource gets the LD_LIBRARY_PATH enviorment setting for root user,
     if it's set, then reads the following config files:
@@ -64,6 +64,8 @@ def ld_library_path_of_global(broker):
             data.append(item)
         elif os.path.exists(item) and os.path.isdir(item):
             for file_name in os.listdir(item):
+                # Only read the first level files here.
+                # Per the test, only the first level files will be executed.
                 file_path = os.path.join(item, file_name)
                 if (os.path.isfile(file_path) and
                         _is_env_exported(file_path, env_name)):
@@ -72,7 +74,7 @@ def ld_library_path_of_global(broker):
     if not data:
         raise SkipComponent()
 
-    return DatasourceProvider(content="\n".join(data), relative_path='insights_commands/ld_library_path_of_global')
+    return DatasourceProvider(content="\n".join(data), relative_path='insights_commands/ld_library_path_global_conf')
 
 
 def _is_env_exported(file_path, env_name):

@@ -325,7 +325,7 @@ class DefaultSpecs(Specs):
     lastupload = glob_file(["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"])
     leapp_migration_results = leapp.migration_results
     leapp_report = leapp.leapp_report
-    ld_library_path_of_global = env.ld_library_path_of_global
+    ld_library_path_global_conf = env.ld_library_path_global_conf
     ld_library_path_of_user = sap.ld_library_path_of_user
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
