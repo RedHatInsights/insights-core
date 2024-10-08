@@ -1,21 +1,22 @@
 """
-LsDev - Command ``ls -lanR /dev``
-=================================
+LsDev - Command ``ls -lanR /dev`` or ``ls -alZR /dev``
+======================================================
 
-The ``ls -lanR /dev`` command provides information for the listing of the
+The ``ls -lanR /dev`` or ``ls -alZR /dev`` command provides information for the listing of the
 ``/dev`` directory.
 
 See :class:`insights.parsers.ls.FileListing` for more information.
 
 """
-from insights import CommandParser, FileListing, parser
+from insights import CommandParser, parser
+from insights.parsers.ls import FileListing
 from insights.specs import Specs
 
 
 @parser(Specs.ls_dev)
 class LsDev(CommandParser, FileListing):
     """
-    Parses output of ``ls -lanR /dev`` command.
+    Parse the /dev directory listing using a standard FileListing parser.
 
     .. warning::
 
@@ -59,4 +60,5 @@ class LsDev(CommandParser, FileListing):
         >>> ls_dev.listing_of('/dev/rhel')['home']['link']
         '../dm-2'
     """
-    __root_path = '/dev'
+
+    __root_path = "/dev"
