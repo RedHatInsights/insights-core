@@ -1,8 +1,8 @@
 """
-LsBoot - command ``ls -lanR /boot``
-===================================
+LsBoot - command ``ls -lanR /boot`` or ``ls -alZR /boot``
+=========================================================
 
-The ``ls -lanR /boot`` command provides information for the listing of the
+The ``ls -lanR /boot`` or ``ls -alZR /boot`` command provides information for the listing of the
 ``/boot`` directory.
 
 See :class:`insights.parsers.ls.FileListing` for more information.
@@ -54,4 +54,5 @@ class LsBoot(CommandParser, FileListing):
         >>> bootdir.dir_contains('/boot/grub2', 'menu.lst')
         True
     """
-    __root_path = '/boot'
+
+    __root_path = "/boot"
