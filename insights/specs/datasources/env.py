@@ -14,9 +14,9 @@ from insights.core.spec_factory import DatasourceProvider
 @datasource(HostContext)
 def ld_library_path_global_conf(broker):
     """
-    This datasource gets the LD_LIBRARY_PATH enviorment setting for root user.
+    This datasource gets the global LD_LIBRARY_PATH enviorment setting.
 
-    If it's set, then reads the following config files:
+    Reads the following config files:
       * /etc/environment
       * /etc/env.d/*
       * /etc/profile
@@ -31,15 +31,17 @@ def ld_library_path_global_conf(broker):
       * /root/.tcshrc
 
     When a line likes `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH` exists, the datasource
-    returns the config files that include the config.
+    records the config file as an export file. When a line likes `unset LD_LIBRARY_PATH`
+    exists, the datasource records the config file as an unset file
 
     The output of this datasource looks like:
-        /etc/environment
-        /root/.profile
+        export_files: /etc/environment, /root/.profile
+        unset_files: /etc/profile
 
     Returns:
-        str: Returns a multiline string, each line represent a config file. Not return
-             the value of enviorment, because it might include sensitive information.
+        str: Returns at most 2 lines, one line contains the config files that define the
+             LD_LIBRARY_PATH, one line contains config files that unset the LD_LIBRARY_PATH.
+             Not return the line, because it might include sensitive information.
 
     Raises:
         SkipComponent: When any exception occurs.
@@ -61,19 +63,30 @@ def ld_library_path_global_conf(broker):
     ]
     data = []
 
+    export_files = []
+    unset_files = []
+
     for item in config_files:
-        if (os.path.exists(item) and
-                os.path.isfile(item) and
-                _is_env_exported(item, env_name)):
-            data.append(item)
+        if os.path.exists(item) and os.path.isfile(item):
+            if _is_env_exported(item, env_name):
+                export_files.append(item)
+            if _is_env_unset(item, env_name):
+                unset_files.append(item)
         elif os.path.exists(item) and os.path.isdir(item):
             for file_name in os.listdir(item):
                 # Only read the first level files here.
                 # Per the test, only the first level files will be executed.
                 file_path = os.path.join(item, file_name)
-                if (os.path.isfile(file_path) and
-                        _is_env_exported(file_path, env_name)):
-                    data.append(file_path)
+                if os.path.isfile(file_path) and _is_env_exported(file_path, env_name):
+                    export_files.append(file_path)
+                if os.path.isfile(file_path) and _is_env_unset(file_path, env_name):
+                    unset_files.append(file_path)
+
+    if export_files:
+        data.append("export_files: " + ",".join(export_files))
+
+    if unset_files:
+        data.append("unset_files: " + ",".join(unset_files))
 
     if not data:
         raise SkipComponent()
@@ -97,5 +110,20 @@ def _is_env_exported(file_path, env_name):
             if not line or line.startswith("#") or line.split()[0] != "export":
                 continue
             if re.search(pattern, line):
+                return True
+    return False
+
+
+def _is_env_unset(file_path, env_name):
+    # if one line with "unset " + LD_LIBRARY_PATH
+    # returns True
+    pattern = r"\b{0}\b".format(env_name)
+
+    with open(file_path, 'r') as file:
+        for line in file.readlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "unset " in line and re.search(pattern, line):
                 return True
     return False

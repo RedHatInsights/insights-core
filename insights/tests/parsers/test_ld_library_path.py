@@ -28,9 +28,8 @@ rh1adm ''
 """.strip()  # noqa: W391
 
 GLOBAL_LD_LIBRARY_PATH_CONF = """
-/etc/environment
-/etc/env.d/test.conf
-/root/.bash_profile
+export_files: /etc/environment,/etc/env.d/test.conf,/root/.bash_profile
+unset_files: /etc/profile
 """.strip()
 
 
@@ -54,8 +53,8 @@ def test_ld_library_path():
 def test_global_ld_library_path_conf():
     items = GlobalLdLibraryPathConf(context_wrap(GLOBAL_LD_LIBRARY_PATH_CONF))
     assert items is not None
-    assert len(items.in_files) == 3
-    assert items.in_files[0] == "/etc/environment"
+    assert items.export_files == "/etc/environment,/etc/env.d/test.conf,/root/.bash_profile"
+    assert items.unset_files == "/etc/profile"
 
 
 def test_empty_and_invalid():

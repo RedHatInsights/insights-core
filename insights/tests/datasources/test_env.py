@@ -21,7 +21,7 @@ ENV_CONFIG = {
     "/etc/environment": {"content": ENV_FILE_1, "isfile": True, "isdir": False},
     "/etc/env.d": {"content": "", "isfile": False, "isdir": True},
     "/etc/env.d/test.conf": {"content": ENV_FILE_2, "isfile": True, "isdir": False},
-    "/etc/profile": {"content": "export TEST=/test", "isfile": True, "isdir": False},
+    "/etc/profile": {"content": "export TEST=/test\n unset LD_LIBRARY_PATH", "isfile": True, "isdir": False},
     "/etc/profile.d": {"content": "", "isfile": False, "isdir": True},
     "/etc/profile.d/test.conf": {"content": "", "isfile": True, "isdir": False},
     "/etc/bashrc": {"content": "", "isfile": True, "isdir": False},
@@ -37,9 +37,8 @@ ENV_CONFIG = {
 RELATIVE_PATH = 'insights_commands/ld_library_path_global_conf'
 
 EXPECTED_RESULT = """
-/etc/environment
-/etc/env.d/test.conf
-/root/.bash_profile
+export_files: /etc/environment,/etc/env.d/test.conf,/root/.bash_profile
+unset_files: /etc/profile
 """.strip()
 
 
@@ -68,7 +67,7 @@ def test_ld_library_path_global_conf(mock_listdir, mock_isdir, mock_isfile, mock
     assert result is not None
     assert isinstance(result, DatasourceProvider)
     expected = DatasourceProvider(content=EXPECTED_RESULT, relative_path=RELATIVE_PATH)
-    assert len(result.content) == len(expected.content) == 3
+    assert len(result.content) == len(expected.content) == 2
     assert result.relative_path == expected.relative_path
     assert result.content == expected.content
 
