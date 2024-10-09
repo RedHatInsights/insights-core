@@ -1,6 +1,11 @@
 """
-RHCConf - file ``/etc/rhc/config.toml``
-=======================================
+Parsers for RHC
+===============
+
+This module contains the following parsers:
+
+RhcConf - file ``/etc/rhc/config.toml``
+---------------------------------------
 """
 
 from insights import Parser, parser
@@ -10,7 +15,7 @@ from insights.core.dr import SkipComponent
 
 
 @parser(Specs.rhc_conf)
-class RHCConf(Parser, dict):
+class RhcConf(Parser, dict):
     """
     Class to parse the ``/etc/rhc/config.toml`` configuration file.
 
@@ -31,7 +36,7 @@ class RHCConf(Parser, dict):
 
     Examples:
         >>> type(rhc_conf)
-        <class 'insights.parsers.rhc_conf.RHCConf'>
+        <class 'insights.parsers.rhc.RhcConf'>
         >>> 'mqtt-reconnect-delay' in rhc_conf
         False
         >>> 'log-level' in rhc_conf
