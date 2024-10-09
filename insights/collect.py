@@ -171,13 +171,6 @@ plugins:
         - name: insights.parsers.mount.ProcMounts
           enabled: true
 
-    # needed for nginx_ssl_cert_enddate
-        - name: insights.combiners.nginx_conf.NginxConfTree
-          enabled: true
-
-        - name: insights.parsers.nginx_conf.NginxConfPEG
-          enabled: true
-
     # needed for mssql_tls_cert_enddate
         - name: insights.parsers.mssql_conf.MsSQLConf
           enabled: true
