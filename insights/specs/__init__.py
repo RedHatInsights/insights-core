@@ -731,7 +731,7 @@ class Specs(SpecSet):
     sshd_config = RegistryPoint(filterable=True)
     sshd_config_d = RegistryPoint(multi_output=True, filterable=True)
     sshd_config_perms = RegistryPoint(no_obfuscate=['hostname', 'ip'])
-    sshd_test_mode = RegistryPoint(filterable=True)
+    sshd_test_mode = RegistryPoint(filterable=True, no_redact=True)
     sssd_config = RegistryPoint()
     sssd_conf_d = RegistryPoint(multi_output=True)
     sssd_logs = RegistryPoint(multi_output=True, filterable=True)
