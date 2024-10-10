@@ -115,7 +115,7 @@ class DigEdns(Dig):
         ;.				IN	SOA
 
         ;; ANSWER SECTION:
-        .			19766	IN	SOA	a.root-servers.net. nstld.verisign-grs.com. 2017120600 1800 900 604800 86400
+        .			19766	IN	SOA	a.root-servers.net. abc.com. 2017120600 1800 900 604800 86400
 
         ;; Query time: 22 msec
         ;; SERVER: 10.38.5.26#53(10.38.5.26)
@@ -151,7 +151,7 @@ class DigNoedns(Dig):
         ;.				IN	SOA
 
         ;; ANSWER SECTION:
-        .			20195	IN	SOA	a.root-servers.net. nstld.verisign-grs.com. 2017120600 1800 900 604800 86400
+        .			20195	IN	SOA	a.root-servers.net. abc.com. 2017120600 1800 900 604800 86400
 
         ;; Query time: 22 msec
         ;; SERVER: 10.38.5.26#53(10.38.5.26)
