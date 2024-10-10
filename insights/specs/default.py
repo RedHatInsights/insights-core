@@ -537,6 +537,7 @@ class DefaultSpecs(Specs):
     redhat_release = simple_file("/etc/redhat-release")
     repquota_agnpuv = simple_command("/usr/sbin/repquota -agnpuv")
     resolv_conf = simple_file("/etc/resolv.conf")
+    rhc_conf = simple_file('/etc/rhc/config.toml')
     rhsm_conf = simple_file("/etc/rhsm/rhsm.conf")
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
     rhui_releasever = first_file([
