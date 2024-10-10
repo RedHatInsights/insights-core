@@ -50,6 +50,14 @@ class InsightsClient(object):
         if from_phase:
             _init_client_config_dirs()
             self.set_up_logging()
+            logger.debug(
+                "phase={phase}, version={version};{path}, arguments={arguments}".format(
+                    phase=os.getenv("INSIGHTS_PHASE", "unknown"),
+                    version=package_info.get("VERSION", "unknown"),
+                    path=client.__file__,
+                    arguments=" ".join(sys.argv[1:]),
+                )
+            )
             try_auto_configuration(self.config)
             self.initialize_tags()
         else:  # from wrapper
