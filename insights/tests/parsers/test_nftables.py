@@ -8,7 +8,7 @@ from insights.tests import context_wrap
 
 
 NTT_LIST_RULESET_DOC = """
-{"nftables": [{"metainfo": {"version": "0.9.3", "release_name": "Topsy", "json_schema_version": 1}}, {"table": {"family": "ip", "name": "example_table1", "handle": 17}}, {"map": {"family": "ip", "name": "example_map", "table": "example_table1", "type": "ipv4_addr", "handle": 2, "map": "verdict", "elem": [["192.0.2.1", {"accept": null}], ["192.0.2.2", {"drop": null}], ["192.0.2.3", {"accept": null}]]}}, {"set": {"family": "ip", "name": "example_set", "table": "example_table1", "type": "ipv4_addr", "handle": 4}}, {"chain": {"family": "ip", "table": "example_table1", "name": "example_chain1", "handle": 1, "type": "filter", "hook": "input", "prio": 0, "policy": "accept"}}, {"rule": {"family": "ip", "table": "example_table1", "chain": "example_chain1", "handle": 3, "expr": [{"vmap": {"key": {"payload": {"protocol": "ip", "field": "saddr"}}, "data": "@example_map"}}]}}, {"rule": {"family": "ip", "table": "example_table1", "chain": "example_chain1", "handle": 7, "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "tcp", "field": "dport"}}, "right": 22}}, {"counter": {"packets": 29, "bytes": 1976}}, {"accept": null}]}}]}
+{"nftables": [{"metainfo": {"version": "0.9.3", "release_name": "Topsy", "json_schema_version": 1}}, {"table": {"family": "ip", "name": "table1", "handle": 17}}, {"map": {"family": "ip", "name": "example_map", "table": "table1", "type": "ipv4_addr", "handle": 2, "map": "verdict", "elem": [["192.0.2.1", {"accept": null}], ["192.0.2.2", {"drop": null}], ["192.0.2.3", {"accept": null}]]}}, {"set": {"family": "ip", "name": "example_set", "table": "table1", "type": "ipv4_addr", "handle": 4}}, {"chain": {"family": "ip", "table": "table1", "name": "chain1", "handle": 1, "type": "filter", "hook": "input", "prio": 0, "policy": "accept"}}, {"rule": {"family": "ip", "table": "table1", "chain": "chain1", "handle": 3, "expr": [{"vmap": {"key": {"payload": {"protocol": "ip", "field": "saddr"}}, "data": "@example_map"}}]}}, {"rule": {"family": "ip", "table": "table1", "chain": "chain1", "handle": 7, "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "tcp", "field": "dport"}}, "right": 22}}, {"counter": {"packets": 29, "bytes": 1976}}, {"accept": null}]}}]}
 """.strip()
 
 NTT_LIST_RULESET_OUTPU1 = """
@@ -120,6 +120,10 @@ def test_nft_list_ruleset():
     assert first_rule['expr'][0]['match']['op'] == '=='
     assert first_rule['expr'][0]['match']['right'] == 22
     assert first_rule['expr'][1]['accept'] is None
+
+    assert nft2_obj.tables('non_exist_ip') is None
+    assert nft2_obj.chains('ip', 'non_exist_table') is None
+    assert nft2_obj.rules('ip', 'example_table', 'non_exist_chain') is None
 
 
 def test_except_in_nft_list_ruleset():
