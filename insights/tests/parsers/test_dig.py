@@ -82,7 +82,7 @@ GOOD_EDNS = """; <<>> DiG 9.11.1-P3-RedHat-9.11.1-3.P3.fc26 <<>> +edns=0 . SOA
 ;.				IN	SOA
 
 ;; ANSWER SECTION:
-.			19766	IN	SOA	a.root-servers.net. nstld.verisign-grs.com. 2017120600 1800 900 604800 86400
+.			19766	IN	SOA	a.root-servers.net. abc.com. 2017120600 1800 900 604800 86400
 
 ;; Query time: 22 msec
 ;; SERVER: 10.38.5.26#53(10.38.5.26)
@@ -101,7 +101,7 @@ BAD_EDNS = """; <<>> DiG 9.11.1-P3-RedHat-9.11.1-3.P3.fc26 <<>> +edns=0 . SOA
 ;.				IN	SOA
 
 ;; ANSWER SECTION:
-.			19766	IN	SOA	a.root-servers.net. nstld.verisign-grs.com. 2017120600 1800 900 604800 86400
+.			19766	IN	SOA	a.root-servers.net. abc.com. 2017120600 1800 900 604800 86400
 
 ;; Query time: 22 msec
 ;; SERVER: 10.38.5.26#53(10.38.5.26)
@@ -118,7 +118,7 @@ GOOD_NOEDNS = """; <<>> DiG 9.11.1-P3-RedHat-9.11.1-3.P3.fc26 <<>> +noedns . SOA
 ;.				IN	SOA
 
 ;; ANSWER SECTION:
-.			20195	IN	SOA	a.root-servers.net. nstld.verisign-grs.com. 2017120600 1800 900 604800 86400
+.			20195	IN	SOA	a.root-servers.net. abc.com. 2017120600 1800 900 604800 86400
 
 ;; Query time: 22 msec
 ;; SERVER: 10.38.5.26#53(10.38.5.26)
@@ -137,7 +137,7 @@ abc.com SOA
 
 ;; AUTHORITY SECTION:
 com.                    900     IN      SOA     a.gtld-servers.net.
-nstld.verisign-grs.com. 1508851057 1800 900 604800 86400
+abc.com. 1508851057 1800 900 604800 86400
 
 ;; Query time: 29 msec
 ;; SERVER: 10.38.5.26#53(10.38.5.26)
