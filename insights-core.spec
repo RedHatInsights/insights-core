@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.16
+Version:        3.4.17
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,28 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Oct 10 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.17-1
+- fix: set no_redact for spec sshd_test_mode (#4243) (jiazhang@redhat.com)
+- New spec "/etc/rhc/config.toml" and parser (#4239)
+  (44796653+huali027@users.noreply.github.com)
+- fix: update ls specs, parser definition & test files to support new options
+  (#4234) (rahushar@redhat.com)
+- feat: add ceph specs 'ceph_v' and 'ceph_insights' to sos_archive (#4233)
+  (rahushar@redhat.com)
+- fix: Update malware-detection tests (#4235) (mhuth@redhat.com)
+- doc(conf): remove definiation of html_theme_path (#4238)
+  (xiangceliu@redhat.com)
+- refactor: remove legacy collection (#4009) (xiangceliu@redhat.com)
+- test(ci/cd): add first-interaction action (#4226) (xiangceliu@redhat.com)
+- doc: Update the contributing guidance (#4222) (xiangceliu@redhat.com)
+- fix: datasource passed unicode to foreach_execute in py26 (#4232)
+  (xiangceliu@redhat.com)
+- fix: collect uname on RHEL 6 (#4231) (xiangceliu@redhat.com)
+- test(ci/cd): add gitleaks pipeline (#4225) (xiangceliu@redhat.com)
+- test: use Codecov instead of self script (#4224) (xiangceliu@redhat.com)
+- test: fix the py26 flake8 error in ssl_certificate test (#4223)
+  (xiangceliu@redhat.com)
+
 * Sat Sep 28 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.16-1
 - fix: Update value format of CupsBrowsedConf (#4230) (jiazhang@redhat.com)
 

@@ -2,6 +2,23 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.17](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.17) (2024-10-10)
+
+- fix: set no_redact for spec sshd_test_mode ([PR 4243](https://github.com/RedHatInsights/insights-core/pull/4243))
+- New spec "/etc/rhc/config.toml" and parser ([PR 4239](https://github.com/RedHatInsights/insights-core/pull/4239))
+- fix: update ls specs, parser definition & test files to support new options ([PR 4234](https://github.com/RedHatInsights/insights-core/pull/4234))
+- feat: add ceph specs 'ceph_v' and 'ceph_insights' to sos_archive ([PR 4233](https://github.com/RedHatInsights/insights-core/pull/4233))
+- fix: Update malware-detection tests ([PR 4235](https://github.com/RedHatInsights/insights-core/pull/4235))
+- doc(conf): remove definiation of html_theme_path ([PR 4238](https://github.com/RedHatInsights/insights-core/pull/4238))
+- refactor: remove legacy collection ([PR 4009](https://github.com/RedHatInsights/insights-core/pull/4009))
+- test(ci/cd): add first-interaction action ([PR 4226](https://github.com/RedHatInsights/insights-core/pull/4226))
+- doc: Update the contributing guidance ([PR 4222](https://github.com/RedHatInsights/insights-core/pull/4222))
+- fix: datasource passed unicode to foreach_execute in py26 ([PR 4232](https://github.com/RedHatInsights/insights-core/pull/4232))
+- fix: collect uname on RHEL 6 ([PR 4231](https://github.com/RedHatInsights/insights-core/pull/4231))
+- test(ci/cd): add gitleaks pipeline ([PR 4225](https://github.com/RedHatInsights/insights-core/pull/4225))
+- test: use Codecov instead of self script ([PR 4224](https://github.com/RedHatInsights/insights-core/pull/4224))
+- test: fix the py26 flake8 error in ssl_certificate test ([PR 4223](https://github.com/RedHatInsights/insights-core/pull/4223))
+
 # [insights-core-3.4.16](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.16) (2024-09-28)
 
 - fix: Update value format of CupsBrowsedConf ([PR 4230](https://github.com/RedHatInsights/insights-core/pull/4230))
