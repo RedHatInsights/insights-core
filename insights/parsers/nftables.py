@@ -9,6 +9,7 @@ NftListRuleSet - command ``nft -j list ruleset``
 """
 
 from collections import defaultdict
+import json
 
 from insights.core import JSONParser
 from insights.core.dr import SkipComponent
@@ -149,7 +150,8 @@ class NftListRuleSet(JSONParser):
                 elif key == 'rule':
                     chain_name = value['chain']
                     self.main_data[address_name][table_name]['chains'][chain_name]['rules'].append(value)
-        self.main_data = dict(self.main_data)
+        # transform to normal dict incase non-existing key are added when accessing it
+        self.main_data = json.loads(json.dumps(self.main_data))
         if not self.main_data:
             raise SkipComponent
 
