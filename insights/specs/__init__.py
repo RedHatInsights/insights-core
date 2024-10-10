@@ -627,6 +627,7 @@ class Specs(SpecSet):
     redhat_release = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     repquota_agnpuv = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     resolv_conf = RegistryPoint()
+    rhc_conf = RegistryPoint(filterable=True)
     rhev_data_center = RegistryPoint()
     rhn_charsets = RegistryPoint()
     rhn_conf = RegistryPoint()
