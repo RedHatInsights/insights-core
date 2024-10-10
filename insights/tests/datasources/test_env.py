@@ -19,10 +19,10 @@ export LD_LIBRARY_PATH="/path/to/test" TEST="test"
 
 ENV_CONFIG = {
     "/etc/environment": {"content": ENV_FILE_1, "isfile": True, "isdir": False},
-    "/etc/env.d": {"content": "", "isfile": False, "isdir": True},
+    "/etc/env.d": {"content": "# export LD_LIBRARY_PATH", "isfile": False, "isdir": True},
     "/etc/env.d/test.conf": {"content": ENV_FILE_2, "isfile": True, "isdir": False},
     "/etc/profile": {"content": "export TEST=/test\n unset LD_LIBRARY_PATH", "isfile": True, "isdir": False},
-    "/etc/profile.d": {"content": "", "isfile": False, "isdir": True},
+    "/etc/profile.d": {"content": "export TEST # LD_LIBRARY_PATH", "isfile": False, "isdir": True},
     "/etc/profile.d/test.conf": {"content": "", "isfile": True, "isdir": False},
     "/etc/bashrc": {"content": "", "isfile": True, "isdir": False},
     "/etc/bash.bashrc": {"content": "", "isfile": True, "isdir": False},

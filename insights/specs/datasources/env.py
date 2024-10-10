@@ -105,11 +105,9 @@ def _is_env_exported(file_path, env_name):
     pattern = r"\b{0}\b".format(env_name)
 
     with open(file_path, 'r') as file:
-        for line in file.readlines():
-            line = line.strip()
-            if not line or line.startswith("#") or line.split()[0] != "export":
-                continue
-            if re.search(pattern, line):
+        active_lines = list(filter(None, (line.split("#", 1)[0].strip() for line in file.readlines())))
+        for line in active_lines:
+            if "export " in line and re.search(pattern, line):
                 return True
     return False
 
@@ -120,10 +118,8 @@ def _is_env_unset(file_path, env_name):
     pattern = r"\b{0}\b".format(env_name)
 
     with open(file_path, 'r') as file:
-        for line in file.readlines():
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
+        active_lines = list(filter(None, (line.split("#", 1)[0].strip() for line in file.readlines())))
+        for line in active_lines:
             if "unset " in line and re.search(pattern, line):
                 return True
     return False
