@@ -478,6 +478,7 @@ class Netstat(CommandParser):
         self.data = dict((s.name, s._merge_data_index()) for s in sections)
         self.lines = dict((s.name, s.lines) for s in sections)
         self.datalist = dict((s.name, s.datalist) for s in sections)
+        self._dataobjs = dict((s.name, s) for s in sections)
 
     @property
     def running_processes(self):
@@ -579,7 +580,7 @@ class Netstat(CommandParser):
 
         found = []
         for l in search_list:
-            found.extend(keyword_search(self.datalist[l], **kwargs))
+            found.extend(keyword_search(self.datalist[l], parent=self._dataobjs[l], **kwargs))
         return found
 
 
