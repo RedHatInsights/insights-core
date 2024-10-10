@@ -26,44 +26,50 @@ class NftListRuleSet(JSONParser):
         {
             "nftables": [
                 {
-                    "metainfo": {
-                        "version": "0.9.3", "release_name": "Topsy", "json_schema_version": 1
-                    }
+                    "metainfo": {"version": "0.9.3", "release_name": "Topsy", "json_schema_version": 1}
                 },
                 {
-                    "table": {
-                        "family": "ip", "name": "example_table1", "handle": 17
-                    }
+                    "table": {"family": "ip", "name": "table1"}
                 },
                 {
                     "map": {
-                        "family": "ip", "name": "example_map", "table": "example_table1", "type": "ipv4_addr", "handle": 2, "map": "verdict", "elem": [["192.0.2.1", {"accept": null}], ["192.0.2.2", {"drop": null}], ["192.0.2.3", {"accept": null}]]
-                    }
-                },
-                {
-                    "set": {
-                        "family": "ip", "name": "example_set", "table": "example_table1", "type": "ipv4_addr", "handle": 4
+                        "family": "ip", "name": "example_map", "table": "table1",
+                        "type": "ipv4_addr", "map": "verdict",
+                        "elem": [
+                            ["192.0.2.1", {"accept": null}],
+                            ["192.0.2.2", {"drop": null}],]
                     }
                 },
                 {
                     "chain": {
-                        "family": "ip", "table": "example_table1", "name": "example_chain1", "handle": 1, "type": "filter", "hook": "input", "prio": 0, "policy": "accept"
+                        "family": "ip", "table": "table1", "name": "chain1",
+                        "type": "filter", "hook": "input", "prio": 0,
+                        "policy": "accept"
                     }
                 },
                 {
                     "rule": {
-                        "family": "ip", "table": "example_table1", "chain": "example_chain1", "handle": 3, "expr": [{"vmap": {"key": {"payload": {"protocol": "ip", "field": "saddr"}}, "data": "@example_map"}}]
+                        "family": "ip", "table": "table1", "chain": "chain1",
+                        "expr": [
+                            {"vmap": {"key": {"payload": {"protocol": "ip", "field": "saddr"}},
+                            "data": "@example_map"}}]
                     }
                 },
                 {
                     "rule": {
-                        "family": "ip", "table": "example_table1", "chain": "example_chain1", "handle": 7, "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "tcp", "field": "dport"}}, "right": 22}}, {"counter": {"packets": 29, "bytes": 1976}}, {"accept": null}]
+                        "family": "ip", "table": "table1", "chain": "chain1",
+                        "expr": [
+                            {"match": {
+                                "op": "==",
+                                "left": {"payload": {"protocol": "tcp", "field": "dport"}},
+                                "right": 22}}
+                        ]
                     }
                 }
             ]
         }
 
-    The json output is dict with a list of all the elements in nftables as the value of the "nftables" key.
+    The json output is dict with a single "nftables" key, the value is a list of all data in nftables.
     To make it easier to use, here it extracts the address_family/table/chain/rule structures and
     save it to main_data attribute.
 
@@ -71,18 +77,27 @@ class NftListRuleSet(JSONParser):
 
         {
             'ip': {
-                'example_table1': {
+                'table1': {
                     'chains': {
-                        'example_chain1': {
+                        'chain1': {
                             'attrs': {
-                                "family": "ip", "table": "example_table1", "name": "example_chain1", "handle": 1, "type": "filter", "hook": "input", "prio": 0, "policy": "accept"
+                                "family": "ip", "table": "table1", "name": "chain1",
+                                "type": "filter", "hook": "input", "prio": 0, "policy": "accept"
                             },
                             'rules': [
                                 {
-                                    "family": "ip", "table": "example_table1", "chain": "example_chain1", "handle": 3, "expr": [{"vmap": {"key": {"payload": {"protocol": "ip", "field": "saddr"}}, "data": "@example_map"}}]
+                                    "family": "ip", "table": "table1", "chain": "chain1",
+                                    "expr": [
+                                        {"vmap": {"key": {"payload":
+                                        {"protocol": "ip", "field": "saddr"}},
+                                        "data": "@example_map"}}]
                                 },
                                 {
-                                    "family": "ip", "table": "example_table", "chain": "example_chain", "handle": 7, "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "tcp", "field": "dport"}}, "right": 22}}, {"counter": {"packets": 29, "bytes": 1976}}, {"accept": None}]
+                                    "family": "ip", "table": "table1", "chain": "chain1",
+                                    "expr": [
+                                        {"match": {"op": "==",
+                                        "left": {"payload": {"protocol": "tcp", "field": "dport"}},
+                                        "right": 22}}]
                                 }
                             ]
                         }
@@ -103,10 +118,10 @@ class NftListRuleSet(JSONParser):
         >>> [str(key) for key in nft_obj.main_data.keys()]  # to be compatible with python2.6/2.7, transform unicode to string
         ['ip']
         >>> [str(key) for key in nft_obj.main_data['ip'].keys()] # to be compatible with python2.6/2.7, transform unicode to string
-        ['example_table1']
-        >>> 'example_chain1' in nft_obj.chains('ip', 'example_table1')
+        ['table1']
+        >>> 'chain1' in nft_obj.chains('ip', 'table1')
         True
-        >>> len(nft_obj.rules('ip', 'example_table1', 'example_chain1'))
+        >>> len(nft_obj.rules('ip', 'table1', 'chain1'))
         2
 
     """
@@ -122,33 +137,30 @@ class NftListRuleSet(JSONParser):
         for item in self.data['nftables']:
             for key, value in item.items():
                 address_name = value.get('family')
+                table_name = value.get('table')
                 if key == 'table':
                     table_name = value['name']
                     self.main_data[address_name][table_name] = defaultdict(dict)
-                else:
-                    if key in ['chain', 'rule']:
-                        table_name = value['table']
-                        if key == 'chain':
-                            chain_name = value['name']
-                            self.main_data[address_name][table_name]['chains'][chain_name] = {}
-                            self.main_data[address_name][table_name]['chains'][chain_name]['attrs'] = value
-                            self.main_data[address_name][table_name]['chains'][chain_name]['rules'] = []
-                        else:
-                            # rule
-                            chain_name = value['chain']
-                            self.main_data[address_name][table_name]['chains'][chain_name]['rules'].append(value)
-
+                elif key == 'chain':
+                    chain_name = value['name']
+                    self.main_data[address_name][table_name]['chains'][chain_name] = {}
+                    self.main_data[address_name][table_name]['chains'][chain_name]['attrs'] = value
+                    self.main_data[address_name][table_name]['chains'][chain_name]['rules'] = []
+                elif key == 'rule':
+                    chain_name = value['chain']
+                    self.main_data[address_name][table_name]['chains'][chain_name]['rules'].append(value)
+        self.main_data = dict(self.main_data)
         if not self.main_data:
             raise SkipComponent
 
     def tables(self, address_family):
         """dict: Return the tables in some address family."""
-        return self.main_data[address_family]
+        return self.main_data.get(address_family)
 
     def chains(self, address_family, table_name):
         """dict: Returns the chains in some table."""
-        return self.main_data[address_family][table_name]['chains']
+        return self.main_data.get(address_family, {}).get(table_name, {}).get('chains')
 
     def rules(self, address_family, table_name, chain_name):
         """list: Returns the rules of some chain in some table."""
-        return self.main_data[address_family][table_name]['chains'][chain_name]['rules']
+        return self.main_data.get(address_family, {}).get(table_name, {}).get('chains', {}).get(chain_name, {}).get('rules')
