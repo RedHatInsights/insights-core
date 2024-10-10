@@ -3,20 +3,21 @@ LsSysFirmware - command ``ls /sys/firmware``
 ============================================
 
 The ``ls -lanR /sys/firmware`` command provides information for the listing of
-the ``/sys/firmware`` directory.
+the ``/sys/firmware`` directory. The parser class can also process ``ls -alZR /sys/firmware`` command output.
 
 See :class:`insights.parsers.ls.FileListing` for more information.
 
 """
 
-from insights import CommandParser, FileListing, parser
+from insights import CommandParser, parser
+from insights.parsers.ls import FileListing
 from insights.specs import Specs
 
 
 @parser(Specs.ls_sys_firmware)
 class LsSysFirmware(CommandParser, FileListing):
     """
-    Parses output of ``ls -lanR /sys/firmware`` command.
+    Parses output of ``ls -lanR /sys/firmware`` or ``ls -alZR`` command.
 
     .. warning::
 
@@ -55,4 +56,5 @@ class LsSysFirmware(CommandParser, FileListing):
         >>> ls_sys_firmware.files_of("/sys/firmware/acpi")
         ['pm_profile']
     """
-    __root_path = '/sys/firmware'
+
+    __root_path = "/sys/firmware"
