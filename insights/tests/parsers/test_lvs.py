@@ -53,27 +53,6 @@ LVS_INFO_ERROR = """
   Unrecognised field: data_percent
 """.strip()
 
-LVS_INFO_ERROR = """
-  WARNING: Locking disabled. Be careful! This could corrupt your metadata.
-  Logical Volume Fields
-  ---------------------
-    lv_all               - All fields in this section.
-    lv_uuid              - Unique identifier.
-    lv_name              - Name.  LVs created for internal us
-  Physical Volume Label Fields
-  ----------------------------
-    pv_all               - All fields in this section.
-    pv_fmt               - Type of metadata.
-    pv_uuid              - Unique identifier.
-      Physical Volume Segment Fields
-  ------------------------------
-    pvseg_all            - All fields in this section.
-    pvseg_start          - Physical Extent number of start of segment.
-    pvseg_size           - Number of extents in segment.
-
-  Unrecognised field: data_percent
-""".strip()
-
 LVS_ROOT_INFO = {
     "MergeFailed": "unknown",
     "#Seg": "1",
