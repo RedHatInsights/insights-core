@@ -1,7 +1,7 @@
 """
-Localectl - command ``localectl``
-=================================
-Parser the output of localectl command.
+LocaleCtlStatus - command ``localectl status``
+==============================================
+Parser the output of localectl status command.
 
 """
 
@@ -11,10 +11,10 @@ from insights.core.plugins import parser
 from insights.specs import Specs
 
 
-@parser(Specs.localectl)
-class Localectl(CommandParser, dict):
+@parser(Specs.localectl_status)
+class LocaleCtlStatus(CommandParser, dict):
     """
-    Reads the output of localectl command
+    Reads the output of `localectl status` command
 
     Example output::
 
@@ -23,13 +23,13 @@ class Localectl(CommandParser, dict):
               X11 Layout: us
 
     Examples::
-        >>> type(localectl)
-        <class 'insights.parsers.localectl.Localectl'>
-        >>> localectl['System Locale'] == 'LANG=en_US.UTF-8'
+        >>> type(localectl_status)
+        <class 'insights.parsers.localectl.LocaleCtlStatus'>
+        >>> localectl_status['System Locale'] == 'LANG=en_US.UTF-8'
         True
-        >>> localectl['VC Keymap'] == 'us'
+        >>> localectl_status['VC Keymap'] == 'us'
         True
-        >>> localectl['X11 Layout'] == 'us'
+        >>> localectl_status['X11 Layout'] == 'us'
         True
     """
     def parse_content(self, content):

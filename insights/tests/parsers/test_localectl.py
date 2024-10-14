@@ -3,44 +3,44 @@ import pytest
 
 from insights.core.exceptions import SkipComponent
 from insights.parsers import localectl
-from insights.parsers.localectl import Localectl
+from insights.parsers.localectl import LocaleCtlStatus
 from insights.tests import context_wrap
 
-LOCALECTL_CONTENT = """
+LOCALECTL_STATUS_CONTENT = """
    System Locale: LANG=en_US.UTF-8
        VC Keymap: us
       X11 Layout: us
 """.strip()
 
-LOCALECTL_CONTENT_ERROR = """
+LOCALECTL_STATUS_CONTENT_ERROR = """
    command not fond
 """.strip()
 
-LOCALECTL_CONTENT_EMPTY = """
+LOCALECTL_STATUS_CONTENT_EMPTY = """
 
 """.strip()
 
 
-def test_localectl():
-    ret = Localectl(context_wrap(LOCALECTL_CONTENT))
+def test_localectl_status():
+    ret = LocaleCtlStatus(context_wrap(LOCALECTL_STATUS_CONTENT))
     assert ret['System Locale'] == 'LANG=en_US.UTF-8'
     assert ret['VC Keymap'] == 'us'
     assert ret['X11 Layout'] == 'us'
 
 
-def test_localectl_error():
+def test_localectl_status_error():
     with pytest.raises(SkipComponent):
-        Localectl(context_wrap(LOCALECTL_CONTENT_ERROR))
+        LocaleCtlStatus(context_wrap(LOCALECTL_STATUS_CONTENT_ERROR))
 
 
-def test_localectl_ng():
+def test_localectl_status_ng():
     with pytest.raises(SkipComponent):
-        Localectl(context_wrap(LOCALECTL_CONTENT_EMPTY))
+        LocaleCtlStatus(context_wrap(LOCALECTL_STATUS_CONTENT_EMPTY))
 
 
 def test_doc_examples():
     env = {
-            'localectl': Localectl(context_wrap(LOCALECTL_CONTENT)),
+            'localectl_status': LocaleCtlStatus(context_wrap(LOCALECTL_STATUS_CONTENT)),
           }
     failed, total = doctest.testmod(localectl, globs=env)
     assert failed == 0

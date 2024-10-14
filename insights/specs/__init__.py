@@ -340,7 +340,7 @@ class Specs(SpecSet):
     libvirtd_qemu_log = RegistryPoint(multi_output=True, filterable=True)
     limits_conf = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     locale = RegistryPoint(no_obfuscate=['hostname', 'ip'])
-    localectl = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    localectl_status = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     localtime = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     login_pam_conf = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     logrotate_conf = RegistryPoint(multi_output=True)
