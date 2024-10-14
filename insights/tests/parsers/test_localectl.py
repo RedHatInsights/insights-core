@@ -12,6 +12,10 @@ LOCALECTL_CONTENT = """
       X11 Layout: us
 """.strip()
 
+LOCALECTL_CONTENT_ERROR = """
+   command not fond
+""".strip()
+
 LOCALECTL_CONTENT_EMPTY = """
 
 """.strip()
@@ -22,6 +26,11 @@ def test_localectl():
     assert ret['System Locale'] == 'LANG=en_US.UTF-8'
     assert ret['VC Keymap'] == 'us'
     assert ret['X11 Layout'] == 'us'
+
+
+def test_localectl_error():
+    with pytest.raises(SkipComponent):
+        Localectl(context_wrap(LOCALECTL_CONTENT_ERROR))
 
 
 def test_localectl_ng():
