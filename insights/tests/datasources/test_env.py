@@ -37,8 +37,7 @@ ENV_CONFIG = {
 RELATIVE_PATH = 'insights_commands/ld_library_path_global_conf'
 
 EXPECTED_RESULT = """
-export_files: /etc/environment,/etc/env.d/test.conf,/root/.bash_profile
-unset_files: /etc/profile
+{"export_files": ["/etc/environment", "/etc/env.d/test.conf", "/root/.bash_profile"], "unset_files": ["/etc/profile"]}
 """.strip()
 
 
@@ -67,7 +66,6 @@ def test_ld_library_path_global_conf(mock_listdir, mock_isdir, mock_isfile, mock
     assert result is not None
     assert isinstance(result, DatasourceProvider)
     expected = DatasourceProvider(content=EXPECTED_RESULT, relative_path=RELATIVE_PATH)
-    assert len(result.content) == len(expected.content) == 2
     assert result.relative_path == expected.relative_path
     assert result.content == expected.content
 

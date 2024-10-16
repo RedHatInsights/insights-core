@@ -4,6 +4,7 @@ Custom datasources for environments.
 
 import re
 import os
+import json
 
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
@@ -35,12 +36,11 @@ def ld_library_path_global_conf(broker):
     exists, the datasource records the config file as an unset file
 
     The output of this datasource looks like:
-        export_files: /etc/environment, /root/.profile
-        unset_files: /etc/profile
+        {"export_files": ["/etc/environment", "/etc/env.d/test.conf", "/root/.bash_profile"], "unset_files": ["/etc/profile"]}
 
     Returns:
-        str: Returns at most 2 lines, one line contains the config files that define the
-             LD_LIBRARY_PATH, one line contains config files that unset the LD_LIBRARY_PATH.
+        str: Returns a JSON format string, `export_files` contains the config files that define the
+             LD_LIBRARY_PATH, `unset_files` contains config files that unset the LD_LIBRARY_PATH.
              Not return the line, because it might include sensitive information.
 
     Raises:
@@ -61,7 +61,7 @@ def ld_library_path_global_conf(broker):
         "/root/.zshrc",
         "/root/.tcshrc"
     ]
-    data = []
+    data = {}
 
     export_files = []
     unset_files = []
@@ -83,15 +83,15 @@ def ld_library_path_global_conf(broker):
                     unset_files.append(file_path)
 
     if export_files:
-        data.append("export_files: " + ",".join(export_files))
+        data["export_files"] = export_files
 
     if unset_files:
-        data.append("unset_files: " + ",".join(unset_files))
+        data["unset_files"] = unset_files
 
     if not data:
         raise SkipComponent()
 
-    return DatasourceProvider(content="\n".join(data), relative_path='insights_commands/ld_library_path_global_conf')
+    return DatasourceProvider(content=json.dumps(data), relative_path='insights_commands/ld_library_path_global_conf')
 
 
 def _is_env_exported(file_path, env_name):

@@ -8,6 +8,7 @@ Parser for parsing the environment variable LD_LIBRARY_PATH of each user
 from collections import namedtuple
 
 from insights.core import Parser
+from insights.core import JSONParser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
@@ -67,43 +68,37 @@ class UserLdLibraryPath(Parser, list):
 
 
 @parser(Specs.ld_library_path_global_conf)
-class GlobalLdLibraryPathConf(Parser):
+class GlobalLdLibraryPathConf(JSONParser):
     """
     Class to parse the datasource ``ld_library_path_global_conf`` output.
 
     Sample output of datasource looks like::
-        export_files: /etc/environment,/etc/env.d/test.conf,/root/.bash_profile
-        unset_files: /etc/profile
+        {"export_files": ["/etc/environment", "/etc/env.d/test.conf", "/root/.bash_profile"], "unset_files": ["/etc/profile"]}
 
-    ``export_files`` line is a list of files that define the global LD_LIBRARY_PATH environment.
-    ``unset_files`` line is a list of files that unset the global LD_LIBRARY_PATH environment.
+    ``export_files`` contains a list of files that define the global LD_LIBRARY_PATH environment.
+    ``unset_files`` contains a list of files that unset the global LD_LIBRARY_PATH environment.
 
     Examples:
         >>> type(global_ld_library_path_conf)
         <class 'insights.parsers.ld_library_path.GlobalLdLibraryPathConf'>
-        >>> global_ld_library_path_conf.export_files
-        '/etc/environment,/etc/env.d/test.conf,/root/.bash_profile'
-        >>> global_ld_library_path_conf.unset_files
-        '/etc/profile'
-
-    Attributes:
-        export_files(str): a list of files that define the global LD_LIBRARY_PATH environment.
-        unset_files(str): a list of files that unset the global LD_LIBRARY_PATH environment.
-
-    Raises:
-        SkipComponent: When the output is invalid.
+        >>> len(global_ld_library_path_conf.export_files)
+        3
+        >>> len(global_ld_library_path_conf.unset_files)
+        1
     """
 
-    def parse_content(self, content):
-        for line in content:
-            items = line.split(":")
-            if len(items) != 2:
-                raise SkipComponent("The data is invalid.")
-            conf_type = items[0]
-            conf_files = items[1].strip()
-            if conf_type == "export_files":
-                self.export_files = conf_files
-            elif conf_type == "unset_files":
-                self.unset_files = conf_files
-            else:
-                raise SkipComponent("The data is invalid.")
+    @property
+    def export_files(self):
+        """
+        Returns:
+            list: a list of files that define the global LD_LIBRARY_PATH environment.
+        """
+        return self.data.get('export_files', [])
+
+    @property
+    def unset_files(self):
+        """
+        Returns:
+            list: a list of files that unset the global LD_LIBRARY_PATH environment.
+        """
+        return self.data.get('unset_files', [])
