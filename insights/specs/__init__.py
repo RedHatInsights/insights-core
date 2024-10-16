@@ -488,6 +488,7 @@ class Specs(SpecSet):
     nfs_conf = RegistryPoint()
     nfs_exports = RegistryPoint()
     nfs_exports_d = RegistryPoint(multi_output=True)
+    nft_list_ruleset = RegistryPoint()
     nginx_conf = RegistryPoint(multi_output=True)
     nginx_error_log = RegistryPoint(filterable=True)
     nginx_ssl_cert_enddate = RegistryPoint(multi_output=True)

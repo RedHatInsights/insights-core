@@ -438,6 +438,7 @@ class DefaultSpecs(Specs):
     nfs_conf = simple_file("/etc/nfs.conf")
     nfs_exports = simple_file("/etc/exports")
     nfs_exports_d = glob_file("/etc/exports.d/*.exports")
+    nft_list_ruleset = simple_command("/sbin/nft -j list ruleset")
     nginx_conf = glob_file([
                            "/etc/nginx/*.conf", "/etc/nginx/conf.d/*.conf", "/etc/nginx/default.d/*.conf",
                            "/opt/rh/nginx*/root/etc/nginx/*.conf", "/opt/rh/nginx*/root/etc/nginx/conf.d/*.conf", "/opt/rh/nginx*/root/etc/nginx/default.d/*.conf",
