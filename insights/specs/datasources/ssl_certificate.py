@@ -2,13 +2,13 @@
 Custom datasource to get ssl certificate file path.
 """
 
-from insights.combiners.nginx_conf import NginxConfTree
 from insights.combiners.rsyslog_confs import RsyslogAllConf
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
 from insights.parsers.mssql_conf import MsSQLConf
 from insights.specs.datasources import httpd
+from insights.specs import Specs
 
 
 @datasource(httpd.httpd_configuration_files, HostContext)
@@ -94,7 +94,7 @@ def httpd_ssl_certificate_files(broker):
     raise SkipComponent
 
 
-@datasource(NginxConfTree, HostContext)
+@datasource(Specs.nginx_conf, HostContext)
 def nginx_ssl_certificate_files(broker):
     """
     Get the nginx SSL certificate file path configured by "ssl_certificate"
@@ -108,10 +108,16 @@ def nginx_ssl_certificate_files(broker):
     Raises:
         SkipComponent: Raised if "ssl_certificate" directive isn't found
     """
-    conf = broker[NginxConfTree]
-    ssl_certs = conf.find('ssl_certificate')
+    ssl_certs = set()
+    confs = broker[Specs.nginx_conf]
+    for conf in confs:
+        for line in conf.content:
+            if 'ssl_certificate' in line:
+                items = [item.strip('"\'; ') for item in line.split(None, 1)]
+                if items[0] == 'ssl_certificate':
+                    ssl_certs.add(items[1])
     if ssl_certs:
-        return [str(ssl_cert.value) for ssl_cert in ssl_certs]
+        return sorted(ssl_certs)
     raise SkipComponent
 
 
