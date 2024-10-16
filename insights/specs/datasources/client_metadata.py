@@ -229,11 +229,6 @@ def tags(broker):
             logger.error("Invalid YAML. Unable to load '%s'" % tags_file_path)
             raise ContentException('ERROR: Cannot parse %s.\n\nError details: \n%s\n' % (tags_file_path, e))
 
-        # --START--
-        # NOTE:
-        # The following code is from the following function
-        # - insights.client.core_collector.CoreCollector._write_tags
-        # Please keep them consistence before removing that.
         def f(k, v):
             if type(v) is list:
                 col = []
@@ -252,7 +247,6 @@ def tags(broker):
             iv = f(k, v)
             t.append(iv)
         t = list(chain.from_iterable(t))
-        # --END--
 
         if t:
             # The actual file path in archive:
