@@ -4,6 +4,7 @@ import pytest
 from insights.core.exceptions import SkipComponent
 from insights.parsers import ld_library_path
 from insights.parsers.ld_library_path import UserLdLibraryPath
+from insights.parsers.ld_library_path import GlobalLdLibraryPathConf
 from insights.tests import context_wrap
 
 LD_LIBRARY_PATH_EMPTY = """
@@ -26,6 +27,14 @@ sr3adm
 rh1adm ''
 """.strip()  # noqa: W391
 
+GLOBAL_LD_LIBRARY_PATH_CONF_1 = """
+{"export_files": ["/etc/environment", "/etc/env.d/test.conf", "/root/.bash_profile"], "unset_files": ["/etc/profile"]}
+""".strip()
+
+GLOBAL_LD_LIBRARY_PATH_CONF_2 = """
+{"unset_files": ["/etc/profile"]}
+""".strip()
+
 
 def test_ld_library_path():
     ret = UserLdLibraryPath(context_wrap(LD_LIBRARY_PATH))
@@ -44,6 +53,18 @@ def test_ld_library_path():
         assert p in ret[1].path
 
 
+def test_global_ld_library_path_conf():
+    ret = GlobalLdLibraryPathConf(context_wrap(GLOBAL_LD_LIBRARY_PATH_CONF_1))
+    assert ret is not None
+    assert ret.export_files == ["/etc/environment", "/etc/env.d/test.conf", "/root/.bash_profile"]
+    assert ret.unset_files == ["/etc/profile"]
+
+    ret = GlobalLdLibraryPathConf(context_wrap(GLOBAL_LD_LIBRARY_PATH_CONF_2))
+    assert ret is not None
+    assert ret.export_files == []
+    assert ret.unset_files == ["/etc/profile"]
+
+
 def test_empty_and_invalid():
     with pytest.raises(SkipComponent):
         UserLdLibraryPath(context_wrap(LD_LIBRARY_PATH_EMPTY))
@@ -52,6 +73,7 @@ def test_empty_and_invalid():
 def test_doc_examples():
     env = {
         'ld_lib_path': UserLdLibraryPath(context_wrap(LD_LIBRARY_PATH_DOC)),
+        'global_ld_library_path_conf': GlobalLdLibraryPathConf(context_wrap(GLOBAL_LD_LIBRARY_PATH_CONF_1)),
     }
     failed, total = doctest.testmod(ld_library_path, globs=env)
     assert failed == 0
