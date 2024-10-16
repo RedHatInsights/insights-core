@@ -8,6 +8,7 @@ Parser for parsing the environment variable LD_LIBRARY_PATH of each user
 from collections import namedtuple
 
 from insights.core import Parser
+from insights.core import JSONParser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
@@ -64,3 +65,40 @@ class UserLdLibraryPath(Parser, list):
             raise SkipComponent("LD_LIBRARY_PATH not set.")
 
         self.extend(llds)
+
+
+@parser(Specs.ld_library_path_global_conf)
+class GlobalLdLibraryPathConf(JSONParser):
+    """
+    Class to parse the datasource ``ld_library_path_global_conf`` output.
+
+    Sample output of datasource looks like::
+        {"export_files": ["/etc/environment", "/etc/env.d/test.conf", "/root/.bash_profile"], "unset_files": ["/etc/profile"]}
+
+    ``export_files`` contains a list of files that define the global LD_LIBRARY_PATH environment.
+    ``unset_files`` contains a list of files that unset the global LD_LIBRARY_PATH environment.
+
+    Examples:
+        >>> type(global_ld_library_path_conf)
+        <class 'insights.parsers.ld_library_path.GlobalLdLibraryPathConf'>
+        >>> len(global_ld_library_path_conf.export_files)
+        3
+        >>> len(global_ld_library_path_conf.unset_files)
+        1
+    """
+
+    @property
+    def export_files(self):
+        """
+        Returns:
+            list: a list of files that define the global LD_LIBRARY_PATH environment.
+        """
+        return self.data.get('export_files', [])
+
+    @property
+    def unset_files(self):
+        """
+        Returns:
+            list: a list of files that unset the global LD_LIBRARY_PATH environment.
+        """
+        return self.data.get('unset_files', [])
