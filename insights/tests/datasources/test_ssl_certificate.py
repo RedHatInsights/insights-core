@@ -8,12 +8,11 @@ except Exception:
     from mock import patch, mock_open
     builtin_open = "__builtin__.open"
 
-from insights.combiners.nginx_conf import NginxConfTree
 from insights.combiners.rsyslog_confs import RsyslogAllConf
 from insights.core.exceptions import SkipComponent
 from insights.parsers.mssql_conf import MsSQLConf
-from insights.parsers.nginx_conf import NginxConfPEG
 from insights.parsers.rsyslog_conf import RsyslogConf
+from insights.specs import Specs
 from insights.specs.datasources import httpd
 from insights.specs.datasources.ssl_certificate import (
     httpd_ssl_certificate_files, nginx_ssl_certificate_files,
@@ -335,25 +334,23 @@ def test_httpd_certificate(m_open, m_exist):
 
 
 def test_nginx_certificate():
-    conf1 = NginxConfPEG(context_wrap(NGINX_CONF, path='/etc/nginx/nginx.conf'))
-    conf2 = NginxConfPEG(context_wrap(NGINX_SSL_CONF, path='/etc/nginx/conf.d/ssl.conf'))
-    conf_tree = NginxConfTree([conf1, conf2])
+    conf1 = context_wrap(NGINX_CONF, path='/etc/nginx/nginx.conf')
+    conf2 = context_wrap(NGINX_SSL_CONF, path='/etc/nginx/conf.d/ssl.conf')
 
     broker = {
-        NginxConfTree: conf_tree
+        Specs.nginx_conf: [conf1, conf2]
     }
     result = nginx_ssl_certificate_files(broker)
-    assert result == ['/a/b/c.rsa.crt', '/a/b/c.cecdsa.crt']
+    assert result == ['/a/b/c.cecdsa.crt', '/a/b/c.rsa.crt']
 
-    conf1 = NginxConfPEG(context_wrap(NGINX_CONF, path='/etc/nginx/nginx.conf'))
-    conf2 = NginxConfPEG(context_wrap(NGINX_SSL_CONF_MULTIPLE_SERVERS, path='/etc/nginx/conf.d/ssl.conf'))
-    conf_tree = NginxConfTree([conf1, conf2])
+    conf1 = context_wrap(NGINX_CONF, path='/etc/nginx/nginx.conf')
+    conf2 = context_wrap(NGINX_SSL_CONF_MULTIPLE_SERVERS, path='/etc/nginx/conf.d/ssl.conf')
 
     broker = {
-        NginxConfTree: conf_tree
+        Specs.nginx_conf: [conf1, conf2]
     }
     result = nginx_ssl_certificate_files(broker)
-    assert result == ['/a/b/www.example.com.crt', '/a/b/www.example.com.cecdsa.crt', '/a/b/www.example.org.crt']
+    assert result == ['/a/b/www.example.com.cecdsa.crt', '/a/b/www.example.com.crt', '/a/b/www.example.org.crt']
 
 
 @patch("os.path.exists", return_value=True)
@@ -375,11 +372,10 @@ def test_httpd_ssl_cert_exception(m_open, m_exists):
 
 
 def test_nginx_ssl_cert_exception():
-    conf1 = NginxConfPEG(context_wrap(NGINX_CONF, path='/etc/nginx/nginx.conf'))
-    conf2 = NginxConfPEG(context_wrap(NGINX_CONF_WITHOUT_SSL, path='/etc/nginx/conf.d/no_ssl.conf'))
-    conf_tree = NginxConfTree([conf1, conf2])
+    conf1 = context_wrap(NGINX_CONF, path='/etc/nginx/nginx.conf')
+    conf2 = context_wrap(NGINX_CONF_WITHOUT_SSL, path='/etc/nginx/conf.d/no_ssl.conf')
     broker1 = {
-        NginxConfTree: conf_tree
+        Specs.nginx_conf: [conf1, conf2]
     }
     with pytest.raises(SkipComponent):
         nginx_ssl_certificate_files(broker1)
