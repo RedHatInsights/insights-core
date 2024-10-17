@@ -16,7 +16,7 @@ from insights.specs import Specs
 
 
 @parser(Specs.ls_fstab)
-class LSladFSTab(Parser):
+class LsFSTab(Parser):
     """
     Parses output of ``ls -lad <mounts point in fstab>`` command.
     The list of mount points in fstab is return from datasource mount.fstab_mount_points.
@@ -30,7 +30,7 @@ class LSladFSTab(Parser):
 
     Examples:
         >>> type(ls_fstab)
-        <class 'insights.parsers.ls_fstab.LSladFSTab'>
+        <class 'insights.parsers.ls_fstab.LsFSTab'>
         >>> '/' in ls_fstab.entries
         True
         >>> ls_fstab.entries.get('/').get('owner')
