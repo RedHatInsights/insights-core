@@ -78,6 +78,7 @@ class ContentProvider(object):
         Clean (Obfuscate and Redact) the Spec Content ONLY when doing
         collection.
         """
+        content = self.content  # load first for debugging info order
         if isinstance(self.ctx, HostContext) and self.ds and self.cleaner:
             cleans = []
             # Redacting?
@@ -87,18 +88,18 @@ class ContentProvider(object):
             no_obf = getattr(self.ds, 'no_obfuscate', [])
             cleans.append("Obfuscate") if len(no_obf) < 2 else None
             # Cleaning - Entry
-            content = self.content  # should load content first
             if cleans:
                 log.debug("Cleaning (%s) %s", "/".join(cleans), "/" + self.relative_path)
-                self._content = self.cleaner.clean_content(
+                content = self.cleaner.clean_content(
                     content,
                     obf_funcs=self.cleaner.get_obfuscate_functions(self.relative_path, no_obf),
                     no_redact=no_red)
-                if len(self._content) == 0:
+                if len(content) == 0:
                     log.debug("Skipping %s due to empty after cleaning", self.path)
                     raise ContentException("Empty after cleaning: %s" % self.path)
             else:
                 log.debug("Skipping cleaning %s", "/" + self.relative_path)
+        return content
 
     @property
     def path(self):
@@ -126,10 +127,9 @@ class ContentProvider(object):
 
     def write(self, dst):
         fs.ensure_path(os.path.dirname(dst))
-        # Clean Spec Content when writing it down to disk and before uploading
-        self._clean_content()
+        # Clean Spec Content when writing it down to disk before uploading
         with open(dst, "wb") as f:
-            content = "\n".join(self.content)
+            content = "\n".join(self._clean_content())
             f.write(content.encode('utf-8') if six.PY3 else content)
 
         self.loaded = False
