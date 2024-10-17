@@ -218,7 +218,7 @@ insights.specs.datasources.mount
 --------------------------------
 
 .. automodule:: insights.specs.datasources.mount
-    :members: xfs_mounts
+    :members: xfs_mounts, fstab_mount_points
     :show-inheritance:
     :undoc-members:
 

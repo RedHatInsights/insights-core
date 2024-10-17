@@ -341,6 +341,7 @@ class DefaultSpecs(Specs):
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
     lpstat_queued_jobs_count = lpstat.lpstat_queued_jobs_count
     # New `ls` Specs
+    ls_fstab = command_with_args("/bin/ls -lad %s", mount_ds.fstab_mount_points, keep_rc=True)
     ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, keep_rc=True)
     ls_la_filtered = command_with_args('/bin/ls -la %s', ls.list_with_la_filtered, keep_rc=True)  # Result is filtered
     ls_lan = command_with_args('/bin/ls -lan %s', ls.list_with_lan, keep_rc=True)

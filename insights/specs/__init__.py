@@ -369,6 +369,7 @@ class Specs(SpecSet):
     ls_laRZ_dirs = RegistryPoint(filterable=True)
     ls_laZ = RegistryPoint()
     ls_laZ_dirs = RegistryPoint(filterable=True)
+    ls_fstab = RegistryPoint()
     # Old `ls` Specs
     ls_R_var_lib_nova_instances = RegistryPoint()
     ls_boot = RegistryPoint()

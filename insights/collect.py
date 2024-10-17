@@ -157,6 +157,10 @@ plugins:
         - name: insights.parsers.nmcli.NmcliConnShow
           enabled: true
 
+    # needed for the 'ls_fstab' spec
+        - name: insights.parsers.fstab.FSTab
+          enabled: true
+
     # needed for multiple Datasouce specs
         - name: insights.parsers.ps.PsAuxcww
           enabled: true
