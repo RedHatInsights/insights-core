@@ -41,13 +41,13 @@ def fstab_mount_points(broker):
 
     Sample data returned::
 
-        ['/', '/boot']
+        '/ /boot'
 
     Returns:
         list: List of the /etc/fstab mount points.
 
     Raises:
-        SkipComponent: When there is not any team interfaces.
+        SkipComponent: When there is not any mount point.
     """
 
     content = broker[FSTab].data
@@ -55,8 +55,6 @@ def fstab_mount_points(broker):
         fs_mount_point = []
         for item in content:
             fs_mount_point.append(item['fs_file'])
-
-        if fs_mount_point:
-            return sorted(fs_mount_point)
+        return ' '.join(fs_mount_point)
 
     raise SkipComponent
