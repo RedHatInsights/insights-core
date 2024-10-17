@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.17
+Version:        3.4.18
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Oct 17 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.18-1
+- fix: encoding issue in python2 env (#4242) (xiangceliu@redhat.com)
+- test(ci/cd): add relevant commits to gitleaks allowlist (#4245)
+  (xiangceliu@redhat.com)
+- feat: New spec and the parser to collect nftables ruleset (#4240)
+  (44796653+huali027@users.noreply.github.com)
+- FEAT: Add new parser LocaleCtlStatus (#4247) (986222045@qq.com)
+- fix: nginx_ssl_certificate_files no longer depends on NginxConfTree (#4241)
+  (44796653+huali027@users.noreply.github.com)
+- feat: New datasource "ld_library_path_of_global" and its parser (#4236)
+  (30404410+qinpingli@users.noreply.github.com)
+- chore: remove useless lines and hostnames from tests and doc (#4244)
+  (xiangceliu@redhat.com)
+
 * Thu Oct 10 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.17-1
 - fix: set no_redact for spec sshd_test_mode (#4243) (jiazhang@redhat.com)
 - New spec "/etc/rhc/config.toml" and parser (#4239)

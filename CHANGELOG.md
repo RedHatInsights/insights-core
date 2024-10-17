@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.18](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.18) (2024-10-17)
+
+- fix: encoding issue in python2 env ([PR 4242](https://github.com/RedHatInsights/insights-core/pull/4242))
+- test(ci/cd): add relevant commits to gitleaks allowlist ([PR 4245](https://github.com/RedHatInsights/insights-core/pull/4245))
+- feat: New spec and the parser to collect nftables ruleset ([PR 4240](https://github.com/RedHatInsights/insights-core/pull/4240))
+- FEAT: Add new parser LocaleCtlStatus ([PR 4247](https://github.com/RedHatInsights/insights-core/pull/4247))
+- fix: nginx_ssl_certificate_files no longer depends on NginxConfTree ([PR 4241](https://github.com/RedHatInsights/insights-core/pull/4241))
+- feat: New datasource "ld_library_path_of_global" and its parser ([PR 4236](https://github.com/RedHatInsights/insights-core/pull/4236))
+- chore: remove useless lines and hostnames from tests and doc ([PR 4244](https://github.com/RedHatInsights/insights-core/pull/4244))
+
 # [insights-core-3.4.17](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.17) (2024-10-10)
 
 - fix: set no_redact for spec sshd_test_mode ([PR 4243](https://github.com/RedHatInsights/insights-core/pull/4243))
