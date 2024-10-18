@@ -172,10 +172,11 @@ def test_httpd_conf_files_ssl_miss(m_open, m_glob, m_isdir, m_isfile):
     assert result == set(['/etc/httpd/conf/httpd.conf'])
 
 
+@patch("os.path.join", return_value='/etc/httpd/no_such_file')
 @patch("os.path.isfile", return_value=True)
 @patch("os.path.isdir", return_value=True)
 @patch("glob.glob", return_value=["/etc/httpd/conf.d/ssl.conf"])
-def test_httpd_conf_files_main_miss(m_glob, m_isdir, m_isfile):
+def test_httpd_conf_files_main_miss(m_glob, m_isdir, m_isfile, m_join):
     broker = {HostContext: None}
     with pytest.raises(SkipComponent):
         httpd_configuration_files(broker)
