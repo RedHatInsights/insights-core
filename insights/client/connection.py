@@ -349,7 +349,7 @@ class InsightsConnection(object):
                 else:
                     logger.info("Connection failed")
                     return False
-            except requests.ConnectionError as exc:
+            except REQUEST_FAILED_EXCEPTIONS as exc:
                 last_ex = exc
                 logger.error(
                     "Could not successfully connect to: %s", test_url + ext)
@@ -381,7 +381,7 @@ class InsightsConnection(object):
             else:
                 logger.info("Connection failed")
                 return False
-        except requests.ConnectionError as exc:
+        except REQUEST_FAILED_EXCEPTIONS as exc:
             last_ex = exc
             logger.error(
                 "Could not successfully connect to: %s", url)
