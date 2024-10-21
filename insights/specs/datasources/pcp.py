@@ -7,12 +7,14 @@ import logging
 import os
 
 from insights.combiners.ps import Ps
-from insights.combiners.services import Services
 from insights.core.context import HostContext
-from insights.core.exceptions import SkipComponent, ContentException
+from insights.core.exceptions import ContentException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
-from insights.parsers.hostname import Hostname, HostnameDefault
+from insights.parsers.hostname import Hostname
+from insights.parsers.hostname import HostnameDefault
 from insights.parsers.ros_config import RosConfig
+from insights.parsers.systemd.unitfiles import UnitFiles
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +32,7 @@ pcp_metrics = [
 ]
 
 
-@datasource(Services, HostContext)
+@datasource(UnitFiles, HostContext)
 def pcp_enabled(broker):
     """
     Returns:
@@ -39,7 +41,7 @@ def pcp_enabled(broker):
     Raises:
         SkipComponent: When pmproxy service is not enabled
     """
-    if not broker[Services].is_on("pmproxy"):
+    if not broker[UnitFiles].is_on("pmproxy.service"):
         raise SkipComponent("pmproxy not enabled")
     return True
 
