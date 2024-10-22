@@ -127,9 +127,10 @@ def test_specs_ds_with_hn_collect(mock_fun):
                                 assert "KEEEY" in line
                 else:
                     spec_count += 1
-                    # file_w_redact is not collected as it's reacted to empty
+                    # file_w_redact is not collected as it's redacted to empty
                     assert mdata.get('errors')
                     assert not results
+                    assert not os.path.exists(os.path.join(data_root, tmp_file_path.lstrip('/')))
 
     assert spec_count == 2  # Number of Specs
     assert line_count == 3  # Number of Lines in "file_no_redact"
