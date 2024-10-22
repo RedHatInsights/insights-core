@@ -128,9 +128,10 @@ class ContentProvider(object):
     def write(self, dst):
         fs.ensure_path(os.path.dirname(dst))
         # Clean Spec Content when writing it down to disk before uploading
+        content = "\n".join(self._clean_content())
+        content = content.encode("utf-8") if six.PY3 else content
         with open(dst, "wb") as f:
-            content = "\n".join(self._clean_content())
-            f.write(content.encode('utf-8') if six.PY3 else content)
+            f.write(content)
 
         self.loaded = False
 
