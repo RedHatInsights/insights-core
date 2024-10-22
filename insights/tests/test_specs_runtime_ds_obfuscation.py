@@ -152,11 +152,11 @@ def test_specs_ds_with_hn_collect(mock_fun, obfuscate):
                     results = [results]
                 count += 1
                 for result in results:
-                    if not result:
-                        continue
                     rel = result['object']['relative_path']
-                    assert rel.endswith(collected_file)
+                    # save_as is used
                     assert result['object']['save_as'] is True
+                    assert orig_hostname not in rel
+                    assert rel.endswith(collected_file)
                     with open(os.path.join(data_root, rel), 'r') as fp:
                         new_content = ''.join(fp.readlines())
                         if obfuscate:
