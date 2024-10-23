@@ -31,7 +31,7 @@ from insights.core.spec_factory import (
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds, db2,
-    dir_list, eap_reports, ethernet, httpd, intersystems, ipcs, kernel,
+    dir_list, eap_reports, env, ethernet, httpd, intersystems, ipcs, kernel,
     kernel_module_list, leapp, lpstat, ls, lsattr, luks_devices, machine_ids,
     md5chk, mdadm, mount as mount_ds, package_provides,
     ps as ps_datasource, rpm_pkgs, sap, satellite_missed_queues,
@@ -323,6 +323,7 @@ class DefaultSpecs(Specs):
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
     lastupload = glob_file(["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"])
+    ld_library_path_global_conf = env.ld_library_path_global_conf
     leapp_migration_results = leapp.migration_results
     leapp_report = leapp.leapp_report
     ld_library_path_of_user = sap.ld_library_path_of_user
@@ -330,6 +331,7 @@ class DefaultSpecs(Specs):
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
     limits_conf = glob_file(["/etc/security/limits.conf", "/etc/security/limits.d/*.conf"])
+    localectl_status = simple_command("/usr/bin/localectl status")
     localtime = simple_command("/usr/bin/file -L /etc/localtime")
     login_pam_conf = simple_file("/etc/pam.d/login")
     logrotate_conf = glob_file(["/etc/logrotate.conf", "/etc/logrotate.d/*"])
@@ -436,6 +438,7 @@ class DefaultSpecs(Specs):
     nfs_conf = simple_file("/etc/nfs.conf")
     nfs_exports = simple_file("/etc/exports")
     nfs_exports_d = glob_file("/etc/exports.d/*.exports")
+    nft_list_ruleset = simple_command("/sbin/nft -j list ruleset")
     nginx_conf = glob_file([
                            "/etc/nginx/*.conf", "/etc/nginx/conf.d/*.conf", "/etc/nginx/default.d/*.conf",
                            "/opt/rh/nginx*/root/etc/nginx/*.conf", "/opt/rh/nginx*/root/etc/nginx/conf.d/*.conf", "/opt/rh/nginx*/root/etc/nginx/default.d/*.conf",

@@ -8,20 +8,26 @@ runs all datasources in ``insights.specs.Specs`` and
 ``insights.specs.Specs``.
 """
 from __future__ import print_function
+
 import argparse
 import logging
 import os
 import sys
 import tempfile
-import yaml
-
 from datetime import datetime
 
-from insights import apply_configs, apply_default_enabled, get_pool
-from insights.core import blacklist, dr, filters
+import yaml
+
+from insights import apply_configs
+from insights import apply_default_enabled
+from insights import get_pool
+from insights.core import blacklist
+from insights.core import dr
+from insights.core import filters
 from insights.core.serde import Hydration
 from insights.core.spec_cleaner import Cleaner
-from insights.util import fs, utc
+from insights.util import fs
+from insights.util import utc
 from insights.util.hostname import determine_hostname
 from insights.util.subproc import call
 
@@ -47,242 +53,194 @@ default_manifest = """
 version: 0
 
 client:
-    context:
-        class: insights.core.context.HostContext
-        args:
-            timeout: 10 # timeout in seconds for commands. Doesn't apply to files.
+  context:
+    class: insights.core.context.HostContext
+    args:
+      timeout: 10 # timeout in seconds for commands. Doesn't apply to files.
 
-    # commands and files to ignore
-    blacklist:
-        files: []
-        commands: []
-        patterns: []
-        keywords: []
+  # commands and files to ignore
+  blacklist:
+    files: []
+    commands: []
+    patterns: []
+    keywords: []
 
-    # Can be a list of dictionaries with name/enabled fields or a list of strings
-    # where the string is the name and enabled is assumed to be true. Matching is
-    # by prefix, and later entries override previous ones. Persistence for a
-    # component is disabled by default.
-    persist:
-        - name: insights.specs.Specs
-          enabled: true
+  # Can be a list of dictionaries with name/enabled fields or a list of strings
+  # where the string is the name and enabled is assumed to be true. Matching is
+  # by prefix, and later entries override previous ones. Persistence for a
+  # component is disabled by default.
+  persist:
+    - name: insights.specs.Specs
+      enabled: true
 
-    run_strategy:
-        name: serial
-        args:
-            max_workers: null
+  run_strategy:
+    name: serial
+    args:
+      max_workers: null
 
 plugins:
-    # disable everything by default
-    # defaults to false if not specified.
-    default_component_enabled: false
+  # disable everything by default
+  # defaults to false if not specified.
+  default_component_enabled: false
 
-    # packages and modules to load
-    packages:
-        - insights.specs.default
-        - insights.specs.datasources
+  # packages and modules to load
+  packages:
+    - insights.specs.default
+    - insights.specs.datasources
 
-    # configuration of loaded components. names are prefixes, so any component with
-    # a fully qualified name that starts with a key will get the associated
-    # configuration applied. Can specify timeout, which will apply to command
-    # datasources. Can specify metadata, which must be a dictionary and will be
-    # merged with the components' default metadata.
-    configs:
-        - name: insights.specs.datasources
-          enabled: true
+  # configuration of loaded components. names are prefixes, so any component with
+  # a fully qualified name that starts with a key will get the associated
+  # configuration applied. Can specify timeout, which will apply to command
+  # datasources. Can specify metadata, which must be a dictionary and will be
+  # merged with the components' default metadata.
+  configs:
+    - name: insights.specs.Specs
+      enabled: true
+    - name: insights.specs.default.DefaultSpecs
+      enabled: true
+    - name: insights.specs.datasources
+      enabled: true
+    # needed for specs that aren't given names before used in DefaultSpecs
+    - name: insights.core.spec_factory
+      enabled: true
 
-        - name: insights.specs.Specs
-          enabled: true
+    # needed by multiple datasource specs/components
+    - name: insights.parsers.hostname.Hostname
+      enabled: true
+    - name: insights.parsers.hostname.HostnameDefault
+      enabled: true
+    - name: insights.combiners.hostname.Hostname
+      enabled: true
+    - name: insights.parsers.uname.Uname
+      enabled: true
+    - name: insights.parsers.redhat_release.RedhatRelease
+      enabled: true
+    - name: insights.combiners.redhat_release.RedHatRelease
+      enabled: true
+    - name: insights.parsers.ps.PsAuxcww
+      enabled: true
+    - name: insights.parsers.ps.PsAuxww
+      enabled: true
+    - name: insights.combiners.ps.Ps
+      enabled: true
+    - name: insights.parsers.dmidecode.DMIDecode
+      enabled: true
+    - name: insights.parsers.installed_rpms.InstalledRpms
+      enabled: true
+    - name: insights.parsers.mount.ProcMounts
+      enabled: true
 
-        - name: insights.specs.default.DefaultSpecs
-          enabled: true
+    # needed for identifying RHEL major version
+    - name: insights.components.rhel_version.IsRhel6
+      enabled: true
+    - name: insights.components.rhel_version.IsRhel7
+      enabled: true
+    - name: insights.components.rhel_version.IsRhel8
+      enabled: true
+    - name: insights.components.rhel_version.IsRhel9
+      enabled: true
 
-        - name: insights.parsers.hostname
-          enabled: true
+    # needed for cloud specs
+    - name: insights.parsers.yum.YumRepoList
+      enabled: true
+    - name: insights.parsers.rhsm_conf.RHSMConf
+      enabled: true
+    - name: insights.combiners.cloud_provider.CloudProvider
+      enabled: true
+    - name: insights.components.cloud_provider.IsAWS
+      enabled: true
+    - name: insights.components.cloud_provider.IsAzure
+      enabled: true
+    - name: insights.components.cloud_provider.IsGCP
+      enabled: true
 
-        - name: insights.parsers.systemid
-          enabled: true
+    # needed for ceph specs
+    - name: insights.components.ceph.IsCephMonitor
+      enabled: true
 
-        - name: insights.combiners.hostname
-          enabled: true
+    # needed for pcp specs
+    - name: insights.parsers.systemd.unitfiles.UnitFiles
+      enabled: true
+    - name: insights.parsers.ros_config.RosConfig
+      enabled: true
 
-    # needed for the CloudProvider combiner
-        - name: insights.parsers.installed_rpms
-          enabled: true
-
-        - name: insights.parsers.dmidecode
-          enabled: true
-
-        - name: insights.parsers.yum
-          enabled: true
-
-        - name: insights.parsers.rhsm_conf
-          enabled: true
-
-        - name: insights.combiners.cloud_provider
-          enabled: true
-
-    # needed for the ausearch_insights_client
-        - name: insights.components.rhel_version.IsGtOrRhel86
-          enabled: true
-
-    # needed for the cloud related specs
-        - name: insights.components.cloud_provider.IsAWS
-          enabled: true
-
-        - name: insights.components.cloud_provider.IsAzure
-          enabled: true
-
-        - name: insights.components.cloud_provider.IsGCP
-          enabled: true
-
-    # needed for the ceph related specs
-        - name: insights.components.ceph.IsCephMonitor
-          enabled: true
-
-    # needed for the Services combiner
-        - name: insights.components.rhel_version.IsRhel6
-          enabled: true
-
-        - name: insights.parsers.chkconfig
-          enabled: true
-
-        - name: insights.parsers.systemd.unitfiles
-          enabled: true
-
-        - name: insights.combiners.services
-          enabled: true
-
-    # needed for the 'teamdctl_state_dump' spec
-        - name: insights.parsers.nmcli.NmcliConnShow
-          enabled: true
-
-    # needed for multiple Datasouce specs
-        - name: insights.parsers.ps.PsAuxcww
-          enabled: true
-
-        - name: insights.parsers.ps.PsAuxww
-          enabled: true
-
-        - name: insights.combiners.ps
-          enabled: true
-
-    # needed for httpd_on_nfs
-        - name: insights.parsers.mount.ProcMounts
-          enabled: true
-
-    # needed for nginx_ssl_cert_enddate
-        - name: insights.combiners.nginx_conf.NginxConfTree
-          enabled: true
-
-        - name: insights.parsers.nginx_conf.NginxConfPEG
-          enabled: true
+    # needed for 'teamdctl_config/state_dump' spec
+    - name: insights.parsers.nmcli.NmcliConnShow
+      enabled: true
 
     # needed for mssql_tls_cert_enddate
-        - name: insights.parsers.mssql_conf.MsSQLConf
-          enabled: true
+    - name: insights.parsers.mssql_conf.MsSQLConf
+      enabled: true
 
-    # need for rsyslog_tls_cert_file
-        - name: insights.parsers.rsyslog_conf.RsyslogConf
-          enabled: true
+    # needed for rsyslog_tls_cert_file
+    - name: insights.parsers.rsyslog_conf.RsyslogConf
+      enabled: true
+    - name: insights.combiners.rsyslog_confs.RsyslogAllConf
+      enabled: true
 
-        - name: insights.combiners.rsyslog_confs.RsyslogAllConf
-          enabled: true
-
-    # needed to collect the sap_hdb_version spec that uses the Sap combiner
-        - name: insights.parsers.saphostctrl
-          enabled: true
-
-        - name: insights.combiners.sap
-          enabled: true
+    # needed for sap specs
+    - name: insights.parsers.saphostctrl.SAPHostCtrlInstances
+      enabled: true
+    - name: insights.combiners.sap.Sap
+      enabled: true
 
     # needed for fw_devices and fw_security specs
-        - name: insights.parsers.dmidecode.DMIDecode
-          enabled: true
+    - name: insights.parsers.virt_what.VirtWhat
+      enabled: true
+    - name: insights.combiners.virt_what.VirtWhat
+      enabled: true
+    - name: insights.components.virtualization.IsBareMetal
+      enabled: true
 
-        - name: insights.parsers.virt_what.VirtWhat
-          enabled: true
+    # needed for 'modinfo_filtered_modules' spec
+    - name: insights.parsers.lsmod.LsMod
+      enabled: true
 
-        - name: insights.combiners.virt_what.VirtWhat
-          enabled: true
+    # needed for satellite server specs
+    - name: insights.combiners.satellite_version.SatelliteVersion
+      enabled: true
+    - name: insights.combiners.satellite_version.CapsuleVersion
+      enabled: true
+    - name: insights.components.satellite.IsSatellite
+      enabled: true
+    - name: insights.components.satellite.IsSatellite614AndLater
+      enabled: true
+    - name: insights.components.satellite.IsSatelliteLessThan614
+      enabled: true
+    - name: insights.components.satellite.IsSatellite611
+      enabled: true
+    - name: insights.components.satellite.IsCapsule
+      enabled: true
 
-        - name: insights.components.virtualization.IsBareMetal
-          enabled: true
+    # needed for container specs
+    - name: insights.parsers.podman_list.PodmanListContainers
+      enabled: true
+    - name: insights.parsers.docker_list.DockerListContainers
+      enabled: true
 
-    # needed for the 'pre-check' of the 'ss' spec and the 'modinfo_filtered_modules' spec
-        - name: insights.parsers.lsmod.LsMod
-          enabled: true
+    # needed for 'luks_data_sources' spec
+    - name: insights.parsers.blkid.BlockIDInfo
+      enabled: true
+    - name: insights.components.cryptsetup.HasCryptsetupWithTokens
+      enabled: true
+    - name: insights.components.cryptsetup.HasCryptsetupWithoutTokens
+      enabled: true
 
-    # needed for the 'pre-check' of the 'is_satellite_server' spec
-        - name: insights.combiners.satellite_version.SatelliteVersion
-          enabled: true
-        - name: insights.components.satellite.IsSatellite
-          enabled: true
-        - name: insights.components.satellite.IsSatellite614AndLater
-          enabled: true
-        - name: insights.components.satellite.IsSatelliteLessThan614
-          enabled: true
+    # needed for 'iris' specs
+    - name: insights.parsers.iris.IrisList
+      enabled: true
+    - name: insights.parsers.iris.IrisCpf
+      enabled: true
 
-    # needed for the 'pre-check' of the 'is_satellite_capsule' spec
-        - name: insights.combiners.satellite_version.CapsuleVersion
-          enabled: true
-        - name: insights.components.satellite.IsCapsule
-          enabled: true
+    # needed for ausearch_insights_client
+    - name: insights.components.rhel_version.IsGtOrRhel86
+      enabled: true
 
-    # needed for the 'pre-check' of the 'satellite_provision_param_settings' spec
-        - name: insights.components.satellite.IsSatellite611
-          enabled: true
-
-    # needed for the 'pre-check' of the 'corosync_cmapctl_cmd_list' spec
-        - name: insights.combiners.redhat_release.RedHatRelease
-          enabled: true
-        - name: insights.parsers.uname.Uname
-          enabled: true
-        - name: insights.parsers.redhat_release.RedhatRelease
-          enabled: true
-        - name: insights.components.rhel_version.IsRhel7
-          enabled: true
-        - name: insights.components.rhel_version.IsRhel8
-          enabled: true
-        - name: insights.components.rhel_version.IsRhel9
-          enabled: true
-
-    # needed for the 'pmlog_summary' spec
-        - name: insights.parsers.ros_config.RosConfig
-          enabled: true
-
-    # needed for the 'container' specs
-        - name: insights.parsers.podman_list.PodmanListContainers
-          enabled: true
-
-        - name: insights.parsers.docker_list.DockerListContainers
-          enabled: true
-
-    # needed because some specs aren't given names before they're used in DefaultSpecs
-        - name: insights.core.spec_factory
-          enabled: true
-
-    # needed by the 'luks_data_sources' spec
-        - name: insights.parsers.blkid.BlockIDInfo
-          enabled: true
-
-        - name: insights.components.cryptsetup
-          enabled: true
-
-    # needed by the 'iris_cpf' spec
-        - name: insights.parsers.iris.IrisList
-          enabled: true
-
-    # needed by the 'iris_messages_log' spec
-        - name: insights.parsers.iris.IrisCpf
-          enabled: true
-
-    # needed by the 'sealert' spec
-        - name: insights.parsers.selinux_config.SelinuxConfig
-          enabled: true
-
-        - name: insights.components.selinux.SELinuxEnabled
-          enabled: true
+    # needed for sealert spec
+    - name: insights.parsers.selinux_config.SelinuxConfig
+      enabled: true
+    - name: insights.components.selinux.SELinuxEnabled
+      enabled: true
 """.strip()
 
 EXCEPTIONS_TO_REPORT = set([

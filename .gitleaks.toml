@@ -9,5 +9,14 @@ paths = [
     # Tests for `crypto.py` contain public and private GPG keypair. They were
     # generated specifically for this usecase. The owner of the key is:
     # insights-core (Signing key for unit testing) <insights-core@example.org>
-    "insights/tests/client/test_crypto.py",
+    '''insights/tests/client/test_crypto.py''',
+]
+
+commits = [
+    # Below commits are all relevant commits of the above "crypto.py"
+    "16495abef9aef4dbab9f18ff9d87a1813a2bddb2",
+    "3d10f697a27010b1e5993bd12794b7a8fd1a91d1",
+    "aa45e3998af643b5561bdd344c9fa25a95474729",
+    "e72545018ffad67d44942869e9e5e09297405ac6",
+    "f57fea85d1883254791c7aa431cb58376d66f414",
 ]

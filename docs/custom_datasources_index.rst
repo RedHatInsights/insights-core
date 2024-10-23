@@ -91,6 +91,14 @@ insights.specs.datasources.dir_list
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.env
+------------------------------
+
+.. automodule:: insights.specs.datasources.env
+    :members: ld_library_path_global_conf
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.ethernet
 -----------------------------------
 
