@@ -95,22 +95,53 @@ jobs:
       run: |
         export PATH=$PATH:/github/home/.local/bin
         CUR_DIR=$(pwd)
-        cd ../
-        git clone https://github.com/SteveHNH/jenkins-s2i-example.git pips
-        (cd ./pips/slave26/pip_packages && test -f coverage-4.3.4-cp26-cp26mu-manylinux1_x86_64.whl && mv coverage-4.3.4-cp26-cp26mu-manylinux1_x86_64.whl coverage-4.3.4-py2.py3-none-any.whl)
-        pip install --user --no-index -f ./pips/slave26/pip_packages -r ./pips/slave26/ci_requirements.txt
+        mkdir pip_packages && cd pip_packages
+        curl -L -O https://files.pythonhosted.org/packages/0c/5d/b077dbf309993d52c1d71e6bf6fe443a8029ea215135ebbe0b1b10e7aefc/pbr-3.1.1-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/31/77/3781f65cafe55480b56914def99022a5d2965a4bb269655c89ef2f1de3cd/importlib-1.0.4.zip
+        curl -L -O https://files.pythonhosted.org/packages/37/aa/111610d8bf5b1bb7a295a048fc648cec346347a8b0be5881defd2d1b4a52/oyaml-1.0-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/3b/f6/7a76333cf0b9251ecf49efff635015171843d9b977e4ffcf59f9c4428052/redis-2.10.6-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/4b/2a/0276479a4b3caeb8a8c1af2f8e4355746a97fab05a372e4a2c6a6b876165/idna-2.7-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/4d/de/32d741db316d8fdb7680822dd37001ef7a448255de9699ab4bfcbdf4172b/MarkupSafe-1.0.tar.gz
+        curl -L -O https://files.pythonhosted.org/packages/53/25/ef88e8e45db141faa9598fbf7ad0062df8f50f881a36ed6a0073e1572126/ordereddict-1.1.tar.gz
+        curl -L -O https://files.pythonhosted.org/packages/53/67/9620edf7803ab867b175e4fd23c7b8bd8eba11cb761514dcd2e726ef07da/py-1.4.34-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/5a/4d/5a6bfb960738e503234f1d201eac5ed4eecbd6f66a8ed593097bd3306bec/coverage-4.3.4-cp26-cp26mu-manylinux1_x86_64.whl
+        curl -L -O https://files.pythonhosted.org/packages/5e/a0/5f06e1e1d463903cf0c0eebeb751791119ed7a4b3737fdc9a77f1cdfb51f/certifi-2020.12.5-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/65/47/7e02164a2a3db50ed6d8a6ab1d6d60b69c4c3fdf57a284257925dfc12bda/requests-2.19.1-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/65/e0/eb35e762802015cab1ccee04e8a277b03f1d8e53da3ec3106882ec42558b/Jinja2-2.10.3-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/67/4b/141a581104b1f6397bfa78ac9d43d8ad29a7ca43ea90a2d863fe3056e86a/six-1.11.0-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/69/be/9c322ed286263a93e5ee0ff575662d0709fc73ee906522e7cfa72b08b946/mccabe-0.5.3-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/69/cb/f5be453359271714c01b9bd06126eaf2e368f1fddfff30818754b5ac2328/funcsigs-1.0.2-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/6f/2c/a9386903ece2ea85e9807e0e062174dc26fdce8b05f216d00491be29fad5/enum34-1.1.10-py2-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/70/a9/9b66f22d038de51e05f92d5e677fd89d8f9c980db0b8a130621baad052f5/flake8-2.6.2-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/73/31/136a79364c1681a3c276796d1f5090833bd03461b78a1b037638d1a2c484/pycodestyle-2.0.0-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/74/55/98f59358be6d7240ba546b8a74813cc21841a9145a0c1a3a7998f50acbe7/pyflakes-1.2.3-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/75/5e/b84feba55e20f8da46ead76f14a3943c8cb722d40360702b2365b91dec00/PyYAML-3.11.tar.gz
+        curl -L -O https://files.pythonhosted.org/packages/85/e6/f041bcf77bcf7bf11ccb9b8a6cdb3a2ee70c1bd2ab49d87d2269cfd4f3e0/pytest_cov-2.4.0-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/87/1c/17f3e3935a913dfe2a5ca85fa5ccbef366bfd82eb318b1f75dadbf0affca/defusedxml-0.5.0-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/8a/20/6eca772d1a5830336f84aca1d8198e5a3f4715cd1c7fc36d3cc7f7185091/msgpack-python-0.5.6.tar.gz
+        curl -L -O https://files.pythonhosted.org/packages/8c/2d/aad7f16146f4197a11f8e91fb81df177adcc2073d36a17b1491fd09df6ed/pycparser-2.18.tar.gz
+        curl -L -O https://files.pythonhosted.org/packages/98/f5/76619a63f0e4a1d2f5a1792ebc233a395c648c63d3461dc0331479ef120a/CacheControl-0.12.4.tar.gz
+        curl -L -O https://files.pythonhosted.org/packages/ab/1a/ec151e5e703ac80041eaccef923611bbcec2b667c20383655a06962732e9/configparser-3.8.1-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/ac/95/a05b56bb975efa78d3557efa36acaf9cf5d2fd0ee0062060493687432e03/pip-9.0.3-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/bc/a9/01ffebfb562e4274b6487b4bb1ddec7ca55ec7510b22e4c51f14098443b8/chardet-3.0.4-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/bd/c9/6fdd990019071a4a32a5e7cb78a1d92c53851ef4f56f62a3486e6a7d8ffb/urllib3-1.23-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/c4/17/73e8eda8fbc18b8421a8b16be8bbbb2a461f4d2405f3628beb8e5d2ca567/pytest-3.0.6-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/c8/22/9460e311f340cb62d26a38c419b1381b8593b0bb6b5d1f056938b086d362/lockfile-0.12.2-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/cb/85/8a1588a04172e0853352ecfe214264c65a62ab35374d9ad9c569cf94c2a3/python_gnupg-0.4.6-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/e6/35/f187bdf23be87092bd0f1200d43d23076cee4d0dec109f195173fd3ebc79/mock-2.0.0-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/f2/94/3af39d34be01a24a6e65433d19e107099374224905f1e0cc6bbe1fd22a2f/argparse-1.4.0-py2.py3-none-any.whl
         cd ${CUR_DIR}
         mkdir ../collections_module
         curl -L -o ./../collections_module/collections.py https://raw.githubusercontent.com/RedHatInsights/insights-core/5c8ca0f2fb3de45908e8d931d40758af34a7997a/.collections.py
     - name: flake8
       run: |
         export PATH=$PATH:/github/home/.local/bin
-        pip install --user -e .[linting] -f ./pips/slave26/pip_packages
+        pip install --user -e .[linting] --no-index -f ./pip_packages
         flake8 .
     - name: pytest
       run: |
         export PATH=$PATH:/github/home/.local/bin
-        pip install --user -e .[testing] -f ./pips/slave26/pip_packages
+        pip install --user -e .[testing] --no-index -f ./pip_packages
         export PYTHONPATH=${PYTHONPATH}:./../collections_module
         pytest
 
