@@ -285,4 +285,3 @@ class QpidStatG(QpidStat):
 
     def search(self, **kwargs):
         return keyword_search(self.data, parent=self, row_keys_change=True, **kwargs)
-
