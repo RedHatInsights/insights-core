@@ -47,7 +47,7 @@ def test_canonical_facts_request(get_proxies, post, get_canonical_facts, rm_conf
     expected_headers = {"Content-Type": "application/json"}
     expected_data = get_canonical_facts.return_value
     post.assert_called_once_with(
-        expected_url, headers=expected_headers, data=dumps(expected_data)
+        expected_url, headers=expected_headers, data=dumps(expected_data), log_response_text=False
     )
 
 
@@ -78,7 +78,7 @@ def test_canonical_facts_request_cleaned(get_proxies, post, get_canonical_facts,
     expected_data = get_canonical_facts.return_value
     expected_data = connection._clean_facts(expected_data)
     post.assert_called_once_with(
-        expected_url, headers=expected_headers, data=dumps(expected_data)
+        expected_url, headers=expected_headers, data=dumps(expected_data), log_response_text=False
     )
 
 
@@ -106,7 +106,7 @@ def test_insights_id_request(get_proxies, post, get_canonical_facts, generate_ma
     expected_headers = {"Content-Type": "application/json"}
     expected_data = {"insights_id": generate_machine_id.return_value}
     post.assert_called_once_with(
-        expected_url, headers=expected_headers, data=dumps(expected_data)
+        expected_url, headers=expected_headers, data=dumps(expected_data), log_response_text=False
     )
 
 
