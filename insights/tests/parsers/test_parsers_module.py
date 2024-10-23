@@ -615,10 +615,18 @@ def test_keyword_search():
     assert len(results) == 2
     assert results == CERT_LIST
 
-    # Check that searches for keys with two underscores that aren't matcher
-    # suffixes still work
+    # CERT_LIST has a new key in the second row; with_row_keys_change=False
+    # this is not detected and no rows are returned.
     results = keyword_search(
         CERT_LIST,
+        dash__space='tested',
+    )
+    assert len(results) == 0
+
+    # Check that searches for keys with two underscores that aren't matcher
+    # suffixes still work, including row keys on all rows.
+    results = keyword_search(
+        CERT_LIST, row_keys_change=True,
         dash__space='tested',
     )
     assert len(results) == 1

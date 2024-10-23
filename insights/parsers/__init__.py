@@ -455,13 +455,7 @@ def parse_delimited_table(table_lines,
     return r
 
 
-# A cache for the transformed keys of the row dict for a keyword_search.
-# This needs to be outside keyword_search because it needs to persist across
-# uses of keyword_search.
-keyword_search_transformed_row = dict()
-
-
-def keyword_search(rows, parent=None, **kwargs):
+def keyword_search(rows, parent=None, row_keys_change=False, **kwargs):
     """
     Takes a list of dictionaries and finds all the dictionaries where the
     keys and values match those found in the keyword arguments.
@@ -483,6 +477,12 @@ def keyword_search(rows, parent=None, **kwargs):
     Arguments:
         rows (list): A list of dictionaries representing the data to be
             searched.
+        row_keys_change (bool): If True, each row might have different keys.
+            This would happen if your data didn't add fields when the value
+            was empty, or if combining different sources of data.  Most of
+            the time it's safe to assume that the first row contains all of
+            the keys, so if row_keys_change is False only the first row's
+            keys are used as search keywords.
         **kwargs (dict): keyword-value pairs corresponding to the fields that
             need to be found and their required values in the data rows.
 
@@ -506,6 +506,8 @@ def keyword_search(rows, parent=None, **kwargs):
          {'domain': 'root', 'type': 'soft', 'item': 'nproc', 'value': -1}]
         >>> keyword_search(rows, domain__startswith='r')
         [{'domain': 'root', 'type': 'soft', 'item': 'nproc', 'value': -1}]
+
+
 
     Testing has shown that caching the keyword_search() function itself does
     not result in much speed-up, but caching the key transformation does.  The
@@ -542,21 +544,24 @@ def keyword_search(rows, parent=None, **kwargs):
         txkeys = getattr(parent, txform_cache_attr)
     else:
         # Store the translation from the search key to the key in the data.
-        # We start with the reverse transform - the key, to the transformed
-        # key.  This avoids doing the string replacement for every key in
-        # every row.  Then we invert that to map from the search term (with
-        # spaces and dashes replaced by underscores) to the key in the row
-        # data.
-        rev_txkeys = dict()
-        for row in rows:
-            for key in row.keys():
-                if key not in rev_txkeys:
-                    # Transform the term in a keyword_search() call into the
-                    # key in the rows
-                    rev_txkeys[key] = key.replace(' ', '_').replace('-', '_')
+        all_keys = set()
+        # Most data has the same keys in every row; but if row keys can change
+        # between rows then we need to scan every row.
+        if row_keys_change:
+            for row in rows:
+                # I tested this with a few different data scenarios and there
+                # is no improvement if you check for the superset beforehand.
+                all_keys.update(row.keys())
+        else:
+            # If your parser or combiner passes a dict_values for rows then you
+            # need to turn it into a list...
+            all_keys = set(list(rows[0].keys()))
+
+        # Now build the 'transformed' key - the search keywords we recognise -
+        # out of the keys we found.
         txkeys = dict(
-            (txkey, key)
-            for key, txkey in rev_txkeys.items()
+            (key.replace(' ', '_').replace('-', '_'), key)
+            for key in all_keys
         )
         if parent is not None:
             setattr(parent, txform_cache_attr, txkeys)
@@ -565,31 +570,32 @@ def keyword_search(rows, parent=None, **kwargs):
     # Store these in a list of tuples for fast iteration and unpacking
     search_terms = list()
     for search_keyword, value in kwargs.items():
-        data_key = search_keyword
-        if '__' not in data_key:
+        # Again, we've tested this code with a variety of inputs and this
+        # seems to be the fastest way:
+        if '__' not in search_keyword:
+            data_key = search_keyword
             matcher = 'equals'
         else:
-            data_key, matcher = search_keyword.split('__', 1)
+            data_key, _, matcher = search_keyword.partition('__')
             if matcher not in matchers:
                 # put key back the way we found it, matcher fn unchanged
                 data_key = search_keyword
                 matcher = 'equals'
         # If the data key sought is not in the row data, then we can say for
-        # sure that the search will never match...
+        # sure that the search will never match.  Probably should warn here...
         if data_key not in txkeys:
             return []
         search_terms.append((
             txkeys[data_key], matcher, matchers[matcher], value
         ))
 
-    def key_match(data_key, matcher, matcher_fn, value):
+    def key_match(row, data_key, matcher, matcher_fn, value):
         if matcher == 'equals':
             return data_key in row and row[data_key] == value
         return data_key in row and matcher_fn(row[data_key], value)
 
     data = list()
-    # Match on the translated row, return the original row
     for row in rows:
-        if all(key_match(*term) for term in search_terms):
+        if all(key_match(row, *term) for term in search_terms):
             data.append(row)
     return data

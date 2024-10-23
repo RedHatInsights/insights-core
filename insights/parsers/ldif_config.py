@@ -136,4 +136,4 @@ class LDIFParser(Parser, list):
             >>> ldif_config.search(cn='changelog5')[0] == ldif_config[1]
             True
         """
-        return keyword_search(self, **kwargs)
+        return keyword_search(self, row_keys_change=True, **kwargs)

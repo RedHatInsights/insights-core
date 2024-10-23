@@ -282,3 +282,7 @@ class QpidStatG(QpidStat):
         del self._index
         del self.__content
         del self._content
+
+    def search(self, **kwargs):
+        return keyword_search(self.data, parent=self, row_keys_change=True, **kwargs)
+
