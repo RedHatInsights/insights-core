@@ -104,7 +104,7 @@ jobs:
         curl -L -O https://files.pythonhosted.org/packages/4d/de/32d741db316d8fdb7680822dd37001ef7a448255de9699ab4bfcbdf4172b/MarkupSafe-1.0.tar.gz
         curl -L -O https://files.pythonhosted.org/packages/53/25/ef88e8e45db141faa9598fbf7ad0062df8f50f881a36ed6a0073e1572126/ordereddict-1.1.tar.gz
         curl -L -O https://files.pythonhosted.org/packages/53/67/9620edf7803ab867b175e4fd23c7b8bd8eba11cb761514dcd2e726ef07da/py-1.4.34-py2.py3-none-any.whl
-        curl -L -o coverage-4.3.4-py2.py3-none-any.whl https://files.pythonhosted.org/packages/5a/4d/5a6bfb960738e503234f1d201eac5ed4eecbd6f66a8ed593097bd3306bec/coverage-4.3.4-cp26-cp26mu-manylinux1_x86_64.whl
+        curl -L -O https://files.pythonhosted.org/packages/5a/4d/5a6bfb960738e503234f1d201eac5ed4eecbd6f66a8ed593097bd3306bec/coverage-4.3.4-cp26-cp26mu-manylinux1_x86_64.whl
         curl -L -O https://files.pythonhosted.org/packages/5e/a0/5f06e1e1d463903cf0c0eebeb751791119ed7a4b3737fdc9a77f1cdfb51f/certifi-2020.12.5-py2.py3-none-any.whl
         curl -L -O https://files.pythonhosted.org/packages/65/47/7e02164a2a3db50ed6d8a6ab1d6d60b69c4c3fdf57a284257925dfc12bda/requests-2.19.1-py2.py3-none-any.whl
         curl -L -O https://files.pythonhosted.org/packages/65/e0/eb35e762802015cab1ccee04e8a277b03f1d8e53da3ec3106882ec42558b/Jinja2-2.10.3-py2.py3-none-any.whl
