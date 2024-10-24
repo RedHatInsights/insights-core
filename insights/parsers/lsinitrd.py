@@ -98,7 +98,7 @@ class Lsinitrd(CommandParser):
             True
 
         """
-        return keyword_search(self.data.values(), **kwargs)
+        return keyword_search(self.data.values(), row_keys_change=True, **kwargs)
 
 
 @parser(Specs.lsinitrd_kdump_image)

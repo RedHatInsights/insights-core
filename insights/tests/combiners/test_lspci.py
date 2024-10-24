@@ -260,6 +260,12 @@ def test_lspci_vmmkn():
         }
     ]
     assert lspci.search(Dev_Details__contains='I218') == []
+    # Test a keyword that doesn't appear in all rows
+    assert 'Module' not in lspci[0]
+    assert lspci[2]['Module'] == ['snd_hda_intel']
+    assert lspci.search(Module__contains='snd_hda_intel') == [
+        lspci[2], lspci[5]
+    ]
     # Make sure the original parser is untouched
     assert sorted(lspci_vmmkn[0].keys()) == sorted(['Slot', 'Class', 'Vendor',
                         'Device', 'SVendor', 'SDevice', 'Rev', 'Driver'])

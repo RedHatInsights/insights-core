@@ -70,7 +70,7 @@ class QpidStat(CommandParser):
             (list): A list of subscriptions that matched the search criteria.
 
         """
-        return keyword_search(self.data, **kwargs)
+        return keyword_search(self.data, parent=self, **kwargs)
 
 
 @parser(Specs.qpid_stat_q)
@@ -282,3 +282,6 @@ class QpidStatG(QpidStat):
         del self._index
         del self.__content
         del self._content
+
+    def search(self, **kwargs):
+        return keyword_search(self.data, parent=self, row_keys_change=True, **kwargs)
