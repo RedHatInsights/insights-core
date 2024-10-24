@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.19](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.19) (2024-10-24)
+
+- test(ci/cd:py26): download pkgs instead of using personal repo ([PR 4251](https://github.com/RedHatInsights/insights-core/pull/4251))
+- Catch Timeout on test urls ([PR 4248](https://github.com/RedHatInsights/insights-core/pull/4248))
+- fix: do not obfuscate in runtime but in archive only ([PR 4249](https://github.com/RedHatInsights/insights-core/pull/4249))
+- test: test_httpd_conf_files_main_miss failed httpd.conf exists ([PR 4257](https://github.com/RedHatInsights/insights-core/pull/4257))
+- chore: refine the format of default_manifest in collect.py ([PR 4258](https://github.com/RedHatInsights/insights-core/pull/4258))
+- test(ci/cd) update the config-path for gitleaks-action ([PR 4256](https://github.com/RedHatInsights/insights-core/pull/4256))
+
 # [insights-core-3.4.18](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.18) (2024-10-17)
 
 - fix: encoding issue in python2 env ([PR 4242](https://github.com/RedHatInsights/insights-core/pull/4242))

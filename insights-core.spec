@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.18
+Version:        3.4.19
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,19 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Oct 24 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.19-1
+- test(ci/cd:py26): download pkgs instead of using personal repo (#4251)
+  (xiangceliu@redhat.com)
+- Catch Timeout on test urls (#4248) (stomsa@redhat.com)
+- fix: do not obfuscate in runtime but in archive only (#4249)
+  (xiangceliu@redhat.com)
+- test: test_httpd_conf_files_main_miss failed httpd.conf exists (#4257)
+  (xiangceliu@redhat.com)
+- chore: refine the format of default_manifest in collect.py (#4258)
+  (xiangceliu@redhat.com)
+- test(ci/cd) update the config-path for gitleaks-action (#4256)
+  (xiangceliu@redhat.com)
+
 * Thu Oct 17 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.18-1
 - fix: encoding issue in python2 env (#4242) (xiangceliu@redhat.com)
 - test(ci/cd): add relevant commits to gitleaks allowlist (#4245)
