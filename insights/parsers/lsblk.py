@@ -211,7 +211,9 @@ class BlockDevices(CommandParser):
         Returns:
             (list): The list of mount points matching the given criteria.
         """
-        return keyword_search(self.rows, **kwargs)
+        # Because some block devices do not have mount points, that field can
+        # be missing from the first row, so we need to scan all rows for keys.
+        return keyword_search(self.rows, row_keys_change=True, **kwargs)
 
 
 @parser(Specs.lsblk)

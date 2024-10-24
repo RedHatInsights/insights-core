@@ -582,7 +582,10 @@ def keyword_search(rows, parent=None, row_keys_change=False, **kwargs):
                 data_key = search_keyword
                 matcher = 'equals'
         # If the data key sought is not in the row data, then we can say for
-        # sure that the search will never match.  Probably should warn here...
+        # sure that the search will never match.  In the case of netstat,
+        # where there are two different sections being searched and they do
+        # not share keys, supplying a key that's only in one section is not
+        # a coding error.
         if data_key not in txkeys:
             return []
         search_terms.append((

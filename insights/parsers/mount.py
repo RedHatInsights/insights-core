@@ -215,7 +215,7 @@ class MountedFileSystems(CommandParser):
         Returns:
             (list): The list of mount points matching the given criteria.
         """
-        return keyword_search(self.rows, parent=self, **kwargs)
+        return keyword_search(self.rows, parent=self, row_keys_change=True, **kwargs)
 
 
 @parser(Specs.mount)
