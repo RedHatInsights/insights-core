@@ -301,6 +301,7 @@ class SosSpecs(Specs):
         'sos_commands/subscription_manager/subscription-manager_list_--consumed',
         'sos_commands/general/subscription-manager_list_--consumed']
     )
+    subscription_manager_status = simple_file("sos_commands/subscription_manager/subscription-manager_status")
     subscription_manager_list_installed = first_file([
         'sos_commands/yum/subscription-manager_list_--installed',
         'sos_commands/subscription_manager/subscription-manager_list_--installed',
