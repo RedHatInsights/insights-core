@@ -15,9 +15,9 @@ Sample input data looks like::
     }
 """
 
+from insights.core import JSONParser
+from insights.core.plugins import parser
 from insights.specs import Specs
-
-from .. import JSONParser, parser
 
 
 @parser(Specs.image_builder_facts)
