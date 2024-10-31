@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.20](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.20) (2024-10-31)
+
+- parsers: add parser for image builder facts (RHINENG-13943) ([PR 4261](https://github.com/RedHatInsights/insights-core/pull/4261))
+- Catch Timeout on test connection ([PR 4211](https://github.com/RedHatInsights/insights-core/pull/4211))
+- Remove double exception print ([PR 4246](https://github.com/RedHatInsights/insights-core/pull/4246))
+- Add subscription_manager_status spec file path for sos_archive ([PR 4260](https://github.com/RedHatInsights/insights-core/pull/4260))
+
 # [insights-core-3.4.19](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.19) (2024-10-24)
 
 - test(ci/cd:py26): download pkgs instead of using personal repo ([PR 4251](https://github.com/RedHatInsights/insights-core/pull/4251))

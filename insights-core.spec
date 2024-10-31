@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.19
+Version:        3.4.20
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,14 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Oct 31 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.20-1
+- parsers: add parser for image builder facts (RHINENG-13943) (#4261)
+  (sanne.raymaekers@gmail.com)
+- Catch Timeout on test connection (#4211) (stomsa@redhat.com)
+- Remove double exception print (#4246) (stomsa@redhat.com)
+- Add subscription_manager_status spec file path for sos_archive (#4260)
+  (tayushi1610@gmail.com)
+
 * Thu Oct 24 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.19-1
 - test(ci/cd:py26): download pkgs instead of using personal repo (#4251)
   (xiangceliu@redhat.com)
