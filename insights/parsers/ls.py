@@ -32,6 +32,7 @@ LSlaZ - command ``ls -lanZ <dirs>``
 -----------------------------------
 """
 from insights.core import ls_parser, Parser
+from insights.core.exceptions import SkipComponent
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.specs import Specs
@@ -352,3 +353,34 @@ class LSlaZ(FileListing):
     See :py:class:`FileListing` for more information.
     """
     pass
+
+
+@parser(Specs.ls_lad)
+class LSlad(Parser):
+    """
+    Parses output of ``ls -lad <dirs>`` command.
+
+    Sample directory listing::
+        dr-xr-xr-x. 21 root root 4096 Oct 15 08:19 /
+        drwxr-xr-x.  3 root root   17 Apr 13  2023 /mnt
+
+    Examples:
+        >>> type(lslad)
+        <class 'insights.parsers.ls.LSlad'>
+        >>> '/' in lslad.entries
+        True
+        >>> lslad.entries.get('/').get('owner')
+        'root'
+        >>> lslad.entries.get('/mnt').get('perms')
+        'rwxr-xr-x.'
+    """
+
+    def parse_content(self, content):
+        parsed_content = []
+        for line in content:
+            if 'No such file or directory' not in line:
+                parsed_content.append(line)
+        if not parsed_content:
+            raise SkipComponent
+        ls_data = ls_parser.parse(parsed_content, '').get('')
+        self.entries = ls_data.get('entries')

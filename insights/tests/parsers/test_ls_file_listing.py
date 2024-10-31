@@ -2,7 +2,7 @@
 import doctest
 
 from insights.parsers import ls as ls_module
-from insights.parsers.ls import FileListing
+from insights.parsers.ls import FileListing, LSlad
 from insights.tests import context_wrap
 
 SINGLE_DIRECTORY = """
@@ -135,6 +135,12 @@ FILE_LISTING_DOC = '''
 # devices without a major/minor number?  Or non-devices that have a comma in
 # the size?  Permissions that don't make sense?  Dates that don't make sense
 # but still fit the patterns?  What should the parser do with such entries?
+
+
+LS_LAD_CONTENT = """
+dr-xr-xr-x. 21 root root 4096 Oct 15 08:19 /
+drwxr-xr-x.  3 root root   17 Apr 13  2023 /mnt
+""".strip()
 
 
 def test_single_directory():
@@ -320,6 +326,8 @@ def test_files_created_with_selinux_disabled():
 
 
 def test_doc_example():
-    env = {'ls_lan': FileListing(context_wrap(FILE_LISTING_DOC))}
+    env = {'ls_lan': FileListing(context_wrap(FILE_LISTING_DOC)),
+           "lslad": LSlad(context_wrap(LS_LAD_CONTENT)),
+           }
     failed, total = doctest.testmod(ls_module, globs=env)
     assert failed == 0

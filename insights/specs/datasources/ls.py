@@ -83,3 +83,8 @@ def list_with_laRZ(broker):
 @datasource(HostContext)
 def list_with_laZ(broker):
     return _list_items(Specs.ls_laZ_dirs)
+
+
+@datasource(HostContext)
+def list_with_lad(broker):
+    return _list_items(Specs.ls_lad_dirs)

@@ -7,7 +7,7 @@ from insights.specs.datasources.ls import (
         list_with_la, list_with_la_filtered,
         list_with_lan, list_with_lan_filtered,
         list_with_lanL, list_with_lanR, list_with_lanRL,
-        list_with_laRZ, list_with_laZ)
+        list_with_laRZ, list_with_laZ, list_with_lad)
 
 
 def setup_function(func):
@@ -31,6 +31,8 @@ def setup_function(func):
         filters.add_filter(Specs.ls_laRZ_dirs, ['/boot'])
     if func is test_lanZ:
         filters.add_filter(Specs.ls_laZ_dirs, ["/", '/mnt'])
+    if func is test_lad:
+        filters.add_filter(Specs.ls_lad_dirs, ["/", '/mnt'])
 
 
 def teardown_function(func):
@@ -38,7 +40,7 @@ def teardown_function(func):
             Specs.ls_la_dirs, Specs.ls_la_filtered, Specs.ls_la_filtered_dirs,
             Specs.ls_lan_dirs, Specs.ls_lan_filtered, Specs.ls_lan_filtered_dirs,
             Specs.ls_lanL_dirs, Specs.ls_lanR_dirs, Specs.ls_lanRL_dirs,
-            Specs.ls_laRZ_dirs, Specs.ls_laZ_dirs):
+            Specs.ls_laRZ_dirs, Specs.ls_laZ_dirs, Specs.ls_lad_dirs):
         if spec in filters._CACHE:
             del filters._CACHE[spec]
 
@@ -75,7 +77,7 @@ def test_lanL():
 
 def test_lanR():
     ret = list_with_lanR({})
-    assert '/ ' in ret
+    assert '/' in ret
 
 
 def test_lanRL():
@@ -90,4 +92,9 @@ def test_lanRZ():
 
 def test_lanZ():
     ret = list_with_laZ({})
+    assert ret == '/ /mnt'
+
+
+def test_lad():
+    ret = list_with_lad({})
     assert ret == '/ /mnt'

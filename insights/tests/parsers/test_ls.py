@@ -1,6 +1,6 @@
 from insights.parsers.ls import (
     LSla, LSlaFiltered, LSlan, LSlanFiltered,
-    LSlanL, LSlanR, LSlanRL, LSlaRZ, LSlaZ
+    LSlanL, LSlanR, LSlanRL, LSlaRZ, LSlaZ, LSlad
 )
 from insights.tests import context_wrap
 
@@ -290,6 +290,11 @@ drwxr-xr-x. 19 root root system_u:object_r:device_t:s0         3180 May 10 09:54
 crw-rw-rw-.  1 root root system_u:object_r:vfio_device_t:s0 10, 196 May 10 09:54 vfio -> false_link_2
 """
 
+LS_LAD_CONTENT = """
+dr-xr-xr-x. 21 root root 4096 Oct 15 08:19 /
+drwxr-xr-x.  3 root root   17 Apr 13  2023 /mnt
+""".strip()
+
 
 def test_ls_la():
     ls = LSla(context_wrap(LS_LA))
@@ -537,3 +542,10 @@ def test_ls_laZ_on_dev():
     dev_listings = ls.listing_of('/dev/vfio')
     assert 'vfio' in dev_listings
     assert dev_listings["vfio"]['link'] == 'false_link_2'
+
+
+def test_ls_lad():
+    ls_lad = LSlad(context_wrap(LS_LAD_CONTENT))
+    assert len(ls_lad.entries) == 2
+    assert '/' in ls_lad.entries
+    assert ls_lad.entries.get('/') == {'type': 'd', 'perms': 'r-xr-xr-x.', 'links': 21, 'owner': 'root', 'group': 'root', 'size': 4096, 'date': 'Oct 15 08:19', 'name': '/', 'raw_entry': 'dr-xr-xr-x. 21 root root 4096 Oct 15 08:19 /', 'dir': ''}
