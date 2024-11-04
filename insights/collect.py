@@ -241,6 +241,10 @@ plugins:
       enabled: true
     - name: insights.components.selinux.SELinuxEnabled
       enabled: true
+      
+    # needed for the 'ls_fstab' spec
+    - name: insights.parsers.fstab.FSTab
+      enabled: true
 """.strip()
 
 EXCEPTIONS_TO_REPORT = set([

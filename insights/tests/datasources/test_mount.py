@@ -78,8 +78,7 @@ def test_fstab_mount_points():
     }
     result = fstab_mount_points(broker)
     assert result is not None
-    assert isinstance(result, list)
-    assert result == sorted(['/', '/boot', '/home', 'swap'])
+    assert result == '/ /boot /home swap'
 
 
 def test_fstab_mount_points_bad():

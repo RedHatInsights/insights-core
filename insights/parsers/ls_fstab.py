@@ -1,16 +1,12 @@
 """
-LsBoot - command ``ls -lanR /boot`` or ``ls -alZR /boot``
-=========================================================
+LsFSTab - command ``/bin/ls -lad <mounts point in fstab>``
+==========================================================
 
-The ``ls -lanR /boot`` or ``ls -alZR /boot`` command provides information for the listing of the
-``/boot`` directory.
-
-See :class:`insights.parsers.ls.FileListing` for more information.
-
+Parses output of ``ls -lad <mounts point in fstab>`` command.
 """
 
 from insights.core import Parser, ls_parser
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -35,8 +31,8 @@ class LsFSTab(Parser):
         True
         >>> ls_fstab.entries.get('/').get('owner')
         'root'
-        >>> ls_fstab.entries.get('/boot')
-        {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': 'root', 'group': 'root', 'size': 6, 'date': 'Nov  9  2021', 'name': '/boot', 'raw_entry': 'drwxr-xr-x.  2 root root    6 Nov  9  2021 /boot', 'dir': ''}
+        >>> ls_fstab.entries.get('/boot').get('perms')
+        'rwxr-xr-x.'
     """
 
     def parse_content(self, content):
@@ -45,6 +41,6 @@ class LsFSTab(Parser):
             if 'No such file or directory' not in line:
                 parsed_content.append(line)
         if not parsed_content:
-            raise ParseException('Error: {0}', content)
+            raise SkipComponent
         ls_data = ls_parser.parse(parsed_content, '').get('')
         self.entries = ls_data.get('entries')
