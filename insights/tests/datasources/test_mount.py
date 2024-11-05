@@ -1,9 +1,10 @@
 import pytest
 
 from insights.core.exceptions import SkipComponent
-from insights.specs.datasources.mount import xfs_mounts, dumpdev_list
+from insights.specs.datasources.mount import xfs_mounts, dumpdev_list, fstab_mounted
 from insights.parsers.mount import ProcMounts
 from insights.tests import context_wrap
+from insights.parsers.fstab import FSTab
 
 PROC_MOUNT_XFS = '''
 /dev/mapper/rhel_insights--release-root / xfs rw,seclabel,relatime,attr2,inode64,logbufs=8,logbsize=32k,noquota 0 0
@@ -30,6 +31,19 @@ MOUNT_NO_EXT = """
 /dev/mapper/httpd2 /httpd2 nfs4 rw,relatime,vers=4,barrier=1,data=ordered 0 0
 """.strip()
 
+FSTAB = """
+#
+# /etc/fstab
+# Created by anaconda on Fri May  6 19:51:54 2016
+#
+/dev/mapper/rhel_hadoop--test--1-root /                       xfs     defaults        0 0
+UUID=2c839365-37c7-4bd5-ac47-040fba761735 /boot               xfs     defaults        0 0
+/dev/mapper/rhel_hadoop--test--1-home /home                   xfs     defaults        0 0
+/dev/mapper/rhel_hadoop--test--1-swap swap                    swap    defaults        0 0
+""".strip()
+
+FSTAB_EMPTY = ""
+
 
 def test_xfs_mounts():
     pmnt = ProcMounts(context_wrap(PROC_MOUNT_XFS))
@@ -54,3 +68,24 @@ def test_dumpdev_list_no_ext_filesystem():
     broker = {ProcMounts: ProcMounts(context_wrap(MOUNT_NO_EXT))}
     with pytest.raises(SkipComponent):
         dumpdev_list(broker)
+
+
+def test_fstab_mount_points():
+    fstab_content = FSTab(context_wrap(FSTAB))
+
+    broker = {
+        FSTab: fstab_content
+    }
+    result = fstab_mounted(broker)
+    assert result is not None
+    assert result == '/ /boot /home swap'
+
+
+def test_fstab_mount_points_bad():
+    fstab_content = FSTab(context_wrap(FSTAB_EMPTY))
+
+    broker = {
+        FSTab: fstab_content
+    }
+    with pytest.raises(SkipComponent):
+        fstab_mounted(broker)

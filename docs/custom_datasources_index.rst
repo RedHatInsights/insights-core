@@ -174,6 +174,15 @@ insights.specs.datasources.lsattr
     :undoc-members:
 
 
+insights.specs.datasources.ls_datasource
+---------------------------------
+
+.. automodule:: insights.specs.datasources.ls_datasource
+    :members: list_with_lad_specific_file
+    :show-inheritance:
+    :undoc-members:
+
+
 insights.specs.datasources.lpstat
 ---------------------------------
 
@@ -218,7 +227,7 @@ insights.specs.datasources.mount
 --------------------------------
 
 .. automodule:: insights.specs.datasources.mount
-    :members: xfs_mounts, fstab_mount_points
+    :members: xfs_mounts
     :show-inheritance:
     :undoc-members:
 
