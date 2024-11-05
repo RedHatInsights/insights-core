@@ -32,7 +32,7 @@ from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds, db2,
     dir_list, eap_reports, env, ethernet, httpd, intersystems, ipcs, kernel,
-    kernel_module_list, leapp, lpstat, ls, lsattr, luks_devices, machine_ids,
+    kernel_module_list, leapp, lpstat, ls, lsattr, ls_datasource, luks_devices, machine_ids,
     md5chk, mdadm, mount as mount_ds, package_provides,
     ps as ps_datasource, rpm_pkgs, sap, satellite_missed_queues,
     ssl_certificate, sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
@@ -341,7 +341,6 @@ class DefaultSpecs(Specs):
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
     lpstat_queued_jobs_count = lpstat.lpstat_queued_jobs_count
     # New `ls` Specs
-    ls_fstab = command_with_args("/bin/ls -lad %s", mount_ds.fstab_mount_points, keep_rc=True)
     ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, keep_rc=True)
     ls_la_filtered = command_with_args('/bin/ls -la %s', ls.list_with_la_filtered, keep_rc=True)  # Result is filtered
     ls_lan = command_with_args('/bin/ls -lan %s', ls.list_with_lan, keep_rc=True)
@@ -351,6 +350,9 @@ class DefaultSpecs(Specs):
     ls_lanRL = command_with_args('/bin/ls -lanRl %s', ls.list_with_lanRL, keep_rc=True)
     ls_laRZ = command_with_args('/bin/ls -laRZ %s', ls.list_with_laRZ, keep_rc=True)
     ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, keep_rc=True)
+    # ls Spec with datasource
+    fstab_mounted = ls_datasource.fstab_mounted
+    ls_lad_specific_file = command_with_args("/bin/ls -lad %s", ls_datasource.list_with_lad_specific_file, keep_rc=True)
     # Old `ls` Specs
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_boot = simple_command("/bin/ls -lanR /boot")
