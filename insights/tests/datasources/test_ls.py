@@ -91,4 +91,3 @@ def test_lanRZ():
 def test_lanZ():
     ret = list_with_laZ({})
     assert ret == '/ /mnt'
-
