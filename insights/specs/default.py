@@ -239,6 +239,7 @@ class DefaultSpecs(Specs):
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     fstab = simple_file("/etc/fstab")
+    fstab_mounted = mount_ds.fstab_mounted
     fw_devices = simple_command("/bin/fwupdagent get-devices", deps=[IsBareMetal])
     fw_security = simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal])
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
@@ -351,7 +352,6 @@ class DefaultSpecs(Specs):
     ls_laRZ = command_with_args('/bin/ls -laRZ %s', ls.list_with_laRZ, keep_rc=True)
     ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, keep_rc=True)
     # ls Spec with datasource
-    fstab_mounted = mount_ds.fstab_mounted
     ls_lad_specific_file = command_with_args("/bin/ls -lad %s", ls_datasource.list_with_lad_specific_file, keep_rc=True)
     # Old `ls` Specs
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")

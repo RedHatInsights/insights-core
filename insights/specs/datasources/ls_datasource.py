@@ -3,14 +3,13 @@ Custom datasources for ``ls`` commands
 """
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
+from insights.core.filters import add_filter, get_filters
 from insights.core.plugins import datasource
 from insights.specs import Specs
-from insights.core.filters import get_filters
-from insights.core.filters import add_filter
 
 
 def _list_items(spec, broker):
-    """Return a tuple of directories according to the spec filters."""
+    """Return a string of directories according to the spec filters."""
     datasource_list = sorted(get_filters(spec))
     if datasource_list:
         filters = []

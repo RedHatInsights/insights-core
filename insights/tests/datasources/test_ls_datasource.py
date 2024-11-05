@@ -1,7 +1,7 @@
-from mock.mock import Mock
-from insights.specs.datasources.ls_datasource import list_with_lad_specific_file
-from insights.specs import Specs
 from insights.core import filters
+from insights.specs import Specs
+from insights.specs.datasources.ls_datasource import list_with_lad_specific_file
+from mock.mock import Mock
 
 FSTAB_MOUNTED_CONTEXT = '/ /boot /home swap'
 

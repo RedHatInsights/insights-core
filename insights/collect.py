@@ -241,7 +241,7 @@ plugins:
       enabled: true
     - name: insights.components.selinux.SELinuxEnabled
       enabled: true
-      
+
     # needed for the 'fstab_mounted' spec
     - name: insights.parsers.fstab.FSTab
       enabled: true

@@ -1,10 +1,10 @@
 import pytest
 
 from insights.core.exceptions import SkipComponent
-from insights.specs.datasources.mount import xfs_mounts, dumpdev_list, fstab_mounted
-from insights.parsers.mount import ProcMounts
-from insights.tests import context_wrap
 from insights.parsers.fstab import FSTab
+from insights.parsers.mount import ProcMounts
+from insights.specs.datasources.mount import xfs_mounts, dumpdev_list, fstab_mounted
+from insights.tests import context_wrap
 
 PROC_MOUNT_XFS = '''
 /dev/mapper/rhel_insights--release-root / xfs rw,seclabel,relatime,attr2,inode64,logbufs=8,logbsize=32k,noquota 0 0

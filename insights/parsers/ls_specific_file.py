@@ -8,11 +8,9 @@ LSla - command ``ls -lad <dirs>``
 ---------------------------------
 """
 from insights.core import ls_parser, Parser
-from insights.core.filters import add_filter
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.util.file_permissions import FilePermissions
-from insights.core.exceptions import SkipComponent
 
 # Required basic filters for `LS` specs that the content needs to be filtered
 
