@@ -332,7 +332,7 @@ def test_test_urls_print_fail(
 
 @mock.patch("insights.client.connection.InsightsConnection.post")
 @mock.patch("insights.client.connection.InsightsConnection.get")
-def test_legacy_urls_get_no_catch(get, post, insights_connection):
+def test_legacy_test_urls_get_no_catch(get, post, insights_connection):
     """The legacy URL subtest issues one GET request in case of an unknown exception."""
     get.side_effect = UnexpectedException
 
@@ -347,7 +347,7 @@ def test_legacy_urls_get_no_catch(get, post, insights_connection):
 
 @mock.patch("insights.client.connection.InsightsConnection.post")
 @mock.patch("insights.client.connection.InsightsConnection.get")
-def test_legacy_urls_get_success(get, post, insights_connection):
+def test_legacy_test_urls_get_success(get, post, insights_connection):
     """The non-legacy URL subtest issues one GET request if the API call succeeds."""
     insights_connection._legacy_test_urls(UPLOAD_URL, "GET")
 
@@ -358,7 +358,7 @@ def test_legacy_urls_get_success(get, post, insights_connection):
 @parametrize_exceptions
 @mock.patch("insights.client.connection.InsightsConnection.post")
 @mock.patch("insights.client.connection.InsightsConnection.get")
-def test_legacy_urls_get_one_fail(get, post, exception, insights_connection):
+def test_legacy_test_urls_get_one_fail(get, post, exception, insights_connection):
     """The non-legacy URL subtest issues one GET request if one API call fails."""
     get.side_effect = [exception, mock.Mock()]
 
@@ -374,7 +374,7 @@ def test_legacy_urls_get_one_fail(get, post, exception, insights_connection):
 @parametrize_exceptions
 @mock.patch("insights.client.connection.InsightsConnection.post")
 @mock.patch("insights.client.connection.InsightsConnection.get")
-def test_legacy_urls_get_all_fails(get, post, exception, insights_connection):
+def test_legacy_test_urls_get_all_fails(get, post, exception, insights_connection):
     """The non-legacy URL subtest issues one GET request for every API call if the previous one fails."""
     get.side_effect = [exception] * len(LEGACY_URL_SUFFIXES)
 
@@ -391,7 +391,7 @@ def test_legacy_urls_get_all_fails(get, post, exception, insights_connection):
 
 @mock.patch("insights.client.connection.InsightsConnection.post")
 @mock.patch("insights.client.connection.InsightsConnection.get")
-def test_legacy_urls_post_no_catch(get, post, insights_connection):
+def test_legacy_test_urls_post_no_catch(get, post, insights_connection):
     """The legacy URL subtest issues one POST request in case of an unknown exception."""
     post.side_effect = UnexpectedException
 
@@ -406,7 +406,7 @@ def test_legacy_urls_post_no_catch(get, post, insights_connection):
 
 @mock.patch("insights.client.connection.InsightsConnection.post")
 @mock.patch("insights.client.connection.InsightsConnection.get")
-def test_legacy_urls_post_success(get, post, insights_connection):
+def test_legacy_test_urls_post_success(get, post, insights_connection):
     """The non-legacy URL subtest issues one POST request if the API call succeeds."""
     insights_connection._legacy_test_urls(UPLOAD_URL, "POST")
 
@@ -417,7 +417,7 @@ def test_legacy_urls_post_success(get, post, insights_connection):
 @parametrize_exceptions
 @mock.patch("insights.client.connection.InsightsConnection.post")
 @mock.patch("insights.client.connection.InsightsConnection.get")
-def test_legacy_urls_post_one_fail(get, post, exception, insights_connection):
+def test_legacy_test_urls_post_one_fail(get, post, exception, insights_connection):
     """The non-legacy URL subtest issues one POST request if one API call fails."""
     post.side_effect = [exception, mock.Mock(status_code=200)]
 
@@ -433,7 +433,7 @@ def test_legacy_urls_post_one_fail(get, post, exception, insights_connection):
 @parametrize_exceptions
 @mock.patch("insights.client.connection.InsightsConnection.post")
 @mock.patch("insights.client.connection.InsightsConnection.get")
-def test_legacy_urls_post_all_fails(get, post, exception, insights_connection):
+def test_legacy_test_urls_post_all_fails(get, post, exception, insights_connection):
     """The non-legacy URL subtest issues one POST request for every API call if the previous one fails."""
     post.side_effect = [exception] * len(LEGACY_URL_SUFFIXES)
 
@@ -449,7 +449,7 @@ def test_legacy_urls_post_all_fails(get, post, exception, insights_connection):
 
 
 @parametrize_methods
-def test_legacy_urls_no_catch(
+def test_legacy_test_urls_no_catch(
     http_method, request_function, insights_connection
 ):
     """The legacy URL subtest doesn't catch unknown exceptions."""
@@ -465,7 +465,7 @@ def test_legacy_urls_no_catch(
 
 @parametrize_exceptions
 @parametrize_methods
-def test_legacy_urls_raise(
+def test_legacy_test_urls_raise(
     http_method, request_function, exception, insights_connection
 ):
     """The legacy URL subtest re-raises the last API call failure exception."""
@@ -481,7 +481,7 @@ def test_legacy_urls_raise(
 
 @parametrize_methods
 @mock.patch("insights.client.connection.logger")
-def test_legacy_urls_error_log_no_catch(
+def test_legacy_test_urls_error_log_no_catch(
     logger, http_method, request_function, insights_connection
 ):
     """The legacy URL subtest doesn't log any errors in case of an unknown exception."""
@@ -498,7 +498,7 @@ def test_legacy_urls_error_log_no_catch(
 @parametrize_exceptions
 @parametrize_methods
 @mock.patch("insights.client.connection.logger")
-def test_legacy_urls_error_log_success(
+def test_legacy_test_urls_error_log_success(
     logger, http_method, request_function, exception, insights_connection
 ):
     """The legacy URL subtest doesn't log any errors if the API call succeeds."""
@@ -511,7 +511,7 @@ def test_legacy_urls_error_log_success(
 @parametrize_exceptions
 @parametrize_methods
 @mock.patch("insights.client.connection.logger")
-def test_legacy_urls_error_log_one_fail(
+def test_legacy_test_urls_error_log_one_fail(
     logger, http_method, request_function, exception, insights_connection
 ):
     """The legacy URL subtest logs one ERROR if one API call fails."""
@@ -533,7 +533,7 @@ def test_legacy_urls_error_log_one_fail(
 @parametrize_exceptions
 @parametrize_methods
 @mock.patch("insights.client.connection.logger")
-def test_legacy_urls_error_log_all_fails(
+def test_legacy_test_urls_error_log_all_fails(
     logger, http_method, request_function, exception, insights_connection
 ):
     """The legacy URL subtest logs one ERROR for every failed API call."""
@@ -553,7 +553,7 @@ def test_legacy_urls_error_log_all_fails(
 
 
 @parametrize_methods
-def test_legacy_urls_exception_print_no_catch(
+def test_legacy_test_urls_exception_print_no_catch(
     http_method, request_function, insights_connection, capsys
 ):
     """The legacy URL subtest doesn't print anything in case of an unknown exception."""
@@ -571,7 +571,7 @@ def test_legacy_urls_exception_print_no_catch(
 
 @parametrize_exceptions
 @parametrize_methods
-def test_legacy_urls_exception_print_success(
+def test_legacy_test_urls_exception_print_success(
     http_method, request_function, exception, insights_connection, capsys
 ):
     """The legacy URL subtest prints a message pointing to a log file if the API call succeeds."""
@@ -585,7 +585,7 @@ def test_legacy_urls_exception_print_success(
 
 @parametrize_exceptions
 @parametrize_methods
-def test_legacy_urls_exception_print_one_fail(
+def test_legacy_test_urls_exception_print_one_fail(
     http_method, request_function, exception, insights_connection, capsys
 ):
     """The legacy URL subtest prints the exception details if one API call fails."""
@@ -606,7 +606,7 @@ def test_legacy_urls_exception_print_one_fail(
 
 @parametrize_exceptions
 @parametrize_methods
-def test_legacy_urls_exception_print_all_fails(
+def test_legacy_test_urls_exception_print_all_fails(
     http_method, request_function, exception, insights_connection, capsys
 ):
     """The legacy connection test prints the details for every exception if all API calls fail."""
