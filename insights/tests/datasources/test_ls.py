@@ -2,12 +2,24 @@ import pytest
 
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
+from insights.parsers.fstab import FSTab
 from insights.specs import Specs
 from insights.specs.datasources.ls import (
         list_with_la, list_with_la_filtered,
         list_with_lan, list_with_lan_filtered,
         list_with_lanL, list_with_lanR, list_with_lanRL,
         list_with_laRZ, list_with_laZ)
+from insights.tests import context_wrap
+
+
+FSTAB_CONTEXT = """
+/dev/mapper/rhel_rhel8-root /                       xfs     defaults        0 0
+/dev/vda1 /boot                   xfs     defaults        0 0
+/dev/mapper/rhel_rhel8-swap none                    swap    defaults        0 0
+/dev/mapper/rhel_rhel7-hana1 /hana/data/rhel7-hana1                       xfs     defaults        0 0
+/dev/mapper/rhel_rhel7-hana2 /hana/data/rhel7-hana2                       xfs     defaults        0 0
+/dev/mapper/rhel_rhel7-hana3 /hana/data/rhel7-hana3                       xfs     defaults        0 0
+""".strip()
 
 
 def setup_function(func):
@@ -18,7 +30,7 @@ def setup_function(func):
     if func is test_la_filterd:
         filters.add_filter(Specs.ls_la_filtered_dirs, ["/", '/boot'])
     if func is test_lan:
-        filters.add_filter(Specs.ls_lan_dirs, ["/", '/boot'])
+        filters.add_filter(Specs.ls_lan_dirs, ["/", '/boot', 'specs.fstab_mounted'])
     if func is test_lan_filterd:
         filters.add_filter(Specs.ls_lan_filtered_dirs, ["/"])
     if func is test_lanL:
@@ -59,8 +71,12 @@ def test_la_filterd():
 
 
 def test_lan():
-    ret = list_with_lan({})
-    assert ret == '/ /boot'
+    fstab = FSTab(context_wrap(FSTAB_CONTEXT))
+    broker = {
+        FSTab: fstab
+    }
+    ret = list_with_lan(broker)
+    assert ret == '/ /boot specs.fstab_mounted /hana/data'
 
 
 def test_lan_filterd():
@@ -75,7 +91,7 @@ def test_lanL():
 
 def test_lanR():
     ret = list_with_lanR({})
-    assert '/ ' in ret
+    assert '/' in ret
 
 
 def test_lanRL():

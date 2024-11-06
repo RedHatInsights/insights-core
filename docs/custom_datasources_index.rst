@@ -174,15 +174,6 @@ insights.specs.datasources.lsattr
     :undoc-members:
 
 
-insights.specs.datasources.ls_datasource
----------------------------------
-
-.. automodule:: insights.specs.datasources.ls_datasource
-    :members: list_with_lad_specific_file
-    :show-inheritance:
-    :undoc-members:
-
-
 insights.specs.datasources.lpstat
 ---------------------------------
 

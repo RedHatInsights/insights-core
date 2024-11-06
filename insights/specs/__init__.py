@@ -211,7 +211,6 @@ class Specs(SpecSet):
     foreman_tasks_config = RegistryPoint(filterable=True)
     freeipa_healthcheck_log = RegistryPoint()
     fstab = RegistryPoint()
-    fstab_mounted = RegistryPoint()
     fw_devices = RegistryPoint()
     fw_security = RegistryPoint()
     galera_cnf = RegistryPoint()
@@ -370,8 +369,6 @@ class Specs(SpecSet):
     ls_laRZ_dirs = RegistryPoint(filterable=True)
     ls_laZ = RegistryPoint()
     ls_laZ_dirs = RegistryPoint(filterable=True)
-    ls_lad_specific_file = RegistryPoint()
-    ls_lad_specific_file_dirs = RegistryPoint(filterable=True)
     # Old `ls` Specs
     ls_R_var_lib_nova_instances = RegistryPoint()
     ls_boot = RegistryPoint()

@@ -6,7 +6,9 @@ from insights.core.dr import get_name
 from insights.core.exceptions import SkipComponent
 from insights.core.filters import get_filters
 from insights.core.plugins import datasource
+from insights.parsers.fstab import FSTab
 from insights.specs import Specs
+import os
 
 
 def _list_items(spec):
@@ -52,7 +54,13 @@ def list_with_la_filtered(broker):
 
 @datasource(HostContext)
 def list_with_lan(broker):
-    return _list_items(Specs.ls_lan_dirs)
+    filters = _list_items(Specs.ls_lan_dirs)
+    if 'specs.fstab_mounted' in filters and FSTab in broker:
+        filter_list = filters.split()
+        for mntp in broker[FSTab].mounted_on.keys():
+            mnt_point = os.path.dirname(mntp)
+            filter_list.extend([mnt_point] if mnt_point and mnt_point not in filter_list else [])
+    return ' '.join(filter_list)
 
 
 @datasource(HostContext)
