@@ -1,8 +1,8 @@
 import pytest
 
 from insights.core.exceptions import SkipComponent
-from insights.parsers.mount import ProcMounts
 from insights.specs.datasources.mount import xfs_mounts, dumpdev_list
+from insights.parsers.mount import ProcMounts
 from insights.tests import context_wrap
 
 PROC_MOUNT_XFS = '''
@@ -29,19 +29,6 @@ MOUNT_NO_EXT = """
 /dev/mapper/httpd1 /httpd1 nfs4 rw,relatime,vers=4,barrier=1,data=ordered 0 0
 /dev/mapper/httpd2 /httpd2 nfs4 rw,relatime,vers=4,barrier=1,data=ordered 0 0
 """.strip()
-
-FSTAB = """
-#
-# /etc/fstab
-# Created by anaconda on Fri May  6 19:51:54 2016
-#
-/dev/mapper/rhel_hadoop--test--1-root /                       xfs     defaults        0 0
-UUID=2c839365-37c7-4bd5-ac47-040fba761735 /boot               xfs     defaults        0 0
-/dev/mapper/rhel_hadoop--test--1-home /home                   xfs     defaults        0 0
-/dev/mapper/rhel_hadoop--test--1-swap swap                    swap    defaults        0 0
-""".strip()
-
-FSTAB_EMPTY = ""
 
 
 def test_xfs_mounts():

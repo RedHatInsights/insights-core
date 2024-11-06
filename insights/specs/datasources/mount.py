@@ -4,7 +4,6 @@ Custom datasource relevant mount command
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
-from insights.parsers.fstab import FSTab
 from insights.parsers.mount import ProcMounts
 
 
