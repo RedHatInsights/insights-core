@@ -1,9 +1,8 @@
 import pytest
 
 from insights.core.exceptions import SkipComponent
-from insights.parsers.fstab import FSTab
 from insights.parsers.mount import ProcMounts
-from insights.specs.datasources.mount import xfs_mounts, dumpdev_list, fstab_mounted
+from insights.specs.datasources.mount import xfs_mounts, dumpdev_list
 from insights.tests import context_wrap
 
 PROC_MOUNT_XFS = '''
@@ -68,24 +67,3 @@ def test_dumpdev_list_no_ext_filesystem():
     broker = {ProcMounts: ProcMounts(context_wrap(MOUNT_NO_EXT))}
     with pytest.raises(SkipComponent):
         dumpdev_list(broker)
-
-
-def test_fstab_mount_points():
-    fstab_content = FSTab(context_wrap(FSTAB))
-
-    broker = {
-        FSTab: fstab_content
-    }
-    result = fstab_mounted(broker)
-    assert result is not None
-    assert result == '/ /boot /home swap'
-
-
-def test_fstab_mount_points_bad():
-    fstab_content = FSTab(context_wrap(FSTAB_EMPTY))
-
-    broker = {
-        FSTab: fstab_content
-    }
-    with pytest.raises(SkipComponent):
-        fstab_mounted(broker)

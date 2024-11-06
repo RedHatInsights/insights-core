@@ -32,7 +32,7 @@ from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds, db2,
     dir_list, eap_reports, env, ethernet, httpd, intersystems, ipcs, kernel,
-    kernel_module_list, leapp, lpstat, ls, lsattr, ls_datasource, luks_devices, machine_ids,
+    kernel_module_list, leapp, lpstat, ls, lsattr, luks_devices, machine_ids,
     md5chk, mdadm, mount as mount_ds, package_provides,
     ps as ps_datasource, rpm_pkgs, sap, satellite_missed_queues,
     ssl_certificate, sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
