@@ -1,7 +1,7 @@
-import collections
 import json
 import pytest
 
+from collections import defaultdict, OrderedDict
 from mock.mock import Mock
 
 from insights.core import filters
@@ -30,15 +30,15 @@ RELATIVE_PATH = 'insights_commands/awx-manage_check_license_--data'
 
 
 def setup_function(func):
-    if Specs.awx_manage_check_license_data in filters._CACHE:
-        del filters._CACHE[Specs.awx_manage_check_license_data]
-    if Specs.awx_manage_check_license_data in filters.FILTERS:
-        del filters.FILTERS[Specs.awx_manage_check_license_data]
-
     if func is test_ansible_tower_license_datasource or func is test_ansible_tower_license_datasource_NG_output:
         filters.add_filter(Specs.awx_manage_check_license_data, ["license_type", "support_level", "instance_count", "time_remaining"])
     if func is test_ansible_tower_license_datasource_no_filter:
         filters.add_filter(Specs.awx_manage_check_license_data, [])
+
+
+def teardown_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
 
 
 def test_ansible_tower_license_datasource():
@@ -48,7 +48,7 @@ def test_ansible_tower_license_datasource():
     result = awx_manage_check_license_data_datasource(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
-    expected = DatasourceProvider(content=json.dumps(collections.OrderedDict(sorted(AWX_MANAGE_FILTER_JSON.items()))), relative_path=RELATIVE_PATH)
+    expected = DatasourceProvider(content=json.dumps(OrderedDict(sorted(AWX_MANAGE_FILTER_JSON.items()))), relative_path=RELATIVE_PATH)
     assert result.content == expected.content
     assert result.relative_path == expected.relative_path
 

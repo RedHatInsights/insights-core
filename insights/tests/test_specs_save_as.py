@@ -125,11 +125,7 @@ with open(here + "/spec_tests.py") as f:
 
 def teardown_function(func):
     filters._CACHE = {}
-
-    if func in [test_specs_save_as_collect, test_specs_save_as_no_collect]:
-        del filters.FILTERS[Stuff.smpl_cmd_w_filter]
-        del filters.FILTERS[Stuff.smpl_file_w_filter]
-        del filters.FILTERS[Stuff.first_file_spec_w_filter]
+    filters.FILTERS = defaultdict(set)
 
     # Reset Test ENV
     dr.COMPONENTS = defaultdict(lambda: defaultdict(set))

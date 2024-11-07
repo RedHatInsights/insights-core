@@ -1,7 +1,9 @@
 import doctest
 from datetime import datetime
 
-from insights import add_filter
+from collections import defaultdict
+
+from insights.core import filters
 from insights.parsers import rhsm_log
 from insights.parsers.rhsm_log import RhsmLog
 from insights.specs import Specs
@@ -28,10 +30,15 @@ LOG3 = """
 2011-12-27-08:41:13,104 [ERROR]  @managercli.py:66 - certificate verify failed
 """
 
-add_filter(Specs.rhsm_log, [
+filters.add_filter(Specs.rhsm_log, [
     "[ERROR]",
     "[Errno"
 ])
+
+
+def teardown_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
 
 
 def test_rhsm_log():
