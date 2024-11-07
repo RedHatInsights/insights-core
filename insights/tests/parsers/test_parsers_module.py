@@ -615,10 +615,18 @@ def test_keyword_search():
     assert len(results) == 2
     assert results == CERT_LIST
 
-    # Check that searches for keys with two underscores that aren't matcher
-    # suffixes still work
+    # CERT_LIST has a new key in the second row; with_row_keys_change=False
+    # this is not detected and no rows are returned.
     results = keyword_search(
         CERT_LIST,
+        dash__space='tested',
+    )
+    assert len(results) == 0
+
+    # Check that searches for keys with two underscores that aren't matcher
+    # suffixes still work, including row keys on all rows.
+    results = keyword_search(
+        CERT_LIST, row_keys_change=True,
         dash__space='tested',
     )
     assert len(results) == 1
@@ -648,12 +656,12 @@ PS_LIST = [
 
 def test_keyword_search_None():
     # Normal search
-    assert keyword_search(PS_LIST, COMMAND__default=None)[0]['PID'] == '726'
+    assert keyword_search(PS_LIST, COMMAND=None)[0]['PID'] == '726'
     assert keyword_search(PS_LIST, _line__contains='alloc')[0]['PID'] == '725'
     assert keyword_search(PS_LIST, COMMAND__startswith='xfs')[0]['PID'] == '725'
     assert len(keyword_search(PS_LIST, COMMAND__lower_value='KDMFLUSH')) == 2
     # Check that searches for non-existing keys
-    assert keyword_search(PS_LIST, NONE__default=None) == []
+    assert keyword_search(PS_LIST, NONE=None) == []
     assert keyword_search(PS_LIST, NONE__startswith='xfs') == []
 
 
