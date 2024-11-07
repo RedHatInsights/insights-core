@@ -1,5 +1,6 @@
 import pytest
 
+from collections import defaultdict
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.parsers.fstab import FSTab
@@ -23,6 +24,9 @@ FSTAB_CONTEXT = """
 
 
 def setup_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
+
     if func is test_la_empty:
         pass
     if func is test_la:
@@ -48,6 +52,9 @@ def setup_function(func):
 
 
 def teardown_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
+
     for spec in (
             Specs.ls_la_dirs, Specs.ls_la_filtered, Specs.ls_la_filtered_dirs,
             Specs.ls_lan_dirs, Specs.ls_lan_filtered, Specs.ls_lan_filtered_dirs,
@@ -89,7 +96,7 @@ def test_lanL():
 
 def test_lanR():
     ret = list_with_lanR({})
-    assert '/ ' in ret
+    assert ret == '/'
 
 
 def test_lanRL():

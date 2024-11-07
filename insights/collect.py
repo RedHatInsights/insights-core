@@ -242,7 +242,7 @@ plugins:
     - name: insights.components.selinux.SELinuxEnabled
       enabled: true
 
-    # needed for the 'spec.fstab_mounted' to the 'ls_lan' spec
+    # needed for the 'fstab_mounted.dirs' to the 'ls_lan' spec
     - name: insights.parsers.fstab.FSTab
       enabled: true
 """.strip()
