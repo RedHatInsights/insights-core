@@ -44,7 +44,7 @@ def setup_function(func):
     if func is test_lanZ:
         filters.add_filter(Specs.ls_laZ_dirs, ["/", '/mnt'])
     if func is test_lan_with_fstab_mounted_filter:
-        filters.add_filter(Specs.ls_lan_dirs, ["/", '/boot', 'specs.fstab_mounted'])
+        filters.add_filter(Specs.ls_lan_dirs, ["/", '/boot', 'fstab_mounted.dirs'])
 
 
 def teardown_function(func):
@@ -89,7 +89,7 @@ def test_lanL():
 
 def test_lanR():
     ret = list_with_lanR({})
-    assert '/' in ret
+    assert '/ ' in ret
 
 
 def test_lanRL():
@@ -113,4 +113,4 @@ def test_lan_with_fstab_mounted_filter():
         FSTab: fstab
     }
     ret = list_with_lan(broker)
-    assert ret == '/ /boot /hana/data specs.fstab_mounted'
+    assert ret == '/ /boot /hana/data fstab_mounted.dirs'

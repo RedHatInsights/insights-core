@@ -55,11 +55,11 @@ def list_with_la_filtered(broker):
 @datasource(HostContext)
 def list_with_lan(broker):
     filters = set(_list_items(Specs.ls_lan_dirs))
-    if 'specs.fstab_mounted' in filters and FSTab in broker:
+    if 'fstab_mounted.dirs' in filters and FSTab in broker:
         for mntp in broker[FSTab].mounted_on.keys():
             mnt_point = os.path.dirname(mntp)
             filters.add(mnt_point) if mnt_point else None
-    return ' '.join(sorted(list(filters)))
+    return ' '.join(sorted(filters))
 
 
 @datasource(HostContext)
