@@ -108,7 +108,7 @@ class SubscriptionManagerList(CommandParser):
             >>> consumed.search(Provides__contains='Red Hat Enterprise Virtualization')
             []
         """
-        return keyword_search(self.records, **kwargs)
+        return keyword_search(self.records, parent=self, **kwargs)
 
 
 @parser(Specs.subscription_manager_list_consumed)

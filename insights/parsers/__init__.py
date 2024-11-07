@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 from insights.core.exceptions import ParseException, SkipComponent  # noqa: F401
 
+
 __all__ = [n for (i, n, p) in pkgutil.iter_modules(__path__) if not p]
 
 
@@ -454,14 +455,14 @@ def parse_delimited_table(table_lines,
     return r
 
 
-def keyword_search(rows, **kwargs):
+def keyword_search(rows, parent=None, row_keys_change=False, **kwargs):
     """
     Takes a list of dictionaries and finds all the dictionaries where the
     keys and values match those found in the keyword arguments.
 
     Keys in the row data have ' ' and '-' replaced with '_', so they can
     match the keyword argument parsing.  For example, the keyword argument
-    'fix_up_path' will match a key named 'fix-up path'.
+    'fix_up_path' will match a key named 'fix-up path'. (see warning below)
 
     In addition, several suffixes can be added to the key name to do partial
     matching of values:
@@ -469,12 +470,19 @@ def keyword_search(rows, **kwargs):
     * '__contains' will test whether the data value contains the given
       value.
     * '__startswith' tests if the data value starts with the given value
+    * '__endswith' tests if the data value ends with the given value
     * '__lower_value' compares the lower-case version of the data and given
       values.
 
     Arguments:
         rows (list): A list of dictionaries representing the data to be
             searched.
+        row_keys_change (bool): If True, each row might have different keys.
+            This would happen if your data didn't add fields when the value
+            was empty, or if combining different sources of data.  Most of
+            the time it's safe to assume that the first row contains all of
+            the keys, so if row_keys_change is False only the first row's
+            keys are used as search keywords.
         **kwargs (dict): keyword-value pairs corresponding to the fields that
             need to be found and their required values in the data rows.
 
@@ -498,38 +506,99 @@ def keyword_search(rows, **kwargs):
          {'domain': 'root', 'type': 'soft', 'item': 'nproc', 'value': -1}]
         >>> keyword_search(rows, domain__startswith='r')
         [{'domain': 'root', 'type': 'soft', 'item': 'nproc', 'value': -1}]
+
+
+
+    Testing has shown that caching the keyword_search() function itself does
+    not result in much speed-up, but caching the key transformation does.  The
+    cache is stored as an attribute, either on the object storing the rows or
+    on a 'parent' object that can take an attribute (if 'rows' is a list, that
+    cannot have an attribute added to it).  (We used to store the transformed
+    dictionary of rows, but storing just the key transformations is faster.)
     """
-    results = []
     if not kwargs:
-        return results
+        return []
+    if not rows:
+        return []
 
     # Allows us to transform the key and do lookups like __contains and
     # __startswith
     matchers = {
-        'default': lambda s, v: s == v,
+        'equals': lambda s, v: s == v,
         'contains': lambda s, v: s is not None and v in s,
         'startswith': lambda s, v: s is not None and s.startswith(v),
         'endswith': lambda s, v: s is not None and s.endswith(v),
         'lower_value': lambda s, v: None not in (s, v) and s.lower() == v.lower(),
     }
 
-    def key_match(row, key, value):
-        # Translate ' ' and '-' of keys in dict to '_' to match keyword arguments.
-        my_row = {}
-        for my_key, val in row.items():
-            my_row[my_key.replace(' ', '_').replace('-', '_')] = val
-        matcher_fn = matchers['default']
-        if '__' in key:
-            key, matcher = key.split('__', 1)
+    txform_cache_attr = '_transform_cache'
+    if parent is None and hasattr(rows, '__dict__'):
+        parent = rows
+    # Uncomment this 'if' to check that all the parsers are supplying an
+    # object, somehow, that can store our transformed row cache.
+    # if parent is None:
+    #     print("Invoked with no parent arg on primitive container - use parent=self argument to cache row transform")
+    # The actual txkeys cache gets used rarely - in a basic test with a real
+    # archive it only got used eleven times.  But that's a saving...
+    if parent is not None and hasattr(parent, txform_cache_attr):
+        txkeys = getattr(parent, txform_cache_attr)
+    else:
+        # Store the translation from the search key to the key in the data.
+        all_keys = set()
+        # Most data has the same keys in every row; but if row keys can change
+        # between rows then we need to scan every row.
+        if row_keys_change:
+            for row in rows:
+                # I tested this with a few different data scenarios and there
+                # is no improvement if you check for the superset beforehand.
+                all_keys.update(row.keys())
+        else:
+            # If your parser or combiner passes a dict_values for rows then you
+            # need to turn it into a list...
+            all_keys = set(list(rows[0].keys()))
+
+        # Now build the 'transformed' key - the search keywords we recognise -
+        # out of the keys we found.
+        txkeys = dict(
+            (key.replace(' ', '_').replace('-', '_'), key)
+            for key in all_keys
+        )
+        if parent is not None:
+            setattr(parent, txform_cache_attr, txkeys)
+
+    # pre-compile the kwargs to find the matcher function and underlying key.
+    # Store these in a list of tuples for fast iteration and unpacking
+    search_terms = list()
+    for search_keyword, value in kwargs.items():
+        # Again, we've tested this code with a variety of inputs and this
+        # seems to be the fastest way:
+        if '__' not in search_keyword:
+            data_key = search_keyword
+            matcher = 'equals'
+        else:
+            data_key, _, matcher = search_keyword.partition('__')
             if matcher not in matchers:
                 # put key back the way we found it, matcher fn unchanged
-                key = key + '__' + matcher
-            else:
-                matcher_fn = matchers[matcher]
-        return key in my_row and matcher_fn(my_row[key], value)
+                data_key = search_keyword
+                matcher = 'equals'
+        # If the data key sought is not in the row data, then we can say for
+        # sure that the search will never match.  In the case of netstat,
+        # where there are two different sections being searched and they do
+        # not share keys, supplying a key that's only in one section is not
+        # a coding error.
+        if data_key not in txkeys:
+            return []
+        search_terms.append((
+            txkeys[data_key], matcher, matchers[matcher], value
+        ))
 
-    data = []
+    def key_match(row, data_key, matcher, matcher_fn, value):
+        if matcher == 'equals':
+            return data_key in row and row[data_key] == value
+        return data_key in row and matcher_fn(row[data_key], value)
+
+    data = list()
     for row in rows:
-        if all(map(lambda kv: key_match(row, kv[0], kv[1]), kwargs.items())):
+        if all(key_match(row, *term) for term in search_terms):
             data.append(row)
     return data

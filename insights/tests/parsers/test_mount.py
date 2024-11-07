@@ -199,6 +199,10 @@ def test_mount():
     assert results.search(mount_options__contains='seclabel') == [
         results.rows[n] for n in (0, 1, 3, 4, 5, 7, 8, 11)
     ]
+    assert results.rows[11].mount_label == '[CONFIG]'
+    assert results.search(mount_label='[CONFIG]') == [
+        results.rows[11]
+    ]
 
 
 def test_mount_with_special_mnt_point():
