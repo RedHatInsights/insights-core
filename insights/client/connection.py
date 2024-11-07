@@ -382,12 +382,10 @@ class InsightsConnection(object):
                 logger.info("Connection failed")
                 return False
         except REQUEST_FAILED_EXCEPTIONS as exc:
-            last_ex = exc
             logger.error(
                 "Could not successfully connect to: %s", url)
             print(exc)
-        if last_ex:
-            raise last_ex
+            raise
 
     def test_connection(self, rc=0):
         """

@@ -55,29 +55,7 @@ def setup_function(func):
 
 def teardown_function(func):
     filters._CACHE = {}
-    if func is test_get_filter:
-        del filters.FILTERS[Specs.ps_aux]
-
-    if func is test_get_filter_registry_point:
-        del filters.FILTERS[Specs.ps_aux]
-        del filters.FILTERS[DefaultSpecs.ps_aux]
-
-    if func is test_filter_dumps_loads:
-        del filters.FILTERS[Specs.ps_aux]
-
-    if func in [
-        test_add_filter_to_MySpecsHasFilters,
-        test_add_filter_to_LocalSpecsHasFilters,
-    ]:
-        del filters.FILTERS[MySpecs.has_filters]
-        del filters.FILTERS[LocalSpecs.has_filters]
-
-    if func is test_add_filter_to_PsAux:
-        del filters.FILTERS[Specs.ps_aux]
-        del filters.FILTERS[DefaultSpecs.ps_aux]
-
-    if func is test_add_filter_to_parser_patterns_list:
-        del filters.FILTERS[Specs.ps_aux]
+    filters.FILTERS = defaultdict(set)
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier code uses oyaml library which is incompatable with this test')
@@ -85,7 +63,6 @@ def test_filter_dumps_loads():
     r = filters.dumps()
     assert r is not None
 
-    filters.FILTERS = defaultdict(set)
     filters.loads(r)
 
     assert Specs.ps_aux in filters.FILTERS

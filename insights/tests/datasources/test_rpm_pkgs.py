@@ -2,6 +2,7 @@ import mock
 import pytest
 
 from mock.mock import Mock
+from collections import defaultdict
 
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
@@ -24,6 +25,16 @@ RPM_BAD_CMD = "bash: rpm: command not found..."
 RPM_EMPTY_CMD = ""
 
 RELATIVE_PATH = "insights_commands/rpm_pkgs"
+
+
+def setup_function(func):
+    if func is test_rpm_v_pkgs:
+        filters.add_filter(Specs.rpm_V_package_list, ['coreutils', 'procps', 'procps-ng', 'shadow-utils', 'passwd', 'sudo', 'chrony', 'findutils', 'glibc'])
+
+
+def teardown_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
 
 
 def get_users():
@@ -57,18 +68,6 @@ def test_no_rpm(no_rpm):
 
     with pytest.raises(SkipComponent):
         pkgs_with_writable_dirs(broker)
-
-
-def setup_function(func):
-    if func is test_pkgs_list_empty:
-        pass
-    if func is test_rpm_v_pkgs:
-        filters.add_filter(Specs.rpm_V_package_list, ['coreutils', 'procps', 'procps-ng', 'shadow-utils', 'passwd', 'sudo', 'chrony', 'findutils', 'glibc'])
-
-
-def teardown_function():
-    if Specs.rpm_V_package_list in filters._CACHE:
-        del filters._CACHE[Specs.rpm_V_package_list]
 
 
 def test_pkgs_list_empty():

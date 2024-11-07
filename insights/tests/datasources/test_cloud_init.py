@@ -1,6 +1,7 @@
 import pytest
 import yaml
 
+from collections import defaultdict
 from mock.mock import Mock
 
 from insights.core import filters
@@ -76,11 +77,6 @@ RELATIVE_PATH = '/etc/cloud/cloud.cfg'
 
 
 def setup_function(func):
-    if Specs.cloud_cfg in filters._CACHE:
-        del filters._CACHE[Specs.cloud_cfg]
-    if Specs.cloud_cfg in filters.FILTERS:
-        del filters.FILTERS[Specs.cloud_cfg]
-
     if func is test_cloud_cfg:
         filters.add_filter(Specs.cloud_cfg, ['ssh_deletekeys', 'network', 'debug'])
     if func is test_cloud_cfg_no_filter:
@@ -90,8 +86,8 @@ def setup_function(func):
 
 
 def teardown_function(func):
-    if func is test_cloud_cfg_bad or func is test_cloud_cfg:
-        del filters.FILTERS[Specs.cloud_cfg]
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
 
 
 @pytest.mark.parametrize("ssh_deletekeys", [0, 1])
