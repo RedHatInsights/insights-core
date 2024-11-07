@@ -1,6 +1,8 @@
 import doctest
 
-from insights.core.filters import add_filter
+from collections import defaultdict
+
+from insights.core import filters
 from insights.parsers import ls_usr_bin
 from insights.parsers.ls_usr_bin import LsUsrBin
 from insights.specs import Specs
@@ -14,6 +16,11 @@ lrwxrwxrwx.  1 0  0        7 Oct 22  2019 python -> python2
 lrwxrwxrwx.  1 0  0       14 Oct 22  2019 python-config -> python2-config
 lrwxrwxrwx.  1 0  0        9 Oct 22  2019 python2 -> python2.7
 """
+
+
+def teardown_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
 
 
 def test_ls_usr_bin():
@@ -37,7 +44,7 @@ def test_ls_usr_bin():
 def test_ls_usr_bin_doc_examples():
     env = {
         'Specs': Specs,
-        'add_filter': add_filter,
+        'add_filter': filters.add_filter,
         'LsUsrBin': LsUsrBin,
         'ls_usr_bin': LsUsrBin(context_wrap(LS_USR_BIN, path='insights_commands/ls_-ln_.usr.bin')),
     }

@@ -1,5 +1,7 @@
 import pytest
 
+from collections import defaultdict
+
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.specs import Specs
@@ -7,15 +9,15 @@ from insights.specs.datasources.dir_list import du_dir_list
 
 
 def setup_function(func):
-    if Specs.du_dirs in filters._CACHE:
-        del filters._CACHE[Specs.du_dirs]
-    if Specs.du_dirs in filters.FILTERS:
-        del filters.FILTERS[Specs.du_dirs]
-
     if func is test_du_dirs_list:
         filters.add_filter(Specs.du_dirs, ["/var/lib/pulp", "/etc/httpd"])
     if func is test_du_dirs_list_no_filter:
         filters.add_filter(Specs.du_dirs, [])
+
+
+def teardown_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
 
 
 def test_du_dirs_list():
