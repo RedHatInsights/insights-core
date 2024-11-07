@@ -103,6 +103,11 @@ ServerRoot "/etc/httpd"
 Include conf.d/*.conf
 """.strip()
 
+data_lines_httpd_conf_lower_case = """
+ServerRoot "/etc/httpd"
+include conf.d/*.conf
+""".strip()
+
 data_lines_httpd24_scl_conf = """
 ServerRoot "/opt/rh/httpd24/root/etc/httpd"
 Include conf.d/*.conf
@@ -116,6 +121,15 @@ Include conf.d/*.conf
 data_lines_ssl_conf = """
 Listen 443 https
 IncludeOptional modsecurity.d/*.conf
+<IfModule mod_security2.c>
+    # ModSecurity Core Rules Set and Local configuration
+    IncludeOptional modsecurity.d/*.conf
+</IfModule>
+""".strip()
+
+data_lines_ssl_conf_lower_case = """
+Listen 443 https
+includeOptional modsecurity.d/*.conf
 <IfModule mod_security2.c>
     # ModSecurity Core Rules Set and Local configuration
     IncludeOptional modsecurity.d/*.conf
@@ -142,6 +156,18 @@ SecAction \
 @patch(builtin_open, new_callable=mock_open, read_data=data_lines_httpd_conf)
 def test_httpd_conf_files(m_open, m_glob, m_isdir, m_isfile):
     handlers = (m_open.return_value, mock_open(read_data=data_lines_ssl_conf).return_value)
+    m_open.side_effect = handlers
+    broker = {HostContext: None}
+    result = httpd_configuration_files(broker)
+    assert result == set(['/etc/httpd/conf.d/ssl.conf', '/etc/httpd/conf/httpd.conf'])
+
+
+@patch("os.path.isfile", return_value=True)
+@patch("os.path.isdir", return_value=True)
+@patch("glob.glob", return_value=["/etc/httpd/conf.d/ssl.conf"])
+@patch(builtin_open, new_callable=mock_open, read_data=data_lines_httpd_conf_lower_case)
+def test_httpd_conf_files_lower_case(m_open, m_glob, m_isdir, m_isfile):
+    handlers = (m_open.return_value, mock_open(read_data=data_lines_ssl_conf_lower_case).return_value)
     m_open.side_effect = handlers
     broker = {HostContext: None}
     result = httpd_configuration_files(broker)
