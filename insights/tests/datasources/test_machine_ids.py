@@ -2,6 +2,7 @@ import json
 import pytest
 
 from mock.mock import patch
+from collections import defaultdict
 
 from insights.client.config import InsightsConfig
 from insights.core import filters
@@ -82,17 +83,17 @@ class Result(object):
 
 
 def setup_function(func):
-    if Specs.duplicate_machine_id in filters._CACHE:
-        del filters._CACHE[Specs.duplicate_machine_id]
-    if Specs.duplicate_machine_id in filters.FILTERS:
-        del filters.FILTERS[Specs.duplicate_machine_id]
-
     if func in [test_duplicate, test_non_duplicate, test_wrong_machine_id_content, test_machine_id_not_in_filters, test_api_result_not_in_json_format]:
         filters.add_filter(Specs.duplicate_machine_id, ["dc194312-8cdd-4e75-8cf1-2094bfsfsdeff"])
         filters.add_filter(Specs.duplicate_machine_id, ["dc194312-8cdd-4e75-8cf1-2094bf45678"])
         filters.add_filter(Specs.duplicate_machine_id, ["dc194312-8cdd-4e75-8cf1-2094bfwrong"])
     if func is test_module_filters_empty:
         filters.add_filter(Specs.duplicate_machine_id, [])
+
+
+def teardown_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
 
 
 @patch('insights.specs.datasources.machine_ids.get_connection',
