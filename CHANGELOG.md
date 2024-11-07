@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.21](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.21) (2024-11-07)
+
+- FEAT: new custom filter 'fstab_mounted.dirs' to ls_lan spec ([PR 4255](https://github.com/RedHatInsights/insights-core/pull/4255))
+- test: refine the tests used add_filter() ([PR 4265](https://github.com/RedHatInsights/insights-core/pull/4265))
+- Fix: Enhance datasource httpd include upcase ([PR 4264](https://github.com/RedHatInsights/insights-core/pull/4264))
+- Make test_urls test names consistent ([PR 4263](https://github.com/RedHatInsights/insights-core/pull/4263))
+- Simplify re-raise for non-legacy ([PR 4254](https://github.com/RedHatInsights/insights-core/pull/4254))
+
 # [insights-core-3.4.20](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.20) (2024-10-31)
 
 - parsers: add parser for image builder facts (RHINENG-13943) ([PR 4261](https://github.com/RedHatInsights/insights-core/pull/4261))

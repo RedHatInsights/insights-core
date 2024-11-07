@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.20
+Version:        3.4.21
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,14 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 07 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.21-1
+- FEAT: new custom filter 'fstab_mounted.dirs' to ls_lan spec (#4255)
+  (986222045@qq.com)
+- test: refine the tests used add_filter() (#4265) (xiangceliu@redhat.com)
+- Fix: Enhance datasource httpd include upcase (#4264) (jiazhang@redhat.com)
+- Make test_urls test names consistent (#4263) (stomsa@redhat.com)
+- Simplify re-raise for non-legacy (#4254) (stomsa@redhat.com)
+
 * Thu Oct 31 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.20-1
 - parsers: add parser for image builder facts (RHINENG-13943) (#4261)
   (sanne.raymaekers@gmail.com)
