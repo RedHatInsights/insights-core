@@ -6,7 +6,9 @@ from insights.core.dr import get_name
 from insights.core.exceptions import SkipComponent
 from insights.core.filters import get_filters
 from insights.core.plugins import datasource
+from insights.parsers.fstab import FSTab
 from insights.specs import Specs
+import os
 
 
 def _list_items(spec):
@@ -36,50 +38,55 @@ def _list_items(spec):
                 ==============================================================
             """
             filters.append('_non_existing_')
-        return ' '.join(filters)
+        return filters
     raise SkipComponent
 
 
 @datasource(HostContext)
 def list_with_la(broker):
-    return _list_items(Specs.ls_la_dirs)
+    return ' '.join(_list_items(Specs.ls_la_dirs))
 
 
 @datasource(HostContext)
 def list_with_la_filtered(broker):
-    return _list_items(Specs.ls_la_filtered_dirs)
+    return ' '.join(_list_items(Specs.ls_la_filtered_dirs))
 
 
 @datasource(HostContext)
 def list_with_lan(broker):
-    return _list_items(Specs.ls_lan_dirs)
+    filters = set(_list_items(Specs.ls_lan_dirs))
+    if 'fstab_mounted.dirs' in filters and FSTab in broker:
+        for mntp in broker[FSTab].mounted_on.keys():
+            mnt_point = os.path.dirname(mntp)
+            filters.add(mnt_point) if mnt_point else None
+    return ' '.join(sorted(filters))
 
 
 @datasource(HostContext)
 def list_with_lan_filtered(broker):
-    return _list_items(Specs.ls_lan_filtered_dirs)
+    return ' '.join(_list_items(Specs.ls_lan_filtered_dirs))
 
 
 @datasource(HostContext)
 def list_with_lanL(broker):
-    return _list_items(Specs.ls_lanL_dirs)
+    return ' '.join(_list_items(Specs.ls_lanL_dirs))
 
 
 @datasource(HostContext)
 def list_with_lanR(broker):
-    return _list_items(Specs.ls_lanR_dirs)
+    return ' '.join(_list_items(Specs.ls_lanR_dirs))
 
 
 @datasource(HostContext)
 def list_with_lanRL(broker):
-    return _list_items(Specs.ls_lanRL_dirs)
+    return ' '.join(_list_items(Specs.ls_lanRL_dirs))
 
 
 @datasource(HostContext)
 def list_with_laRZ(broker):
-    return _list_items(Specs.ls_laRZ_dirs)
+    return ' '.join(_list_items(Specs.ls_laRZ_dirs))
 
 
 @datasource(HostContext)
 def list_with_laZ(broker):
-    return _list_items(Specs.ls_laZ_dirs)
+    return ' '.join(_list_items(Specs.ls_laZ_dirs))
