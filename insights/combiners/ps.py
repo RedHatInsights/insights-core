@@ -190,7 +190,7 @@ class Ps(object):
             ... ]
             True
         """
-        return keyword_search(self._pid_data.values(), **kwargs)
+        return keyword_search(list(self._pid_data.values()), **kwargs)
 
     def __contains__(self, command):
         """
