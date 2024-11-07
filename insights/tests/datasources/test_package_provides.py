@@ -1,5 +1,7 @@
 import pytest
 
+from collections import defaultdict
+
 from insights.combiners.ps import Ps
 from insights.core import dr, filters
 from insights.core.context import HostContext
@@ -52,11 +54,6 @@ class FakeContext(HostContext):
 
 
 def setup_function(func):
-    if Specs.package_provides_command in filters._CACHE:
-        del filters._CACHE[Specs.package_provides_command]
-    if Specs.package_provides_command in filters.FILTERS:
-        del filters.FILTERS[Specs.package_provides_command]
-
     if func is test_cmd_and_pkg:
         filters.add_filter(Specs.package_provides_command, ['httpd', 'java'])
     elif func is test_cmd_and_pkg_not_found:
@@ -64,8 +61,8 @@ def setup_function(func):
 
 
 def teardown_function(func):
-    if func is test_cmd_and_pkg or func is test_cmd_and_pkg_not_found:
-        del filters.FILTERS[Specs.package_provides_command]
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
 
 
 def test_get_package():

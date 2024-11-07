@@ -1,6 +1,8 @@
 import doctest
 
-from insights import add_filter
+from collections import defaultdict
+
+from insights.core import filters
 from insights.parsers import messages
 from insights.specs import Specs
 from insights.tests import context_wrap
@@ -17,7 +19,7 @@ Apr 22 10:40:01 boy-bona CROND[30677]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1
 Apr 22 10:41:13 boy-bona crontab[32515]: (root) LIST (root)
 """.strip()
 
-add_filter(Specs.messages, [
+filters.add_filter(Specs.messages, [
     "LIST",
     "CROND",
     "jabberd",
@@ -25,6 +27,11 @@ add_filter(Specs.messages, [
     "Launching",
     "yum"
 ])
+
+
+def teardown_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
 
 
 def test_doc_examples():

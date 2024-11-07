@@ -2,6 +2,8 @@
 
 import doctest
 
+from collections import defaultdict
+
 from insights.core import filters
 from insights.parsers import dse_ldif_simple
 from insights.parsers.dse_ldif_simple import DseLdifSimple
@@ -144,8 +146,8 @@ def setup_function(func):
 
 
 def teardown_function(func):
-    if func in [test_dse_ldif_filtered]:
-        del filters.FILTERS[Specs.dse_ldif]
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
 
 
 def test_dse_ldif_smoke():
@@ -185,7 +187,7 @@ def test_dse_ldif_coverage():
 def test_dse_ldif_filtered():
     dse_ldif_simple = DseLdifSimple(context_wrap(DSE_LDIF_REAL_EXAMPLE, filtered_spec=Specs.dse_ldif))
     assert dse_ldif_simple["nsslapd-security"] == "on"
-    assert len(dse_ldif_simple) == 9
+    assert len(dse_ldif_simple) == 6
     expected = {
         "cn": "config",  # just a canary to detect spec collection status
         "nsslapd-security": "on",
@@ -193,9 +195,6 @@ def test_dse_ldif_filtered():
         "sslVersionMax": "TLS1.1",
         "nsSSL3": "on",
         "nsSSL3Ciphers": "+all",
-        "dn": "cn=config",
-        "nsslapd-rootdn": "cn=Directory Manager",
-        "nsslapd-ldapimaprootdn": "cn=Directory Manager",
     }
     assert dict(dse_ldif_simple) == expected
 
