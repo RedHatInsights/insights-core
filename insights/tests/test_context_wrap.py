@@ -1,4 +1,6 @@
-from insights.core.filters import add_filter
+from collections import defaultdict
+
+from insights.core import filters
 from insights.specs import Specs
 from insights.tests import context_wrap, DEFAULT_RELEASE, DEFAULT_HOSTNAME
 
@@ -13,7 +15,10 @@ Two
 Four
 """
 
-add_filter(Specs.messages, ["Two", "Four", "Five"])
+
+def teardown_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
 
 
 def test_context_wrap_unfiltered():
@@ -27,6 +32,7 @@ def test_context_wrap_unfiltered():
 
 
 def test_context_wrap_filtered():
+    filters.add_filter(Specs.messages, ["Two", "Four", "Five"])
     context = context_wrap(DATA, filtered_spec=Specs.messages)
     assert context is not None
     assert context.content == DATA_FILTERED.strip().splitlines()

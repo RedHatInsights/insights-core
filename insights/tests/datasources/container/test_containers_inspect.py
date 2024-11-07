@@ -1,6 +1,7 @@
 import json
 import pytest
 
+from collections import defaultdict
 from mock.mock import Mock
 
 from insights.core import dr, filters
@@ -916,15 +917,15 @@ EXPECTED_RESULT_NG = [{'Id': '28fb57be8bb2', 'engine': 'podman'}]
 
 
 def setup_function(func):
-    if Specs.container_inspect_keys in filters._CACHE:
-        del filters._CACHE[Specs.container_inspect_keys]
-    if Specs.container_inspect_keys in filters.FILTERS:
-        del filters.FILTERS[Specs.container_inspect_keys]
-
     if func is test_containers_inspect_datasource or func is test_containers_inspect_datasource_NG_output_1 or func is test_containers_inspect_datasource_NG_output_2:
         filters.add_filter(Specs.container_inspect_keys, ["HostConfig|Privileged", "NoSuchKey|Privileged", "Config|Cmd", "Id", "Image"])
     if func is test_containers_inspect_datasource_no_filter:
         filters.add_filter(Specs.container_inspect_keys, [])
+
+
+def teardown_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(set)
 
 
 def test_running_rhel_containers_id():

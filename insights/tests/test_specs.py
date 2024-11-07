@@ -228,16 +228,7 @@ def setup_function(func):
 
 def teardown_function(func):
     filters._CACHE = {}
-
-    if func in [test_spec_factory, test_specs_collect, test_line_terminators]:
-        del filters.FILTERS[Stuff.smpl_cmd_w_filter]
-        del filters.FILTERS[Stuff.smpl_file_w_filter]
-        del filters.FILTERS[Stuff.first_file_spec_w_filter]
-        del filters.FILTERS[Stuff.first_of_spec_w_filter]
-        del filters.FILTERS[Stuff.many_glob_filter]
-        del filters.FILTERS[Stuff.many_foreach_exe_filter]
-        del filters.FILTERS[Stuff.many_foreach_clc_filter]
-        del filters.FILTERS[Stuff.cmd_w_args_filter]
+    filters.FILTERS = defaultdict(set)
 
     if func == test_specs_collect:
         os.remove(test_empty_file)
