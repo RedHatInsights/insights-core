@@ -4,12 +4,24 @@ from collections import defaultdict
 
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
+from insights.parsers.fstab import FSTab
 from insights.specs import Specs
 from insights.specs.datasources.ls import (
         list_with_la, list_with_la_filtered,
         list_with_lan, list_with_lan_filtered,
         list_with_lanL, list_with_lanR, list_with_lanRL,
         list_with_laRZ, list_with_laZ)
+from insights.tests import context_wrap
+
+
+FSTAB_CONTEXT = """
+/dev/mapper/rhel_rhel8-root /                       xfs     defaults        0 0
+/dev/vda1 /boot                   xfs     defaults        0 0
+/dev/mapper/rhel_rhel8-swap none                    swap    defaults        0 0
+/dev/mapper/rhel_rhel7-hana1 /hana/data/rhel7-hana1                       xfs     defaults        0 0
+/dev/mapper/rhel_rhel7-hana2 /hana/data/rhel7-hana2                       xfs     defaults        0 0
+/dev/mapper/rhel_rhel7-hana3 /hana/data/rhel7-hana3                       xfs     defaults        0 0
+""".strip()
 
 
 def setup_function(func):
@@ -33,6 +45,8 @@ def setup_function(func):
         filters.add_filter(Specs.ls_laRZ_dirs, ['/boot'])
     if func is test_lanZ:
         filters.add_filter(Specs.ls_laZ_dirs, ["/", '/mnt'])
+    if func is test_lan_with_fstab_mounted_filter:
+        filters.add_filter(Specs.ls_lan_dirs, ["/", '/boot', 'fstab_mounted.dirs'])
 
 
 def teardown_function(func):
@@ -88,3 +102,12 @@ def test_lanRZ():
 def test_lanZ():
     ret = list_with_laZ({})
     assert ret == '/ /mnt'
+
+
+def test_lan_with_fstab_mounted_filter():
+    fstab = FSTab(context_wrap(FSTAB_CONTEXT))
+    broker = {
+        FSTab: fstab
+    }
+    ret = list_with_lan(broker)
+    assert ret == '/ /boot /hana/data fstab_mounted.dirs'
