@@ -7,7 +7,6 @@ from pytest import mark
 
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
-from insights.client.constants import InsightsConstants as constants
 from insights.core.spec_cleaner import Cleaner
 
 hostname = "report.test.com"
@@ -22,9 +21,10 @@ test_file_data = 'ip: 10.0.2.155\ntestword\n{0}'.format(hostname)
 )
 @mark.parametrize("test_umask", [0o000, 0o022])
 def test_rhsm_facts(test_umask, obfuscate, obfuscate_hostname):
-    constants.rhsm_facts_file = '/tmp/insights_test_rhsm.facts'
+    rhsm_facts_file = '/tmp/insights_test_rhsm.facts'
     conf = InsightsConfig(obfuscate=obfuscate,
                           obfuscate_hostname=obfuscate_hostname)
+    conf.rhsm_facts_file = rhsm_facts_file
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -41,11 +41,11 @@ def test_rhsm_facts(test_umask, obfuscate, obfuscate_hostname):
 
     umask_after_test = os.umask(old_umask)
 
-    assert os.path.isfile(constants.rhsm_facts_file)
-    st = os.stat(constants.rhsm_facts_file)
+    assert os.path.isfile(rhsm_facts_file)
+    st = os.stat(rhsm_facts_file)
     assert st.st_mode & 0o777 == 0o644 & ~test_umask
     assert umask_after_test == test_umask  # umask was not changed by Cleaner
-    with open(constants.rhsm_facts_file, 'r') as fp:
+    with open(rhsm_facts_file, 'r') as fp:
         facts = json.load(fp)
         # hostname
         assert facts['insights_client.hostname'] == hostname
@@ -69,7 +69,7 @@ def test_rhsm_facts(test_umask, obfuscate, obfuscate_hostname):
         assert kws[0]['original'] == 'testword'
         assert kws[0]['obfuscated'] == 'keyword0'
 
-    os.unlink(constants.rhsm_facts_file)
+    os.unlink(rhsm_facts_file)
 
 
 @mark.parametrize("rm_conf", [{}, {'keywords': ['testword']}])

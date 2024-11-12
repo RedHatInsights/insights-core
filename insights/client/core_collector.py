@@ -124,6 +124,7 @@ class CoreCollector(object):
 
         logger.debug('Beginning to run core collection ...')
 
+        self.config.rhsm_facts_file = constants.rhsm_facts_file
         collect.collect(
             tmp_path=self.archive.tmp_dir,
             archive_name=self.archive.archive_name,
