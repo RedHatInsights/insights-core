@@ -503,8 +503,8 @@ class Cleaner(object):
         logger.info('Completed Keyword Report.')
 
     def generate_report(self, archive_name):
-        if self.rhsm_facts_file:
-            self.generate_rhsm_facts()
+        # Always generate the rhsm.facts files
+        self.generate_rhsm_facts()
         if 'ip' in self.obfuscate:
             self.generate_ip_report(archive_name)
         if 'hostname' in self.obfuscate:
