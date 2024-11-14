@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.22](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.22) (2024-11-14)
+
+- fix: do not import 'insights.client.constants' in spec_cleaner ([PR 4267](https://github.com/RedHatInsights/insights-core/pull/4267))
+- feat(client): Improve test coverage of crypto.py ([PR 4268](https://github.com/RedHatInsights/insights-core/pull/4268))
+- Speed up `keyword_search` by storing pre-processed data ([PR 3604](https://github.com/RedHatInsights/insights-core/pull/3604))
+- feat(client): write .last-upload.results also after non-legacy uploads ([PR 4229](https://github.com/RedHatInsights/insights-core/pull/4229))
+
 # [insights-core-3.4.21](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.21) (2024-11-07)
 
 - FEAT: new custom filter 'fstab_mounted.dirs' to ls_lan spec ([PR 4255](https://github.com/RedHatInsights/insights-core/pull/4255))

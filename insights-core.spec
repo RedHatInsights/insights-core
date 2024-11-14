@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.21
+Version:        3.4.22
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,16 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 14 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.22-1
+- fix: do not import 'insights.client.constants' in spec_cleaner (#4267)
+  (xiangceliu@redhat.com)
+- feat(client): Improve test coverage of crypto.py (#4268)
+  (47797196+pkoprda@users.noreply.github.com)
+- Speed up `keyword_search` by storing pre-processed data (#3604)
+  (paulway@redhat.com)
+- feat(client): write .last-upload.results also after non-legacy uploads
+  (#4229) (ptoscano@redhat.com)
+
 * Thu Nov 07 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.21-1
 - FEAT: new custom filter 'fstab_mounted.dirs' to ls_lan spec (#4255)
   (986222045@qq.com)
