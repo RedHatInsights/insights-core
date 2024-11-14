@@ -99,6 +99,7 @@ class GPGCommand(object):
         )
         stdout, stderr = version_process.communicate()
         if version_process.returncode != 0:
+            stderr = stderr.decode("utf-8") if isinstance(stderr, bytes) else stderr
             stderr = "\n".join("stderr: {line}".format(line=line) for line in stderr.split("\n") if len(line))
             logger.debug("could not query for gpg version:\n{err}".format(err=stderr))
             return False
