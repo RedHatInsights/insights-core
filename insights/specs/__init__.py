@@ -91,6 +91,7 @@ class Specs(SpecSet):
     cinder_volume_log = RegistryPoint(filterable=True)
     cloud_cfg = RegistryPoint(filterable=True)
     cloud_cfg_filtered = RegistryPoint()
+    cloud_init_query = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     cloud_init_custom_network = RegistryPoint()
     cloud_init_log = RegistryPoint(filterable=True)
     cluster_conf = RegistryPoint(filterable=True)
@@ -195,7 +196,9 @@ class Specs(SpecSet):
     falconctl_backend = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     falconctl_rfm = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     falconctl_version = RegistryPoint(no_obfuscate=['hostname', 'ip'])
-    fapolicyd_rules = RegistryPoint(multi_output=True, filterable=True, no_obfuscate=['hostname', 'ip'])
+    fapolicyd_rules = RegistryPoint(
+        multi_output=True, filterable=True, no_obfuscate=['hostname', 'ip']
+    )
     fc_match = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     fcoeadm_i = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     findmnt_lo_propagation = RegistryPoint()
@@ -284,7 +287,9 @@ class Specs(SpecSet):
     ip_addr = RegistryPoint(no_obfuscate=['hostname'])
     ip_addresses = RegistryPoint(no_obfuscate=['hostname'])
     ip_neigh_show = RegistryPoint(no_obfuscate=['hostname'])
-    ip_netns_exec_namespace_lsof = RegistryPoint(multi_output=True, filterable=True, no_obfuscate=['hostname', 'ip'])
+    ip_netns_exec_namespace_lsof = RegistryPoint(
+        multi_output=True, filterable=True, no_obfuscate=['hostname', 'ip']
+    )
     ip_route_show_table_all = RegistryPoint(no_obfuscate=['hostname'])
     ip_s_link = RegistryPoint(no_obfuscate=['hostname'])
     ipa_default_conf = RegistryPoint()
@@ -316,7 +321,9 @@ class Specs(SpecSet):
     katello_service_status = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
     kdump_conf = RegistryPoint()
     kerberos_kdc_log = RegistryPoint(filterable=True)
-    kernel_config = RegistryPoint(multi_output=True, filterable=True, no_obfuscate=['hostname', 'ip'])
+    kernel_config = RegistryPoint(
+        multi_output=True, filterable=True, no_obfuscate=['hostname', 'ip']
+    )
     kernel_crash_kexec_post_notifiers = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     kexec_crash_loaded = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     kexec_crash_size = RegistryPoint(no_obfuscate=['hostname', 'ip'])
@@ -567,14 +574,18 @@ class Specs(SpecSet):
     pci_rport_target_disk_paths = RegistryPoint()
     pcp_metrics = RegistryPoint()
     pcp_openmetrics_log = RegistryPoint(filterable=True)
-    pcp_raw_data = RegistryPoint(raw=True, multi_output=True, no_obfuscate=['hostname', 'ip'], no_redact=True)  # No Parser required
+    pcp_raw_data = RegistryPoint(
+        raw=True, multi_output=True, no_obfuscate=['hostname', 'ip'], no_redact=True
+    )  # No Parser required
     pcs_config = RegistryPoint()
     pcs_quorum_status = RegistryPoint()
     pcs_status = RegistryPoint()
     php_ini = RegistryPoint(filterable=True)
     pidstat = RegistryPoint()
     pluginconf_d = RegistryPoint(multi_output=True)
-    pmlog_summary = RegistryPoint(no_obfuscate=['hostname', 'ip'])  # TODO: Remove after 'pcp_raw_data' works
+    pmlog_summary = RegistryPoint(
+        no_obfuscate=['hostname', 'ip']
+    )  # TODO: Remove after 'pcp_raw_data' works
     pmlog_summary_pcp_zeroconf = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     pmrep_metrics = RegistryPoint()
     podman_list_containers = RegistryPoint()
@@ -741,7 +752,9 @@ class Specs(SpecSet):
     sys_block_queue_stable_writes = RegistryPoint(multi_output=True)
     subscription_manager_facts = RegistryPoint(filterable=True)
     subscription_manager_id = RegistryPoint(no_obfuscate=['ip'], no_redact=True)
-    subscription_manager_installed_product_ids = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
+    subscription_manager_installed_product_ids = RegistryPoint(
+        filterable=True, no_obfuscate=['hostname', 'ip']
+    )
     subscription_manager_list_consumed = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     subscription_manager_list_installed = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     subscription_manager_release_show = RegistryPoint(no_obfuscate=['hostname', 'ip'])
