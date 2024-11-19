@@ -11,6 +11,11 @@ repos:
   rev: 7.1.1
   hooks:
   - id: flake8
+    args: [
+    # inherit from original .flake8
+    # add news:
+    # - W503 black conflicts with "line break before operator" rule
+    '--ignore=E501,E126,E127,E128,E722,E741,W503,W504']
 
 - repo: https://github.com/gitleaks/gitleaks
   rev: v8.21.2
