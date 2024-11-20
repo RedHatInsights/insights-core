@@ -1,0 +1,33 @@
+repos:
+
+- repo: https://github.com/psf/black
+  rev: 24.10.0
+  hooks:
+  - id: black
+    args: [--safe, --quiet, --skip-string-normalization, --line-length, "100"]
+    require_serial: true
+
+- repo: https://github.com/PyCQA/flake8
+  rev: 7.1.1
+  hooks:
+  - id: flake8
+    args: [
+    # inherit from original .flake8
+    # add news:
+    # - W503 black conflicts with "line break before operator" rule
+    '--ignore=E501,E126,E127,E128,E722,E741,W503,W504']
+
+- repo: https://github.com/gitleaks/gitleaks
+  rev: v8.21.2
+  hooks:
+  - id: gitleaks
+
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: check-yaml
+  - id: check-ast
+  - id: debug-statements
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+  - id: check-docstring-first
