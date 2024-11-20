@@ -3,7 +3,7 @@ import pytest
 
 from insights.core.exceptions import SkipComponent
 from insights.parsers import nmcli
-from insights.parsers.nmcli import NmcliConnShow, NmcliDevShow, NmcliDevShowSos
+from insights.parsers.nmcli import NmcliConnShow, NmcliDevShow, NmcliDevShowSos, NmcliConnShowUuids
 from insights.tests import context_wrap
 
 NMCLI_SHOW = """
@@ -175,6 +175,28 @@ IP6.ADDRESS[1]:                         ::1/128
 IP6.GATEWAY:
 """.strip()
 
+NMCLI_CONN_SHOW_UUID = """
+connection.id:                          System eth0
+connection.uuid:                        5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03
+connection.stable-id:                   --
+connection.type:                        802-3-ethernet
+connection.interface-name:              eth0
+connection.autoconnect:                 yes
+connection.autoconnect-priority:        0
+connection.autoconnect-retries:         -1 (default)
+connection.multi-connect:               0 (default)
+connection.auth-retries:                -1
+connection.timestamp:                   1724660474
+connection.read-only:                   no
+connection.permissions:                 --
+ipv4.dad-timeout:                       -1 (default)
+ipv4.dhcp-vendor-class-identifier:      --
+ipv4.link-local:                        0 (default)
+IP4.DOMAIN[1]:                          gsslab.pek2.redhat.com
+DHCP4.OPTION[1]:                        dhcp_client_identifier = 01:52:54:00:fc:b1:cb
+DHCP4.OPTION[2]:                        dhcp_lease_time = 86400
+""".strip()
+
 
 def test_nmcli():
     nmcli_obj = NmcliDevShow(context_wrap(NMCLI_SHOW))
@@ -195,6 +217,13 @@ def test_nmcli():
     assert 'IP6_ADDRESS1' in nmcli_obj['lo']
     assert nmcli_obj['lo']['IP6_ADDRESS1'] == '::1/128'
     assert nmcli_obj.data is not None
+
+
+def test_nmcli_conn_show_uuids():
+    nmcli_conn_show_uuid_obj = NmcliConnShowUuids(context_wrap(NMCLI_CONN_SHOW_UUID))
+    assert nmcli_conn_show_uuid_obj['connection.uuid'] == "5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03"
+    assert nmcli_conn_show_uuid_obj['ipv4.dhcp-vendor-class-identifier'] == "--"
+    assert nmcli_conn_show_uuid_obj['DHCP4.OPTION[2]'] == "dhcp_lease_time = 86400"
 
 
 def test_nmcli_sos():
@@ -248,6 +277,7 @@ def test_nmcli_doc_examples():
         'nmcli_obj': NmcliDevShow(context_wrap(NMCLI_SHOW)),
         'nmcli_obj_sos': NmcliDevShowSos(context_wrap(NMCLI_SHOW_SOS)),
         'static_conn': NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_1)),
+        'conn_show_uuids': NmcliConnShowUuids(context_wrap(NMCLI_CONN_SHOW_UUID))
     }
     failed, total = doctest.testmod(nmcli, globs=env)
     assert failed == 0
