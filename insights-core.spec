@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.22
+Version:        3.4.23
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,11 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 21 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.23-1
+- chore: add initial .pre-commit hooks (#4271) (xiangceliu@redhat.com)
+- new spec and parser for cloud-init query (#4272) (xiangceliu@redhat.com)
+- add ipa_default_conf spec back to collection (#4270) (xiangceliu@redhat.com)
+
 * Thu Nov 14 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.22-1
 - fix: do not import 'insights.client.constants' in spec_cleaner (#4267)
   (xiangceliu@redhat.com)
