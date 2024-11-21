@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.23](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.23) (2024-11-21)
+
+- chore: add initial .pre-commit hooks ([PR 4271](https://github.com/RedHatInsights/insights-core/pull/4271))
+- new spec and parser for cloud-init query ([PR 4272](https://github.com/RedHatInsights/insights-core/pull/4272))
+- add ipa_default_conf spec back to collection ([PR 4270](https://github.com/RedHatInsights/insights-core/pull/4270))
+
 # [insights-core-3.4.22](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.22) (2024-11-14)
 
 - fix: do not import 'insights.client.constants' in spec_cleaner ([PR 4267](https://github.com/RedHatInsights/insights-core/pull/4267))
