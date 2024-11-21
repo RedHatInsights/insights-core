@@ -16,6 +16,7 @@ import re
 
 from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
+from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines, parse_fixed_table
 from insights.specs import Specs
@@ -191,6 +192,9 @@ class NmcliConnShow(CommandParser):
     def disconnected_connection(self):
         """(list): It will return all the disconnected static route connections."""
         return self._disconnected_connection
+
+
+add_filter(Specs.nmcli_conn_show_uuids, ["connection.uuid", "connection.id"])
 
 
 @parser(Specs.nmcli_conn_show_uuids)
