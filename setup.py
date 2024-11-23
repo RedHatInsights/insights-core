@@ -87,7 +87,7 @@ testing = set(
     [
         'coverage==4.3.4; python_version < "2.7"',
         'coverage; python_version >= "2.7"',
-        'pytest==3.0.6; python_version < "2.7"',
+        'pytest==3.10.1; python_version < "2.7"',
         'pytest~=4.6.0; python_version == "2.7"',
         'pytest; python_version >= "3"',
         'pytest-cov==2.4.0; python_version < "2.7"',
