@@ -90,7 +90,7 @@ testing = set(
         'pytest==3.0.6; python_version < "2.7"',
         'pytest~=4.6.0; python_version == "2.7"',
         'pytest; python_version >= "3"',
-        'pytest-cov==2.4.0; python_version < "2.7"',
+        'pytest-cov==2.12.1; python_version < "2.7"',
         'pytest-cov; python_version >= "2.7"',
         'mock==2.0.0',
     ]
