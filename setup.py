@@ -56,7 +56,7 @@ maybe_require("argparse")
 client = set(
     [
         'requests',
-        'python-gnupg==0.4.6',
+        'python-gnupg==0.5.3',
         'oyaml',
     ]
 )
