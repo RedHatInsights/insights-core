@@ -85,7 +85,7 @@ docs = set(
 # python 2.6 requires setuptools~=36.8.0 to support this syntax
 testing = set(
     [
-        'coverage==4.3.4; python_version < "2.7"',
+        'coverage==7.6.7; python_version < "2.7"',
         'coverage; python_version >= "2.7"',
         'pytest==3.0.6; python_version < "2.7"',
         'pytest~=4.6.0; python_version == "2.7"',
