@@ -74,7 +74,7 @@ docs = set(
         'Sphinx',
         'nbsphinx',
         'sphinx_rtd_theme',
-        'ipython<8.7.0',
+        'ipython<8.29.1',
         'MarkupSafe==2.0.1',
         'colorama',
         'Pygments',
