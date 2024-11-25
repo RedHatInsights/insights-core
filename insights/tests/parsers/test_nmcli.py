@@ -225,6 +225,9 @@ def test_nmcli_conn_show_uuids():
     assert nmcli_conn_show_uuid_obj['ipv4.dhcp-vendor-class-identifier'] == "--"
     assert nmcli_conn_show_uuid_obj['DHCP4.OPTION[2]'] == "dhcp_lease_time = 86400"
 
+    with pytest.raises(SkipComponent):
+        NmcliConnShowUuids(context_wrap(""))
+
 
 def test_nmcli_sos():
     nmcli_obj = NmcliDevShowSos(context_wrap(NMCLI_SHOW_SOS))
