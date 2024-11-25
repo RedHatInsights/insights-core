@@ -4,53 +4,102 @@ import json
 import os
 import re
 import sys
+import argparse
+import logging
+
 from datetime import datetime
 from itertools import chain
 from collections import OrderedDict
-from insights import dr, get_filters
+
+import insights
+
+from insights import load_packages, parse_plugins
+from insights.core import dr, filters
 from insights.core.spec_factory import RegistryPoint
 from insights.specs import Specs
-from insights.core import filters
 
-if len(sys.argv) < 3:
-    print("Provide uploader.json location and packages to load")
-    sys.exit(1)
-
-json_path = sys.argv[1]
-
-if not os.path.exists(json_path):
-    print("Provided uploader.json path does not exist.")
-    sys.exit(1)
-
-with open(json_path) as fp:
-    uploader_json = json.load(fp, object_pairs_hook=OrderedDict)
-
-dr.load_components("insights.specs.default")
-dr.load_components("insights.parsers")
-dr.load_components("insights.combiners")
+logging.basicConfig()
+logging.getLogger().setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-for package in sys.argv[2:]:
-    dr.load_components(package)
+def load_default_plugins():
+    dr.load_components("insights.specs.default")
+    dr.load_components("insights.parsers")
+    dr.load_components("insights.combiners")
 
-filters.dump()
-specs = sorted(vars(Specs))
-filters = {}
-for spec in specs:
-    s = getattr(Specs, spec)
-    if isinstance(s, RegistryPoint):
-        f = get_filters(s)
-        if f:
-            filters[spec] = sorted(f)
 
-for spec in chain.from_iterable(uploader_json[i] for i in ("commands", "files", "globs")):
-    if spec["symbolic_name"] in filters:
-        spec["pattern"] = filters[spec["symbolic_name"]]
+def apply_spec_filters(_format, _plugins, output):
+    load_default_plugins()
 
-uploader_json["version"] = datetime.now().isoformat()
+    if not _plugins:
+        logger.error("Provide plugins to load.")
+        sys.exit(1)
 
-pattern = re.compile(", $")
-output = "\n".join(pattern.sub(",", l) for l in json.dumps(uploader_json, indent=4).splitlines())
+    load_packages(parse_plugins(_plugins))
 
-with open(json_path, "w") as fp:
-    fp.write(output)
+    if _format == "yaml":
+        yaml_path = output
+        if not yaml_path:
+            logger.info(
+                "Output filters to '{0}'".format(
+                    os.path.join(os.path.dirname(insights.__file__), filters._filename)
+                )
+            )
+            filters.dump()
+        else:
+            logger.info("Output filters to '{0}'".format(yaml_path))
+            with open(yaml_path, 'w') as fp:
+                filters.dump(fp)
+
+    if _format == "json":
+        json_path = output
+        if not json_path:
+            logger.error("Provide uploader.json location to load and output.")
+            sys.exit(1)
+
+        if not os.path.exists(json_path):
+            logger.error("Provided '{0}' path does not exist.".format(json_path))
+            sys.exit(1)
+
+        with open(json_path) as fp:
+            uploader_json = json.load(fp, object_pairs_hook=OrderedDict)
+
+        specs = sorted(vars(Specs))
+        _filters = {}
+        for spec in specs:
+            s = getattr(Specs, spec)
+            if isinstance(s, RegistryPoint):
+                f = filters.get_filters(s)
+                if f:
+                    _filters[spec] = sorted(f)
+
+        for spec in chain.from_iterable(uploader_json[i] for i in ("commands", "files", "globs")):
+            if spec["symbolic_name"] in _filters:
+                spec["pattern"] = _filters[spec["symbolic_name"]]
+
+        uploader_json["version"] = datetime.now().isoformat()
+
+        pattern = re.compile(",")
+        output = "\n".join(
+            pattern.sub(",", l) for l in json.dumps(uploader_json, indent=4).splitlines()
+        )
+
+        with open(json_path, "w") as fp:
+            fp.write(output)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--format", help="Filters format.", default="yaml")
+    parser.add_argument("-o", "--output", help="Ouput file.", default="")
+    parser.add_argument(
+        "-p", "--plugins", help="Comma-separated list without spaces of plugins.", default=""
+    )
+    args = parser.parse_args()
+
+    apply_spec_filters(args.format, args.plugins, args.output)
+
+
+if __name__ == "__main__":
+    main()
