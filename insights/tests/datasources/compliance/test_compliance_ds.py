@@ -1,11 +1,12 @@
 # -*- coding: UTF-8 -*-
 import os
+
 try:
     from unittest.mock import patch
 except Exception:
     from mock import patch
 
-from pytest import raises, mark
+from pytest import raises
 from tempfile import NamedTemporaryFile
 
 from insights.client.config import InsightsConfig
@@ -14,11 +15,13 @@ from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.os_release import OsRelease
 from insights.parsers.redhat_release import RedhatRelease
 from insights.specs.datasources.compliance.compliance_ds import (
-        os_version, package_check,
-        compliance_enabled, compliance,
-        compliance_policies_enabled, compliance_policies,
-        compliance_assign_enabled, compliance_assign,
-        compliance_unassign_enabled, compliance_unassign)
+    os_version,
+    package_check,
+    compliance,
+    compliance_policies,
+    compliance_assign,
+    compliance_unassign,
+)
 from insights.tests import context_wrap
 
 OS_RELEASE = """
@@ -45,11 +48,14 @@ RPMS_JSON_NG = """
 {"name": "bash","version": "4.2.46","epoch": "(none)","release": "19.el7","arch": "x86_64","installtime": "Fri 06 May 2016 03:52:13 PM EDT","buildtime": "1436354006","rsaheader": "RSA/SHA256, Wed 07 Oct 2015 01:14:10 PM EDT, Key ID 199e2f91fd431d51","dsaheader": "(none)","srpm": "bash-4.2.46-19.el7.src.rpm"}
 {"name": "ca-certificates","version": "2015.2.6","epoch": "(none)","release": "70.1.el7_2","arch": "noarch","installtime": "Fri 24 Jun 2016 04:18:04 PM EDT","buildtime": "1453976868","rsaheader": "RSA/SHA256, Tue 02 Feb 2016 09:45:04 AM EST, Key ID 199e2f91fd431d51","dsaheader": "(none)","srpm": "ca-certificates-2015.2.6-70.1.el7_2.src.rpm"}
 """
-RPMS_JSON = RPMS_JSON_NG + """
+RPMS_JSON = (
+    RPMS_JSON_NG
+    + """
 {"name": "scap-security-guide","version": "0.1.72","epoch": "(none)","release": "1.el7_2","arch": "noarch","installtime": "Fri 24 Jun 2016 04:18:04 PM EDT","buildtime": "1453976868","rsaheader": "RSA/SHA256, Tue 02 Feb 2016 09:45:04 AM EST, Key ID 199e2f91fd431d51","dsaheader": "(none)","srpm": "ca-certificates-2015.2.6-70.1.el7_2.src.rpm"}
 {"name": "openscap-scanner","version": "1.3.10","epoch": "(none)","release": "1.el7_2","arch": "noarch","installtime": "Fri 24 Jun 2016 04:18:04 PM EDT","buildtime": "1453976868","rsaheader": "RSA/SHA256, Tue 02 Feb 2016 09:45:04 AM EST, Key ID 199e2f91fd431d51","dsaheader": "(none)","srpm": "ca-certificates-2015.2.6-70.1.el7_2.src.rpm"}
 {"name": "openscap","version": "1.3.10","epoch": "(none)","release": "1.el7_2","arch": "noarch","installtime": "Fri 24 Jun 2016 04:18:04 PM EDT","buildtime": "1453976868","rsaheader": "RSA/SHA256, Tue 02 Feb 2016 09:45:04 AM EST, Key ID 199e2f91fd431d51","dsaheader": "(none)","srpm": "ca-certificates-2015.2.6-70.1.el7_2.src.rpm"}
 """
+)
 
 
 def test_os_version():
@@ -89,69 +95,25 @@ def test_package_check():
         assert "openscap" in sc
 
 
-@mark.parametrize("compliance_opt", [True, False])
-def test_compliance_enabled(compliance_opt):
-    config = InsightsConfig(compliance=compliance_opt)
-    broker = {'client_config': config}
-    if compliance_opt:
-        ret = compliance_enabled(broker)
-        assert ret is compliance_opt
-    else:
-        with raises(SkipComponent) as sc:
-            compliance_enabled(broker)
-            assert "Collect compliance data only when specifically requested via --compliance option" in sc
-
-
-@mark.parametrize("compliance_policies_opt", [True, False])
-def test_compliance_policies_enabled(compliance_policies_opt):
-    config = InsightsConfig(compliance_policies=compliance_policies_opt)
-    broker = {'client_config': config}
-    if compliance_policies_opt:
-        ret = compliance_policies_enabled(broker)
-        assert ret is compliance_policies_opt
-    else:
-        with raises(SkipComponent) as sc:
-            compliance_policies_enabled(broker)
-            assert "Run only when --compliance-policies is specified" in sc
-
-
-@mark.parametrize("compliance_assign_opt", ['123abc', None])
-def test_compliance_assign_enabled(compliance_assign_opt):
-    config = InsightsConfig(compliance_assign=compliance_assign_opt)
-    broker = {'client_config': config}
-    if compliance_assign_opt:
-        ret = compliance_assign_enabled(broker)
-        assert ret is True
-    else:
-        with raises(SkipComponent) as sc:
-            compliance_assign_enabled(broker)
-            assert "Run only when --compliance-assign is specified" in sc
-
-
-@mark.parametrize("compliance_unassign_opt", ['123abc', None])
-def test_compliance_unassign_enabled(compliance_unassign_opt):
-    config = InsightsConfig(compliance_unassign=compliance_unassign_opt)
-    broker = {'client_config': config}
-    if compliance_unassign_opt:
-        ret = compliance_unassign_enabled(broker)
-        assert ret is True
-    else:
-        with raises(SkipComponent) as sc:
-            compliance_unassign_enabled(broker)
-            assert "Run only when --compliance-unassigned is specified" in sc
-
-
 @patch("insights.specs.datasources.compliance.compliance_ds.NamedTemporaryFile")
-@patch("insights.specs.datasources.compliance.ComplianceClient.run_scan",
-        return_value=None)
-@patch("insights.specs.datasources.compliance.ComplianceClient.download_tailoring_file",
-        return_value=None)
-@patch("insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
-        return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}])
-@patch("insights.client.config.InsightsConfig",
-        base_url='localhost/app', systemid='', proxy=None, compressor='gz',
-        compliance=True,
-        obfuscate=False)
+@patch("insights.specs.datasources.compliance.ComplianceClient.run_scan", return_value=None)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.download_tailoring_file",
+    return_value=None,
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=True,
+    obfuscate=False,
+)
 def test_compliance_ds(config, policies, dt_file, run_scan, ntmpf):
     content = """
 <xml>
@@ -196,16 +158,24 @@ def test_compliance_ds(config, policies, dt_file, run_scan, ntmpf):
 
 
 @patch("insights.specs.datasources.compliance.compliance_ds.NamedTemporaryFile")
-@patch("insights.specs.datasources.compliance.ComplianceClient.run_scan",
-        return_value=None)
-@patch("insights.specs.datasources.compliance.ComplianceClient.download_tailoring_file",
-        return_value=None)
-@patch("insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
-        return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}])
-@patch("insights.client.config.InsightsConfig",
-        base_url='localhost/app', systemid='', proxy=None, compressor='gz',
-        compliance=True,
-        obfuscate=True)
+@patch("insights.specs.datasources.compliance.ComplianceClient.run_scan", return_value=None)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.download_tailoring_file",
+    return_value=None,
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=True,
+    obfuscate=True,
+)
 def test_compliance_ds_with_obfuscation(config, policies, dt_file, run_scan, ntmpf):
     content = """
 <xml>
@@ -247,8 +217,14 @@ def test_compliance_ds_with_obfuscation(config, policies, dt_file, run_scan, ntm
 
     obfuscated_results = open(str(tmp_file.name)).read()
     assert '<target-address>obfuscate</target-address>' not in obfuscated_results
-    assert '<fact name="urn:xccdf:fact:asset:identifier:ipv4" type="string">obfuscate</fact>' not in obfuscated_results
-    assert '<fact name="urn:xccdf:fact:asset:identifier:ipv6" type="string">obfuscate</fact>' not in obfuscated_results
+    assert (
+        '<fact name="urn:xccdf:fact:asset:identifier:ipv4" type="string">obfuscate</fact>'
+        not in obfuscated_results
+    )
+    assert (
+        '<fact name="urn:xccdf:fact:asset:identifier:ipv6" type="string">obfuscate</fact>'
+        not in obfuscated_results
+    )
     assert '<ip-v4>obfuscate</ip-v4>' not in obfuscated_results
     assert '<ip-v6>obfuscate</ip-v6>' not in obfuscated_results
     assert '<mac-address>obfuscate</mac-address>' not in obfuscated_results
@@ -257,8 +233,14 @@ def test_compliance_ds_with_obfuscation(config, policies, dt_file, run_scan, ntm
 
     content = ' '.join(ret[0].content)
     assert '<target-address>obfuscate</target-address>' not in content
-    assert '<fact name="urn:xccdf:fact:asset:identifier:ipv4" type="string">obfuscate</fact>' not in content
-    assert '<fact name="urn:xccdf:fact:asset:identifier:ipv6" type="string">obfuscate</fact>' not in content
+    assert (
+        '<fact name="urn:xccdf:fact:asset:identifier:ipv4" type="string">obfuscate</fact>'
+        not in content
+    )
+    assert (
+        '<fact name="urn:xccdf:fact:asset:identifier:ipv6" type="string">obfuscate</fact>'
+        not in content
+    )
     assert '<ip-v4>obfuscate</ip-v4>' not in content
     assert '<ip-v6>obfuscate</ip-v6>' not in content
     assert '<mac-address>obfuscate</mac-address>' not in content
@@ -268,17 +250,25 @@ def test_compliance_ds_with_obfuscation(config, policies, dt_file, run_scan, ntm
 
 
 @patch("insights.specs.datasources.compliance.compliance_ds.NamedTemporaryFile")
-@patch("insights.specs.datasources.compliance.ComplianceClient.run_scan",
-        return_value=None)
-@patch("insights.specs.datasources.compliance.ComplianceClient.download_tailoring_file",
-        return_value=None)
-@patch("insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
-        return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}])
-@patch("insights.client.config.InsightsConfig",
-        base_url='localhost/app', systemid='', proxy=None, compressor='gz',
-        compliance=True,
-        obfuscate=True,
-        obfuscate_hostname=True)
+@patch("insights.specs.datasources.compliance.ComplianceClient.run_scan", return_value=None)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.download_tailoring_file",
+    return_value=None,
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=True,
+    obfuscate=True,
+    obfuscate_hostname=True,
+)
 def test_compliance_ds_with_hostname_obfuscation(config, policies, dt_file, run_scan, ntmpf):
     content = """
 <xml>
@@ -325,8 +315,14 @@ def test_compliance_ds_with_hostname_obfuscation(config, policies, dt_file, run_
 
     obfuscated_results = open(str(tmp_file.name)).read()
     assert '<target-address>obfuscate</target-address>' not in obfuscated_results
-    assert '<fact name="urn:xccdf:fact:asset:identifier:fqdn" type="string">obfuscate</fact>' not in obfuscated_results
-    assert '<fact name="urn:xccdf:fact:asset:identifier:host_name" type="string">obfuscate</fact>' not in obfuscated_results
+    assert (
+        '<fact name="urn:xccdf:fact:asset:identifier:fqdn" type="string">obfuscate</fact>'
+        not in obfuscated_results
+    )
+    assert (
+        '<fact name="urn:xccdf:fact:asset:identifier:host_name" type="string">obfuscate</fact>'
+        not in obfuscated_results
+    )
     assert '<ip-v4>obfuscate</ip-v4>' not in obfuscated_results
     assert '<ip-v6>obfuscate</ip-v6>' not in obfuscated_results
     assert '<mac-address>obfuscate</mac-address>' not in obfuscated_results
@@ -340,8 +336,14 @@ def test_compliance_ds_with_hostname_obfuscation(config, policies, dt_file, run_
 
     content = ' '.join(ret[0].content)
     assert '<target-address>obfuscate</target-address>' not in content
-    assert '<fact name="urn:xccdf:fact:asset:identifier:fqdn" type="string">obfuscate</fact>' not in content
-    assert '<fact name="urn:xccdf:fact:asset:identifier:host_name" type="string">obfuscate</fact>' not in content
+    assert (
+        '<fact name="urn:xccdf:fact:asset:identifier:fqdn" type="string">obfuscate</fact>'
+        not in content
+    )
+    assert (
+        '<fact name="urn:xccdf:fact:asset:identifier:host_name" type="string">obfuscate</fact>'
+        not in content
+    )
     assert '<ip-v4>obfuscate</ip-v4>' not in content
     assert '<ip-v6>obfuscate</ip-v6>' not in content
     assert '<mac-address>obfuscate</mac-address>' not in content
@@ -356,22 +358,32 @@ def test_compliance_ds_with_hostname_obfuscation(config, policies, dt_file, run_
 
 
 @patch("insights.specs.datasources.compliance.compliance_ds.NamedTemporaryFile")
-@patch("insights.specs.datasources.compliance.ComplianceClient.run_scan",
-        return_value=None)
-@patch("insights.specs.datasources.compliance.ComplianceClient.download_tailoring_file",
-        return_value=None)
-@patch("insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
-        return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}])
-@patch("insights.client.config.InsightsConfig",
-        base_url='localhost/app', systemid='', proxy=None, compressor='gz',
-        compliance=True)
+@patch("insights.specs.datasources.compliance.ComplianceClient.run_scan", return_value=None)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.download_tailoring_file",
+    return_value=None,
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=True,
+)
 def test_compliance_ds_with_results_repaired(config, policies, dt_file, run_scan, ntmpf):
     tmp_file = NamedTemporaryFile(mode='w', delete=False)
-    tmp_file.write("""
+    tmp_file.write(
+        """
 <xml>
   <version>0.9</version>
 </xml>
-    """)
+    """
+    )
     ntmpf.return_value = tmp_file
     tmp_file.close()
     broker = {os_version: ['8', '10'], package_check: '0.1.25', 'client_config': config}
@@ -387,8 +399,7 @@ def test_compliance_ds_with_results_repaired(config, policies, dt_file, run_scan
 @patch("insights.specs.datasources.compliance.ComplianceClient.assignable_policies")
 def test_compliance_policies(assignable_policies, sys):
     config = InsightsConfig(compliance_policies=True)
-    broker = {os_version: ['9', '3'], package_check: '0.1.25',
-              'client_config': config, compliance_policies_enabled: True}
+    broker = {os_version: ['9', '3'], package_check: '0.1.25', 'client_config': config}
     compliance_policies(broker)
     assignable_policies.assert_called_with()
     sys.exit.assert_called_with(assignable_policies.return_value)
@@ -398,8 +409,7 @@ def test_compliance_policies(assignable_policies, sys):
 @patch("insights.specs.datasources.compliance.ComplianceClient.policy_link")
 def test_policy_link_assign(policy_link, sys):
     config = InsightsConfig(compliance_assign='123abc')
-    broker = {os_version: ['9', '3'], package_check: '0.1.25',
-              'client_config': config, compliance_assign_enabled: True}
+    broker = {os_version: ['9', '3'], package_check: '0.1.25', 'client_config': config}
     compliance_assign(broker)
     policy_link.assert_called_with('123abc', 'patch')
     sys.exit.assert_called_with(policy_link.return_value)
@@ -409,8 +419,7 @@ def test_policy_link_assign(policy_link, sys):
 @patch("insights.specs.datasources.compliance.ComplianceClient.policy_link")
 def test_policy_link_unassign(policy_link, sys):
     config = InsightsConfig(compliance_unassign='123abc')
-    broker = {os_version: ['9', '3'], package_check: '0.1.25',
-              'client_config': config, compliance_unassign_enabled: True}
+    broker = {os_version: ['9', '3'], package_check: '0.1.25', 'client_config': config}
     compliance_unassign(broker)
     policy_link.assert_called_with('123abc', 'delete')
     sys.exit.assert_called_with(policy_link.return_value)
