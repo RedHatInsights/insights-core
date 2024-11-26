@@ -12,7 +12,7 @@ consolidated configuration tree.
 """
 from insights.core import ConfigCombiner
 from insights.core.plugins import combiner
-from insights.parsr.query import startswith
+from insights.parsr.query import istartswith
 from insights.parsers.httpd_conf import HttpdConf, HttpdConfSclHttpd24, HttpdConfSclJbcsHttpd24
 
 
@@ -25,7 +25,7 @@ class HttpdConfTree(ConfigCombiner):
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
     def __init__(self, confs):
-        includes = startswith("Include")
+        includes = istartswith("Include")
         super(HttpdConfTree, self).__init__(confs, "httpd.conf", includes)
 
     @property
@@ -43,7 +43,7 @@ class HttpdConfSclHttpd24Tree(ConfigCombiner):
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
     def __init__(self, confs):
-        includes = startswith("Include")
+        includes = istartswith("Include")
         super(HttpdConfSclHttpd24Tree, self).__init__(confs, "httpd.conf", includes)
 
     @property
@@ -61,7 +61,7 @@ class HttpdConfSclJbcsHttpd24Tree(ConfigCombiner):
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
     def __init__(self, confs):
-        includes = startswith("Include")
+        includes = istartswith("Include")
         super(HttpdConfSclJbcsHttpd24Tree, self).__init__(confs, "httpd.conf", includes)
 
     @property
