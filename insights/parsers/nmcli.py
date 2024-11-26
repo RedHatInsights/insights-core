@@ -11,12 +11,13 @@ NmcliDevShow - command ``/usr/bin/nmcli dev show``
 --------------------------------------------------
 NmcliConnShow - command ``/usr/bin/nmcli conn show``
 ----------------------------------------------------
+NmcliConnShowUuids - command ``/usr/bin/nmcli conn show uuid``
+--------------------------------------------------------------
 """
 import re
 
 from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
-from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines, parse_fixed_table
 from insights.specs import Specs
@@ -194,9 +195,6 @@ class NmcliConnShow(CommandParser):
         return self._disconnected_connection
 
 
-add_filter(Specs.nmcli_conn_show_uuids, ["connection.uuid", "connection.id"])
-
-
 @parser(Specs.nmcli_conn_show_uuids)
 class NmcliConnShowUuids(CommandParser, dict):
     """
@@ -205,7 +203,7 @@ class NmcliConnShowUuids(CommandParser, dict):
     Sample configuration from an interface in file ``/usr/bin/nmcli conn show XXX``::
 
         connection.id:                          System eth0
-        connection.uuid:                        5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03
+        connection.uuid:                        5fb06bd0-0bb0-7ffb-45f1-ffffffffffff
         connection.stable-id:                   --
         connection.type:                        802-3-ethernet
         connection.interface-name:              eth0
@@ -215,7 +213,7 @@ class NmcliConnShowUuids(CommandParser, dict):
         >>> type(conn_show_uuids)
         <class 'insights.parsers.nmcli.NmcliConnShowUuids'>
         >>> conn_show_uuids["connection.uuid"]
-        '5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03'
+        '5fb06bd0-0bb0-7ffb-45f1-ffffffffffff'
 
     Attributes:
         data (dict): parameter-value format
@@ -225,6 +223,6 @@ class NmcliConnShowUuids(CommandParser, dict):
         if not content:
             raise SkipComponent()
 
-        for line in get_active_lines(content):
+        for line in content:
             key, val = line.split(": ")
             self[key.strip()] = val.strip()

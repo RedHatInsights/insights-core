@@ -177,7 +177,7 @@ IP6.GATEWAY:
 
 NMCLI_CONN_SHOW_UUID = """
 connection.id:                          System eth0
-connection.uuid:                        5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03
+connection.uuid:                        5fb06bd0-0bb0-7ffb-45f1-ffffffffffff
 connection.stable-id:                   --
 connection.type:                        802-3-ethernet
 connection.interface-name:              eth0
@@ -221,7 +221,7 @@ def test_nmcli():
 
 def test_nmcli_conn_show_uuids():
     nmcli_conn_show_uuid_obj = NmcliConnShowUuids(context_wrap(NMCLI_CONN_SHOW_UUID))
-    assert nmcli_conn_show_uuid_obj['connection.uuid'] == "5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03"
+    assert nmcli_conn_show_uuid_obj['connection.uuid'] == "5fb06bd0-0bb0-7ffb-45f1-ffffffffffff"
     assert nmcli_conn_show_uuid_obj['ipv4.dhcp-vendor-class-identifier'] == "--"
     assert nmcli_conn_show_uuid_obj['DHCP4.OPTION[2]'] == "dhcp_lease_time = 86400"
 
