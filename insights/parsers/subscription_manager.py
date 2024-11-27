@@ -134,6 +134,16 @@ class SubscriptionManagerStatus(CommandParser, dict):
                 self[key] = val
             elif line.startswith('Content Access Mode is set to'):
                 self['Content Access Mode'] = line.split('.', 1)[0].split('Content Access Mode is set to')[1].strip()
+            elif line.startswith("Red Hat Enterprise Linux for Virtual Datacenters"):
+                current_key = line.strip(':').strip()
+                current_value = []
+
+                for subsequent_line in content[content.index(line) + 1:]:
+                    if not subsequent_line.strip():
+                        break
+                    current_value.append(subsequent_line.strip())
+
+                self[current_key] = " ".join(current_value).strip()
 
         if not self:
             raise SkipComponent

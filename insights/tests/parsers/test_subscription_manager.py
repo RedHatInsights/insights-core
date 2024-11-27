@@ -62,6 +62,18 @@ SUBSCRIPTION_MANAGER_STATUS_EMPTY = """
 
 """.strip()
 
+SUBSCRIPTION_MANAGER_STATUS_PRODUCT_KEY = """
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Insufficient
+
+Red Hat Enterprise Linux for Virtual Datacenters, Standard:
+- Guest has not been reported on any host and is using a temporary unmapped guest subscription. For more information, please see https://access.redhat.com/solutions/XXXX
+
+System Purpose Status: Matched
+""".strip()
+
 
 def test_subman_facts():
     ret = SubscriptionManagerFacts(context_wrap(FACTS_NORMAL_1))
@@ -98,6 +110,11 @@ def test_subman_status():
     assert ret['Overall Status'] == 'Disabled'
     assert ret['Content Access Mode'] == 'Simple Content Access'
     assert ret['System Purpose Status'] == 'Disabled'
+
+    ret = SubscriptionManagerStatus(context_wrap(SUBSCRIPTION_MANAGER_STATUS_PRODUCT_KEY))
+    assert ret['Overall Status'] == 'Insufficient'
+    assert ret['Red Hat Enterprise Linux for Virtual Datacenters, Standard'] == '- Guest has not been reported on any host and is using a temporary unmapped guest subscription. For more information, please see https://access.redhat.com/solutions/XXXX'
+    assert ret['System Purpose Status'] == 'Matched'
 
 
 def test_subman_facts_ng():
