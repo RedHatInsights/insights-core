@@ -164,7 +164,7 @@ plugins:
     - name: insights.parsers.ros_config.RosConfig
       enabled: true
 
-    # needed for 'teamdctl_config/state_dump' spec
+    # needed for 'teamdctl_config/state_dump' spec and nmcli_conn_show_uuids spec
     - name: insights.parsers.nmcli.NmcliConnShow
       enabled: true
 
