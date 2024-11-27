@@ -36,6 +36,7 @@ kernel strings::
     False
 
 """
+
 import warnings
 
 from collections import namedtuple
@@ -125,6 +126,7 @@ rhel_release_map = {
     "5.14.0-284": "9.2",
     "5.14.0-362": "9.3",
     "5.14.0-427": "9.4",
+    "5.14.0-503": "9.5",
 }
 
 release_to_kernel_map = dict((v, k) for k, v in rhel_release_map.items())
@@ -197,6 +199,7 @@ class Uname(CommandParser):
       debug kernel.
 
     """
+
     keys = [
         'os',
         'hw_platform',
@@ -217,7 +220,7 @@ class Uname(CommandParser):
         '_lv_release',
         '_rel_maj',
         '_sv_version',
-        '_lv_version'
+        '_lv_version',
     ]
 
     defaults = dict.fromkeys(keys)
@@ -297,16 +300,19 @@ class Uname(CommandParser):
             - `kernel` - the kernel version and release string.
         """
         data = cls.parse_nvr(kernel, arch=False)
-        content = ["{name} {nodename} {kernel} {kernel_type} {kernel_date} {machine} {processor} {hw_platform} {os}".format(
-            name="Linux",
-            nodename=data['nodename'],
-            kernel=kernel,
-            kernel_type=data['kernel_type'],
-            kernel_date=data['kernel_date'],
-            machine=data['machine'],
-            processor=data['processor'],
-            hw_platform=data['hw_platform'],
-            os=data['os'])]
+        content = [
+            "{name} {nodename} {kernel} {kernel_type} {kernel_date} {machine} {processor} {hw_platform} {os}".format(
+                name="Linux",
+                nodename=data['nodename'],
+                kernel=kernel,
+                kernel_type=data['kernel_type'],
+                kernel_date=data['kernel_date'],
+                machine=data['machine'],
+                processor=data['processor'],
+                hw_platform=data['hw_platform'],
+                os=data['os'],
+            )
+        ]
         return cls(Context(content=content, path=None))
 
     @classmethod
@@ -420,18 +426,23 @@ class Uname(CommandParser):
             return self._lv_release, other._lv_release
         warnings.warn('Comparison of distribution part will be ignored.')
         s_release = (
-            self._lv_release.vstring if not is_s_with_dist
+            self._lv_release.vstring
+            if not is_s_with_dist
             else pad_release(".".join(s_release_parts[:-1]), len(s_release_parts))
         )
         o_release = (
-            other._lv_release.vstring if not is_o_with_dist
+            other._lv_release.vstring
+            if not is_o_with_dist
             else pad_release(".".join(o_release_parts[:-1]), len(o_release_parts))
         )
         return LooseVersion(s_release), LooseVersion(o_release)
 
     def __str__(self):
         return "version: %s; release: %s; rel_maj: %s; lv_release: %s" % (
-            self.version, self.release, self._rel_maj, self._lv_release
+            self.version,
+            self.release,
+            self._rel_maj,
+            self._lv_release,
         )
 
     def __repr__(self):
@@ -502,8 +513,9 @@ class Uname(CommandParser):
 
         s_version, o_version = self._best_version(other_uname)
 
-        return s_version < o_version or \
-            (s_version == o_version and self._lv_release < other_uname._lv_release)
+        return s_version < o_version or (
+            s_version == o_version and self._lv_release < other_uname._lv_release
+        )
 
     def __le__(self, other):
         """
@@ -528,8 +540,9 @@ class Uname(CommandParser):
 
         s_version, o_version = self._best_version(other_uname)
 
-        return s_version > o_version or \
-            (s_version == o_version and self._lv_release > other_uname._lv_release)
+        return s_version > o_version or (
+            s_version == o_version and self._lv_release > other_uname._lv_release
+        )
 
     def __ge__(self, other):
         """
@@ -644,6 +657,7 @@ def pad_release(release_to_pad, num_sections=4):
     If the number of sections of the release to be padded is
     greater than num_sections, a ``ValueError`` will be raised.
     '''
+
     def find_rt_release(items):
         for i, s in enumerate(items):
             if s.startswith("rt"):
@@ -653,9 +667,11 @@ def pad_release(release_to_pad, num_sections=4):
     parts = release_to_pad.split('.')
 
     if len(parts) > num_sections:
-        raise ValueError("Too many sections encountered ({found} > {num} in release string {rel}".format(
-            found=len(parts), num=num_sections, rel=release_to_pad
-        ))
+        raise ValueError(
+            "Too many sections encountered ({found} > {num} in release string {rel}".format(
+                found=len(parts), num=num_sections, rel=release_to_pad
+            )
+        )
 
     pad_count = num_sections - len(parts)
     is_el_release = any(letter.isalpha() for letter in parts[-1])
