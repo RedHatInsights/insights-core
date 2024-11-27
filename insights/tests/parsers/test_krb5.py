@@ -104,6 +104,10 @@ KRB5CONFIG3 = """
 KRB5_CONF_PATH = "etc/krb5.conf"
 KRB5_DCONF_PATH = "etc/krb5.conf.d/test.conf"
 
+KRB5_DCONF_2 = """[libdefaults]
+permitted_enctypes = """
+KRB5_DCONF_2_PATH = "etc/krb5.conf.d/crypto-policies"
+
 
 def test_krb5configuration():
     common_conf_info = krb5.Krb5Configuration(context_wrap(KRB5CONFIG, path=KRB5_CONF_PATH))
@@ -147,6 +151,11 @@ def test_krb5Dconfiguration():
     assert common_conf_info["realms"]["EXAMPLE.COM"]["kdc"] == ['kerberos.example.com', 'test2.example.com', 'test3.example.com']
     assert common_conf_info.has_option("logging", "admin_server")
     assert common_conf_info["logging"]["kdc"] == "FILE:/var/log/krb5kdc.log"
+
+
+def test_krb5configuration_2():
+    common_conf_info = krb5.Krb5Configuration(context_wrap(KRB5_DCONF_2, path=KRB5_DCONF_2_PATH))
+    assert common_conf_info["libdefaults"]["permitted_enctypes"] == ""
 
 
 def test_handle_krb5_bool():

@@ -157,7 +157,7 @@ class Krb5Configuration(Parser, LegacyItemAccess):
                 elif "=" in line and not line.endswith("{"):
                     key, value = [i.strip() for i in line.split('=', 1)]
                     if key not in unchangeable_tags:
-                        value = value.split()[0].strip()
+                        value = value.split()[0] if value else value
                         section_value[key] = _handle_key_value(section_value, key, value)
                     if line.endswith("*"):
                         unchangeable_tags.append(key)
