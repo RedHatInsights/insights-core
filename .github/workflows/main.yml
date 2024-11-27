@@ -73,11 +73,13 @@ jobs:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
     steps:
-    - uses: actions/checkout@v4
     - name: install dependencies
       run: |
         apt-get install -y --no-install-recommends software-properties-common
         apt-get install -y build-essential git curl unzip file tar
+    - name: clone the repo
+      run: |
+        git clone https://github.com/RedHatInsights/insights-core.git
     - name: build setuptools and pip
       run: |
         export PATH=$PATH:/github/home/.local/bin
@@ -134,15 +136,19 @@ jobs:
         curl -L -o ./../collections_module/collections.py https://raw.githubusercontent.com/RedHatInsights/insights-core/5c8ca0f2fb3de45908e8d931d40758af34a7997a/.collections.py
     - name: flake8
       run: |
+        pushd insights-core
         export PATH=$PATH:/github/home/.local/bin
         pip install --user -e .[linting] --no-index -f ./pip_packages
         flake8 .
+        popd
     - name: pytest
       run: |
+        pushd insights-core
         export PATH=$PATH:/github/home/.local/bin
         pip install --user -e .[testing] --no-index -f ./pip_packages
         export PYTHONPATH=${PYTHONPATH}:./../collections_module
         pytest
+        popd
 
   docs-test:
 
