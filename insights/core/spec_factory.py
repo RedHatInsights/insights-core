@@ -15,10 +15,11 @@ from subprocess import call
 from insights.core import blacklist, dr, filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.exceptions import (
-        BlacklistedSpec,
-        ContentException,
-        NoFilterException,
-        SkipComponent)
+    BlacklistedSpec,
+    ContentException,
+    NoFilterException,
+    SkipComponent,
+)
 from insights.core.plugins import component, datasource, is_datasource
 from insights.core.serde import deserializer, serializer
 from insights.util import fs, streams, which
@@ -29,13 +30,15 @@ log = logging.getLogger(__name__)
 
 
 SAFE_ENV = {
-    "PATH": os.path.pathsep.join([
-        "/bin",
-        "/usr/bin",
-        "/sbin",
-        "/usr/sbin",
-        "/usr/share/Modules/bin",
-    ]),
+    "PATH": os.path.pathsep.join(
+        [
+            "/bin",
+            "/usr/bin",
+            "/sbin",
+            "/usr/sbin",
+            "/usr/share/Modules/bin",
+        ]
+    ),
     "LC_ALL": "C",
 }
 """
@@ -93,7 +96,8 @@ class ContentProvider(object):
                 content = self.cleaner.clean_content(
                     content,
                     obf_funcs=self.cleaner.get_obfuscate_functions(self.relative_path, no_obf),
-                    no_redact=no_red)
+                    no_redact=no_red,
+                )
                 if len(content) == 0:
                     log.debug("Skipping %s due to empty after cleaning", self.path)
                     raise ContentException("Empty after cleaning: %s" % self.path)
@@ -147,8 +151,18 @@ class ContentProvider(object):
 
 
 class DatasourceProvider(ContentProvider):
-    def __init__(self, content, relative_path, root='/', save_as=None, ds=None,
-                 ctx=None, cleaner=None, no_obfuscate=None, no_redact=False):
+    def __init__(
+        self,
+        content,
+        relative_path,
+        root='/',
+        save_as=None,
+        ds=None,
+        ctx=None,
+        cleaner=None,
+        no_obfuscate=None,
+        no_redact=False,
+    ):
         super(DatasourceProvider, self).__init__()
         self.relative_path = relative_path.lstrip("/")
         self.save_as = save_as
@@ -172,8 +186,7 @@ class DatasourceProvider(ContentProvider):
 
 
 class FileProvider(ContentProvider):
-    def __init__(self, relative_path, root="/", save_as=None, ds=None,
-                 ctx=None, cleaner=None):
+    def __init__(self, relative_path, root="/", save_as=None, ds=None, ctx=None, cleaner=None):
         super(FileProvider, self).__init__()
         self.ds = ds
         self.ctx = ctx
@@ -192,9 +205,12 @@ class FileProvider(ContentProvider):
         # 2. Check only when collecting
         if isinstance(self.ctx, HostContext):
             # 2.1 No Filters for 'filterable=True' Specs
-            if (self.ds and filters.ENABLED and
-                    any(s.filterable for s in dr.get_registry_points(self.ds)) and
-                    not filters.get_filters(self.ds)):
+            if (
+                self.ds
+                and filters.ENABLED
+                and any(s.filterable for s in dr.get_registry_points(self.ds))
+                and not filters.get_filters(self.ds)
+            ):
                 raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
             # 2.2 Customer Prohibits Collection
             if not blacklist.allow_file("/" + self.relative_path):
@@ -223,8 +239,13 @@ class MetadataProvider(FileProvider):
     Class used for insights-core built-in files.  These files should not
     be filtered, redacted or blocked.
     """
+
     def __init__(self, relative_path, root="/", save_as=None, ds=None, ctx=None, cleaner=None):
-        deprecated(MetadataProvider, "Please collect the built-in file via datasource spec instead.", "3.5.0")
+        deprecated(
+            MetadataProvider,
+            "Please collect the built-in file via datasource spec instead.",
+            "3.5.0",
+        )
         super(MetadataProvider, self).__init__(relative_path, root, save_as, ds, ctx, cleaner)
 
     def _stream(self):
@@ -310,7 +331,9 @@ class TextFileProvider(FileProvider):
                     with streams.connect(*args, env=SAFE_ENV) as s:
                         yield s
                 else:
-                    with safe_open(self.path, "r", encoding=encoding, errors="surrogateescape") as f:
+                    with safe_open(
+                        self.path, "r", encoding=encoding, errors="surrogateescape"
+                    ) as f:
                         yield f
         except StopIteration:
             raise
@@ -331,9 +354,23 @@ class CommandOutputProvider(ContentProvider):
     """
     Class used in datasources to return output from commands.
     """
-    def __init__(self, cmd, ctx, root="insights_commands", save_as=None,
-                 args=None, split=True, keep_rc=False, ds=None, timeout=None,
-                 inherit_env=None, override_env=None, signum=None, cleaner=None):
+
+    def __init__(
+        self,
+        cmd,
+        ctx,
+        root="insights_commands",
+        save_as=None,
+        args=None,
+        split=True,
+        keep_rc=False,
+        ds=None,
+        timeout=None,
+        inherit_env=None,
+        override_env=None,
+        signum=None,
+        cleaner=None,
+    ):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd if six.PY3 else str(cmd)
         self.root = root
@@ -368,9 +405,12 @@ class CommandOutputProvider(ContentProvider):
         # 2. Check only when collecting
         if isinstance(self.ctx, HostContext):
             # 2.1 No Filters for 'filterable=True' Specs
-            if (self.ds and filters.ENABLED and
-                    any(s.filterable for s in dr.get_registry_points(self.ds)) and
-                    not filters.get_filters(self.ds)):
+            if (
+                self.ds
+                and filters.ENABLED
+                and any(s.filterable for s in dr.get_registry_points(self.ds))
+                and not filters.get_filters(self.ds)
+            ):
                 raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
             # 2.2 Customer Prohibits Collection
             if not blacklist.allow_command(self.cmd):
@@ -402,9 +442,14 @@ class CommandOutputProvider(ContentProvider):
     def load(self):
         command = self.create_args()
 
-        raw = self.ctx.shell_out(command, split=self.split,
-                                 keep_rc=self.keep_rc, timeout=self.timeout,
-                                 env=self._env, signum=self.signum)
+        raw = self.ctx.shell_out(
+            command,
+            split=self.split,
+            keep_rc=self.keep_rc,
+            timeout=self.timeout,
+            env=self._env,
+            signum=self.signum,
+        )
         if self.keep_rc:
             self.rc, output = raw
         else:
@@ -435,15 +480,39 @@ class CommandOutputProvider(ContentProvider):
 
 
 class ContainerProvider(CommandOutputProvider):
-    def __init__(self, cmd_path, ctx, image=None, args=None, split=True,
-                 keep_rc=False, ds=None, timeout=None, inherit_env=None,
-                 override_env=None, signum=None, cleaner=None):
+    def __init__(
+        self,
+        cmd_path,
+        ctx,
+        image=None,
+        args=None,
+        split=True,
+        keep_rc=False,
+        ds=None,
+        timeout=None,
+        inherit_env=None,
+        override_env=None,
+        signum=None,
+        cleaner=None,
+    ):
         # cmd  = "<podman|docker> exec container_id command"
         # path = "<podman|docker> exec container_id cat path"
         self.image = image
         super(ContainerProvider, self).__init__(
-                cmd_path, ctx, "insights_containers", None, args, split, keep_rc,
-                ds, timeout, inherit_env, override_env, signum, cleaner)
+            cmd_path,
+            ctx,
+            "insights_containers",
+            None,
+            args,
+            split,
+            keep_rc,
+            ds,
+            timeout,
+            inherit_env,
+            override_env,
+            signum,
+            cleaner,
+        )
 
 
 class ContainerFileProvider(ContainerProvider):
@@ -474,8 +543,16 @@ class RegistryPoint(object):
     # datasource implementations by simply declaring them with the same name.
     #
     # intentionally not a docstring so this doesn't show up in pydoc.
-    def __init__(self, metadata=None, multi_output=False, raw=False,
-                 filterable=False, no_obfuscate=None, no_redact=False, prio=0):
+    def __init__(
+        self,
+        metadata=None,
+        multi_output=False,
+        raw=False,
+        filterable=False,
+        no_obfuscate=None,
+        no_redact=False,
+        prio=0,
+    ):
         self.metadata = metadata
         self.multi_output = multi_output
         self.no_obfuscate = [] if no_obfuscate is None else no_obfuscate
@@ -484,9 +561,16 @@ class RegistryPoint(object):
         self.raw = raw
         self.filterable = filterable
         self.__name__ = self.__class__.__name__
-        datasource([], metadata=metadata, multi_output=multi_output, raw=raw,
-                   filterable=filterable, no_obfuscate=self.no_obfuscate,
-                   no_redact=no_redact, prio=prio)(self)
+        datasource(
+            [],
+            metadata=metadata,
+            multi_output=multi_output,
+            raw=raw,
+            filterable=filterable,
+            no_obfuscate=self.no_obfuscate,
+            no_redact=no_redact,
+            prio=prio,
+        )(self)
 
     def __call__(self, broker):
         for c in reversed(dr.get_delegate(self).deps):
@@ -592,6 +676,7 @@ class SpecSetMeta(type):
     The metaclass that converts RegistryPoint markers to registry point
     datasources and hooks implementations for them into the registry.
     """
+
     def __new__(cls, name, bases, dct):
         dct["context_handlers"] = defaultdict(lambda: defaultdict(list))
         dct["registry"] = {}
@@ -610,6 +695,7 @@ class SpecSet(six.with_metaclass(SpecSetMeta)):
     The base class for all spec declarations. Extend this class and define your
     datasources directly or with a `SpecFactory`.
     """
+
     pass
 
 
@@ -638,8 +724,10 @@ class simple_file(object):
     Returns:
         function: A datasource that reads all files matching the glob patterns.
     """
-    def __init__(self, path, save_as=None, context=None, deps=None,
-                 kind=TextFileProvider, **kwargs):
+
+    def __init__(
+        self, path, save_as=None, context=None, deps=None, kind=TextFileProvider, **kwargs
+    ):
         deps = deps if deps is not None else []
         self.path = path
         self.save_as = save_as.lstrip("/") if save_as else None
@@ -652,9 +740,14 @@ class simple_file(object):
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)
         cleaner = broker.get('cleaner')
-        return self.kind(ctx.locate_path(self.path), root=ctx.root,
-                         save_as=self.save_as, ds=self, ctx=ctx,
-                         cleaner=cleaner)
+        return self.kind(
+            ctx.locate_path(self.path),
+            root=ctx.root,
+            save_as=self.save_as,
+            ds=self,
+            ctx=ctx,
+            cleaner=cleaner,
+        )
 
 
 class glob_file(object):
@@ -676,8 +769,18 @@ class glob_file(object):
     Returns:
         function: A datasource that reads all files matching the glob patterns.
     """
-    def __init__(self, patterns, save_as=None, ignore=None, context=None, deps=None,
-                 kind=TextFileProvider, max_files=1000, **kwargs):
+
+    def __init__(
+        self,
+        patterns,
+        save_as=None,
+        ignore=None,
+        context=None,
+        deps=None,
+        kind=TextFileProvider,
+        max_files=1000,
+        **kwargs
+    ):
         deps = deps if deps is not None else []
         if not isinstance(patterns, (list, set)):
             patterns = [patterns]
@@ -703,17 +806,28 @@ class glob_file(object):
                 if self.ignore_func(path) or os.path.isdir(path):
                     continue
                 try:
-                    results.append(self.kind(
-                        path[len(root):], root=root, save_as=self.save_as,
-                        ds=self, ctx=ctx, cleaner=cleaner))
+                    results.append(
+                        self.kind(
+                            path[len(root) :],
+                            root=root,
+                            save_as=self.save_as,
+                            ds=self,
+                            ctx=ctx,
+                            cleaner=cleaner,
+                        )
+                    )
                 except NoFilterException as nfe:
                     raise nfe
                 except Exception:
                     log.debug(traceback.format_exc())
         if results:
             if len(results) > self.max_files:
-                raise ContentException("Number of files returned [{0}] is over the {1} file limit, please refine "
-                                       "the specs file pattern to narrow down results".format(len(results), self.max_files))
+                raise ContentException(
+                    "Number of files returned [{0}] is over the {1} file limit, please refine "
+                    "the specs file pattern to narrow down results".format(
+                        len(results), self.max_files
+                    )
+                )
             return results
         raise ContentException("[%s] didn't match." % ', '.join(self.patterns))
 
@@ -722,6 +836,7 @@ class head(object):
     """
     Return the first element of any datasource that produces a list.
     """
+
     def __init__(self, dep, **kwargs):
         self.dep = dep
         self.__name__ = self.__class__.__name__
@@ -756,8 +871,9 @@ class first_file(object):
             and is readable
     """
 
-    def __init__(self, paths, save_as=None, context=None, deps=None,
-                 kind=TextFileProvider, **kwargs):
+    def __init__(
+        self, paths, save_as=None, context=None, deps=None, kind=TextFileProvider, **kwargs
+    ):
         deps = deps if deps is not None else []
         self.paths = paths
         self.save_as = save_as.lstrip("/") if save_as else None
@@ -774,8 +890,13 @@ class first_file(object):
         for p in self.paths:
             try:
                 return self.kind(
-                        ctx.locate_path(p), root=root, save_as=self.save_as,
-                        ds=self, ctx=ctx, cleaner=cleaner)
+                    ctx.locate_path(p),
+                    root=root,
+                    save_as=self.save_as,
+                    ds=self,
+                    ctx=ctx,
+                    cleaner=cleaner,
+                )
             except NoFilterException as nfe:
                 raise nfe
             except Exception:
@@ -834,6 +955,7 @@ class listglob(listdir):
         function: A datasource that returns the list of paths that match
             the given glob pattern. The list will be empty when nothing matches.
     """
+
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)
         p = os.path.join(ctx.root, self.path.lstrip('/'))
@@ -878,9 +1000,21 @@ class simple_command(object):
         function: A datasource that returns the output of a command that takes
             no arguments
     """
-    def __init__(self, cmd, save_as=None, context=HostContext, deps=None,
-                 split=True, keep_rc=False, timeout=None, inherit_env=None,
-                 override_env=None, signum=None, **kwargs):
+
+    def __init__(
+        self,
+        cmd,
+        save_as=None,
+        context=HostContext,
+        deps=None,
+        split=True,
+        keep_rc=False,
+        timeout=None,
+        inherit_env=None,
+        override_env=None,
+        signum=None,
+        **kwargs
+    ):
         deps = deps if deps is not None else []
         self.cmd = cmd
         self.context = context
@@ -899,10 +1033,18 @@ class simple_command(object):
         cleaner = broker.get('cleaner')
         ctx = broker[self.context]
         return CommandOutputProvider(
-                self.cmd, ctx, save_as=self.save_as, split=self.split,
-                keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
-                inherit_env=self.inherit_env, override_env=self.override_env,
-                signum=self.signum, cleaner=cleaner)
+            self.cmd,
+            ctx,
+            save_as=self.save_as,
+            split=self.split,
+            keep_rc=self.keep_rc,
+            ds=self,
+            timeout=self.timeout,
+            inherit_env=self.inherit_env,
+            override_env=self.override_env,
+            signum=self.signum,
+            cleaner=cleaner,
+        )
 
 
 class command_with_args(object):
@@ -937,9 +1079,22 @@ class command_with_args(object):
         function: A datasource that returns the output of a command that takes
             specified arguments passed by the provider.
     """
-    def __init__(self, cmd, provider, save_as=None, context=HostContext,
-                 deps=None, split=True, keep_rc=False, timeout=None,
-                 inherit_env=None, override_env=None, signum=None, **kwargs):
+
+    def __init__(
+        self,
+        cmd,
+        provider,
+        save_as=None,
+        context=HostContext,
+        deps=None,
+        split=True,
+        keep_rc=False,
+        timeout=None,
+        inherit_env=None,
+        override_env=None,
+        signum=None,
+        **kwargs
+    ):
         deps = deps if deps is not None else []
         self.cmd = cmd if six.PY3 else str(cmd)
         self.provider = provider
@@ -959,17 +1114,28 @@ class command_with_args(object):
         cleaner = broker.get('cleaner')
         source = broker[self.provider]
         ctx = broker[self.context]
-        if not isinstance(source, (str, tuple)):
-            raise ContentException("The provider can only be a single string or a tuple of strings, but got '%s'." %
-                                   source)
+        if isinstance(source, ContentProvider):
+            source = source.content
+        if not isinstance(source, (six.text_type, str, tuple)):
+            raise ContentException(
+                "The provider can only be a single string or a tuple of strings, but got '%s'."
+                % source
+            )
         try:
             the_cmd = self.cmd % source
             return CommandOutputProvider(
-                    the_cmd, ctx, save_as=self.save_as, split=self.split,
-                    keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
-                    inherit_env=self.inherit_env,
-                    override_env=self.override_env, signum=self.signum,
-                    cleaner=cleaner)
+                the_cmd,
+                ctx,
+                save_as=self.save_as,
+                split=self.split,
+                keep_rc=self.keep_rc,
+                ds=self,
+                timeout=self.timeout,
+                inherit_env=self.inherit_env,
+                override_env=self.override_env,
+                signum=self.signum,
+                cleaner=cleaner,
+            )
         except NoFilterException as nfe:
             raise nfe
         except ContentException as ce:
@@ -1012,9 +1178,21 @@ class foreach_execute(object):
         function: A datasource that returns a list of outputs for each command
             created by substituting each element of provider into the cmd template.
     """
-    def __init__(self, provider, cmd, context=HostContext, deps=None,
-                 split=True, keep_rc=False, timeout=None, inherit_env=None,
-                 override_env=None, signum=None, **kwargs):
+
+    def __init__(
+        self,
+        provider,
+        cmd,
+        context=HostContext,
+        deps=None,
+        split=True,
+        keep_rc=False,
+        timeout=None,
+        inherit_env=None,
+        override_env=None,
+        signum=None,
+        **kwargs
+    ):
         deps = deps if deps is not None else []
         self.provider = provider
         self.cmd = cmd
@@ -1027,8 +1205,9 @@ class foreach_execute(object):
         self.override_env = override_env if override_env is not None else dict()
         self.signum = signum
         self.__name__ = self.__class__.__name__
-        datasource(self.provider, self.context, *deps, multi_output=True,
-                   raw=self.raw, **kwargs)(self)
+        datasource(self.provider, self.context, *deps, multi_output=True, raw=self.raw, **kwargs)(
+            self
+        )
 
     def __call__(self, broker):
         result = []
@@ -1043,11 +1222,18 @@ class foreach_execute(object):
             try:
                 the_cmd = self.cmd % e
                 cop = CommandOutputProvider(
-                        the_cmd, ctx, args=e, split=self.split,
-                        keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
-                        inherit_env=self.inherit_env,
-                        override_env=self.override_env, signum=self.signum,
-                        cleaner=cleaner)
+                    the_cmd,
+                    ctx,
+                    args=e,
+                    split=self.split,
+                    keep_rc=self.keep_rc,
+                    ds=self,
+                    timeout=self.timeout,
+                    inherit_env=self.inherit_env,
+                    override_env=self.override_env,
+                    signum=self.signum,
+                    cleaner=cleaner,
+                )
                 result.append(cop)
             except NoFilterException as nfe:
                 raise nfe
@@ -1080,8 +1266,17 @@ class foreach_collect(object):
             substituting each element of provider into the path template.
     """
 
-    def __init__(self, provider, path, save_as=None, ignore=None,
-                 context=HostContext, deps=None, kind=TextFileProvider, **kwargs):
+    def __init__(
+        self,
+        provider,
+        path,
+        save_as=None,
+        ignore=None,
+        context=HostContext,
+        deps=None,
+        kind=TextFileProvider,
+        **kwargs
+    ):
         deps = deps if deps is not None else []
         self.provider = provider
         self.path = path
@@ -1092,8 +1287,9 @@ class foreach_collect(object):
         self.kind = kind
         self.raw = kind is RawFileProvider
         self.__name__ = self.__class__.__name__
-        datasource(self.provider, self.context, *deps, multi_output=True,
-                   raw=self.raw, **kwargs)(self)
+        datasource(self.provider, self.context, *deps, multi_output=True, raw=self.raw, **kwargs)(
+            self
+        )
 
     def __call__(self, broker):
         result = []
@@ -1111,9 +1307,16 @@ class foreach_collect(object):
                 if self.ignore_func(p) or os.path.isdir(p):
                     continue
                 try:
-                    result.append(self.kind(
-                        p[len(root):], root=root, save_as=self.save_as,
-                        ds=self, ctx=ctx, cleaner=cleaner))
+                    result.append(
+                        self.kind(
+                            p[len(root) :],
+                            root=root,
+                            save_as=self.save_as,
+                            ds=self,
+                            ctx=ctx,
+                            cleaner=cleaner,
+                        )
+                    )
                 except NoFilterException as nfe:
                     raise nfe
                 except Exception:
@@ -1158,6 +1361,7 @@ class container_execute(foreach_execute):
         function: A datasource that returns a list of outputs for each command
             created by substituting each element of provider into the cmd template.
     """
+
     def __call__(self, broker):
         result = []
         source = broker[self.provider]
@@ -1176,10 +1380,19 @@ class container_execute(foreach_execute):
                 # the_cmd = <podman|docker> exec container_id cmd
                 the_cmd = "/usr/bin/%s exec %s %s" % (engine, cid, cmd)
                 ccp = ContainerCommandProvider(
-                        the_cmd, ctx, image=image, args=e, split=self.split,
-                        keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
-                        inherit_env=self.inherit_env, override_env=self.override_env,
-                        signum=self.signum, cleaner=cleaner)
+                    the_cmd,
+                    ctx,
+                    image=image,
+                    args=e,
+                    split=self.split,
+                    keep_rc=self.keep_rc,
+                    ds=self,
+                    timeout=self.timeout,
+                    inherit_env=self.inherit_env,
+                    override_env=self.override_env,
+                    signum=self.signum,
+                    cleaner=cleaner,
+                )
                 result.append(ccp)
             except NoFilterException as nfe:
                 raise nfe
@@ -1213,12 +1426,34 @@ class container_collect(foreach_execute):
         function: A datasource that returns a list of file contents created by
             substituting each element of provider into the path template.
     """
-    def __init__(self, provider, path=None, context=HostContext, deps=None,
-                 split=True, keep_rc=False, timeout=None, inherit_env=None,
-                 override_env=None, signum=None, **kwargs):
+
+    def __init__(
+        self,
+        provider,
+        path=None,
+        context=HostContext,
+        deps=None,
+        split=True,
+        keep_rc=False,
+        timeout=None,
+        inherit_env=None,
+        override_env=None,
+        signum=None,
+        **kwargs
+    ):
         super(container_collect, self).__init__(
-            provider, path, context, deps, split, keep_rc, timeout,
-            inherit_env, override_env, signum, **kwargs)
+            provider,
+            path,
+            context,
+            deps,
+            split,
+            keep_rc,
+            timeout,
+            inherit_env,
+            override_env,
+            signum,
+            **kwargs
+        )
 
     def __call__(self, broker):
         result = []
@@ -1243,11 +1478,19 @@ class container_collect(foreach_execute):
                 # the_cmd = <podman|docker> exec container_id cat path
                 the_cmd = ("/usr/bin/%s exec %s cat " % e) + path
                 cfp = ContainerFileProvider(
-                        the_cmd, ctx, image=image, args=None,
-                        split=self.split, keep_rc=self.keep_rc, ds=self,
-                        timeout=self.timeout, inherit_env=self.inherit_env,
-                        override_env=self.override_env, signum=self.signum,
-                        cleaner=cleaner)
+                    the_cmd,
+                    ctx,
+                    image=image,
+                    args=None,
+                    split=self.split,
+                    keep_rc=self.keep_rc,
+                    ds=self,
+                    timeout=self.timeout,
+                    inherit_env=self.inherit_env,
+                    override_env=self.override_env,
+                    signum=self.signum,
+                    cleaner=cleaner,
+                )
                 result.append(cfp)
             except NoFilterException as nfe:
                 raise nfe
@@ -1259,10 +1502,11 @@ class container_collect(foreach_execute):
 
 
 class first_of(object):
-    """ Given a list of dependencies, returns the first of the list
-        that exists in the broker. At least one must be present, or this
-        component won't fire.
+    """Given a list of dependencies, returns the first of the list
+    that exists in the broker. At least one must be present, or this
+    component won't fire.
     """
+
     def __init__(self, deps):
         self.deps = deps
         self.raw = getattr(deps[0], 'raw', None)
@@ -1357,7 +1601,7 @@ def serialize_command_output(obj, root):
         "cmd": obj.cmd,
         "args": obj.args,
         "save_as": bool(obj.save_as),
-        "relative_path": rel
+        "relative_path": rel,
     }
 
 
