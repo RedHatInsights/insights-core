@@ -73,13 +73,15 @@ jobs:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
     steps:
-    - name: install dependencies
+    - name: install system dependencies
       run: |
         apt-get install -y --no-install-recommends software-properties-common
         apt-get install -y build-essential git curl unzip file tar
-    - name: clone the repo
+    - name: clone the repo and checkout pull_request
       run: |
-        git clone -b ${GITHUB_HEAD_REF} https://github.com/RedHatInsights/insights-core.git
+        git clone https://github.com/RedHatInsights/insights-core.git
+        git -C insights-core fetch --no-tags --prune --no-recurse-submodules --depth=1 origin pull/${{ github.ref_name }}:${{ github.head_ref }}
+        git -C insights-core checkout ${{ github.head_ref }}
     - name: build setuptools and pip
       run: |
         export PATH=$PATH:/github/home/.local/bin
@@ -92,7 +94,7 @@ jobs:
         tar -xvzf 9.0.3.tar.gz && cd pip-9.0.3
         python setup.py install --user
         cd ${CUR_DIR}
-    - name: get depenencies
+    - name: install virtualenv depenencies
       run: |
         export PATH=$PATH:/github/home/.local/bin
         CUR_DIR=$(pwd)
