@@ -69,16 +69,19 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: cronosmobi/python2.6:latest
-
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
     steps:
-    - uses: actions/checkout@v3
-    - name: install dependencies
+    - name: install system dependencies
       run: |
         apt-get install -y --no-install-recommends software-properties-common
         apt-get install -y build-essential git curl unzip file tar
+    - name: clone the repo and checkout pull_request
+      run: |
+        git clone https://github.com/RedHatInsights/insights-core.git
+        git -C insights-core fetch --no-tags --prune --no-recurse-submodules --depth=1 origin pull/${{ github.ref_name }}:${{ github.head_ref }}
+        git -C insights-core checkout ${{ github.head_ref }}
     - name: build setuptools and pip
       run: |
         export PATH=$PATH:/github/home/.local/bin
@@ -91,7 +94,7 @@ jobs:
         tar -xvzf 9.0.3.tar.gz && cd pip-9.0.3
         python setup.py install --user
         cd ${CUR_DIR}
-    - name: get depenencies
+    - name: install virtualenv depenencies
       run: |
         export PATH=$PATH:/github/home/.local/bin
         CUR_DIR=$(pwd)
@@ -135,15 +138,23 @@ jobs:
         curl -L -o ./../collections_module/collections.py https://raw.githubusercontent.com/RedHatInsights/insights-core/5c8ca0f2fb3de45908e8d931d40758af34a7997a/.collections.py
     - name: flake8
       run: |
+        cd insights-core
+        # show the branch
+        git --no-pager branch
         export PATH=$PATH:/github/home/.local/bin
-        pip install --user -e .[linting] --no-index -f ./pip_packages
+        pip install --user -e .[linting] --no-index -f ../pip_packages
         flake8 .
+        cd -
     - name: pytest
       run: |
+        cd insights-core
+        # show the branch
+        git --no-pager branch
         export PATH=$PATH:/github/home/.local/bin
-        pip install --user -e .[testing] --no-index -f ./pip_packages
-        export PYTHONPATH=${PYTHONPATH}:./../collections_module
+        pip install --user -e .[testing] --no-index -f ../pip_packages
+        export PYTHONPATH=${PYTHONPATH}:../../collections_module
         pytest
+        cd -
 
   docs-test:
 
