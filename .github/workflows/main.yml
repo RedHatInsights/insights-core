@@ -139,6 +139,8 @@ jobs:
     - name: flake8
       run: |
         cd insights-core
+        # show the branch
+        git --no-pager branch
         export PATH=$PATH:/github/home/.local/bin
         pip install --user -e .[linting] --no-index -f ../pip_packages
         flake8 .
@@ -146,6 +148,8 @@ jobs:
     - name: pytest
       run: |
         cd insights-core
+        # show the branch
+        git --no-pager branch
         export PATH=$PATH:/github/home/.local/bin
         pip install --user -e .[testing] --no-index -f ../pip_packages
         export PYTHONPATH=${PYTHONPATH}:../../collections_module
