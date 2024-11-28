@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.23
+Version:        3.4.24
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 28 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.24-1
+- fix: handle empty value in krb5 config (#4289) (xiaoxwan@redhat.com)
+- fix: add six.text_type to the check of command_with_args (#4290)
+  (xiangceliu@redhat.com)
+- fix: proper error handling of AzurePublicIpv4Addresses (#4288)
+  (xiaoxwan@redhat.com)
+- fix: remove the 'fstab_mounted.dirs' from the final ls args (#4287)
+  (xiangceliu@redhat.com)
+- ci: fix action errors of py26 test (#4286) (xiangceliu@redhat.com)
+- chore: uname supports RHEL 9.5 (#4284) (xiangceliu@redhat.com)
+- feat: Add datasource and parser for nmcli_conn_show_uuid (#4273)
+  (jiazhang@redhat.com)
+- fix: Update combiner httpd_conf include (#4275) (jiazhang@redhat.com)
+
 * Thu Nov 21 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.23-1
 - chore: add initial .pre-commit hooks (#4271) (xiangceliu@redhat.com)
 - new spec and parser for cloud-init query (#4272) (xiangceliu@redhat.com)
