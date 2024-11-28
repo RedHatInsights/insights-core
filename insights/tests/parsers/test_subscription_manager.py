@@ -113,8 +113,9 @@ def test_subman_status():
 
     ret = SubscriptionManagerStatus(context_wrap(SUBSCRIPTION_MANAGER_STATUS_PRODUCT_KEY))
     assert ret['Overall Status'] == 'Insufficient'
-    assert ret['Red Hat Enterprise Linux for Virtual Datacenters, Standard'] == '- Guest has not been reported on any host and is using a temporary unmapped guest subscription. For more information, please see https://access.redhat.com/solutions/XXXX'
+    assert ret['Red Hat Enterprise Linux for Virtual Datacenters'] == 'Standard'
     assert ret['System Purpose Status'] == 'Matched'
+    assert ret.unparsed_lines == [SUBSCRIPTION_MANAGER_STATUS_PRODUCT_KEY.splitlines()[-3]]
 
 
 def test_subman_facts_ng():
