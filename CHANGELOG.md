@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.24](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.24) (2024-11-28)
+
+- fix: handle empty value in krb5 config ([PR 4289](https://github.com/RedHatInsights/insights-core/pull/4289))
+- fix: add six.text_type to the check of command_with_args ([PR 4290](https://github.com/RedHatInsights/insights-core/pull/4290))
+- fix: proper error handling of AzurePublicIpv4Addresses ([PR 4288](https://github.com/RedHatInsights/insights-core/pull/4288))
+- fix: remove the 'fstab_mounted.dirs' from the final ls args ([PR 4287](https://github.com/RedHatInsights/insights-core/pull/4287))
+- ci: fix action errors of py26 test ([PR 4286](https://github.com/RedHatInsights/insights-core/pull/4286))
+- chore: uname supports RHEL 9.5 ([PR 4284](https://github.com/RedHatInsights/insights-core/pull/4284))
+- feat: Add datasource and parser for nmcli_conn_show_uuid ([PR 4273](https://github.com/RedHatInsights/insights-core/pull/4273))
+- fix: Update combiner httpd_conf include ([PR 4275](https://github.com/RedHatInsights/insights-core/pull/4275))
+
 # [insights-core-3.4.23](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.23) (2024-11-21)
 
 - chore: add initial .pre-commit hooks ([PR 4271](https://github.com/RedHatInsights/insights-core/pull/4271))
