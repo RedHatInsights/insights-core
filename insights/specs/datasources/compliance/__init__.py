@@ -35,40 +35,58 @@ class ComplianceClient:
         self.conn = InsightsConnection(config)
 
     def download_tailoring_file(self, policy):
-        if ('os_minor_version' in policy and policy['os_minor_version'] != self.os_minor):
+        if 'os_minor_version' in policy and policy['os_minor_version'] != self.os_minor:
             return None
 
         # Download tailoring file to pass as argument to run_scan
         logger.debug(
-            "Checking if policy {0} is a tailored policy. Starting tailoring file download...".format(policy['ref_id'])
+            "Checking if policy {0} is a tailored policy. Starting tailoring file download...".format(
+                policy['ref_id']
+            )
         )
         tailoring_file_path = tempfile.mkstemp(
             prefix='oscap_tailoring_file-{0}.'.format(policy['ref_id']),
             suffix='.xml',
-            dir='/var/tmp'
+            dir='/var/tmp',
         )[1]
         response = self.conn.session.get(
-            "https://{0}/compliance/v2/policies/{1}/tailorings/{2}/tailoring_file".format(self.config.base_url, policy['id'], self.os_minor)
+            "https://{0}/compliance/v2/policies/{1}/tailorings/{2}/tailoring_file".format(
+                self.config.base_url, policy['id'], self.os_minor
+            )
         )
         logger.debug("Response code: {0}".format(response.status_code))
 
         if response.status_code == 204:
-            logger.debug("Policy {0} is not tailored, continuing with default rule and value selections...".format(policy['ref_id']))
+            logger.debug(
+                "Policy {0} is not tailored, continuing with default rule and value selections...".format(
+                    policy['ref_id']
+                )
+            )
             return None
 
         if not response.ok:
-            logger.debug("Something went wrong during downloading the tailoring file of {0}. The expected status code is 200, got {1}".format(policy['ref_id'], response.status_code))
+            logger.debug(
+                "Something went wrong during downloading the tailoring file of {0}. The expected status code is 200, got {1}".format(
+                    policy['ref_id'], response.status_code
+                )
+            )
             return None
 
         if response.content is None or response.headers['Content-Type'] != "application/xml":
             logger.debug(response.content)
             logger.debug(response.return_value)
-            logger.debug("Problem with the content of the downloaded tailoring file of {0}. The expected format is xml, got {1}".format(policy['ref_id'], response.headers['Content-Type']))
+            logger.debug(
+                "Problem with the content of the downloaded tailoring file of {0}. The expected format is xml, got {1}".format(
+                    policy['ref_id'], response.headers['Content-Type']
+                )
+            )
             return None
 
         with open(tailoring_file_path, mode="w+b") as f:
             f.write(response.content)
-            logger.info("Saved tailoring file for {0} to {1}".format(policy['ref_id'], tailoring_file_path))
+            logger.info(
+                "Saved tailoring file for {0} to {1}".format(policy['ref_id'], tailoring_file_path)
+            )
 
         logger.debug("Policy {0} tailoring file download finished".format(policy['ref_id']))
 
@@ -83,11 +101,17 @@ class ComplianceClient:
             grepcmd = grepcmd.encode()
         rc, grep = call(grepcmd, keep_rc=True)
         if rc:
-            logger.error('XML profile file not found matching ref_id {0}\n{1}\n'.format(profile_ref_id, grep))
+            logger.error(
+                'XML profile file not found matching ref_id {0}\n{1}\n'.format(profile_ref_id, grep)
+            )
             return None
         filenames = findall(SCAP_DATASTREAMS_PATH + '.+xml', grep)
         if not filenames:
-            logger.error('No XML profile files found matching ref_id {0}\n{1}\n'.format(profile_ref_id, ' '.join(filenames)))
+            logger.error(
+                'No XML profile files found matching ref_id {0}\n{1}\n'.format(
+                    profile_ref_id, ' '.join(filenames)
+                )
+            )
             exit(constants.sig_kill_bad)
         return filenames[0]
 
@@ -104,7 +128,9 @@ class ComplianceClient:
         logger.info('Running scan for {0}... this may take a while'.format(profile_ref_id))
         env = os.environ.copy()
         env.update({'TZ': 'UTC'})
-        oscap_command = self.build_oscap_command(profile_ref_id, policy_xml, output_path, tailoring_file_path)
+        oscap_command = self.build_oscap_command(
+            profile_ref_id, policy_xml, output_path, tailoring_file_path
+        )
         if not six.PY3:
             oscap_command = oscap_command.encode()
         rc, oscap = call(oscap_command, keep_rc=True, env=env)
@@ -142,8 +168,7 @@ class ComplianceClient:
                 content[idx] = line.replace(SNIPPET_TO_FIX, replacement)
                 is_repaired = True
                 logger.debug(
-                    'Substituted "%s" with "%s" in %s',
-                    SNIPPET_TO_FIX, replacement, results_file
+                    'Substituted "%s" with "%s" in %s', SNIPPET_TO_FIX, replacement, results_file
                 )
 
         if is_repaired:
@@ -166,14 +191,18 @@ class ComplianceClient:
 
     def assignable_policies(self):
         url = "https://{0}/compliance/v2/policies?filter=(os_major_version = {1} and os_minor_version = {2})"
-        response = self.conn.session.get(url.format(self.config.base_url, self.os_major, self.os_minor))
+        full_url = url.format(self.config.base_url, self.os_major, self.os_minor)
+        logger.debug("Fetching policies with: {0}".format(full_url))
+        response = self.conn.session.get(full_url)
         logger.debug("Content of the response {0} - {1}".format(response, response.content))
         assigned_policies = [item["id"] for item in self.get_system_policies()]
 
         if response.status_code == 200:
             policies = response.json().get('data', [])
             if not policies:
-                logger.warning("System is not assignable to any policy. Create supported policy using the Compliance web UI.\n")
+                logger.warning(
+                    "System is not assignable to any policy. Create supported policy using the Compliance web UI.\n"
+                )
                 return constants.sig_kill_bad
             else:
                 print("Assigned     ID" + " " * 39 + "Title")
@@ -187,7 +216,9 @@ class ComplianceClient:
 
     def policy_link(self, policy_id, dir):
         url = "https://{0}/compliance/v2/policies/{1}/systems/{2}"
-        response = getattr(self.conn.session, dir)(url.format(self.config.base_url, policy_id, self.inventory_id))
+        full_url = url.format(self.config.base_url, policy_id, self.inventory_id)
+        logger.debug("Fetching: {0}".format(full_url))
+        response = getattr(self.conn.session, dir)(full_url)
         logger.debug("Content of the response {0} - {1}".format(response, response.content))
 
         if response.status_code == 202:
@@ -198,7 +229,11 @@ class ComplianceClient:
             return constants.sig_kill_bad
 
     def get_system_policies(self):
-        response = self.conn.session.get("https://{0}/compliance/v2/systems/{1}/policies".format(self.config.base_url, self.inventory_id))
+        url = "https://{0}/compliance/v2/systems/{1}/policies".format(
+            self.config.base_url, self.inventory_id
+        )
+        logger.debug("Fetching policies with: {0}".format(url))
+        response = self.conn.session.get(url)
         logger.debug("Content of the response {0} - {1}".format(response, response.content))
 
         if response.status_code == 200:
