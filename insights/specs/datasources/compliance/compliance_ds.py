@@ -222,8 +222,7 @@ def compliance_policies(broker):
         err_msg = "Unexpected exception in compliance: {0}".format(str(err))
         logger.error(err_msg)
         logger.debug(format_exc())
-
-    sys.exit(constants.sig_kill_bad)
+        sys.exit(constants.sig_kill_bad)
 
 
 @datasource(compliance_assign_enabled, os_version, package_check, HostContext, timeout=0)
@@ -246,8 +245,7 @@ def compliance_assign(broker):
         err_msg = "Unexpected exception in compliance: {0}".format(str(err))
         logger.error(err_msg)
         logger.debug(format_exc())
-
-    sys.exit(constants.sig_kill_bad)
+        sys.exit(constants.sig_kill_bad)
 
 
 @datasource(compliance_unassign_enabled, os_version, package_check, HostContext, timeout=0)
@@ -270,5 +268,4 @@ def compliance_unassign(broker):
         err_msg = "Unexpected exception in compliance: {0}".format(str(err))
         logger.error(err_msg)
         logger.debug(format_exc())
-
-    sys.exit(constants.sig_kill_bad)
+        sys.exit(constants.sig_kill_bad)

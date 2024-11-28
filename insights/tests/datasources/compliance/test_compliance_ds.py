@@ -10,7 +10,6 @@ from pytest import raises
 from tempfile import NamedTemporaryFile
 
 from insights.client.config import InsightsConfig
-from insights.core.exceptions import SkipComponent
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.os_release import OsRelease
 from insights.parsers.redhat_release import RedhatRelease
@@ -76,7 +75,7 @@ def test_os_version():
     assert result == ['8', '10']
 
     broker = {OsRelease: os_ng, RedhatRelease: rh_ng}
-    with raises(SkipComponent):
+    with raises(SystemExit):
         os_version(broker)
 
 
@@ -88,11 +87,8 @@ def test_package_check():
 
     rpms = InstalledRpms(context_wrap(RPMS_JSON_NG))
     broker = {InstalledRpms: rpms}
-    with raises(SkipComponent) as sc:
+    with raises(SystemExit):
         package_check(broker)
-        assert "scap-security-guide" in sc
-        assert "openscap-scanner" in sc
-        assert "openscap" in sc
 
 
 @patch("insights.specs.datasources.compliance.compliance_ds.NamedTemporaryFile")
