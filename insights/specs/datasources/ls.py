@@ -1,6 +1,7 @@
 """
 Custom datasources for ``ls`` commands
 """
+
 from insights.core.context import HostContext
 from insights.core.dr import get_name
 from insights.core.exceptions import SkipComponent
@@ -56,6 +57,7 @@ def list_with_la_filtered(broker):
 def list_with_lan(broker):
     filters = set(_list_items(Specs.ls_lan_dirs))
     if 'fstab_mounted.dirs' in filters and FSTab in broker:
+        filters.remove('fstab_mounted.dirs')
         for mntp in broker[FSTab].mounted_on.keys():
             mnt_point = os.path.dirname(mntp)
             filters.add(mnt_point) if mnt_point else None
