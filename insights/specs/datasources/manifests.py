@@ -108,6 +108,12 @@ client:
     # determines what will appear in the archive
     - name: insights.specs.default.DefaultSpecs.compliance
       enabled: true
+    - name: insights.specs.default.DefaultSpecs.compliance_policies
+      enabled: true
+    - name: insights.specs.default.DefaultSpecs.compliance_assign
+      enabled: true
+    - name: insights.specs.default.DefaultSpecs.compliance_unassign
+      enabled: true
 
   run_strategy:
     name: serial
@@ -178,10 +184,7 @@ plugins:
       enabled: true
 """.lstrip()
 
-manifests = {
-    'compliance': compliance_manifest,
-    'malware-detection': malware_detection_manifest
-}
+manifests = {'compliance': compliance_manifest, 'malware-detection': malware_detection_manifest}
 content_types = {
     'compliance': 'application/vnd.redhat.compliance.something+tgz',
     'malware-detection': 'application/vnd.redhat.malware-detection.results+tgz',

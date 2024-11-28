@@ -27,8 +27,12 @@ from insights.core.spec_factory import DatasourceProvider
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.os_release import OsRelease
 from insights.parsers.redhat_release import RedhatRelease
-from insights.specs.datasources.compliance import ComplianceClient, SSG_PACKAGE, REQUIRED_PACKAGES
-
+from insights.specs.datasources.compliance import (
+    ComplianceClient,
+    SSG_PACKAGE,
+    REQUIRED_PACKAGES,
+    constants,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +103,7 @@ def os_version(broker):
         os_release = broker[RedhatRelease].version
     if os_release:
         return os_release.split('.')
-    raise SkipComponent('Cannot determine OS Version.')
+    sys.exit(constants.sig_kill_bad)
 
 
 @datasource(
@@ -120,7 +124,7 @@ def package_check(broker):
             ', '.join(missed)
         )
         logger.error(msg)
-        raise SkipComponent(msg)
+        sys.exit(constants.sig_kill_bad)
 
     return rpms.newest(SSG_PACKAGE).version
 
@@ -143,7 +147,7 @@ def compliance(broker):
             logger.error(
                 "System is not associated with any policies. Assign policies using the Compliance web UI.\n"
             )
-            raise SkipComponent
+            sys.exit(constants.sig_kill_bad)
 
         results_need_repair = compliance.results_need_repair()
         compliance_result = list()
@@ -189,13 +193,13 @@ def compliance(broker):
                 )
         if compliance_result:
             return compliance_result
-
     except Exception as err:
         err_msg = "Unexpected exception in compliance: {0}".format(str(err))
         logger.error(err_msg)
         logger.debug(format_exc())
-        raise SkipComponent(err_msg)
-    raise SkipComponent("No scan results were produced")
+
+    logger.error("No scan results were produced.")
+    sys.exit(constants.sig_kill_bad)
 
 
 @datasource(compliance_policies_enabled, os_version, package_check, HostContext, timeout=0)
@@ -218,7 +222,8 @@ def compliance_policies(broker):
         err_msg = "Unexpected exception in compliance: {0}".format(str(err))
         logger.error(err_msg)
         logger.debug(format_exc())
-        raise SkipComponent(err_msg)
+
+    sys.exit(constants.sig_kill_bad)
 
 
 @datasource(compliance_assign_enabled, os_version, package_check, HostContext, timeout=0)
@@ -241,7 +246,8 @@ def compliance_assign(broker):
         err_msg = "Unexpected exception in compliance: {0}".format(str(err))
         logger.error(err_msg)
         logger.debug(format_exc())
-        raise SkipComponent(err_msg)
+
+    sys.exit(constants.sig_kill_bad)
 
 
 @datasource(compliance_unassign_enabled, os_version, package_check, HostContext, timeout=0)
@@ -264,4 +270,5 @@ def compliance_unassign(broker):
         err_msg = "Unexpected exception in compliance: {0}".format(str(err))
         logger.error(err_msg)
         logger.debug(format_exc())
-        raise SkipComponent(err_msg)
+
+    sys.exit(constants.sig_kill_bad)
