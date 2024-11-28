@@ -33,7 +33,64 @@ from insights.specs.datasources.compliance import ComplianceClient, SSG_PACKAGE,
 logger = logging.getLogger(__name__)
 
 
-@datasource([OsRelease, RedhatRelease], HostContext)
+@datasource(HostContext)
+def compliance_enabled(broker):
+    insights_config = broker.get('client_config')
+    # Run only if `--compliance` option is enabled to insights-client
+    if insights_config and hasattr(insights_config, 'compliance') and insights_config.compliance:
+        return True
+    raise SkipComponent("Collect compliance data only --compliance is specified")
+
+
+@datasource(HostContext)
+def compliance_policies_enabled(broker):
+    insights_config = broker.get('client_config')
+    # Run only if `--compliance-policies` option is enabled to insights-client
+    if (
+        insights_config
+        and hasattr(insights_config, 'compliance_policies')
+        and insights_config.compliance_policies
+    ):
+        return True
+    raise SkipComponent("Run only when --compliance-policies is specified")
+
+
+@datasource(HostContext)
+def compliance_assign_enabled(broker):
+    insights_config = broker.get('client_config')
+    # Run only if `--compliance-assign` option is enabled to insights-client
+    if (
+        insights_config
+        and hasattr(insights_config, 'compliance_assign')
+        and insights_config.compliance_assign
+    ):
+        return True
+    raise SkipComponent("Run only when --compliance-assign is specified")
+
+
+@datasource(HostContext)
+def compliance_unassign_enabled(broker):
+    insights_config = broker.get('client_config')
+    # Run only if `--compliance-unassign` option is enabled to insights-client
+    if (
+        insights_config
+        and hasattr(insights_config, 'compliance_unassign')
+        and insights_config.compliance_unassign
+    ):
+        return True
+    raise SkipComponent("Run only when --compliance-unassign is specified")
+
+
+@datasource(
+    HostContext,
+    [OsRelease, RedhatRelease],
+    [
+        compliance_assign_enabled,
+        compliance_enabled,
+        compliance_policies_enabled,
+        compliance_unassign_enabled,
+    ],
+)
 def os_version(broker):
     os_release = None
     if OsRelease in broker:
@@ -45,7 +102,16 @@ def os_version(broker):
     raise SkipComponent('Cannot determine OS Version.')
 
 
-@datasource(InstalledRpms, HostContext)
+@datasource(
+    HostContext,
+    InstalledRpms,
+    [
+        compliance_assign_enabled,
+        compliance_enabled,
+        compliance_policies_enabled,
+        compliance_unassign_enabled,
+    ],
+)
 def package_check(broker):
     rpms = broker[InstalledRpms]
     missed = [rpm for rpm in REQUIRED_PACKAGES if rpm not in rpms]
@@ -59,21 +125,13 @@ def package_check(broker):
     return rpms.newest(SSG_PACKAGE).version
 
 
-@datasource(os_version, package_check, HostContext, timeout=0)
+@datasource(compliance_enabled, os_version, package_check, HostContext, timeout=0)
 def compliance(broker):
     """
     Collect compliance data when '--compliance' is specified.
     """
     try:
         insights_config = broker.get('client_config')
-        if not (
-            insights_config
-            and hasattr(insights_config, 'compliance')
-            and insights_config.compliance
-        ):
-            raise SkipComponent(
-                "Collect compliance data only when specifically requested via --compliance option"
-            )
 
         compliance = ComplianceClient(
             os_version=broker[os_version], ssg_version=broker[package_check], config=insights_config
@@ -140,19 +198,13 @@ def compliance(broker):
     raise SkipComponent("No scan results were produced")
 
 
-@datasource(os_version, package_check, HostContext, timeout=0)
+@datasource(compliance_policies_enabled, os_version, package_check, HostContext, timeout=0)
 def compliance_policies(broker):
     """
     Run when '--compliance-policies' is specified.
     """
     try:
         insights_config = broker.get('client_config')
-        if not (
-            insights_config
-            and hasattr(insights_config, 'compliance_policies')
-            and insights_config.compliance_policies
-        ):
-            raise SkipComponent("Run only when --compliance-policies is specified")
 
         compliance = ComplianceClient(
             os_version=broker[os_version], ssg_version=broker[package_check], config=insights_config
@@ -169,19 +221,13 @@ def compliance_policies(broker):
         raise SkipComponent(err_msg)
 
 
-@datasource(os_version, package_check, HostContext, timeout=0)
+@datasource(compliance_assign_enabled, os_version, package_check, HostContext, timeout=0)
 def compliance_assign(broker):
     """
     Run when '--compliance-assign ID' is specified.
     """
     try:
         insights_config = broker.get('client_config')
-        if not (
-            insights_config
-            and hasattr(insights_config, 'compliance_assign')
-            and insights_config.compliance_assign
-        ):
-            raise SkipComponent("Run only when --compliance-assign is specified")
 
         compliance = ComplianceClient(
             os_version=broker[os_version], ssg_version=broker[package_check], config=insights_config
@@ -198,19 +244,13 @@ def compliance_assign(broker):
         raise SkipComponent(err_msg)
 
 
-@datasource(os_version, package_check, HostContext, timeout=0)
+@datasource(compliance_unassign_enabled, os_version, package_check, HostContext, timeout=0)
 def compliance_unassign(broker):
     """
     Run when '--compliance-unassign ID' is specified.
     """
     try:
         insights_config = broker.get('client_config')
-        if not (
-            insights_config
-            and hasattr(insights_config, 'compliance_unassign')
-            and insights_config.compliance_unassign
-        ):
-            raise SkipComponent("Run only when --compliance-unassign is specified")
 
         compliance = ComplianceClient(
             os_version=broker[os_version], ssg_version=broker[package_check], config=insights_config
