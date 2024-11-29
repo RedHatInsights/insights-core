@@ -13,8 +13,11 @@ class Specs(SpecSet):
     version_info = RegistryPoint(no_obfuscate=['hostname', 'ip'])
 
     # Client App specs
-    malware_detection = RegistryPoint()
     compliance = RegistryPoint()
+    compliance_policies = RegistryPoint()
+    compliance_assign = RegistryPoint()
+    compliance_unassign = RegistryPoint()
+    malware_detection = RegistryPoint()
 
     # Regular collection specs
     abrt_ccpp_conf = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
