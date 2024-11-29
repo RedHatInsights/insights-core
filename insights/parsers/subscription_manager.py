@@ -128,12 +128,23 @@ class SubscriptionManagerStatus(CommandParser, dict):
         True
     """
     def parse_content(self, content):
+        self.unparsed_lines = []
         for line in content:
+            line = line.strip()
+
+            if not line:
+                continue
+
             if ': ' in line:
                 key, val = [_l.strip() for _l in line.split(': ', 1)]
                 self[key] = val
             elif line.startswith('Content Access Mode is set to'):
                 self['Content Access Mode'] = line.split('.', 1)[0].split('Content Access Mode is set to')[1].strip()
+            elif line.startswith("Red Hat Enterprise Linux for Virtual Datacenters"):
+                subscription_type = line.split(',')[1].strip(':').strip() if ',' in line else ''
+                self['Red Hat Enterprise Linux for Virtual Datacenters'] = subscription_type
+            elif "Guest has not been reported on any host" in line:
+                self.unparsed_lines.append(line)
 
         if not self:
             raise SkipComponent
