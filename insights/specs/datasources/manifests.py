@@ -106,13 +106,13 @@ client:
 
   persist:
     # determines what will appear in the archive
-    - name: insights.specs.default.DefaultSpecs.compliance
+    - name: insights.specs.Specs.compliance
       enabled: true
-    - name: insights.specs.default.DefaultSpecs.compliance_policies
+    - name: insights.specs.Specs.compliance_policies
       enabled: true
-    - name: insights.specs.default.DefaultSpecs.compliance_assign
+    - name: insights.specs.Specs.compliance_assign
       enabled: true
-    - name: insights.specs.default.DefaultSpecs.compliance_unassign
+    - name: insights.specs.Specs.compliance_unassign
       enabled: true
 
   run_strategy:
@@ -133,6 +133,12 @@ plugins:
     - name: insights.specs.datasources.compliance.compliance_ds
       enabled: true
     - name: insights.specs.default.DefaultSpecs.compliance
+      enabled: true
+    - name: insights.specs.default.DefaultSpecs.compliance_policies
+      enabled: true
+    - name: insights.specs.default.DefaultSpecs.compliance_assign
+      enabled: true
+    - name: insights.specs.default.DefaultSpecs.compliance_unassign
       enabled: true
 
     # Enable specs for collecting the system's canonical facts
