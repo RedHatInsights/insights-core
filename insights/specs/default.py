@@ -151,6 +151,9 @@ class DefaultSpecs(Specs):
 
     # Client App specs
     compliance = compliance_ds.compliance
+    compliance_policies = compliance_ds.compliance_policies
+    compliance_assign = compliance_ds.compliance_assign
+    compliance_unassign = compliance_ds.compliance_unassign
     malware_detection = malware_detection_ds.malware_detection
 
     # Regular collection specs
