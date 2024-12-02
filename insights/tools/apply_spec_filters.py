@@ -29,12 +29,16 @@ def load_default_plugins():
     dr.load_components("insights.combiners")
 
 
-def apply_spec_filters(_format, _plugins, output):
+def apply_filters(_format, _plugins, output=None):
     load_default_plugins()
+
+    if _format not in ("yaml", "json"):
+        logger.error("Unsupported format: {0}".format(_format))
+        return 1
 
     if not _plugins:
         logger.error("Provide plugins to load.")
-        sys.exit(1)
+        return 1
 
     load_packages(parse_plugins(_plugins))
 
@@ -56,11 +60,11 @@ def apply_spec_filters(_format, _plugins, output):
         json_path = output
         if not json_path:
             logger.error("Provide uploader.json location to load and output.")
-            sys.exit(1)
+            return 1
 
         if not os.path.exists(json_path):
             logger.error("Provided '{0}' path does not exist.".format(json_path))
-            sys.exit(1)
+            return 1
 
         with open(json_path) as fp:
             uploader_json = json.load(fp, object_pairs_hook=OrderedDict)
@@ -87,6 +91,7 @@ def apply_spec_filters(_format, _plugins, output):
 
         with open(json_path, "w") as fp:
             fp.write(output)
+    return 0
 
 
 def main():
@@ -98,7 +103,8 @@ def main():
     )
     args = parser.parse_args()
 
-    apply_spec_filters(args.format, args.plugins, args.output)
+    ret = apply_filters(args.format, args.plugins, args.output)
+    sys.exit(ret)
 
 
 if __name__ == "__main__":
