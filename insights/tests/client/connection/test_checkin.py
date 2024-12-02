@@ -24,6 +24,7 @@ def _get_canonical_facts_response(canonical_facts):
 @patch('insights.client.connection.InsightsUploadConf.get_rm_conf', return_value={})
 @patch(
     "insights.client.connection.InsightsConnection._init_session", Mock())
+@patch("insights.client.connection.InsightsConnection._fetch_system_by_machine_id", return_value=True)
 @patch(
     "insights.client.connection.get_canonical_facts",
     return_value=_get_canonical_facts_response({"subscription_manager_id": str(uuid4())})
@@ -33,7 +34,7 @@ def _get_canonical_facts_response(canonical_facts):
     **{"return_value.status_code": codes.CREATED}
 )
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_canonical_facts_request(get_proxies, post, get_canonical_facts, rm_conf):
+def test_canonical_facts_request(get_proxies, post, get_canonical_facts, fetch_system_by_machine_id, rm_conf):
     """
     A POST requests to the check-in endpoint is issued with correct headers and
     body containing unobfuscated Canonical Facts.
@@ -54,6 +55,7 @@ def test_canonical_facts_request(get_proxies, post, get_canonical_facts, rm_conf
 @patch('insights.client.connection.InsightsUploadConf.get_rm_conf', return_value={})
 @patch(
     "insights.client.connection.InsightsConnection._init_session", Mock())
+@patch("insights.client.connection.InsightsConnection._fetch_system_by_machine_id", return_value=True)
 @patch(
     "insights.client.connection.get_canonical_facts",
     return_value=_get_canonical_facts_response({"subscription_manager_id": str(uuid4())})
@@ -63,7 +65,7 @@ def test_canonical_facts_request(get_proxies, post, get_canonical_facts, rm_conf
     **{"return_value.status_code": codes.CREATED}
 )
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_canonical_facts_request_cleaned(get_proxies, post, get_canonical_facts, rm_conf):
+def test_canonical_facts_request_cleaned(get_proxies, post, get_canonical_facts, fetch_system_by_machine_id, rm_conf):
     """
     A POST requests to the check-in endpoint is issued with correct headers and
     body containing obfuscateed Canonical Facts.
@@ -85,6 +87,7 @@ def test_canonical_facts_request_cleaned(get_proxies, post, get_canonical_facts,
 @patch('insights.client.connection.InsightsUploadConf.get_rm_conf', return_value={})
 @patch(
     "insights.client.connection.InsightsConnection._init_session", Mock())
+@patch("insights.client.connection.InsightsConnection._fetch_system_by_machine_id", return_value=True)
 @patch("insights.client.connection.generate_machine_id", return_value=str(uuid4()))
 @patch("insights.client.connection.get_canonical_facts", side_effect=RuntimeError())
 @patch(
@@ -92,7 +95,7 @@ def test_canonical_facts_request_cleaned(get_proxies, post, get_canonical_facts,
     **{"return_value.status_code": codes.CREATED}
 )
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_insights_id_request(get_proxies, post, get_canonical_facts, generate_machine_id, rm_conf):
+def test_insights_id_request(get_proxies, post, get_canonical_facts, generate_machine_id, fetch_system_by_machine_id, rm_conf):
     """
     A POST requests to the check-in endpoint is issued with correct headers and
     body containing only an Insights ID if Canonical Facts collection fails.
@@ -113,13 +116,14 @@ def test_insights_id_request(get_proxies, post, get_canonical_facts, generate_ma
 @mark.parametrize(("exception",), ((ConnectionError,), (Timeout,)))
 @patch('insights.client.connection.InsightsUploadConf.get_rm_conf', return_value={})
 @patch("insights.client.connection.InsightsConnection._init_session", Mock())
+@patch("insights.client.connection.InsightsConnection._fetch_system_by_machine_id", return_value=True)
 @patch(
     "insights.client.connection.get_canonical_facts",
     return_value=_get_canonical_facts_response({"subscription_manager_id": "notauuid"})
 )
 @patch("insights.client.connection.InsightsConnection.post")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_request_http_failure(get_proxies, post, get_canonical_facts, rm_conf, exception):
+def test_request_http_failure(get_proxies, post, get_canonical_facts, fetch_system_by_machine_id, rm_conf, exception):
     """
     If the checkin-request fails, None is returned.
     """
@@ -134,13 +138,14 @@ def test_request_http_failure(get_proxies, post, get_canonical_facts, rm_conf, e
 
 @patch('insights.client.connection.InsightsUploadConf.get_rm_conf', return_value={})
 @patch("insights.client.connection.InsightsConnection._init_session", Mock())
+@patch("insights.client.connection.InsightsConnection._fetch_system_by_machine_id", return_value=True)
 @patch("insights.client.connection.get_canonical_facts", return_value={})
 @patch(
     "insights.client.connection.InsightsConnection.post",
     **{"side_effect": RuntimeError()}
 )
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_request_unknown_exception(get_proxies, post, get_canonical_facts, rm_conf):
+def test_request_unknown_exception(get_proxies, post, get_canonical_facts, fetch_system_by_machine_id, rm_conf):
     """
     If an unknown exception occurs, the call crashes.
     """
@@ -154,13 +159,14 @@ def test_request_unknown_exception(get_proxies, post, get_canonical_facts, rm_co
 
 @patch('insights.client.connection.InsightsUploadConf.get_rm_conf', return_value={})
 @patch("insights.client.connection.InsightsConnection._init_session", Mock())
+@patch("insights.client.connection.InsightsConnection._fetch_system_by_machine_id", return_value=True)
 @patch("insights.client.connection.get_canonical_facts", return_value={})
 @patch(
     "insights.client.connection.InsightsConnection.post",
     **{"return_value.status_code": codes.CREATED}
 )
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_response_success(get_proxies, post, get_canonical_facts, rm_conf):
+def test_response_success(get_proxies, post, get_canonical_facts, fetch_system_by_machine_id, rm_conf):
     """
     If a CREATED status code is received, the check-in was successful.
     """
@@ -177,10 +183,11 @@ def test_response_success(get_proxies, post, get_canonical_facts, rm_conf):
 )
 @patch('insights.client.connection.InsightsUploadConf.get_rm_conf', return_value={})
 @patch("insights.client.connection.InsightsConnection._init_session", Mock())
+@patch("insights.client.connection.InsightsConnection._fetch_system_by_machine_id", return_value=True)
 @patch("insights.client.connection.get_canonical_facts", return_value=_get_canonical_facts_response({}))
 @patch("insights.client.connection.InsightsConnection.post")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_response_failure(get_proxies, post, get_canonical_facts, rm_conf, status_code):
+def test_response_failure(get_proxies, post, get_canonical_facts, fetch_system_by_machine_id, rm_conf, status_code):
     """
     If an unexpected status code is received, the check-in failed and an exception is raised.
     """
@@ -191,3 +198,22 @@ def test_response_failure(get_proxies, post, get_canonical_facts, rm_conf, statu
 
     with raises(Exception):
         connection.checkin()
+
+
+@patch('insights.client.connection.InsightsUploadConf.get_rm_conf', return_value={})
+@patch("insights.client.connection.InsightsConnection._init_session", Mock())
+@patch("insights.client.connection.InsightsConnection._fetch_system_by_machine_id", return_value=False)
+@patch("insights.client.connection.get_canonical_facts")
+@patch("insights.client.connection.InsightsConnection.post")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+def test_unregistered_host(get_proxies, post, get_canonical_facts, fetch_system_by_machine_id, rm_conf):
+    """
+    If the host is not registered, the checkin fails.
+    """
+    config = InsightsConfig(base_url="www.example.com")
+    connection = InsightsConnection(config)
+
+    result = connection.checkin()
+    assert result is False
+    get_canonical_facts.assert_not_called()
+    post.assert_not_called()
