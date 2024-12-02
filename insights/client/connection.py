@@ -1127,6 +1127,10 @@ class InsightsConnection(object):
         '''
         logger.info("Checking in...")
 
+        if not self._fetch_system_by_machine_id():
+            logger.error("This host is not registered. To register, run 'insights-client --register'.")
+            return False
+
         try:
             canonical_facts = get_canonical_facts()
             canonical_facts = self._clean_facts(canonical_facts)
