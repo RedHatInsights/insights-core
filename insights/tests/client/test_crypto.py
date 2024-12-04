@@ -177,9 +177,12 @@ def test_no_file(file):
         key=home + "/key.public.gpg",
     )
 
+    assert not os.path.isfile(home + file)
     assert result.ok is False
     assert result.return_code > 0
     assert "file '{path}' does not exist".format(path=home + file) == result.stderr
+
+    shutil.rmtree(home)
 
 
 @mock.patch("insights.client.crypto.GPGCommand.TEMPORARY_GPG_HOME_PARENT_DIRECTORY", "/tmp/")
@@ -277,3 +280,26 @@ def test_gpg_socket_cleanup_support(output, supports):
         result = command._supports_cleanup_socket()
 
     assert result == supports
+
+
+@mock.patch("insights.client.crypto.GPGCommand.TEMPORARY_GPG_HOME_PARENT_DIRECTORY", "/tmp/")
+@mock.patch("subprocess.Popen")
+@mock.patch.object(crypto.GPGCommand, "_cleanup", return_value=None)
+def test_invalid_gpg_setup(mock_cleanup, mock_popen):
+    """An invalid GPG setup can be detected."""
+    gpg_command = crypto.GPGCommand(command=[], key=os.path.join("/dummy", "key"))
+
+    # Mock the process
+    mock_process = mock.Mock()
+    mock_process.communicate.return_value = (b"", b"gpg setup failed")
+    mock_process.returncode = 1
+    mock_popen.return_value = mock_process
+
+    # Run the test
+    result = gpg_command.evaluate()  # type: crypto.GPGCommandResult
+
+    # Verify the results
+    assert not result.ok
+    assert "" == result.stdout
+    assert "gpg setup failed" in result.stderr
+    assert 1 == result.return_code

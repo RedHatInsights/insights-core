@@ -87,6 +87,26 @@ AZURE_LB_ERR3 = """
 curl: (28) connect() timed out!
 """.strip()
 AZURE_LB_ERR4 = "}}}"
+AZURE_LB_ERR5 = """
+{ "error": "No load balancer metadata is found. Please check if your VM is using any non-basic SKU load balancer and retry later." }
+""".strip()
+AZURE_LB_ERR6 = """
+{
+  "loadbalancer": {
+    "publicIpAddresses": [
+      {
+        "frontendIpAddress": "",
+        "privateIpAddress": "10.0.0.4"
+      },
+      {
+        "privateIpAddress": "10.0.0.4"
+      }
+    ],
+    "inboundRules": [],
+    "outboundRules": []
+  }
+}
+""".strip()
 
 
 # Test AzureInstanceID
@@ -212,6 +232,12 @@ def test_azure_public_ipv4():
 
     with pytest.raises(ParseException):
         AzurePublicIpv4Addresses(context_wrap(AZURE_LB_ERR4))
+
+    with pytest.raises(SkipComponent):
+        AzurePublicIpv4Addresses(context_wrap(AZURE_LB_ERR5))
+
+    with pytest.raises(SkipComponent):
+        AzurePublicIpv4Addresses(context_wrap(AZURE_LB_ERR6))
 
     azure = AzurePublicIpv4Addresses(context_wrap(AZURE_LB_1))
     assert azure[0] == "137.116.118.209"

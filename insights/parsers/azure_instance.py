@@ -196,7 +196,12 @@ class AzurePublicIpv4Addresses(CommandParser, list):
 
         try:
             plan = json.loads(' '.join(content))
-            for pair in plan["loadbalancer"]["publicIpAddresses"]:
-                self.append(pair["frontendIpAddress"])
         except:
             raise ParseException("Unable to parse JSON")
+
+        for pair in plan.get("loadbalancer", {}).get("publicIpAddresses", {}):
+            if pair.get("frontendIpAddress"):
+                self.append(pair["frontendIpAddress"])
+
+        if len(self) == 0:
+            raise SkipComponent("No 'frontendIpAddress'.")

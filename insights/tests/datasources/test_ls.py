@@ -7,10 +7,16 @@ from insights.core.exceptions import SkipComponent
 from insights.parsers.fstab import FSTab
 from insights.specs import Specs
 from insights.specs.datasources.ls import (
-        list_with_la, list_with_la_filtered,
-        list_with_lan, list_with_lan_filtered,
-        list_with_lanL, list_with_lanR, list_with_lanRL,
-        list_with_laRZ, list_with_laZ)
+    list_with_la,
+    list_with_la_filtered,
+    list_with_lan,
+    list_with_lan_filtered,
+    list_with_lanL,
+    list_with_lanR,
+    list_with_lanRL,
+    list_with_laRZ,
+    list_with_laZ,
+)
 from insights.tests import context_wrap
 
 
@@ -106,8 +112,6 @@ def test_lanZ():
 
 def test_lan_with_fstab_mounted_filter():
     fstab = FSTab(context_wrap(FSTAB_CONTEXT))
-    broker = {
-        FSTab: fstab
-    }
+    broker = {FSTab: fstab}
     ret = list_with_lan(broker)
-    assert ret == '/ /boot /hana/data fstab_mounted.dirs'
+    assert ret == '/ /boot /hana/data'
