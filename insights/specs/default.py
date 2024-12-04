@@ -937,6 +937,7 @@ class DefaultSpecs(Specs):
     sysconfig_grub = simple_file(
         "/etc/default/grub"
     )  # This is the file where the "/etc/sysconfig/grub" point to
+    sysconfig_irqbalance = simple_file("/etc/sysconfig/irqbalance")
     sysconfig_kdump = simple_file("etc/sysconfig/kdump")
     sysconfig_kernel = simple_file("etc/sysconfig/kernel")
     sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
