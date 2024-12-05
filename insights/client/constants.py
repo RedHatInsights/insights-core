@@ -90,3 +90,7 @@ class InsightsConstants(object):
     rhsm_facts_file = os.path.join(os.sep, 'etc', 'rhsm', 'facts', 'insights-client.facts')
     # In MB
     archive_filesize_max = 100
+    insights_ip_prod = "23.37.45.238"
+    insights_ip_stage = "23.53.5.13"
+    stable_public_url = "one.one.one.one"  # Public CloudFlare DNS
+    stable_public_ip = "1.1.1.1"  # Public CloudFlare DNS

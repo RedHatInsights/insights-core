@@ -4,6 +4,8 @@ Module handling HTTP Requests and Connection Diagnostics
 from __future__ import print_function
 from __future__ import absolute_import
 import requests
+import urllib3
+import socket
 import os
 import six
 import json
@@ -18,10 +20,12 @@ from tempfile import TemporaryFile
 try:
     # python 2
     from urlparse import urlparse
+    from urlparse import urlunparse
     from urllib import quote
 except ImportError:
     # python 3
     from urllib.parse import urlparse
+    from urllib.parse import urlunparse
     from urllib.parse import quote
 from .utilities import (determine_hostname,
                         generate_machine_id,
@@ -74,6 +78,41 @@ def _api_request_failed(exception, message='The Insights API could not be reache
         logger.error(message)
 
 
+def _is_basic_auth_error(result):
+    if result.status_code != 401 or result.headers["Content-Type"] != "application/json":
+        return False
+
+    try:
+        body = result.json()
+    except ValueError:  # JSONDecodeError is not raised on Python 2.
+        return False
+    if not isinstance(body, dict) or "errors" not in body or not isinstance(body["errors"], list):
+        return False
+
+    for error in body["errors"]:
+        if isinstance(error, dict) and "status" in error and error["status"] == 401 and "meta" in error and isinstance(error["meta"], dict) and "response_by" in error["meta"] and error["meta"]["response_by"] == "gateway":
+            return True
+
+    return False
+
+
+def _exception_root_cause(exception):
+    while True:
+        if not exception.__context__:
+            return exception
+        exception = exception.__context__
+
+
+def _fallback_ip(hostname):
+    if hostname.endswith("redhat.com"):
+        if hostname.endswith("stage.redhat.com"):
+            return constants.insights_ip_stage
+        else:
+            return constants.insights_ip_prod
+    else:
+        return None
+
+
 class InsightsConnection(object):
 
     """
@@ -124,13 +163,21 @@ class InsightsConnection(object):
             else:
                 self.upload_url = self.base_url + '/ingress/v1/upload'
 
-        self.api_url = self.base_url
+        if self.config.legacy_upload:
+            self.api_url = self.base_url + "/platform"
+        else:
+            self.api_url = self.base_url
         self.branch_info_url = self.config.branch_info_url
         if self.branch_info_url is None:
             # workaround for a workaround for a workaround
             base_url_base = self.base_url.split('/platform')[0]
             self.branch_info_url = base_url_base + '/v1/branch_info'
         self.inventory_url = self.api_url + "/inventory/v1"
+
+        if self.config.legacy_upload:
+            self.ping_url = self.base_url + "/"
+        else:
+            self.ping_url = self.base_url + '/apicast-tests/ping'
 
         self.authmethod = self.config.authmethod
         self.systemid = self.config.systemid or None
@@ -160,7 +207,7 @@ class InsightsConnection(object):
         session.trust_env = False
         return session
 
-    def _http_request(self, url, method, log_response_text=True, **kwargs):
+    def _http_request(self, url, method, log_response_text=True, log_prefix="", log_level=NETWORK, **kwargs):
         '''
         Perform an HTTP request, net logging, and error handling
         Parameters
@@ -170,7 +217,7 @@ class InsightsConnection(object):
         Returns
             HTTP response object
         '''
-        log_message = "{method} {url}".format(method=method, url=url)
+        log_message = "{log_prefix}{method} {url}".format(log_prefix=log_prefix, method=method, url=url)
         if "data" in kwargs.keys():
             log_message += " data={data}".format(data=kwargs["data"])
         if "json" in kwargs.keys():
@@ -185,14 +232,16 @@ class InsightsConnection(object):
                 else:
                     attachments.append(name)
             log_message += " attachments={files}".format(files=",".join(attachments))
-        logger.log(NETWORK, log_message)
+        logger.log(log_level, log_message)
+        if "verify" not in kwargs:
+            kwargs["verify"] = "/home/insights/simple-http-server/cert.pem"
         try:
             res = self.session.request(url=url, method=method, timeout=self.config.http_timeout, **kwargs)
         except Exception:
             raise
-        logger.log(NETWORK, "HTTP Status: %d %s", res.status_code, res.reason)
+        logger.log(log_level, "%sHTTP Status: %d %s", log_prefix, res.status_code, res.reason)
         if log_response_text or res.status_code // 100 != 2:
-            logger.log(NETWORK, "HTTP Response Text: %s", res.text)
+            logger.log(log_level, "%sHTTP Response Text: %s", log_prefix, res.text)
         return res
 
     def get(self, url, **kwargs):
@@ -348,29 +397,20 @@ class InsightsConnection(object):
         url = urlparse(url)
         test_url = url.scheme + "://" + url.netloc
         last_ex = None
-        paths = (url.path + '/', '', '/r', '/r/insights')
+        paths = (url.path, '', '/r', '/r/insights')
+        log_level = NETWORK if self.config.verbose else logging.DEBUG
         for ext in paths:
             try:
-                logger.log(NETWORK, "Testing: %s", test_url + ext)
+                logger.info("    Testing %s", test_url + ext)
                 if method == "POST":
-                    test_req = self.post(test_url + ext, data=test_flag)
+                    return self.post(test_url + ext, data=test_flag, log_prefix="      ", log_level=log_level)
                 elif method == "GET":
-                    test_req = self.get(test_url + ext)
-                # Strata returns 405 on a GET sometimes, this isn't a big deal
-                if test_req.status_code in (200, 201):
-                    logger.info(
-                        "Successfully connected to: %s", test_url + ext)
-                    return True
-                else:
-                    logger.info("Connection failed")
-                    return False
+                    return self.get(test_url + ext, log_prefix="      ", log_level=log_level)
             except REQUEST_FAILED_EXCEPTIONS as exc:
                 last_ex = exc
-                logger.error(
-                    "Could not successfully connect to: %s", test_url + ext)
-                print(exc)
-        if last_ex:
-            raise last_ex
+                logger.debug("      Caught %s: %s", type(exc).__name__, exc)
+                logger.error("      Failed.")
+        return last_ex
 
     def _test_urls(self, url, method):
         '''
@@ -379,59 +419,403 @@ class InsightsConnection(object):
         if self.config.legacy_upload:
             return self._legacy_test_urls(url, method)
         try:
-            logger.log(NETWORK, 'Testing %s', url)
+            logger.info('    Testing %s', url)
+
+            log_prefix = "      "
+            log_level = NETWORK if self.config.verbose else logging.DEBUG
+
             if method == 'POST':
                 test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
                 test_files = {
                     'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
                     'metadata': '{\"test\": \"test\"}'
                 }
-                test_req = self.post(url, files=test_files)
+                return self.post(url, files=test_files, log_prefix=log_prefix, log_level=log_level)
             elif method == "GET":
-                test_req = self.get(url)
-            if test_req.status_code in (200, 201, 202):
-                logger.info(
-                    "Successfully connected to: %s", url)
-                return True
-            else:
-                logger.info("Connection failed")
-                return False
+                return self.get(url, log_prefix=log_prefix, log_level=log_level)
         except REQUEST_FAILED_EXCEPTIONS as exc:
-            logger.error(
-                "Could not successfully connect to: %s", url)
-            print(exc)
-            raise
+            logger.debug("      Caught %s: %s", type(exc).__name__, exc)
+            return exc
+
+    def _test_auth_config(self):
+        errors = []
+        if self.authmethod == "BASIC":
+            logger.info("Authentication: login credentials (%s)", self.authmethod)
+
+            for desc, var, placeholder in [
+                ("Username", self.username, None),
+                ("Password", self.password, "********"),
+            ]:
+                if not var:
+                    errors.append(["  %s NOT SET.", desc])
+
+                val = placeholder or var if var else "NOT SET"
+                logger.info("  %s: %s", desc, val)
+
+            if errors:
+                errors.append([
+                    "  Check your \"username\" and \"password\" in %s.",
+                    self.config.conf
+                ])
+        elif self.authmethod == "CERT":
+            logger.info("Authentication: identity certificate (%s)", self.authmethod)
+
+            for desc, path_func in [
+                ("Certificate", rhsmCertificate.certpath),
+                ("Key", rhsmCertificate.keypath),
+            ]:
+                path = path_func()
+                exists = os.path.exists(path)
+                if exists:
+                    exists_description = "exists"
+                else:
+                    exists_description = "NOT FOUND"
+                    errors.append(["  %s file %s MISSING.", desc, path])
+                logger.info("  %s: %s (%s)", desc, path, exists_description)
+
+            if errors:
+                errors.append([
+                    "  Re-register the system by running \"subscription-manager unregister\" and then "
+                    "\"subscription-manager register\"."
+                ])
+        else:
+            logger.info("Authentication: unknown")  # Should not happen..
+            errors.append(["  Unknown authentication method \"%s\".", self.authmethod]),
+            errors.append([
+                "  Set \"authmethod\" in %s to \"BASIC\" for username/password login or to \"CERT\" for authentication"
+                " with a certificate.",
+                self.config.conf
+            ])
+        logger.info("")
+
+        if errors:
+            logger.error("ERROR. Cannot authenticate:")
+            for error in errors:
+                logger.error(*error)
+            logger.error("")
+            return False
+
+        return True
+
+    def _test_url_config(self):
+        logger.info("URL configuration:")
+
+        urls = [(
+            "Base",
+            self.base_url,
+            ["  Check \"base_url\" in %s.", self.config.conf]
+        )]
+        if self.proxies:
+            for proxy_protocol, proxy_url in self.proxies.items():
+                proxy_description = "{} proxy".format(proxy_protocol.upper())
+                urls.append((
+                    proxy_description,
+                    proxy_url,
+                    [
+                        "  Check \"proxy\" in %s and \"%s_proxy\" environment value.",
+                        self.config.conf,
+                        proxy_protocol
+                    ]
+                ))
+
+        errors = []
+        for description, url, error_message in urls:
+            url_errors = []
+            try:
+                parsed = urllib3.util.url.parse_url(url)
+            except urllib3.exceptions.LocationParseError:
+                logger.error("  %s URL: %s (INVALID!)", description, url)
+                url_errors.append(["  INVALID %s URL.", description])
+            else:
+                if not parsed.scheme:
+                    logger.error("  %s URL: %s (INCOMPLETE!)", description, url)
+                    url_errors.append(["  Protocol MISSING in %s URL.", description])
+                elif not parsed.netloc:
+                    logger.error("  %s URL: %s (INCOMPLETE!)", description, url)
+                    url_errors.append(["  Hostname MISSING in %s URL.", description])
+                else:
+                    logger.info("  %s URL: %s", description, url)
+
+            if url_errors:
+                errors.extend(url_errors)
+                errors.append(error_message)
+        if not self.proxies:
+            logger.info("  No proxy.")
+        logger.info("")
+
+        if errors:
+            logger.error("ERROR. Invalid URL configuration:")
+            for error in errors:
+                logger.error(*error)
+            logger.error("")
+            return False
+
+        return True
+
+    def _dump_urls(self):
+        base_parsed = urlparse(self.base_url)
+        if base_parsed.hostname.endswith("stage.redhat.com"):
+            hostname_desc = "Red Hat Insights (staging)"
+        elif base_parsed.hostname.endswith("redhat.com"):
+            if self.config.verbose:
+                hostname_desc = "Red Hat Insights (production)"
+            else:
+                hostname_desc = "Red Hat Insights"
+        else:
+            hostname_desc = "Satellite"
+
+        logger.info("Running Connection Tests against %s...", hostname_desc)
+
+        urls = [
+            (self.upload_url, "Upload"),
+            (self.inventory_url, "Inventory"),
+            (self.ping_url, "Ping"),
+        ]
+        for url, title in urls:
+            logger.info("  %s URL: %s", title, url)
+
+        logger.info("")
+
+    def _test_connection(self, scheme, hostname):
+        logger.info("  Verifying network connection...")
+
+        fallback = [constants.stable_public_url, constants.stable_public_ip]
+        ip = _fallback_ip(hostname)
+        if ip:
+            fallback = [ip] + fallback
+        for fallback_url in fallback:
+            parsed_ip_url = urlunparse((scheme, fallback_url, "/", "", "", ""))
+            try:
+                logger.info("    Testing %s", parsed_ip_url)
+                log_prefix = "      "
+                log_level = NETWORK if self.config.verbose else logging.DEBUG
+                self.get(parsed_ip_url, log_prefix=log_prefix, log_level=log_level, verify=False)
+            except REQUEST_FAILED_EXCEPTIONS as exc:
+                logger.debug("      Caught %s: %s", type(exc).__name__, exc)
+                logger.error("      Failed.")
+            else:
+                logger.info("    SUCCESS.")
+                break
+        else:
+            logger.error("    FAILED.")
 
     def test_connection(self, rc=0):
         """
         Test connection to Red Hat
         """
-        logger.debug("Proxy config: %s", self.proxies)
-        try:
-            logger.info("=== Begin Upload URL Connection Test ===")
-            upload_success = self._test_urls(self.upload_url, "POST")
-            logger.info("=== End Upload URL Connection Test: %s ===\n",
-                        "SUCCESS" if upload_success else "FAILURE")
-            logger.info("=== Begin API URL Connection Test ===")
-            if self.config.legacy_upload:
-                api_success = self._test_urls(self.base_url, "GET")
+        for config_test in [self._test_auth_config, self._test_url_config]:
+            success = config_test()
+            if not success:
+                return 1
+
+        self._dump_urls()
+
+        urls = [
+            ("POST", self.upload_url, "Uploading a file to Ingress"),
+            ("GET", self.inventory_url + "/hosts", "Getting hosts from Inventory"),
+            ("GET", self.ping_url, "Pinging the API"),
+        ]
+        for method, url, description in urls:
+            logger.info("  %s...", description)
+
+            result = self._test_urls(url, method)
+            if isinstance(result, REQUEST_FAILED_EXCEPTIONS):
+                break
+            elif isinstance(result, requests.Response):
+                # Strata returns 405 on a GET sometimes, this isn't a big deal
+                if result.status_code not in (requests.codes.ok, requests.codes.created, requests.codes.accepted):
+                    break
+
+                logger.info("    SUCCESS.")
+                logger.info("")
             else:
-                api_success = self._test_urls(self.base_url + '/apicast-tests/ping', 'GET')
-            logger.info("=== End API URL Connection Test: %s ===\n",
-                        "SUCCESS" if api_success else "FAILURE")
-            if upload_success and api_success:
-                logger.info("Connectivity tests completed successfully")
-                print("See %s for more details." % self.config.logging_file)
+                break  # Cannot happen.
+        else:
+            logger.info("    See %s or use --verbose for more details." % self.config.logging_file)
+            logger.info("")
+            return rc
+
+        logger.error("    FAILED.")
+        logger.error("")
+
+        if isinstance(result, REQUEST_FAILED_EXCEPTIONS):
+            root_cause = _exception_root_cause(result)
+            if isinstance(result, requests.exceptions.ProxyError):
+                scheme = urlparse(url).scheme
+                proxy_url = self.proxies[scheme]
+                proxy_hostname = urlparse(proxy_url).hostname
+                if isinstance(root_cause, socket.gaierror):
+                    logger.error("    Could not resolve %s proxy URL host %s.", scheme.upper(), proxy_hostname)
+                    logger.error("")
+                    self._test_connection(scheme, proxy_url)
+                elif "407 Proxy Authentication Required" in str(root_cause):
+                    logger.error(
+                        "    Invalid %s proxy credentials %s. Check \"proxy\" username and password in %s or "
+                        "\"%s_proxy\" environment variable.",
+                        scheme.upper(),
+                        proxy_url,
+                        self.config.conf,
+                        scheme,
+                    )
+                elif isinstance(root_cause, (ConnectionRefusedError, ConnectionResetError)):
+                    logger.error(
+                        "    Connection to %s proxy %s refused. Check your proxy configuration or restart its service.",
+                        scheme.upper(),
+                        proxy_url,
+                    )
+                else:
+                    logger.error(
+                        "    %s proxy %s error %s. Check your proxy configuration or restart its service.",
+                        scheme.upper(),
+                        proxy_url,
+                        result,
+                    )
+            elif isinstance(result, requests.exceptions.SSLError):
+                if "[SSL: WRONG_VERSION_NUMBER]" in str(root_cause):
+                    if self.proxies:
+                        common_message = (
+                            "Alternatively, check whether \"base_url\" points to an HTTPS (not HTTP) endpoint."
+                        )
+                        scheme = urlparse(url).scheme
+                        proxy_url = self.proxies[scheme]
+                        proxy_scheme = urlparse(proxy_url).scheme
+                        if proxy_scheme == "http":
+                            logger.error(
+                                "    Invalid protocol. Check that \"proxy\" in %s or \"%s_proxy\" environment value "
+                                "points to an HTTP (not HTTPS) port of the proxy. {}".format(common_message),
+                                self.config.conf,
+                                scheme,
+                            )
+                        elif proxy_scheme == "https":
+                            logger.error(
+                                "    Invalid protocol. Check that \"proxy\" in %s or \"%s_proxy\" environment value "
+                                "points to an HTTPS (not HTTP) port of the proxy. {}".format(common_message),
+                                self.config.conf,
+                                scheme,
+                            )
+                        else:
+                            logger.error(
+                                "    Invalid protocol. Check that \"proxy\" in %s or \"%s_proxy\" environment value "
+                                "points to the correct port of the proxy. {}".format(common_message),
+                                self.config.conf,
+                                scheme,
+                            )  # Should not happen.
+                    else:
+                        logger.error(
+                            "    Invalid protocol. Check that \"base_url\" in %s points to an HTTPS (not HTTP) "
+                            "endpoint.",
+                            self.config.conf,
+                        )
+                elif "[SSL: CERTIFICATE_VERIFY_FAILED]" in str(root_cause):
+                    if self.proxies:
+                        scheme = urlparse(url).scheme
+                        proxy_url = self.proxies[scheme]
+                        if urlparse(proxy_url).scheme == "https":
+                            logger.error(
+                                "    Invalid SSL key or certificate. Check your proxy configuration. Alternatively, "
+                                "re-register the system by running \"subscription-manager unregister\" and then "
+                                "\"subscription-manager register\".",
+                            )
+                        else:
+                            logger.error(
+                                "    Invalid SSL key or certificate. Check your network and proxy or re-register the "
+                                "system by running \"subscription-manager unregister\" and then \"subscription-manager "
+                                "register\".",
+                            )
+                    else:
+                        logger.error(
+                            "    Invalid SSL key or certificate. Check your network and proxy or re-register the "
+                            "system by running \"subscription-manager unregister\" and then \"subscription-manager "
+                            "register\".",
+                        )
+                else:
+                    if self.proxies:
+                        logger.error(
+                            "    SSL error. Check your network and proxy or re-register the system by running "
+                            "\"subscription-manager unregister\" and then \"subscription-manager register\".",
+                        )
+                    else:
+                        logger.error(
+                            "    SSL error. Check your network or re-register the system by running "
+                            "\"subscription-manager unregister\" and then \"subscription-manager register\".",
+                        )
+            elif isinstance(result, requests.exceptions.Timeout):
+                if isinstance(result, requests.exceptions.ConnectTimeout):
+                    logger.error("    Connection timed out.")
+                elif isinstance(result, requests.exceptions.ReadTimeout):
+                    logger.error("    Read timed out.")
+                else:
+                    logger.error("    Timeout %s.", result)  # Cannot happen.
+
+                parsed_url = urlparse(url)
+                logger.error("")
+                self._test_connection(parsed_url.scheme, parsed_url.hostname)
+            elif isinstance(result, requests.exceptions.ConnectionError):
+                if isinstance(root_cause, socket.gaierror):
+                    parsed_url = urlparse(url)
+                    logger.error("    Could not resolve base URL host %s.", parsed_url.hostname)
+                    logger.error("")
+                    self._test_connection(parsed_url.scheme, parsed_url.hostname)
+                elif isinstance(root_cause, (ConnectionRefusedError, ConnectionResetError)):
+                    if self.proxies:
+                        logger.error(
+                            "    Connection refused. Check your network, proxy, and status of Red Hat services or "
+                            "contact Red Hat Support.",
+                        )
+                    else:
+                        logger.error(
+                            "    Connection refused. Check your network and status of Red Hat services or contact "
+                            "Red Hat Support.",
+                        )
+                else:  # Should not happen.
+                    if self.proxies:
+                        logger.error(
+                            "    Connection error %s. Check your network, proxy, and status of Red Hat services or "
+                            "contact Red Hat Support.",
+                            result,
+                        )
+                    else:
+                        logger.error(
+                            "    Connection error %s. Check your network and status of Red Hat services or contact "
+                            "Red Hat Support.",
+                            result,
+                        )
+            else:  # Should not happen.
+                if self.proxies:
+                    logger.error("    Unknown error %s. Check your proxy or contact Red Hat support.", result)
+                else:
+                    logger.error("    Unknown error %s. Contact Red Hat support.", result)
+        elif isinstance(result, requests.Response):
+            if _is_basic_auth_error(result):
+                logger.error(
+                    "    Authentication failed. Check your \"username\" and \"password\" in %s.",
+                    self.config.conf,
+                )
+            elif result.status_code == requests.codes.too_many_requests:
+                logger.error("    Too many requests. Wait a few minutes and try again.")
             else:
-                logger.info("Connectivity tests completed with some errors")
-                print("See %s for more details." % self.config.logging_file)
-                rc = 1
-        except REQUEST_FAILED_EXCEPTIONS:
-            logger.error('Connectivity test failed! '
-                         'Please check your network configuration')
-            print('Additional information may be in %s' % self.config.logging_file)
-            return 1
-        return rc
+                if self.proxies:
+                    logger.error(
+                        "    Unknown response %s %s. Check your proxy server, status of Red Hat services at "
+                        "https://status.redhat.com/, or contact Red Hat support.",
+                        result.status_code,
+                        result.reason,
+                    )
+                else:
+                    logger.error(
+                        "    Unknown response %s %s. Check status of Red Hat services at https://status.redhat.com/ "
+                        "or contact Red Hat support.",
+                        result.status_code,
+                        result.reason,
+                    )
+
+        else:  # Cannot happen.
+            logger.error("    Error in Insights Client: unknown result %s. Contact Red Hat support.", result)
+
+        logger.error("    Additional details of network communication are in %s.", self.config.logging_file)
+        logger.error("")
+
+        return 1
 
     def handle_fail_rcs(self, req):
         """
@@ -741,10 +1125,7 @@ class InsightsConnection(object):
         machine_id = generate_machine_id()
         try:
             # [circus music]
-            if self.config.legacy_upload:
-                url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
-            else:
-                url = self.inventory_url + '/hosts?insights_id=' + machine_id
+            url = self.inventory_url + '/hosts?insights_id=' + machine_id
             res = self.get(url)
         except REQUEST_FAILED_EXCEPTIONS as e:
             _api_request_failed(e)
