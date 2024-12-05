@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.25](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.25) (2024-12-05)
+
+- Add spec sysconfig_irqbalance ([PR 4294](https://github.com/RedHatInsights/insights-core/pull/4294))
+- tools: refine the apply_spec_filters script ([PR 4292](https://github.com/RedHatInsights/insights-core/pull/4292))
+- chore: remove 'check-docstring-first' from pre-commit-hooks ([PR 4293](https://github.com/RedHatInsights/insights-core/pull/4293))
+- fix(client): checkin for unregistered hosts should fail ([PR 4274](https://github.com/RedHatInsights/insights-core/pull/4274))
+- feat(compliance): RHINENG-8964 allow listing/assigning policies ([PR 4209](https://github.com/RedHatInsights/insights-core/pull/4209))
+- feat: support more RHEL product key in subscription_manage_status ([PR 4291](https://github.com/RedHatInsights/insights-core/pull/4291))
+
 # [insights-core-3.4.24](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.24) (2024-11-28)
 
 - fix: handle empty value in krb5 config ([PR 4289](https://github.com/RedHatInsights/insights-core/pull/4289))
