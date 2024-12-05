@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.24
+Version:        3.4.25
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Dec 05 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.25-1
+- Add spec sysconfig_irqbalance (#4294) (986222045@qq.com)
+- tools: refine the apply_spec_filters script (#4292) (xiangceliu@redhat.com)
+- chore: remove 'check-docstring-first' from pre-commit-hooks (#4293)
+  (xiangceliu@redhat.com)
+- fix(client): checkin for unregistered hosts should fail (#4274)
+  (47797196+pkoprda@users.noreply.github.com)
+- feat(compliance): RHINENG-8964 allow listing/assigning policies (#4209)
+  (xiangceliu@redhat.com)
+- feat: support more RHEL product key in subscription_manage_status (#4291)
+  (rahushar@redhat.com)
+
 * Thu Nov 28 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.24-1
 - fix: handle empty value in krb5 config (#4289) (xiaoxwan@redhat.com)
 - fix: add six.text_type to the check of command_with_args (#4290)
