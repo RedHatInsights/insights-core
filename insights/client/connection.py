@@ -124,13 +124,21 @@ class InsightsConnection(object):
             else:
                 self.upload_url = self.base_url + '/ingress/v1/upload'
 
-        self.api_url = self.base_url
+        if self.config.legacy_upload:
+            self.api_url = self.base_url + "/platform"
+        else:
+            self.api_url = self.base_url
         self.branch_info_url = self.config.branch_info_url
         if self.branch_info_url is None:
             # workaround for a workaround for a workaround
             base_url_base = self.base_url.split('/platform')[0]
             self.branch_info_url = base_url_base + '/v1/branch_info'
         self.inventory_url = self.api_url + "/inventory/v1"
+
+        if self.config.legacy_upload:
+            self.ping_url = self.base_url
+        else:
+            self.ping_url = self.base_url + '/apicast-tests/ping'
 
         self.authmethod = self.config.authmethod
         self.systemid = self.config.systemid or None
@@ -402,21 +410,94 @@ class InsightsConnection(object):
             print(exc)
             raise
 
+    def _test_auth_config(self):
+        errors = []
+        if self.authmethod == "BASIC":
+            logger.info("Authentication: login credentials ({})".format(self.authmethod))
+
+            for desc, var, placeholder in [
+                ("Username", self.username, None),
+                ("Password", self.password, "********"),
+            ]:
+                if not var:
+                    error = "{} not set.".format(desc)
+                    errors.append(error)
+
+                val = placeholder or var if var else "not set"
+                logger.info("  %s: %s", desc, val)
+        elif self.authmethod == "CERT":
+            logger.info("Authentication: identity certificate ({})".format(self.authmethod))
+
+            for desc, path_func in [
+                ("Certificate", rhsmCertificate.certpath),
+                ("Key", rhsmCertificate.keypath),
+            ]:
+                path = path_func()
+                exists = os.path.exists(path)
+                if exists:
+                    exists_description = "exists"
+                else:
+                    exists_description = "NOT FOUND"
+                    error = "{} file '{}' missing.".format(desc, path)
+                    errors.append(error)
+                logger.info("  %s: %s (%s)", desc, path, exists_description)
+        else:
+            logger.info("Authentication: unknown")
+            errors.append = "Unknown authentication method '{}'.".format(self.authmethod)
+        logger.info("")
+
+        if errors:
+            logger.error("")
+            logger.error("ERROR. Cannot authenticate:")
+            for error in errors:
+                logger.error("  %s", error)
+
+        return not errors
+
+    def _dump_urls(self):
+        base_parsed = urlparse(self.base_url)
+        if base_parsed.hostname.endswith("stage.redhat.com"):
+            hostname_desc = "Red Hat Insights (staging)"
+        elif base_parsed.hostname.endswith("redhat.com"):
+            if self.config.verbose:
+                hostname_desc = "Red Hat Insights (production)"
+            else:
+                hostname_desc = "Red Hat Insights"
+        else:
+            hostname_desc = "Satellite"
+
+        logger.info("Running Connection Tests against %s...", hostname_desc)
+
+        logger.info("  Base URL: %s", self.base_url)
+        logger.info("  Upload URL: %s", self.upload_url)
+        logger.info("  Inventory URL: %s", self.inventory_url)
+        logger.info("  Ping URL: %s", self.ping_url)
+
+        if self.proxies:
+            for proxy_type, proxy_url in self.proxies.items():
+                logger.info("  %s proxy: %s", proxy_type.upper(), proxy_url)
+        else:
+            logger.info("  Proxy: not set")
+
+        logger.info("")
+
     def test_connection(self, rc=0):
         """
         Test connection to Red Hat
         """
-        logger.debug("Proxy config: %s", self.proxies)
+        auth_config_ok = self._test_auth_config()
+        if not auth_config_ok:
+            return 1
+
+        self._dump_urls()
+
         try:
             logger.info("=== Begin Upload URL Connection Test ===")
             upload_success = self._test_urls(self.upload_url, "POST")
             logger.info("=== End Upload URL Connection Test: %s ===\n",
                         "SUCCESS" if upload_success else "FAILURE")
             logger.info("=== Begin API URL Connection Test ===")
-            if self.config.legacy_upload:
-                api_success = self._test_urls(self.base_url, "GET")
-            else:
-                api_success = self._test_urls(self.base_url + '/apicast-tests/ping', 'GET')
+            api_success = self._test_urls(self.ping_url, 'GET')
             logger.info("=== End API URL Connection Test: %s ===\n",
                         "SUCCESS" if api_success else "FAILURE")
             if upload_success and api_success:
@@ -741,10 +822,7 @@ class InsightsConnection(object):
         machine_id = generate_machine_id()
         try:
             # [circus music]
-            if self.config.legacy_upload:
-                url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
-            else:
-                url = self.inventory_url + '/hosts?insights_id=' + machine_id
+            url = self.inventory_url + '/hosts?insights_id=' + machine_id
             res = self.get(url)
         except REQUEST_FAILED_EXCEPTIONS as e:
             _api_request_failed(e)
