@@ -61,6 +61,8 @@ class ContentProvider(object):
         self.loaded = False
         self._content = None
         self._exception = None
+        self._filterable = False
+        self._filters = set()
 
     def load(self):
         raise NotImplementedError()
@@ -93,11 +95,16 @@ class ContentProvider(object):
             # Cleaning - Entry
             if cleans:
                 log.debug("Cleaning (%s) %s", "/".join(cleans), "/" + self.relative_path)
+                allowlist = None
+                if self._filterable and self._filters:
+                    allowlist = dict((f, filters.MATCH_COUNT) for f in self._filters)
                 content = self.cleaner.clean_content(
-                    content,
+                    content[::-1],  # Scan from bottom
+                    allowlist=allowlist,
                     obf_funcs=self.cleaner.get_obfuscate_functions(self.relative_path, no_obf),
                     no_redact=no_red,
-                )
+                )[::-1]
+                # ^ Reverse to the right order then
                 if len(content) == 0:
                     log.debug("Skipping %s due to empty after cleaning", self.path)
                     raise ContentException("Empty after cleaning: %s" % self.path)
@@ -195,6 +202,12 @@ class FileProvider(ContentProvider):
         self.relative_path = relative_path.lstrip("/")
         self.save_as = save_as
         self.file_name = os.path.basename(self.path)
+        self._filterable = (
+            any(s.filterable for s in dr.get_registry_points(self.ds))
+            if self.ds and filters.ENABLED
+            else False
+        )
+        self._filters = filters.get_filters(self.ds) if self.ds else set()
 
         self.validate()
 
@@ -205,12 +218,7 @@ class FileProvider(ContentProvider):
         # 2. Check only when collecting
         if isinstance(self.ctx, HostContext):
             # 2.1 No Filters for 'filterable=True' Specs
-            if (
-                self.ds
-                and filters.ENABLED
-                and any(s.filterable for s in dr.get_registry_points(self.ds))
-                and not filters.get_filters(self.ds)
-            ):
+            if self._filterable and not self._filters:
                 raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
             # 2.2 Customer Prohibits Collection
             if not blacklist.allow_file("/" + self.relative_path):
@@ -298,10 +306,12 @@ class TextFileProvider(FileProvider):
     """
 
     def create_args(self):
+        """
+        The "grep" is faster and can be used shrink the size of file.
+        """
         args = []
-        _filters = "\n".join(filters.get_filters(self.ds))
-        if _filters:
-            args.append(["grep", "-F", _filters, self.path])
+        if self._filters:
+            args.append(["grep", "-F", "\n".join(self._filters), self.path])
 
         return args
 
@@ -390,6 +400,12 @@ class CommandOutputProvider(ContentProvider):
         self._misc_settings()
         self._content = None
         self._env = self.create_env()
+        self._filterable = (
+            any(s.filterable for s in dr.get_registry_points(self.ds))
+            if self.ds and filters.ENABLED
+            else False
+        )
+        self._filters = filters.get_filters(self.ds) if self.ds else set()
 
         self.validate()
 
@@ -405,12 +421,7 @@ class CommandOutputProvider(ContentProvider):
         # 2. Check only when collecting
         if isinstance(self.ctx, HostContext):
             # 2.1 No Filters for 'filterable=True' Specs
-            if (
-                self.ds
-                and filters.ENABLED
-                and any(s.filterable for s in dr.get_registry_points(self.ds))
-                and not filters.get_filters(self.ds)
-            ):
+            if self._filterable and not self._filters:
                 raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
             # 2.2 Customer Prohibits Collection
             if not blacklist.allow_command(self.cmd):
@@ -420,10 +431,8 @@ class CommandOutputProvider(ContentProvider):
     def create_args(self):
         command = [shlex.split(self.cmd)]
 
-        if self.split:
-            _filters = "\n".join(filters.get_filters(self.ds))
-            if _filters:
-                command.append(["grep", "-F", _filters])
+        if self.split and self._filters:
+            command.append(["grep", "-F", "\n".join(self._filters)])
 
         return command
 
