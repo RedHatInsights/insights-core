@@ -388,6 +388,76 @@ class InsightsConnection(object):
             raise
 
     def test_connection(self, rc=0):
+        logger.info("Running Connection Tests...")
+        if self.config.legacy_upload:
+            return self._legacy_test_connection(rc)
+
+        authentication_failures = []
+        if self.authmethod == "BASIC":
+            logger.info("\nAuthentication: login credentials ({})".format(self.authmethod))
+
+            for credential_description, var, placeholder in [
+                ("Username", self.username, None),
+                ("Password", self.password, "********"),
+            ]:
+                if not var:
+                    authentication_failure = "{} not set.".format(credential_description)
+                    authentication_failures.append(authentication_failure)
+
+                val = placeholder or var if var else "not set"
+                logger.info("  %s: %s", credential_description, val)
+        elif self.authmethod == "CERT":
+            logger.info("\nAuthentication: identity certificate ({})".format(self.authmethod))
+
+            for path_description, path_func in [
+                ("Certificate", rhsmCertificate.certpath),
+                ("Key", rhsmCertificate.keypath),
+            ]:
+                path = path_func()
+                exists = os.path.exists(path)
+                if exists:
+                    exists_description = "exists"
+                else:
+                    exists_description = "NOT FOUND"
+                    authentication_failure = "{} file '{}' missing.".format(path_description, path)
+                    authentication_failures.append(authentication_failure)
+                logger.info("  %s: %s (%s)", path_description, path, exists_description)
+        else:
+            logger.info("\nAuthentication: unknown")
+            authentication_failures = ["Unknown authentication method '{}'.".format(self.authmethod)]
+
+        if authentication_failures:
+            logger.error("\nERROR. Cannot authenticate:")
+            for authentication_failure in authentication_failures:
+                logger.error("  %s", authentication_failure)
+
+            return 1
+
+        base_url_parsed = urlparse(self.base_url)
+        if base_url_parsed.hostname.endswith("stage.redhat.com"):
+            hostname_description = "Red Hat staging"
+        elif base_url_parsed.hostname.endswith("redhat.com"):
+            hostname_description = "Red Hat production"
+        else:
+            hostname_description = "Satellite 6 server"
+        logger.info("\nConnecting to: %s", hostname_description)
+
+        logger.info("  Base URL: %s", self.base_url)
+        logger.info("  Upload URL: %s", self.upload_url)
+        logger.info("  Inventory URL: %s", self.inventory_url)
+
+        ping_url = self.base_url + '/apicast-tests/ping'
+        logger.info("  Ping URL: %s", ping_url)
+
+        if self.proxies:
+            for proxy_type, proxy_url in self.proxies.items():
+                logger.info("  %s proxy: %s", proxy_type.upper(), proxy_url)
+        else:
+            logger.info("  Proxy: not set")
+
+        return rc
+
+    def _legacy_test_connection(self, rc=0):
         """
         Test connection to Red Hat
         """
@@ -1184,3 +1254,15 @@ class InsightsConnection(object):
         cleaner = spec_cleaner.Cleaner(self.config, pc.get_rm_conf())
         obf_funcs = cleaner.get_obfuscate_functions()
         return _deep_clean(cfacts)
+
+
+URL_DESCRIPTIONS = {
+    "": "Red Hat production (default)",
+    "production": "Red Hat production",
+    "staging": "Red Hat staging",
+    "satellite": "Satellite",
+}
+
+def url_description(url):
+    environment = os.getenv("FAKE_ENVIRONMENT", "").lower()
+    return URL_DESCRIPTIONS[environment] if environment in URL_DESCRIPTIONS else URL_DESCRIPTIONS[""]
