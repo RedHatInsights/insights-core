@@ -5,7 +5,7 @@ import pytest
 import tempfile
 
 from collections import defaultdict
-from mock.mock import patch, Mock
+from mock.mock import patch
 
 from insights import collect
 from insights.client.archive import InsightsArchive
@@ -18,9 +18,18 @@ from insights.core.filters import add_filter
 from insights.core.plugins import datasource
 from insights.core.spec_cleaner import Cleaner
 from insights.core.spec_factory import (
-        DatasourceProvider, RegistryPoint, SpecSet, command_with_args,
-        foreach_collect, foreach_execute,
-        glob_file, simple_command, simple_file, first_file, first_of)
+    DatasourceProvider,
+    RegistryPoint,
+    SpecSet,
+    command_with_args,
+    foreach_collect,
+    foreach_execute,
+    glob_file,
+    simple_command,
+    simple_file,
+    first_file,
+    first_of,
+)
 from insights.specs.default import _make_rpm_formatter
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -54,7 +63,7 @@ client:
         keywords: []
 
     persist:
-        - name: insights.tests.test_specs.Specs
+        - name: insights.tests.specs.test_specs.Specs
           enabled: true
 
     run_strategy:
@@ -66,16 +75,16 @@ plugins:
     default_component_enabled: false
 
     packages:
-        - insights.tests.test_specs
+        - insights.tests.specs.test_specs
 
     configs:
         - name: insights.core.spec_factory
           enabled: true
-        - name: insights.tests.test_specs.Specs
+        - name: insights.tests.specs.test_specs.Specs
           enabled: true
-        - name: insights.tests.test_specs.Stuff
+        - name: insights.tests.specs.test_specs.Stuff
           enabled: true
-        - name: insights.tests.test_specs.dostuff
+        - name: insights.tests.specs.test_specs.dostuff
           enabled: true
 """.strip()
 
@@ -115,23 +124,23 @@ class Specs(SpecSet):
 
 
 class Stuff(Specs):
-    many_glob = glob_file(here + "/test_a*.py")
-    many_glob_filter = glob_file(here + "/test_b*.py")
+    many_glob = glob_file(here + "/../test_a*.py")
+    many_glob_filter = glob_file(here + "/../test_b*.py")
 
     @datasource(HostContext)
     def files0(broker):
-        """ Return a list of directories from the spec filter """
-        return [here + "/__init__.py", here + "/integration.py"]
+        """Return a list of directories from the spec filter"""
+        return [here + "/../__init__.py", here + "/../integration.py"]
 
     @datasource(HostContext)
     def files1(broker):
-        """ Return a list of directories from the spec filter """
-        return [here + "/test_test.py", here + "/test_taglang.py"]
+        """Return a list of directories from the spec filter"""
+        return [here + "/../test_test.py", here + "/../test_taglang.py"]
 
     @datasource(HostContext)
     def files2(broker):
-        """ Return a list of directories from the spec filter """
-        return ' '.join([here + "/test_test.py", here + "/test_taglang.py"])
+        """Return a list of directories from the spec filter"""
+        return ' '.join([here + "/../test_test.py", here + "/../test_taglang.py"])
 
     many_foreach_exe = foreach_execute(files0, 'ls -t %s')
     many_foreach_exe_filter = foreach_execute(files1, 'ls -l %s')
@@ -139,9 +148,9 @@ class Stuff(Specs):
     many_foreach_clc_filter = foreach_collect(files1, "%s", no_redact=True)
     smpl_cmd = simple_command("/usr/bin/uptime")
     smpl_cmd_w_filter = simple_command("echo -n ' hello 1'")
-    smpl_file = simple_file(here + "/helpers.py")
-    smpl_file_w_filter = simple_file(here + "/mock_web_server.py")
-    first_file_spec_w_filter = first_file([here + "/spec_tests.py", "/etc/os-release"])
+    smpl_file = simple_file(here + "/../helpers.py")
+    smpl_file_w_filter = simple_file(here + "/../mock_web_server.py")
+    first_file_spec_w_filter = first_file([here + "/../spec_tests.py", "/etc/os-release"])
     first_of_spec_w_filter = first_of(
         [
             simple_command("echo -n ' hello 1'"),
@@ -176,11 +185,14 @@ class stage(dr.ComponentType):
     Stuff.first_file_spec_w_filter,
     Stuff.first_of_spec_w_filter,
     Stuff.cmd_w_args_filter,
-    optional=[Stuff.no_such_cmd,
-              Stuff.empty_orig,
-              Stuff.empty_after_filter,
-              Stuff.empty_after_redact,
-              Stuff.no_such_file, ])
+    optional=[
+        Stuff.no_such_cmd,
+        Stuff.empty_orig,
+        Stuff.empty_after_filter,
+        Stuff.empty_after_redact,
+        Stuff.no_such_file,
+    ],
+)
 def dostuff(broker):
     assert Stuff.many_glob in broker
     assert Stuff.many_glob_filter in broker
@@ -204,12 +216,14 @@ def dostuff(broker):
 
 
 # File content
-with open(here + "/helpers.py") as f:
+with open(here + "/../helpers.py") as f:
     smpl_file_content = f.read().splitlines()
-with open(here + "/mock_web_server.py") as f:
+with open(here + "/../mock_web_server.py") as f:
     smpl_file_w_filter_content = [l for l in f.read().splitlines() if "def get" in l]
-with open(here + "/spec_tests.py") as f:
-    first_file_w_filter_content = [l for l in f.read().splitlines() if any(i in l for i in ["def report_", "rhel"])]
+with open(here + "/../spec_tests.py") as f:
+    first_file_w_filter_content = [
+        l for l in f.read().splitlines() if any(i in l for i in ["def report_", "rhel"])
+    ]
 
 #
 # TEST
@@ -227,8 +241,12 @@ def setup_function(func):
 
 
 def teardown_function(func):
+    # Reset Test ENV
     filters._CACHE = {}
     filters.FILTERS = defaultdict(set)
+    dr.COMPONENTS = defaultdict(lambda: defaultdict(set))
+    dr.TYPE_OBSERVERS = defaultdict(set)
+    dr.ENABLED = defaultdict(lambda: True)
 
     if func == test_specs_collect:
         os.remove(test_empty_file)
@@ -347,8 +365,8 @@ def test_exp_no_filters():
 
 
 @pytest.mark.parametrize("obfuscate", [True, False])
-@patch('insights.core.spec_cleaner.Cleaner.generate_report', Mock())
-def test_specs_collect(obfuscate):
+@patch('insights.core.spec_cleaner.Cleaner.generate_report', return_value=None)
+def test_specs_collect(gen, obfuscate):
     add_filter(Stuff.many_glob_filter, " ")
     add_filter(Stuff.many_foreach_exe_filter, " ")
     add_filter(Stuff.many_foreach_clc_filter, " ")
@@ -363,15 +381,12 @@ def test_specs_collect(obfuscate):
     for pkg in manifest.get("plugins", {}).get("packages", []):
         dr.load_components(pkg, exclude=None)
     # For verifying convenience, test obfuscate=False only
-    conf = InsightsConfig(
-            obfuscate=obfuscate, obfuscate_hostname=obfuscate,
-            manifest=manifest)
+    conf = InsightsConfig(obfuscate=obfuscate, obfuscate_hostname=obfuscate, manifest=manifest)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
     output_path, errors = collect.collect(
-            tmp_path=arch.tmp_dir,
-            archive_name=arch.archive_name,
-            client_config=conf)
+        tmp_path=arch.tmp_dir, archive_name=arch.archive_name, client_config=conf
+    )
     meta_data_root = os.path.join(output_path, 'meta_data')
     data_root = os.path.join(output_path, 'data')
 
@@ -379,7 +394,7 @@ def test_specs_collect(obfuscate):
     count = 0
     for spec in Specs.__dict__:
         if not spec.startswith(('__', 'context_handlers', 'registry')):
-            file_name = "insights.tests.test_specs.Specs.{0}.json".format(spec)
+            file_name = "insights.tests.specs.test_specs.Specs.{0}.json".format(spec)
             meta_data = os.path.join(meta_data_root, file_name)
             with open(meta_data, 'r') as fp:
                 count += 1
@@ -424,15 +439,7 @@ def test_specs_collect(obfuscate):
 
     arch.delete_archive_dir()
 
-    # Reset Test ENV
-    dr.COMPONENTS = defaultdict(lambda: defaultdict(set))
-    dr.TYPE_OBSERVERS = defaultdict(set)
-    dr.ENABLED = defaultdict(lambda: True)
-
 
 def test_specs_default_module_utils():
-    rpm_formatter = _make_rpm_formatter([
-        '"name":"%{NAME}"',
-        '"version":"%{VERSION}"'
-    ])
+    rpm_formatter = _make_rpm_formatter(['"name":"%{NAME}"', '"version":"%{VERSION}"'])
     assert ',"version":' in rpm_formatter
