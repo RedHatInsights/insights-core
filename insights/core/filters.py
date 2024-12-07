@@ -36,6 +36,7 @@ Filtering can be disabled globally by setting the environment variable
 ``INSIGHTS_FILTERS_ENABLED=False``. This means that no datasources will be
 filtered even if filters are defined for them.
 """
+
 import os
 import pkgutil
 import six
@@ -49,8 +50,13 @@ from insights.util import parse_bool
 _CACHE = {}
 FILTERS = defaultdict(set)
 ENABLED = parse_bool(os.environ.get("INSIGHTS_FILTERS_ENABLED"), default=True)
+MATCH_COUNT = 10000
 
 
+# TODO:
+# - support specifying the max match number of filtered lines
+#   add_filter(Messages, "Such an Error", 10)
+# def add_filter(component, patterns, match_count=MATCH_COUNT):
 def add_filter(component, patterns):
     """
     Add a filter or list of filters to a component. When the component is
@@ -66,6 +72,7 @@ def add_filter(component, patterns):
        patterns (str, [str]): A string, list of strings, or set of strings to
             add to the datasource's filters.
     """
+
     def inner(comp, patterns):
         if comp in _CACHE:
             del _CACHE[comp]
@@ -86,7 +93,7 @@ def add_filter(component, patterns):
         FILTERS[comp] |= patterns
 
     def get_dependency_datasources(comp):
-        """"Get (all) the first depended datasource"""
+        """Get (all) the first depended datasource"""
         dep_ds = set()
         if plugins.is_datasource(comp):
             dep_ds.add(comp)
@@ -140,6 +147,7 @@ def get_filters(component):
     Returns:
         set: The set of filters defined for the datasource
     """
+
     def inner(c, filters=None):
         filters = filters or set()
 
