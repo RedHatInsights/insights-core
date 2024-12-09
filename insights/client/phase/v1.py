@@ -7,7 +7,6 @@ import os
 import sys
 import runpy
 
-import insights
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
@@ -27,9 +26,6 @@ def phase(func):
         except (ValueError, OSError) as e:
             sys.stderr.write('ERROR: ' + str(e) + '\n')
             sys.exit(constants.sig_kill_bad)
-
-        logger.debug("Core path: %s", os.path.dirname(insights.__path__[0]))
-        logger.debug("Core version: %s", client.version())
 
         try:
             func(client, config)
