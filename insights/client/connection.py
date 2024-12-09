@@ -170,13 +170,28 @@ class InsightsConnection(object):
         Returns
             HTTP response object
         '''
-        logger.log(NETWORK, "%s %s", method, url)
+        log_message = "{method} {url}".format(method=method, url=url)
+        if "data" in kwargs.keys():
+            log_message += " data={data}".format(data=kwargs["data"])
+        if "json" in kwargs.keys():
+            log_message += " json={json}".format(json=json.dumps(kwargs["json"]))
+        if "headers" in kwargs.keys():
+            log_message += " headers={headers}".format(headers=kwargs["headers"])
+        if "files" in kwargs.keys():
+            attachments = []
+            for name, content in six.iteritems(kwargs["files"]):
+                if isinstance(content, tuple):
+                    attachments.append("{name}:{file}".format(name=name, file=content[0]))
+                else:
+                    attachments.append(name)
+            log_message += " attachments={files}".format(files=",".join(attachments))
+        logger.log(NETWORK, log_message)
         try:
             res = self.session.request(url=url, method=method, timeout=self.config.http_timeout, **kwargs)
         except Exception:
             raise
         logger.log(NETWORK, "HTTP Status: %d %s", res.status_code, res.reason)
-        if log_response_text or res.status_code != 200:
+        if log_response_text or res.status_code // 100 != 2:
             logger.log(NETWORK, "HTTP Response Text: %s", res.text)
         return res
 
@@ -1144,7 +1159,12 @@ class InsightsConnection(object):
         url = self.inventory_url + "/hosts/checkin"
         logger.debug("Sending check-in request to %s with %s" % (url, canonical_facts))
         try:
-            response = self.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(canonical_facts))
+            response = self.post(
+                url,
+                headers={"Content-Type": "application/json"},
+                data=json.dumps(canonical_facts),
+                log_response_text=False,
+            )
             # Change to POST when the API is fixed.
         except REQUEST_FAILED_EXCEPTIONS as exception:
             _api_request_failed(exception)
