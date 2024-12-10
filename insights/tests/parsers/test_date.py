@@ -98,6 +98,30 @@ TIMEDATECTL_CONTENT4_WITHOUT_COLON_OUTPUT = """
 this is just test
 """.strip()
 
+TIMEDATECTL_STATUS_CONTENT5 = """
+      Local time: Mon 2024-11-25 00:09:40 CST
+  Universal time: Mon 2024-11-25 06:09:40 UTC
+        RTC time: Mon 2024-11-25 01:09:40
+       Time zone: America/Chicago (CST, -0600)
+     NTP enabled: yes
+NTP synchronized: yes
+ RTC in local TZ: yes
+      DST active: no
+ Last DST change: DST ended at
+                  Sun 2024-11-03 01:59:59 CDT
+                  Sun 2024-11-03 01:00:00 CST
+ Next DST change: DST begins (the clock jumps one hour forward) at
+                  Sun 2025-03-09 01:59:59 CST
+                  Sun 2025-03-09 03:00:00 CDT
+
+^[[1;39mWarning: The system is configured to read the RTC time in the local time zone.
+         This mode can not be fully supported. It will create various problems
+         with time zone changes and daylight saving time adjustments. The RTC
+         time is never updated, it relies on external facilities to maintain it.
+         If at all possible, use RTC in UTC by calling
+         'timedatectl set-local-rtc 0'^[[0m.
+"""
+
 
 def test_get_date1():
     DATE = DATE_OUTPUT1 % ('CST')
@@ -160,6 +184,10 @@ def test_timedatectl():
     assert timectl3['system_clock_synchronized'] == 'yes'
     assert 'DST ended at Sun 2022-11-06 01:59:59 EDT Sun 2022-11-06 01:00:00 EST' in timectl3['last_dst_change']
     assert 'DST begins (the clock jumps one hour forward) at Sun 2023-03-12 01:59:59 EST Sun 2023-03-12 03:00:00 EDT' in timectl3['next_dst_change']
+
+    timectl5 = TimeDateCtlStatus(context_wrap(TIMEDATECTL_STATUS_CONTENT5, strip=False))
+    assert 'DST ended at Sun 2024-11-03 01:59:59 CDT Sun 2024-11-03 01:00:00 CST' in timectl5['last_dst_change']
+    assert 'The system is configured to read the RTC time' in timectl5['warning']
 
 
 def test_timedatectl_except():
