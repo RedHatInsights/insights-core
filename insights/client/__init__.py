@@ -19,6 +19,7 @@ from .utilities import (write_data_to_file,
                         get_tags,
                         write_tags,
                         migrate_tags,
+                        os_release_info,
                         get_parent_process)
 
 NETWORK = constants.custom_network_log_level
@@ -129,9 +130,18 @@ class InsightsClient(object):
         """
         self.tmpdir = tempfile.mkdtemp()
         atexit.register(self.delete_tmpdir)
+        try:
+            _, os_release = os_release_info()
+            rhel_major = os_release.split('.')[0]
+            # set egg name as 'insights-core.el#.egg' per RHEL #
+            egg_name = 'insights-core.el{0}.egg'.format(rhel_major)
+        except Exception:
+            # set default egg as 'insights-core.egg'
+            egg_name = 'insights-core.egg'
+
         fetch_results = {
-            'core': os.path.join(self.tmpdir, 'insights-core.egg'),
-            'gpg_sig': os.path.join(self.tmpdir, 'insights-core.egg.asc')
+            'core': os.path.join(self.tmpdir, egg_name),
+            'gpg_sig': os.path.join(self.tmpdir, '{0}.asc'.format(egg_name))
         }
 
         logger.debug("Beginning core fetch.")
@@ -149,13 +159,13 @@ class InsightsClient(object):
         egg_url = self.config.egg_path
         egg_gpg_url = self.config.egg_gpg_path
         if egg_url is None:
-            egg_url = '/v1/static{0}/insights-core.egg'.format(egg_release)
+            egg_url = '/v1/static{0}/{1}'.format(egg_release, egg_name)
             # if self.config.legacy_upload:
             #     egg_url = '/v1/static/core/insights-core.egg'
             # else:
             #     egg_url = '/static/insights-core.egg'
         if egg_gpg_url is None:
-            egg_gpg_url = '/v1/static{0}/insights-core.egg.asc'.format(egg_release)
+            egg_gpg_url = '/v1/static{0}/{1}.asc'.format(egg_release, egg_name)
             # if self.config.legacy_upload:
             #     egg_gpg_url = '/v1/static/core/insights-core.egg.asc'
             # else:
