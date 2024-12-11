@@ -84,7 +84,7 @@ class ContentProvider(object):
         collection.
         """
         content = self.content  # load first for debugging info order
-        if isinstance(self.ctx, HostContext) and self.ds and self.cleaner:
+        if content and isinstance(self.ctx, HostContext) and self.ds and self.cleaner:
             cleans = []
             # Redacting?
             no_red = getattr(self.ds, 'no_redact', False)
@@ -92,12 +92,14 @@ class ContentProvider(object):
             # Obfuscating?
             no_obf = getattr(self.ds, 'no_obfuscate', [])
             cleans.append("Obfuscate") if len(no_obf) < 2 else None
+            # Filtering?
+            allowlist = None
+            if self._filterable:
+                cleans.append("Filter")
+                allowlist = dict((f, filters.MATCH_COUNT) for f in self._filters)
             # Cleaning - Entry
             if cleans:
-                log.debug("Cleaning (%s) %s", "/".join(cleans), "/" + self.relative_path)
-                allowlist = None
-                if self._filterable and self._filters:
-                    allowlist = dict((f, filters.MATCH_COUNT) for f in self._filters)
+                log.debug("Cleaning (%s) %s", "/".join(cleans), self.relative_path)
                 content = self.cleaner.clean_content(
                     content[::-1],  # Scan from bottom
                     allowlist=allowlist,
@@ -109,7 +111,7 @@ class ContentProvider(object):
                     log.debug("Skipping %s due to empty after cleaning", self.path)
                     raise ContentException("Empty after cleaning: %s" % self.path)
             else:
-                log.debug("Skipping cleaning %s", "/" + self.relative_path)
+                log.debug("Skipping cleaning %s", self.relative_path)
         return content
 
     @property
@@ -311,6 +313,7 @@ class TextFileProvider(FileProvider):
         """
         args = []
         if self._filters:
+            log.debug("Pre-filtering %s", self.relative_path)
             args.append(["grep", "-F", "\n".join(self._filters), self.path])
 
         return args
@@ -432,6 +435,7 @@ class CommandOutputProvider(ContentProvider):
         command = [shlex.split(self.cmd)]
 
         if self.split and self._filters:
+            log.debug("Pre-filtering  %s", self.relative_path)
             command.append(["grep", "-F", "\n".join(self._filters)])
 
         return command
