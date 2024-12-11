@@ -326,7 +326,7 @@ def collect(config):
     pc = InsightsUploadConf(config)
     dc = CoreCollector(config)
 
-    logger.info('Starting to collect Insights data for %s' % determine_hostname(config.display_name))
+    logger.info('* Starting to collect Insights data for %s' % detsermine_hostname(config.display_name))
 
     dc.run_collection(pc.get_rm_conf(),
                       get_branch_info(config),
