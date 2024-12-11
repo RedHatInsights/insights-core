@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.26](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.26) (2024-12-11)
+
+- fix: add the missed compliance entry in compliance manifest ([PR 4302](https://github.com/RedHatInsights/insights-core/pull/4302))
+
 # [insights-core-3.4.25](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.25) (2024-12-05)
 
 - Add spec sysconfig_irqbalance ([PR 4294](https://github.com/RedHatInsights/insights-core/pull/4294))
