@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.25
+Version:        3.4.26
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Wed Dec 11 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.26-1
+- fix: add the missed compliance entry in compliance manifest (#4302)
+  (xiangceliu@redhat.com)
+
 * Thu Dec 05 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.25-1
 - Add spec sysconfig_irqbalance (#4294) (986222045@qq.com)
 - tools: refine the apply_spec_filters script (#4292) (xiangceliu@redhat.com)
