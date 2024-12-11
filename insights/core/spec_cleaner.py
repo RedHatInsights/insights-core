@@ -357,8 +357,8 @@ class Cleaner(object):
         if not line:
             return line
         if allow_info:
-            # keep the line when any filter match
             for a_key in list(allow_info.keys()):
+                # keep line when any filter match
                 # FIXME:
                 # Considering performance, din't handle multiple filters in one same line
                 if a_key in line:
@@ -366,10 +366,7 @@ class Cleaner(object):
                     # stop checking it when enough lines contain the key were found
                     allow_info.pop(a_key) if allow_info[a_key] == 0 else None
                     return line
-            else:
-                # discard the line when none filters found
-                return None
-        # All filters are enough matched
+        # discard line when none filters found
 
     def get_obfuscate_functions(self, filename='', no_obfuscate=None):
         """
