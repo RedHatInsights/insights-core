@@ -9,8 +9,11 @@ from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs import Specs
 from insights.specs.datasources.container import running_rhel_containers
-from insights.specs.datasources.container.containers_inspect import (LocalSpecs, containers_inspect_data_datasource,
-                                                                     running_rhel_containers_id)
+from insights.specs.datasources.container.containers_inspect import (
+    LocalSpecs,
+    containers_inspect_data_datasource,
+    running_rhel_containers_id,
+)
 
 
 INSPECT_1 = """
@@ -908,34 +911,83 @@ CONTAINERS_ID_EXPECTED_RESULT = [
     ('podman', '28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e'),
     ('podman', '528890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54'),
     ('docker', '38fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e'),
-    ('docker', '538890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54')
+    ('docker', '538890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54'),
 ]
 
-EXPECTED_RESULT = [{'Id': 'aeaea3ead527', 'engine': 'podman', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'Config|Cmd': ["sleep", "1000000"], 'HostConfig|Privileged': False}, {'Id': '28fb57be8bb2', 'engine': 'podman', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'Config|Cmd': ["sleep", "1000000"], 'HostConfig|Privileged': True}, {'Id': 'c7efee959ea8', 'engine': 'docker', 'Image': 'acf3e09a39c95d354539b6591298be0b0814f5d74e95e722863241192b9a079b', 'Config|Cmd': ["sleep", "1000000"], 'HostConfig|Privileged': True}]
+EXPECTED_RESULT = [
+    {
+        'Id': 'aeaea3ead527',
+        'engine': 'podman',
+        'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b',
+        'Config|Cmd': ["sleep", "1000000"],
+        'HostConfig|Privileged': False,
+    },
+    {
+        'Id': '28fb57be8bb2',
+        'engine': 'podman',
+        'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b',
+        'Config|Cmd': ["sleep", "1000000"],
+        'HostConfig|Privileged': True,
+    },
+    {
+        'Id': 'c7efee959ea8',
+        'engine': 'docker',
+        'Image': 'acf3e09a39c95d354539b6591298be0b0814f5d74e95e722863241192b9a079b',
+        'Config|Cmd': ["sleep", "1000000"],
+        'HostConfig|Privileged': True,
+    },
+]
 
 EXPECTED_RESULT_NG = [{'Id': '28fb57be8bb2', 'engine': 'podman'}]
 
 
 def setup_function(func):
-    if func is test_containers_inspect_datasource or func is test_containers_inspect_datasource_NG_output_1 or func is test_containers_inspect_datasource_NG_output_2:
-        filters.add_filter(Specs.container_inspect_keys, ["HostConfig|Privileged", "NoSuchKey|Privileged", "Config|Cmd", "Id", "Image"])
+    if (
+        func is test_containers_inspect_datasource
+        or func is test_containers_inspect_datasource_NG_output_1
+        or func is test_containers_inspect_datasource_NG_output_2
+    ):
+        filters.add_filter(
+            Specs.container_inspect_keys,
+            ["HostConfig|Privileged", "NoSuchKey|Privileged", "Config|Cmd", "Id", "Image"],
+        )
     if func is test_containers_inspect_datasource_no_filter:
         filters.add_filter(Specs.container_inspect_keys, [])
 
 
 def teardown_function(func):
     filters._CACHE = {}
-    filters.FILTERS = defaultdict(set)
+    filters.FILTERS = defaultdict(dict)
 
 
 def test_running_rhel_containers_id():
     broker = dr.Broker()
     containers_info = [
-        ("registry.access.redhat.com/rhel", "podman", "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8"),
-        ("registry.access.redhat.com/rhel", "podman", "28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e"),
-        ("registry.access.redhat.com/rhel", "podman", "528890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54"),
-        ("registry.access.redhat.com/rhel", "docker", "38fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e"),
-        ("registry.access.redhat.com/rhel", "docker", "538890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54")
+        (
+            "registry.access.redhat.com/rhel",
+            "podman",
+            "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8",
+        ),
+        (
+            "registry.access.redhat.com/rhel",
+            "podman",
+            "28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e",
+        ),
+        (
+            "registry.access.redhat.com/rhel",
+            "podman",
+            "528890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54",
+        ),
+        (
+            "registry.access.redhat.com/rhel",
+            "docker",
+            "38fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e",
+        ),
+        (
+            "registry.access.redhat.com/rhel",
+            "docker",
+            "538890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54",
+        ),
     ]
     broker[running_rhel_containers] = containers_info
     result = running_rhel_containers_id(broker)
@@ -952,7 +1004,13 @@ def test_containers_inspect_datasource():
     containers_inspect_data_2.cmd = "/usr/bin/podman inspect 28fb57be8bb2"
     containers_inspect_data_3.content = INSPECT_3.splitlines()
     containers_inspect_data_3.cmd = "/usr/bin/docker inspect c7efee959ea8"
-    broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_1, containers_inspect_data_2, containers_inspect_data_3]}
+    broker = {
+        LocalSpecs.containers_inspect_data_raw: [
+            containers_inspect_data_1,
+            containers_inspect_data_2,
+            containers_inspect_data_3,
+        ]
+    }
     result = containers_inspect_data_datasource(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
@@ -968,7 +1026,12 @@ def test_containers_inspect_datasource_no_filter():
     containers_inspect_data_1.cmd = "/usr/bin/docker inspect aeaea3ead527"
     containers_inspect_data_2.content = INSPECT_2.splitlines()
     containers_inspect_data_2.cmd = "/usr/bin/podman inspect 28fb57be8bb2"
-    broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_1, containers_inspect_data_2]}
+    broker = {
+        LocalSpecs.containers_inspect_data_raw: [
+            containers_inspect_data_1,
+            containers_inspect_data_2,
+        ]
+    }
     with pytest.raises(SkipComponent) as e:
         containers_inspect_data_datasource(broker)
     assert 'SkipComponent' in str(e)
@@ -982,7 +1045,9 @@ def test_containers_inspect_datasource_NG_output_1():
     result = containers_inspect_data_datasource(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
-    expected = DatasourceProvider(content=json.dumps(EXPECTED_RESULT_NG), relative_path=RELATIVE_PATH)
+    expected = DatasourceProvider(
+        content=json.dumps(EXPECTED_RESULT_NG), relative_path=RELATIVE_PATH
+    )
     assert result.content[0] == expected.content[0]
     assert result.relative_path == expected.relative_path
 

@@ -20,12 +20,18 @@ total 41472
 
 def teardown_function(func):
     filters._CACHE = {}
-    filters.FILTERS = defaultdict(set)
+    filters.FILTERS = defaultdict(dict)
 
 
 def test_ls_usr_sbin():
     ls_usr_sbin = LsUsrSbin(context_wrap(LS_USR_SBIN, path='insights_commands/ls_-ln_.usr.sbin'))
-    assert ls_usr_sbin.files_of('/usr/sbin') == ['accessdb', 'addgnupghome', 'addpart', 'postconf', 'postdrop']
+    assert ls_usr_sbin.files_of('/usr/sbin') == [
+        'accessdb',
+        'addgnupghome',
+        'addpart',
+        'postconf',
+        'postdrop',
+    ]
     postdrop = ls_usr_sbin.dir_entry('/usr/sbin', 'postdrop')
     assert postdrop is not None
     assert postdrop == {
@@ -38,7 +44,8 @@ def test_ls_usr_sbin():
         'date': 'Jan 27  2014',
         'type': '-',
         'size': 218552,
-        'dir': '/usr/sbin'}
+        'dir': '/usr/sbin',
+    }
 
 
 def test_ls_usr_sbin_doc_examples():
@@ -46,7 +53,9 @@ def test_ls_usr_sbin_doc_examples():
         'Specs': Specs,
         'add_filter': filters.add_filter,
         'LsUsrSbin': LsUsrSbin,
-        'ls_usr_sbin': LsUsrSbin(context_wrap(LS_USR_SBIN, path='insights_commands/ls_-ln_.usr.sbin')),
+        'ls_usr_sbin': LsUsrSbin(
+            context_wrap(LS_USR_SBIN, path='insights_commands/ls_-ln_.usr.sbin')
+        ),
     }
     failed, total = doctest.testmod(ls_usr_sbin, globs=env)
     assert failed == 0

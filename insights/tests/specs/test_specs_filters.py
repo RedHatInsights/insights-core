@@ -30,10 +30,10 @@ from insights.core.spec_factory import (
 here = os.path.abspath(os.path.dirname(__file__))
 
 FILTER_DATA = "Some test data"
-MAX_GLOBS = 1001
 
 this_file = os.path.abspath(__file__).rstrip("c")
 test_large_file = '/tmp/_insights_test.large_file_filter'
+test_one_line_left = '/tmp/_insights_test.one_line_left'
 test_empty_after_filter = '/tmp/_insights_test.empty_after_filter'
 
 specs_manifest = """
@@ -91,6 +91,7 @@ class Specs(SpecSet):
     empty_after_filter = RegistryPoint(filterable=True)
     cmd_w_args_filter = RegistryPoint(filterable=True)
     large_filter = RegistryPoint(filterable=True)
+    one_line_left = RegistryPoint(filterable=True)
 
 
 class Stuff(Specs):
@@ -121,6 +122,7 @@ class Stuff(Specs):
     empty_after_filter = simple_file(test_empty_after_filter)
     cmd_w_args_filter = command_with_args('ls -lt %s', files2)
     large_filter = simple_file(test_large_file)
+    one_line_left = simple_file(test_one_line_left)
 
 
 class stage(dr.ComponentType):
@@ -138,6 +140,7 @@ class stage(dr.ComponentType):
     Stuff.first_of_spec_w_filter,
     Stuff.cmd_w_args_filter,
     Stuff.large_filter,
+    Stuff.one_line_left,
     optional=[Stuff.empty_after_filter],
 )
 def dostuff(broker):
@@ -149,6 +152,7 @@ def dostuff(broker):
     assert Stuff.first_file_spec_w_filter in broker
     assert Stuff.first_of_spec_w_filter in broker
     assert Stuff.cmd_w_args_filter in broker
+    assert Stuff.one_line_left in broker
 
     assert Stuff.empty_after_filter not in broker
 
@@ -172,14 +176,17 @@ def setup_function(func):
         with open(test_empty_after_filter, 'w') as t:
             t.write('no-filter')
     with open(test_large_file, 'w') as fd:
-        for i in range(filters.MATCH_COUNT + 1):
+        for i in range(filters.MAX_MATCH + 1):
+            fd.write(str(i) + FILTER_DATA + '\n')
+    with open(test_one_line_left, 'w') as fd:
+        for i in range(filters.MAX_MATCH + 1):
             fd.write(str(i) + FILTER_DATA + '\n')
 
 
 def teardown_function(func):
     # Reset Test ENV
     filters._CACHE = {}
-    filters.FILTERS = defaultdict(set)
+    filters.FILTERS = defaultdict(dict)
     dr.COMPONENTS = defaultdict(lambda: defaultdict(set))
     dr.TYPE_OBSERVERS = defaultdict(set)
     dr.ENABLED = defaultdict(lambda: True)
@@ -188,6 +195,8 @@ def teardown_function(func):
         os.remove(test_empty_after_filter)
     if os.path.exists(test_large_file):
         os.remove(test_large_file)
+    if os.path.exists(test_one_line_left):
+        os.remove(test_one_line_left)
 
 
 def test_specs_filters_spec_factory():
@@ -201,6 +210,7 @@ def test_specs_filters_spec_factory():
     add_filter(Stuff.empty_after_filter, " hello ")
     add_filter(Stuff.cmd_w_args_filter, [" ", ":"])
     add_filter(Stuff.large_filter, ["Some"])
+    add_filter(Stuff.one_line_left, ["test data"], 1)
     broker = dr.Broker()
     broker[HostContext] = HostContext()
     broker['cleaner'] = Cleaner(None, None)
@@ -228,6 +238,7 @@ def test_line_terminators():
     add_filter(Stuff.empty_after_filter, " hello ")
     add_filter(Stuff.cmd_w_args_filter, [" ", ":"])
     add_filter(Stuff.large_filter, ["Some"])
+    add_filter(Stuff.one_line_left, ["test data"], 1)
     broker = dr.Broker()
     broker[HostContext] = HostContext()
     broker['cleaner'] = Cleaner(None, None)
@@ -272,7 +283,9 @@ def test_exp_no_filters():
                 exception_cnt += 10000000
             elif "large_filter" in str(spec):
                 exception_cnt += 100000000
-    assert exception_cnt == 111111111
+            elif "one_line_left" in str(spec):
+                exception_cnt += 1000000000
+    assert exception_cnt == 1111111111
 
 
 @pytest.mark.parametrize("obfuscate", [True, False])
@@ -288,6 +301,7 @@ def test_specs_filters_collect(gen, obfuscate):
     add_filter(Stuff.empty_after_filter, " hello ")
     add_filter(Stuff.cmd_w_args_filter, [" ", ":"])
     add_filter(Stuff.large_filter, ["Some"])
+    add_filter(Stuff.one_line_left, ["test data"], 1)
     # Preparation
     manifest = collect.load_manifest(specs_manifest)
     for pkg in manifest.get("plugins", {}).get("packages", []):
@@ -327,11 +341,17 @@ def test_specs_filters_collect(gen, obfuscate):
                             org_content = fp.readlines()
                         assert len(org_content) > len(new_content)
                         if "large_filter" in spec:
-                            # if matched lines exceed the MATCH_COUNT
-                            # collect the last MATCH_COUNT lines only
-                            assert len(new_content) == filters.MATCH_COUNT
+                            # if matched lines exceed the MAX_MATCH
+                            # collect the last MAX_MATCH lines only
+                            assert len(new_content) == filters.MAX_MATCH
                             assert new_content[0] != org_content[0]
                             assert new_content[-1].strip() == org_content[-1].strip()
-    assert count == 10  # Number of Specs
+                        elif "one_line_left" in spec:
+                            # only one line is required
+                            assert len(new_content) == 1
+                            assert new_content[0] != org_content[0]
+                            # the last line is kept
+                            assert new_content[-1].strip() == org_content[-1].strip()
+    assert count == 11  # Number of Specs
 
     arch.delete_archive_dir()

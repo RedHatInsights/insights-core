@@ -62,7 +62,7 @@ class ContentProvider(object):
         self._content = None
         self._exception = None
         self._filterable = False
-        self._filters = set()
+        self._filters = dict()
 
     def load(self):
         raise NotImplementedError()
@@ -96,7 +96,7 @@ class ContentProvider(object):
             allowlist = None
             if self._filterable:
                 cleans.append("Filter")
-                allowlist = dict((f, filters.MATCH_COUNT) for f in self._filters)
+                allowlist = self._filters
             # Cleaning - Entry
             if cleans:
                 log.debug("Cleaning (%s) %s", "/".join(cleans), self.relative_path)
@@ -209,7 +209,7 @@ class FileProvider(ContentProvider):
             if self.ds and filters.ENABLED
             else False
         )
-        self._filters = filters.get_filters(self.ds) if self.ds else set()
+        self._filters = filters.get_filters(self.ds, True) if self.ds else set()
 
         self.validate()
 
@@ -408,7 +408,7 @@ class CommandOutputProvider(ContentProvider):
             if self.ds and filters.ENABLED
             else False
         )
-        self._filters = filters.get_filters(self.ds) if self.ds else set()
+        self._filters = filters.get_filters(self.ds, True) if self.ds else set()
 
         self.validate()
 

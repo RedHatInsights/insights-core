@@ -135,19 +135,20 @@ nsSSL3: on
 def setup_function(func):
     if func in [test_dse_ldif_filtered]:
         filters.add_filter(
-            Specs.dse_ldif, [
+            Specs.dse_ldif,
+            [
                 "nsslapd-security",
                 "sslVersionMin",
                 "sslVersionMax",
                 "nsSSL3",
                 "cn: config",  # Note that this can serve as a canary for knowing whether the spec is collected.
-            ]
+            ],
         )
 
 
 def teardown_function(func):
     filters._CACHE = {}
-    filters.FILTERS = defaultdict(set)
+    filters.FILTERS = defaultdict(dict)
 
 
 def test_dse_ldif_smoke():
@@ -185,7 +186,9 @@ def test_dse_ldif_coverage():
 
 
 def test_dse_ldif_filtered():
-    dse_ldif_simple = DseLdifSimple(context_wrap(DSE_LDIF_REAL_EXAMPLE, filtered_spec=Specs.dse_ldif))
+    dse_ldif_simple = DseLdifSimple(
+        context_wrap(DSE_LDIF_REAL_EXAMPLE, filtered_spec=Specs.dse_ldif)
+    )
     assert dse_ldif_simple["nsslapd-security"] == "on"
     assert len(dse_ldif_simple) == 6
     expected = {

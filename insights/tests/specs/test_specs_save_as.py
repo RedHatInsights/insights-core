@@ -145,7 +145,7 @@ with open(here + "/../spec_tests.py") as f:
 def teardown_function(func):
     # Reset Test ENV
     filters._CACHE = {}
-    filters.FILTERS = defaultdict(set)
+    filters.FILTERS = defaultdict(dict)
     dr.COMPONENTS = defaultdict(lambda: defaultdict(set))
     dr.TYPE_OBSERVERS = defaultdict(set)
     dr.ENABLED = defaultdict(lambda: True)
