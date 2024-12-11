@@ -4,9 +4,9 @@ from insights import dr
 from insights.core.plugins import component
 from insights.core.serde import Hydration
 from insights.core.spec_factory import (
-                                        RawFileProvider,
-                                        TextFileProvider,
-                                       )
+    RawFileProvider,
+    TextFileProvider,
+)
 from insights.util import fs
 
 root = os.path.dirname(__file__)
