@@ -8,6 +8,11 @@ from insights.core.plugins import datasource
 from insights.core.spec_factory import simple_command
 from insights.specs import Specs
 
+_aws_imdsv2_token_invalid_keyworks = [
+    'Warning: ',
+    'curlrc: '
+]
+
 
 class LocalSpecs(Specs):
     """ Local specs used only by aws datasources """
@@ -34,9 +39,11 @@ def aws_imdsv2_token(broker):
         SkipComponent: When an error occurs or no token is generated
     """
     try:
-        token = broker[LocalSpecs.aws_imdsv2_token].content[0].strip()
-        if token:
-            return str(token)
+        _token = broker[LocalSpecs.aws_imdsv2_token].content[0].strip()
+        if _token:
+            token = str(_token)
+            if token and not any(k in token for k in _aws_imdsv2_token_invalid_keyworks):
+                return token
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
     raise SkipComponent
