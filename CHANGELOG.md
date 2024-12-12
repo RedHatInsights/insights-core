@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.4.27](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.27) (2024-12-12)
+
+- fix: ansi color code in parser TimeDateCtlStatus ([PR 4300](https://github.com/RedHatInsights/insights-core/pull/4300))
+- fix(license): add NOTICE file specifying Red Had as the owner ([PR 4298](https://github.com/RedHatInsights/insights-core/pull/4298))
+- chore: Improve and simplify logging ([PR 4194](https://github.com/RedHatInsights/insights-core/pull/4194))
+- fix: change sysconfig specs as filterable=True ([PR 4295](https://github.com/RedHatInsights/insights-core/pull/4295))
+
 # [insights-core-3.4.26](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.26) (2024-12-11)
 
 - fix: add the missed compliance entry in compliance manifest ([PR 4302](https://github.com/RedHatInsights/insights-core/pull/4302))

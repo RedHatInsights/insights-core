@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.26
+Version:        3.4.27
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Dec 12 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.27-1
+- fix: ansi color code in parser TimeDateCtlStatus (#4300)
+  (xiaoxwan@redhat.com)
+- fix(license): add NOTICE file specifying Red Had as the owner (#4298)
+  (93986167+RoamingNoMaD@users.noreply.github.com)
+- chore: Improve and simplify logging (#4194) (mhorky@redhat.com)
+- fix: change sysconfig specs as filterable=True (#4295)
+  (xiangceliu@redhat.com)
+
 * Wed Dec 11 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.26-1
 - fix: add the missed compliance entry in compliance manifest (#4302)
   (xiangceliu@redhat.com)
