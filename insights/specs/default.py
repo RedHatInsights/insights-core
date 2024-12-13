@@ -67,7 +67,6 @@ from insights.specs.datasources import (
     md5chk,
     mdadm,
     mount as mount_ds,
-    nmcli,
     package_provides,
     ps as ps_datasource,
     rpm_pkgs,
