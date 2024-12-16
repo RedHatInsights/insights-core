@@ -357,8 +357,6 @@ class InsightsConnection(object):
         for ext in paths:
             try:
                 logger.info("    Testing %s", test_url + ext)
-                if ext == url.path + "/":
-                    raise requests.exceptions.ConnectionError("errr")
                 if method == "POST":
                     test_req = self.post(test_url + ext, data=test_flag, log_prefix="      ", log_level=log_level)
                 elif method == "GET":
@@ -384,7 +382,6 @@ class InsightsConnection(object):
             return self._legacy_test_urls(url, method)
         try:
             logger.info('    Testing %s', url)
-            # raise requests.exceptions.ConnectionError("errrrr")
 
             log_prefix = "      "
             log_level = NETWORK if self.config.verbose else logging.DEBUG
@@ -492,6 +489,7 @@ class InsightsConnection(object):
 
         for description, url, method in [
             ("Uploading a file to Ingress", self.upload_url, "POST"),
+            ("Getting hosts from Inventory", self.inventory_url + "/hosts", "GET"),
             ("Pinging the API", self.ping_url, "GET"),
         ]:
             logger.info("  %s...", description)
