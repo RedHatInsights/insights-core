@@ -1,5 +1,9 @@
-from insights.core.context import (ExecutionContextMeta, HostArchiveContext,
-                                   SerializedArchiveContext, SosArchiveContext)
+from insights.core.context import (
+    ExecutionContextMeta,
+    HostArchiveContext,
+    SerializedArchiveContext,
+    SosArchiveContext,
+)
 
 
 def test_host_archive_context():

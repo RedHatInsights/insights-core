@@ -18,7 +18,7 @@ Four
 
 def teardown_function(func):
     filters._CACHE = {}
-    filters.FILTERS = defaultdict(set)
+    filters.FILTERS = defaultdict(dict)
 
 
 def test_context_wrap_unfiltered():

@@ -66,6 +66,7 @@ class TestSpecs(Specs):
 def report(dt):
     return make_info('INFO_1')
 
+
 #
 # TEST
 #
@@ -130,7 +131,10 @@ def test_marshal_with_errors():
 def test_marshal_with_errors_with_pool():
     try:
         from concurrent.futures import ThreadPoolExecutor
-        with ThreadPoolExecutor(thread_name_prefix="insights-collector-pool", max_workers=5) as pool:
+
+        with ThreadPoolExecutor(
+            thread_name_prefix="insights-collector-pool", max_workers=5
+        ) as pool:
             # one raises error, one has result
             broker = dr.Broker()
             objs = [Doo(4), Doo(6)]
@@ -170,10 +174,7 @@ def test_marshal_with_errors_with_pool():
 
 
 def test_unmarshal():
-    d = {
-        "type": "insights.tests.test_serde.Foo",
-        "object": {"a": 1, "b": 2}
-    }
+    d = {"type": "insights.tests.core.test_serde.Foo", "object": {"a": 1, "b": 2}}
     foo = unmarshal(d)
     assert foo is not None
     assert foo.a == 1
@@ -185,10 +186,7 @@ def test_hydrate_one():
         "name": dr.get_name(thing),
         "exec_time": 0.25,
         "ser_time": 0.05,
-        "results": {
-            "type": "insights.tests.test_serde.Foo",
-            "object": {"a": 1, "b": 2}
-        }
+        "results": {"type": "insights.tests.core.test_serde.Foo", "object": {"a": 1, "b": 2}},
     }
 
     h = Hydration()
@@ -205,15 +203,9 @@ def test_hydrate_one_multiple_results():
         "exec_time": 0.5,
         "ser_time": 0.1,
         "results": [
-            {
-                "type": "insights.tests.test_serde.Foo",
-                "object": {"a": 1, "b": 2}
-            },
-            {
-                "type": "insights.tests.test_serde.Foo",
-                "object": {"a": 3, "b": 4}
-            },
-        ]
+            {"type": "insights.tests.core.test_serde.Foo", "object": {"a": 1, "b": 2}},
+            {"type": "insights.tests.core.test_serde.Foo", "object": {"a": 3, "b": 4}},
+        ],
     }
 
     h = Hydration()
