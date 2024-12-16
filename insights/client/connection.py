@@ -4,6 +4,7 @@ Module handling HTTP Requests and Connection Diagnostics
 from __future__ import print_function
 from __future__ import absolute_import
 import requests
+import socket
 import os
 import six
 import json
@@ -18,10 +19,12 @@ from tempfile import TemporaryFile
 try:
     # python 2
     from urlparse import urlparse
+    from urlparse import urlunparse
     from urllib import quote
 except ImportError:
     # python 3
     from urllib.parse import urlparse
+    from urllib.parse import urlunparse
     from urllib.parse import quote
 from .utilities import (determine_hostname,
                         generate_machine_id,
@@ -72,6 +75,26 @@ def _api_request_failed(exception, message='The Insights API could not be reache
     logger.error(exception)
     if message:
         logger.error(message)
+
+
+def _is_dns_error(exception):
+    while isinstance(exception, Exception):
+        if isinstance(exception, socket.gaierror):
+            return True
+
+        exception = exception.__context__
+
+    return False
+
+
+def _fallback_ip(hostname):
+    if hostname.endswith("redhat.com"):
+        if hostname.endswith("stage.redhat.com"):
+            return constants.insights_ip_stage
+        else:
+            return constants.insights_ip_prod
+    else:
+        return None
 
 
 class InsightsConnection(object):
@@ -471,6 +494,29 @@ class InsightsConnection(object):
 
         logger.info("")
 
+    def _test_connection(self, url):
+        parsed_url = urlparse(url)
+        logger.error("  Could not resolve %s.", parsed_url.hostname)
+        fallback = [constants.stable_public_url, constants.stable_public_ip]
+        ip = _fallback_ip(parsed_url.hostname)
+        if ip:
+            fallback = [ip] + fallback
+        for fallback_url in fallback:
+            parsed_ip_url = urlunparse((parsed_url.scheme, fallback_url, "/", "", "", ""))
+            try:
+                logger.info('    Testing %s', parsed_ip_url)
+                log_prefix = "      "
+                log_level = NETWORK if self.config.verbose else logging.DEBUG
+                self.get(parsed_ip_url, log_prefix=log_prefix, log_level=log_level, verify=False)
+            except REQUEST_FAILED_EXCEPTIONS as exc:
+                logger.debug("      Caught %s: %s", type(exc).__name__, exc)
+                logger.error("      Failed.")
+            else:
+                logger.info("    SUCCESS.")
+                break
+        else:
+            logger.info("    FAILED.")
+
     def test_connection(self, rc=0):
         """
         Test connection to Red Hat
@@ -508,6 +554,9 @@ class InsightsConnection(object):
         logger.error("    Please check your network configuration")
         logger.error("    Additional information may be in %s" % self.config.logging_file)
         logger.error("")
+
+        if _is_dns_error(result):
+            self._test_connection(url)
 
         return 1
 
