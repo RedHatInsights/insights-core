@@ -136,7 +136,7 @@ class InsightsConnection(object):
         self.inventory_url = self.api_url + "/inventory/v1"
 
         if self.config.legacy_upload:
-            self.ping_url = self.base_url
+            self.ping_url = self.base_url + "/"
         else:
             self.ping_url = self.base_url + '/apicast-tests/ping'
 
@@ -356,7 +356,7 @@ class InsightsConnection(object):
         url = urlparse(url)
         test_url = url.scheme + "://" + url.netloc
         last_ex = None
-        paths = (url.path + '/', '', '/r', '/r/insights')
+        paths = (url.path, '', '/r', '/r/insights')
         log_level = NETWORK if self.config.verbose else logging.DEBUG
         for ext in paths:
             try:
@@ -457,6 +457,7 @@ class InsightsConnection(object):
         urls = [
             (self.base_url, "Base"),
             (self.upload_url, "Upload"),
+            (self.inventory_url, "Inventory"),
             (self.ping_url, "Ping"),
         ]
         for url, title in urls:
@@ -482,6 +483,7 @@ class InsightsConnection(object):
 
         urls = [
             ("POST", self.upload_url, "Uploading a file to Ingress"),
+            ("GET", self.inventory_url + "/hosts", "Getting hosts from Inventory"),
             ("GET", self.ping_url, "Pinging the API"),
         ]
         for method, url, description in urls:
