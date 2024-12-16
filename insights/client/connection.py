@@ -3,6 +3,9 @@ Module handling HTTP Requests and Connection Diagnostics
 """
 from __future__ import print_function
 from __future__ import absolute_import
+
+import socket
+
 import requests
 import os
 import six
@@ -365,7 +368,6 @@ class InsightsConnection(object):
                 if test_req.status_code in (200, 201):
                     return True
                 else:
-                    logger.error("      Failed.")
                     return False
             except REQUEST_FAILED_EXCEPTIONS as exc:
                 last_ex = exc
@@ -474,6 +476,65 @@ class InsightsConnection(object):
 
         logger.info("")
 
+    def _test_dns(self, hostname):
+        port = requests.utils.DEFAULT_PORTS["http"]
+
+        if self.config.verbose:
+            logger.info("  Checking DNS for %s:%s...", hostname, port)
+        else:
+            logger.info("  Resolving %s...", hostname)
+
+        try:
+            with socket.create_connection((hostname, port)) as conn:
+                conn_ip, conn_port = conn.getpeername()
+                logger.debug("    Resolved as: %s:%s", conn_ip, conn_port)
+        except socket.gaierror as exc:
+            logger.debug("    socket.gaierror: %s", exc)
+            logger.error("    Can't resolve the domain name.")
+            logger.error("    FAILED.")
+            logger.error("")
+            return None
+
+        logger.info("    SUCCESS.")
+        logger.info("")
+        return conn_ip
+
+    def _test_ip(self, ip):
+        port = requests.utils.DEFAULT_PORTS["http"]
+
+        try:
+            if self.config.verbose:
+                logger.info("  Connecting to %s:%s...", ip, port)
+            else:
+                logger.info("  Connecting to %s...", ip)
+
+            with socket.create_connection((ip, port)) as conn:
+                logger.info("    SUCCESS.")
+                logger.info("")
+                conn.close()
+        except socket.timeout:
+            logger.error("    Connection to %s:%s timed out.", ip, port)
+            logger.error("    FAILED.")
+            logger.info("")
+            return False
+        except socket.error:
+            logger.error("    Can't connect to %s:%s.", ip, port)
+            logger.error("    FAILED.")
+            logger.info("")
+            return False
+
+        return True
+
+    def _test_connection(self, hostname, fallback_ip=None):
+        resolved_ip = self._test_dns(hostname)
+
+        for ip in filter(None, [resolved_ip, fallback_ip]):
+            success = self._test_ip(ip)
+            if success:
+                return resolved_ip, ip
+
+        return resolved_ip, None
+
     def test_connection(self, rc=0):
         """
         Test connection to Red Hat
@@ -486,6 +547,21 @@ class InsightsConnection(object):
 
         logger.info("Running Connection Tests...")
         logger.info("")
+
+        base_url_hostname = urlparse(self.base_url).hostname
+        if base_url_hostname.endswith("redhat.com"):
+            if base_url_hostname.endswith("stage.redhat.com"):
+                base_url_ip = constants.insights_ip_stage
+            else:
+                base_url_ip = constants.insights_ip_prod
+        else:
+            base_url_ip = None
+
+        resolved_base_url_ip, success_base_url_ip = self._test_connection(base_url_hostname, base_url_ip)
+        if not resolved_base_url_ip or not success_base_url_ip:
+            resolved_fallback_ip, success_fallback_ip = self._test_connection("www.redhat.com", constants.stable_public_ip)
+            logger.debug("dns %s, conn %s", resolved_fallback_ip, success_fallback_ip)
+            return False
 
         for description, url, method in [
             ("Uploading a file to Ingress", self.upload_url, "POST"),
