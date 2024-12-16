@@ -67,7 +67,6 @@ from insights.specs.datasources import (
     md5chk,
     mdadm,
     mount as mount_ds,
-    nmcli,
     package_provides,
     ps as ps_datasource,
     rpm_pkgs,
@@ -654,9 +653,6 @@ class DefaultSpecs(Specs):
     )
     nmap_ssh = simple_command("/usr/bin/nmap --script ssh2-enum-algos -sV -p 22 127.0.0.1")
     nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
-    nmcli_conn_show_uuids = foreach_execute(
-        nmcli.nmcli_conn_show_uuids, "/usr/bin/nmcli conn show %s"
-    )
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
     nova_compute_log = first_file(
         ["/var/log/containers/nova/nova-compute.log", "/var/log/nova/nova-compute.log"]
