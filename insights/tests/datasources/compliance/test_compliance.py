@@ -11,7 +11,23 @@ from pytest import raises
 
 from insights.specs.datasources.compliance import ComplianceClient
 
+ENV_TZ = None
 PATH = '/usr/share/xml/scap/ref_id.xml'
+
+
+def setup_function(func):
+    global ENV_TZ
+    ENV_TZ = os.environ.get("TZ")
+
+
+def teardown_function(func):
+    global ENV_TZ
+    env = os.environ
+    if "TZ" in env:
+        if ENV_TZ is None:
+            env.pop("TZ")
+        else:
+            env.update(TZ=ENV_TZ)
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
