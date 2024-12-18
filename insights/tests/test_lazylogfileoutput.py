@@ -107,7 +107,12 @@ def test_lazylogfileoutput_scanners():
     assert not hasattr(log, 'middleware_exception_present')
     assert not hasattr(log, 'cron_present')
     assert not hasattr(log, 'lost_messages')
+    assert log._scanned == set()
     log.do_scan('puppet_master_logs')
+    assert log._scanned == set(['puppet_master_logs'])  # New key scanned
+    # An invalid result_key nothing will be done
+    log.do_scan('no_such_key')
+    assert log._scanned == set(['puppet_master_logs'])  # Nothing changed
     assert hasattr(log, 'puppet_master_logs')
     log.do_scan('kernel_logs')
     assert hasattr(log, 'kernel_logs')
@@ -117,6 +122,10 @@ def test_lazylogfileoutput_scanners():
     assert hasattr(log, 'cron_present')
     log.do_scan('lost_messages')
     assert hasattr(log, 'lost_messages')
+    scanned = sorted(log._scanned)
+    # one more same load, it doesn't do anything, but good for coverage
+    log.do_scan('lost_messages')
+    assert sorted(log._scanned) == scanned  # Nothing changed
 
     assert len(log.puppet_master_logs) == 6
     assert (
@@ -169,6 +178,11 @@ def test_lazylogfileoutput_scanners_list():
     assert len(log.puppet_master_manifest_logs) == 1
     assert hasattr(log, 'error_missing')
     assert log.error_missing
+
+    # one more same load, it doesn't do anything, but good for coverage
+    scanned = sorted(log._scanned)
+    log.do_scan()
+    assert sorted(log._scanned) == scanned  # Nothing changed
 
     assert hasattr(log, 'puppet_master_first')
     assert len(log.puppet_master_first) == 0
