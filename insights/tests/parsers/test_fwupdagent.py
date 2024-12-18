@@ -2,7 +2,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.exceptions import ParseException
 from insights.parsers import fwupdagent
 from insights.parsers.fwupdagent import FwupdagentDevices, FwupdagentSecurity
 from insights.tests import context_wrap
@@ -178,7 +178,7 @@ def test_devices():
     assert devices["Devices"][1]["Name"] == "USB3.0 Hub"
     assert devices["Devices"][1]["Version"] == "3.114"
 
-    with pytest.raises(SkipComponent):
+    with pytest.raises(ParseException):
         FwupdagentDevices(context_wrap(DEVICES_ERROR_1))
 
 
@@ -196,7 +196,7 @@ def test_security():
     with pytest.raises(ParseException):
         FwupdagentSecurity(context_wrap(SECURITY_ERROR_2))
 
-    with pytest.raises(SkipComponent):
+    with pytest.raises(ParseException):
         FwupdagentSecurity(context_wrap(SECURITY_ERROR_3))
 
 
