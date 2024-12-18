@@ -1378,12 +1378,40 @@ class LogFileOutput(TextFileOutput):
 
 class LazyLogFileOutput(LogFileOutput):
     """
-    Class for parsing log file content.  Doesn't like the LogFileOutput,
-    the LazyLogFileOutput doesn't load the content during initialization,
-    its content can only be loaded via calling the `do_scan` or `lines`
-    explicitly.  It's useful for the cases which need to load thousands of
-    files belongs to one single Spec in one pass of running.
-    Other than the lazy content loading, it's the same as the LogFileOutput.
+    Another class for parsing log file content. Doesn't like the LogFileOutput,
+    this LazyLogFileOutput doesn't load the content during initialization.
+    Its content will be loaded later whenever the parser instance being used.
+    It's useful for the cases where need to load thousands of files that
+    belong to one single Spec in one pass of running.
+    If any "scan" functions are pre-defined with it, to ensure the "scan"
+    results being available, the `do_scan` method should be called explicitly
+    before using them.
+    Other than the lazy content loading feature, it's the same as its base
+    LogFileOutput.
+
+    Examples:
+        >>> class LzayLogOne(LazyLogFileOutput):
+        >>> LazyLogOne.keep_scan('get_one', 'one')
+        >>> LazyLogOne.last_scan('last_match', 'file')
+        >>> LazyLogOne.token_scan('find_it', 'more')
+        >>> my_log1 = LazyLogOne(context_wrap(contents, path='/var/log/log1'))
+        >>> hasattr(my_log1, 'get_one')
+        False
+        >>> hasattr(my_log1, 'last_match')
+        False
+        >>> hasattr(my_log1, 'find_id')
+        False
+        >>> my_log1.do_scan('get_one')
+        >>> my_log1.get_one
+        [{'raw_line': 'Text file line one'}]
+        >>> my_log1.do_scan()
+        >>> hasattr(my_log1, 'last_match')
+        True
+        >>> hasattr(my_log1, 'find_id')
+        True
+        >>> my_log2 = LazyLogOne(context_wrap(contents, path='/var/log/log2'))
+        >>> my_log2.get(['three', 'more'])
+        [{'raw_line': 'Text file line three, and more'}]
     """
 
     def _handle_content(self, context):
