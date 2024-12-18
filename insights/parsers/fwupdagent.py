@@ -123,13 +123,21 @@ class FwupdagentDevices(CommandParser, JSONParser):
         >>> len(devices["Devices"])
         2
     """
-    pass
+    def _handle_content(self, context):
+        # Find the actual json start line
+        # To skip the "INFO:", "WARNING:" lines at the top of the command output
+        index = 0
+        for idx, line in enumerate(context.content):
+            if line and line.strip().startswith('{'):
+                index = idx
+                break
+        self.parse_content(context.content[index:])
 
 
 @parser(Specs.fw_security)
 class FwupdagentSecurity(CommandParser, JSONParser):
     """
-    Class ``FwupdagentSecurity`` parses the output of the ``/bin/fwupdagent get-devices`` command.
+    Class ``FwupdagentSecurity`` parses the output of the ``/bin/fwupdagent security --force`` command.
 
     Attributes:
         data (dict): The parsed output of the command.
@@ -164,4 +172,12 @@ class FwupdagentSecurity(CommandParser, JSONParser):
         >>> len(security["HostSecurityAttributes"])
         2
     """
-    pass
+    def _handle_content(self, context):
+        # Find the actual json start line
+        # To skip the "INFO:", "WARNING:" lines at the top of the command output
+        index = 0
+        for idx, line in enumerate(context.content):
+            if line and line.strip().startswith('{'):
+                index = idx
+                break
+        self.parse_content(context.content[index:])

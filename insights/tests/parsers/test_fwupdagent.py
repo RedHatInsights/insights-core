@@ -2,12 +2,15 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import fwupdagent
 from insights.parsers.fwupdagent import FwupdagentDevices, FwupdagentSecurity
 from insights.tests import context_wrap
 
 DEVICES = """
+INFO: The fwupdagent command is deprecated, use `fwupdmgr --json` instead
+WARNING: UEFI firmware can not be updated in legacy BIOS mode
+  See https://github.com/fwupd/fwupd/wiki/PluginFlag:legacy-bios for more information.
 {
   "Devices" : [
     {
@@ -103,7 +106,16 @@ DEVICES = """
 }
 """
 
+DEVICES_ERROR_1 = """
+INFO: The fwupdagent command is deprecated, use `fwupdmgr --json` instead
+WARNING: UEFI firmware can not be updated in legacy BIOS mode
+  See https://github.com/fwupd/fwupd/wiki/PluginFlag:legacy-bios for more information.
+""".strip()
+
 SECURITY = """
+INFO: The fwupdagent command is deprecated, use `fwupdmgr --json` instead
+WARNING: UEFI firmware can not be updated in legacy BIOS mode
+  See https://github.com/fwupd/fwupd/wiki/PluginFlag:legacy-bios for more information.
 {
   "HostSecurityAttributes" : [
     {
@@ -150,6 +162,12 @@ Application Options:
 This tool can be used from other tools and from shell scripts.
 """
 
+SECURITY_ERROR_3 = """
+INFO: The fwupdagent command is deprecated, use `fwupdmgr --json` instead
+WARNING: UEFI firmware can not be updated in legacy BIOS mode
+  See https://github.com/fwupd/fwupd/wiki/PluginFlag:legacy-bios for more information.
+""".strip()
+
 
 def test_devices():
     devices = FwupdagentDevices(context_wrap(DEVICES))
@@ -159,6 +177,9 @@ def test_devices():
     assert devices["Devices"][0]["Version"] == "20.00"
     assert devices["Devices"][1]["Name"] == "USB3.0 Hub"
     assert devices["Devices"][1]["Version"] == "3.114"
+
+    with pytest.raises(SkipComponent):
+        FwupdagentDevices(context_wrap(DEVICES_ERROR_1))
 
 
 def test_security():
@@ -174,6 +195,9 @@ def test_security():
 
     with pytest.raises(ParseException):
         FwupdagentSecurity(context_wrap(SECURITY_ERROR_2))
+
+    with pytest.raises(SkipComponent):
+        FwupdagentSecurity(context_wrap(SECURITY_ERROR_3))
 
 
 def test_doc_examples():
