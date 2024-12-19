@@ -184,7 +184,7 @@ plugins:
     - name: insights.combiners.sap.Sap
       enabled: true
 
-    # needed for fw_devices and fw_security specs
+    # needed for fw_security specs
     - name: insights.parsers.virt_what.VirtWhat
       enabled: true
     - name: insights.combiners.virt_what.VirtWhat
