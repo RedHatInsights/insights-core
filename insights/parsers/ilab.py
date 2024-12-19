@@ -44,12 +44,11 @@ class IlabModuleList(CommandParser, list):
             raise SkipComponent("Empty")
         if not content[0].startswith("+-"):
             raise SkipComponent("Unexpected format")
-        data = []
         for line in content:
             if line.startswith("|") and "Model Name" not in line:
                 split_items = line.split("|")
                 if len(split_items) == 5:
-                    data.append(
+                    self.append(
                         {
                             "model_name": split_items[1].strip(),
                             "last_modified": split_items[2].strip(),
@@ -58,4 +57,3 @@ class IlabModuleList(CommandParser, list):
                     )
                 else:
                     raise SkipComponent("Unexpected format")
-        self.extend(data)
