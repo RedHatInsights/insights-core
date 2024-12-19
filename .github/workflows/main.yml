@@ -79,7 +79,7 @@ jobs:
         apt-get install -y build-essential git curl unzip file tar
     - name: clone the repo and checkout pull_request
       run: |
-        git clone https://github.com/RedHatInsights/insights-core.git
+        git clone ${{ github.server_url }}/${{ github.repository }}
         git -C insights-core fetch --no-tags --prune --no-recurse-submodules --depth=1 origin pull/${{ github.ref_name }}:${{ github.head_ref }}
         git -C insights-core checkout ${{ github.head_ref }}
     - name: build setuptools and pip
