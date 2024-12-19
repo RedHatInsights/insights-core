@@ -1,3 +1,4 @@
+import logging
 import pytest
 import requests
 from mock import mock
@@ -224,55 +225,59 @@ def test_test_urls_raise(
 
 
 @parametrize_methods
-@mock.patch("insights.client.connection.logger")
 def test_test_urls_error_log_no_catch(
-    logger, http_method, request_function, insights_connection
+    http_method, request_function, insights_connection, caplog
 ):
     """The non-legacy URL subtest doesn't log any errors in case of an unknown exception."""
     insights_connection.config.legacy_upload = False
 
-    with mock.patch(request_function) as request_function_mock:
-        request_function_mock.side_effect = UnexpectedException
-        try:
-            insights_connection._test_urls(UPLOAD_URL, http_method)
-        except UnexpectedException:
-            pass
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        with mock.patch(request_function) as request_function_mock:
+            request_function_mock.side_effect = UnexpectedException
+            try:
+                insights_connection._test_urls(UPLOAD_URL, http_method)
+            except UnexpectedException:
+                pass
 
-    logger.error.assert_not_called()
+    assert not caplog.record_tuples
 
 
 @parametrize_methods
-@mock.patch("insights.client.connection.logger")
 def test_test_urls_error_log_success(
-    logger, http_method, request_function, insights_connection
+    http_method, request_function, insights_connection, caplog
 ):
     """The non-legacy URL subtest doesn't log any errors if all API calls succeed."""
     insights_connection.config.legacy_upload = False
 
-    with mock.patch(request_function):
-        insights_connection._test_urls(UPLOAD_URL, http_method)
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        with mock.patch(request_function):
+            insights_connection._test_urls(UPLOAD_URL, http_method)
 
-    logger.error.assert_not_called()
+    assert not caplog.record_tuples
 
 
 @parametrize_exceptions
 @parametrize_methods
-@mock.patch("insights.client.connection.logger")
 def test_test_urls_error_log_fail(
-    logger, http_method, request_function, exception, insights_connection
+    http_method, request_function, exception, insights_connection, caplog
 ):
     """The non-legacy URL subtest logs an ERROR if an API call fails."""
     insights_connection.config.legacy_upload = False
 
-    try:
-        with mock.patch(request_function) as request_function_mock:
-            request_function_mock.side_effect = exception
-            insights_connection._test_urls(UPLOAD_URL, http_method)
-    except exception:
-        pass
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        try:
+            with mock.patch(request_function) as request_function_mock:
+                request_function_mock.side_effect = exception
+                insights_connection._test_urls(UPLOAD_URL, http_method)
+        except exception:
+            pass
 
-    assert logger.error.mock_calls == [
-        mock.call("Could not successfully connect to: %s", UPLOAD_URL)
+    assert caplog.record_tuples == [
+        (
+            "insights.client.connection",
+            logging.ERROR,
+            "Could not successfully connect to: {0}".format(UPLOAD_URL),
+        )
     ]
 
 
@@ -449,9 +454,7 @@ def test_legacy_test_urls_post_all_fails(get, post, exception, insights_connecti
 
 
 @parametrize_methods
-def test_legacy_test_urls_no_catch(
-    http_method, request_function, insights_connection
-):
+def test_legacy_test_urls_no_catch(http_method, request_function, insights_connection):
     """The legacy URL subtest doesn't catch unknown exceptions."""
     raised = UnexpectedException()
 
@@ -480,74 +483,79 @@ def test_legacy_test_urls_raise(
 
 
 @parametrize_methods
-@mock.patch("insights.client.connection.logger")
 def test_legacy_test_urls_error_log_no_catch(
-    logger, http_method, request_function, insights_connection
+    http_method, request_function, insights_connection, caplog
 ):
     """The legacy URL subtest doesn't log any errors in case of an unknown exception."""
-    with mock.patch(request_function) as request_function_mock:
-        request_function_mock.side_effect = UnexpectedException
-        try:
-            insights_connection._legacy_test_urls(UPLOAD_URL, http_method)
-        except UnexpectedException:
-            pass
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        with mock.patch(request_function) as request_function_mock:
+            request_function_mock.side_effect = UnexpectedException
+            try:
+                insights_connection._legacy_test_urls(UPLOAD_URL, http_method)
+            except UnexpectedException:
+                pass
 
-    logger.error.assert_not_called()
+    assert not caplog.record_tuples
 
 
 @parametrize_exceptions
 @parametrize_methods
-@mock.patch("insights.client.connection.logger")
 def test_legacy_test_urls_error_log_success(
-    logger, http_method, request_function, exception, insights_connection
+    http_method, request_function, exception, insights_connection, caplog
 ):
     """The legacy URL subtest doesn't log any errors if the API call succeeds."""
-    with mock.patch(request_function):
-        insights_connection._legacy_test_urls(UPLOAD_URL, http_method)
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        with mock.patch(request_function):
+            insights_connection._legacy_test_urls(UPLOAD_URL, http_method)
 
-    logger.error.assert_not_called()
+    assert not caplog.record_tuples
 
 
 @parametrize_exceptions
 @parametrize_methods
-@mock.patch("insights.client.connection.logger")
 def test_legacy_test_urls_error_log_one_fail(
-    logger, http_method, request_function, exception, insights_connection
+    http_method, request_function, exception, insights_connection, caplog
 ):
     """The legacy URL subtest logs one ERROR if one API call fails."""
-    try:
-        with mock.patch(request_function) as request_function_mock:
-            request_function_mock.side_effect = [exception(), mock.Mock()]
-            insights_connection._legacy_test_urls(UPLOAD_URL, http_method)
-    except exception:
-        pass
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        try:
+            with mock.patch(request_function) as request_function_mock:
+                request_function_mock.side_effect = [exception(), mock.Mock()]
+                insights_connection._legacy_test_urls(UPLOAD_URL, http_method)
+        except exception:
+            pass
 
-    assert logger.error.mock_calls == [
-        mock.call(
-            "Could not successfully connect to: %s",
-            LEGACY_URL + LEGACY_URL_SUFFIXES[0],
+    assert caplog.record_tuples == [
+        (
+            "insights.client.connection",
+            logging.ERROR,
+            "Could not successfully connect to: {0}".format(LEGACY_URL + LEGACY_URL_SUFFIXES[0]),
         )
     ]
 
 
 @parametrize_exceptions
 @parametrize_methods
-@mock.patch("insights.client.connection.logger")
 def test_legacy_test_urls_error_log_all_fails(
-    logger, http_method, request_function, exception, insights_connection
+    http_method, request_function, exception, insights_connection, caplog
 ):
     """The legacy URL subtest logs one ERROR for every failed API call."""
-    try:
-        with mock.patch(request_function) as request_function_mock:
-            request_function_mock.side_effect = [
-                exception() for _ in LEGACY_URL_SUFFIXES
-            ]
-            insights_connection._legacy_test_urls(UPLOAD_URL, http_method)
-    except exception:
-        pass
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        try:
+            with mock.patch(request_function) as request_function_mock:
+                request_function_mock.side_effect = [
+                    exception() for _ in LEGACY_URL_SUFFIXES
+                ]
+                insights_connection._legacy_test_urls(UPLOAD_URL, http_method)
+        except exception:
+            pass
 
-    assert logger.error.mock_calls == [
-        mock.call("Could not successfully connect to: %s", LEGACY_URL + suffix)
+    assert caplog.record_tuples == [
+        (
+            "insights.client.connection",
+            logging.ERROR,
+            "Could not successfully connect to: {0}{1}".format(LEGACY_URL, suffix),
+        )
         for suffix in LEGACY_URL_SUFFIXES
     ]
 
@@ -657,42 +665,46 @@ def test_test_connection_test_urls_fail(test_urls, exception, insights_connectio
     test_urls.assert_called_once()
 
 
-@mock.patch("insights.client.connection.logger")
 @mock.patch("insights.client.connection.InsightsConnection._test_urls")
-def test_test_connection_error_log_no_catch(test_urls, logger, insights_connection):
+def test_test_connection_error_log_no_catch(test_urls, insights_connection, caplog):
     """The connection test doesn't log any ERROR in case of an unknown exception."""
     test_urls.side_effect = UnexpectedException
 
-    try:
-        insights_connection.test_connection()
-    except UnexpectedException:
-        pass
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        try:
+            insights_connection.test_connection()
+        except UnexpectedException:
+            pass
 
-    logger.error.assert_not_called()
+    assert not caplog.record_tuples
 
 
 @mock.patch("insights.client.connection.InsightsConnection._test_urls")
-@mock.patch("insights.client.connection.logger")
-def test_test_connection_error_log_success(logger, test_urls, insights_connection):
+def test_test_connection_error_log_success(test_urls, insights_connection, caplog):
     """The connection test doesn't log any ERROR if all API calls succeed."""
-    insights_connection.test_connection()
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        insights_connection.test_connection()
 
-    logger.error.assert_not_called()
+    assert not caplog.record_tuples
 
 
 @parametrize_exceptions
 @mock.patch("insights.client.connection.InsightsConnection._test_urls")
-@mock.patch("insights.client.connection.logger")
 def test_test_connection_error_log_fail(
-    logger, test_urls, exception, insights_connection
+    test_urls, exception, insights_connection, caplog
 ):
     """An error message is logged on the ERROR level."""
     test_urls.side_effect = exception
 
-    insights_connection.test_connection()
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        insights_connection.test_connection()
 
-    assert logger.error.mock_calls == [
-        mock.call("Connectivity test failed! Please check your network configuration")
+    assert caplog.record_tuples == [
+        (
+            "insights.client.connection",
+            logging.ERROR,
+            "Connectivity test failed! Please check your network configuration",
+        )
     ]
 
 
@@ -749,53 +761,56 @@ def test_test_connection_no_catch(test_urls, insights_connection):
 
 @mock.patch("insights.client.connection.InsightsConnection.post")
 @mock.patch("insights.client.connection.TemporaryFile")
-@mock.patch("insights.client.connection.logger")
 def test_test_connection_non_legacy_error_log_no_catch(
-    logger, temporary_file, post, insights_connection
+    temporary_file, post, insights_connection, caplog
 ):
     """The non-legacy connection test doesn't log any errors in case of an unknown exception."""
     post.side_effect = UnexpectedException
     insights_connection.config.legacy_upload = False
 
-    try:
-        insights_connection.test_connection()
-    except UnexpectedException:
-        pass
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        try:
+            insights_connection.test_connection()
+        except UnexpectedException:
+            pass
 
-    logger.error.assert_not_called()
+    assert not caplog.record_tuples
 
 
 @mock.patch("insights.client.connection.InsightsConnection.get")
 @mock.patch("insights.client.connection.InsightsConnection.post")
 @mock.patch("insights.client.connection.TemporaryFile")
-@mock.patch("insights.client.connection.logger")
 def test_test_connection_non_legacy_error_log_success(
-    logger, temporary_file, post, get, insights_connection
+    temporary_file, post, get, insights_connection, caplog
 ):
     """The non-legacy connection test doesn't log any errors if all API calls succeed."""
     insights_connection.config.legacy_upload = False
 
-    insights_connection.test_connection()
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        insights_connection.test_connection()
 
-    logger.error.assert_not_called()
+    assert not caplog.record_tuples
 
 
 @parametrize_exceptions
 @mock.patch("insights.client.connection.InsightsConnection.post")
 @mock.patch("insights.client.connection.TemporaryFile")
-@mock.patch("insights.client.connection.logger")
 def test_test_connection_non_legacy_error_log_fail(
-    logger, temporary_file, post, exception, insights_connection
+    temporary_file, post, exception, insights_connection, caplog
 ):
     """The connection test logs an ERROR if an API call fails."""
     post.side_effect = exception
     insights_connection.config.legacy_upload = False
 
-    insights_connection.test_connection()
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        insights_connection.test_connection()
 
-    assert logger.error.mock_calls == [
-        mock.call("Could not successfully connect to: %s", UPLOAD_URL),
-        mock.call("Connectivity test failed! Please check your network configuration"),
+    assert caplog.record_tuples == [
+        ("insights.client.connection", logging.ERROR, message)
+        for message in [
+            "Could not successfully connect to: {0}".format(UPLOAD_URL),
+            "Connectivity test failed! Please check your network configuration",
+        ]
     ]
 
 
@@ -854,74 +869,78 @@ def test_test_connection_non_legacy_print_fail(
 
 
 @mock.patch("insights.client.connection.InsightsConnection.post")
-@mock.patch("insights.client.connection.logger")
-def test_test_connection_legacy_error_log_no_catch(logger, post, insights_connection):
+def test_test_connection_legacy_error_log_no_catch(post, insights_connection, caplog):
     """The legacy connection test doesn't log any errors in case of an unknown exception."""
     post.side_effect = UnexpectedException
     insights_connection.config.legacy_upload = True
 
-    try:
-        insights_connection.test_connection()
-    except UnexpectedException:
-        pass
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        try:
+            insights_connection.test_connection()
+        except UnexpectedException:
+            pass
 
-    logger.error.assert_not_called()
+    assert not caplog.record_tuples
 
 
 @parametrize_exceptions
 @mock.patch("insights.client.connection.InsightsConnection.post")
-@mock.patch("insights.client.connection.logger")
 def test_test_connection_legacy_error_log_success(
-    logger, post, exception, insights_connection
+    post, exception, insights_connection, caplog
 ):
     """The legacy connection test doesn't log any errors if all API calls succeed."""
     insights_connection.config.legacy_upload = True
 
-    insights_connection.test_connection()
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        insights_connection.test_connection()
 
-    logger.error.assert_not_called()
+    assert not caplog.record_tuples
 
 
 @parametrize_exceptions
 @mock.patch("insights.client.connection.InsightsConnection.post")
-@mock.patch("insights.client.connection.logger")
 def test_test_connection_legacy_error_log_one_fail_connection(
-    logger, post, exception, insights_connection
+    post, exception, insights_connection, caplog
 ):
     """The connection test logs one ERROR if one API call fails."""
     post.side_effect = [exception, mock.Mock()]
     insights_connection.config.legacy_upload = True
 
-    insights_connection.test_connection()
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        insights_connection.test_connection()
 
-    assert logger.error.mock_calls == [
-        mock.call(
-            "Could not successfully connect to: %s",
-            LEGACY_URL + LEGACY_URL_SUFFIXES[0],
+    assert caplog.record_tuples == [
+        (
+            "insights.client.connection",
+            logging.ERROR,
+            "Could not successfully connect to: {0}".format(LEGACY_URL + LEGACY_URL_SUFFIXES[0])
         )
     ]
 
 
 @parametrize_exceptions
 @mock.patch("insights.client.connection.InsightsConnection.post")
-@mock.patch("insights.client.connection.logger")
 def test_test_connection_legacy_error_log_all_fails_connection(
-    logger, post, exception, insights_connection
+    post, exception, insights_connection, caplog
 ):
     """The connection test logs one ERROR for every failed API call."""
     post.side_effect = exception
     insights_connection.config.legacy_upload = True
 
-    insights_connection.test_connection()
+    with caplog.at_level(logging.ERROR, logger="insights.client.connection"):
+        insights_connection.test_connection()
 
-    test_urls_calls = [
-        mock.call("Could not successfully connect to: %s", LEGACY_URL + suffix)
+    legacy_test_url_errors = [
+        "Could not successfully connect to: {0}{1}".format(LEGACY_URL, suffix)
         for suffix in LEGACY_URL_SUFFIXES
     ]
-    test_connection_calls = [
-        mock.call("Connectivity test failed! Please check your network configuration")
+    test_connection_errors = [
+        "Connectivity test failed! Please check your network configuration",
     ]
-    assert logger.error.mock_calls == test_urls_calls + test_connection_calls
+    assert caplog.record_tuples == [
+        ("insights.client.connection", logging.ERROR, message)
+        for message in legacy_test_url_errors + test_connection_errors
+    ]
 
 
 @mock.patch("insights.client.connection.InsightsConnection.post")
