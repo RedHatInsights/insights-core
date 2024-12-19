@@ -12,6 +12,7 @@ LsPciVmmkn - Command ``lspci -vmmkn``
 -------------------------------------
 
 """
+
 import re
 
 from insights.core import CommandParser, TextFileOutput
@@ -73,11 +74,13 @@ class LsPci(CommandParser, TextFileOutput):
             values of `self.data`
 
     """
+
     def parse_content(self, content):
         # Use all the defined scanners to search the log file, setting the
         # properties defined in the scanner.
-        self.lines = [l for l in content if len(l) > 0 and l[0].isdigit()]
-        for scanner in self.scanners:
+        content = get_active_lines(content)
+        self.lines = [l for l in content if l and l[0].isdigit()]
+        for scanner in self.scanners.values():
             scanner(self)
         # Parse kernel driver lines
         self.data = {}
@@ -86,15 +89,13 @@ class LsPci(CommandParser, TextFileOutput):
 
         fields = ["Subsystem", "Kernel driver in use", "Kernel modules"]
 
-        for line in get_active_lines(content):
+        for line in content:
             parts = line.split()
 
             if slot_re.match(parts[0]):
                 slot = parts[0]
                 device_details = line.split(None, 1)[-1]  # keep the raw line
-                self.data[slot] = {
-                        'Slot': slot,
-                        'Dev_Details': device_details.lstrip()}
+                self.data[slot] = {'Slot': slot, 'Dev_Details': device_details.lstrip()}
             elif slot and (line.split(":")[0].strip() in fields):
                 parts = line.split(':')
                 self.data[slot][parts[0]] = parts[1].lstrip()
@@ -180,6 +181,7 @@ class LsPciVmmkn(CommandParser, list):
     Attributes:
 
     """
+
     def parse_content(self, content):
         # Remove the white-trailing of the output
         while content and not content[-1].strip():
