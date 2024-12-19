@@ -77,7 +77,9 @@ class Parser(object):
     """
 
     def __init__(self, context):
-        self.file_path = os.path.join("/", context.relative_path) if context.relative_path is not None else None
+        self.file_path = (
+            os.path.join("/", context.relative_path) if context.relative_path is not None else None
+        )
         """str: Full context path of the input file."""
         self.file_name = os.path.basename(context.path) if context.path is not None else None
         """str: Filename portion of the input file."""
@@ -150,6 +152,7 @@ def flatten(docs, pred):
                 if c.children:
                     c.children = inner(c.children, stack)
         return results
+
     return inner(docs, [])
 
 
@@ -340,6 +343,7 @@ class ConfigParser(Parser, ConfigComponent):
     Raises:
         SkipComponent: When input content is empty.
     """
+
     def parse_content(self, content):
         if not content:
             raise SkipComponent('Empty content.')
@@ -359,6 +363,7 @@ class ConfigCombiner(ConfigComponent):
     include directives for supplementary configuration files. httpd and nginx
     are examples.
     """
+
     def __init__(self, confs, main_file, include_finder):
         self.confs = confs
         self.main = self.find_main(main_file)
@@ -396,6 +401,7 @@ class ContainerConfigCombiner(ConfigCombiner):
     files with include directives for supplementary configuration files.
     httpd and nginx are examples.
     """
+
     def __init__(self, confs, main_file, include_finder, engine, image, container_id):
         self.image = image
         """str: The image of the container."""
@@ -516,8 +522,7 @@ class SysconfigOptions(Parser, LegacyItemAccess):
 
             # Either only one thing or line or rest starts with comment
             # but either way we need to have an equals in the first word.
-            if (len(words) == 1 or (len(words) > 1 and words[1][0] == '#')) \
-                    and '=' in words[0]:
+            if (len(words) == 1 or (len(words) > 1 and words[1][0] == '#')) and '=' in words[0]:
                 key, value = words[0].split('=', 1)
                 result[key] = value
             # Only store lines if they aren't comments or blank
@@ -527,7 +532,7 @@ class SysconfigOptions(Parser, LegacyItemAccess):
         self.unparsed_lines = unparsed_lines
 
     def keys(self):
-        """ Return the list of keys (in no order) in the underlying dictionary."""
+        """Return the list of keys (in no order) in the underlying dictionary."""
         return self.data.keys()
 
 
@@ -544,11 +549,11 @@ class CommandParser(Parser):
     """
 
     __bad_single_lines = [
-            "no such file or directory",
-            "not a directory",
-            "command not found",
-            "no module named",
-            "no files found for",
+        "no such file or directory",
+        "not a directory",
+        "command not found",
+        "no module named",
+        "no files found for",
     ]
     """
     This variable contains filters for bad responses of the single line
@@ -556,7 +561,7 @@ class CommandParser(Parser):
     When adding a new line to the list make sure text is all lower case.
     """
     __bad_lines = [
-            "missing dependencies:",
+        "missing dependencies:",
     ]
     """
     This variable contains filters for bad responses of the lines
@@ -606,7 +611,9 @@ class CommandParser(Parser):
                 `self.__bad_single_lines` and `self.__bad_lines`.
         """
         extra_bad_lines = [] if extra_bad_lines is None else extra_bad_lines
-        valid_lines = self.validate_lines(context.content, self.__bad_single_lines, self.__bad_lines)
+        valid_lines = self.validate_lines(
+            context.content, self.__bad_single_lines, self.__bad_lines
+        )
         if valid_lines and extra_bad_lines:
             valid_lines = self.validate_lines(context.content, extra_bad_lines, extra_bad_lines)
         if not valid_lines:
@@ -621,6 +628,7 @@ class ContainerParser(CommandParser):
     A class specifically for container parser, with the "image" name, the
     engine provider and the container ID on the basis of ``Parser``.
     """
+
     def __init__(self, context):
         self.image = context.image
         """str: The image of the container."""
@@ -702,7 +710,11 @@ class XMLParser(LegacyItemAccess, Parser):
         if len(content) > 3:
             self.raw = '\n'.join(content)
             self.dom = ET.fromstring(self.raw)
-            self.xmlns = self.dom.tag.strip("{").split("}")[0] if all(c in self.dom.tag for c in ["{", "}"]) else ""
+            self.xmlns = (
+                self.dom.tag.strip("{").split("}")[0]
+                if all(c in self.dom.tag for c in ["{", "}"])
+                else ""
+            )
             self.data = self.parse_dom()
 
     def get_elements(self, element, xmlns=None):
@@ -754,6 +766,7 @@ class YAMLParser(Parser, LegacyItemAccess):
     """
     A parser class that reads YAML files.  Base your own parser on this.
     """
+
     def parse_content(self, content):
         try:
             if type(content) is list:
@@ -779,6 +792,7 @@ class JSONParser(Parser, LegacyItemAccess):
     """
     A parser class that reads JSON files.  Base your own parser on this.
     """
+
     def parse_content(self, content):
         try:
             if isinstance(content, list):
@@ -803,8 +817,7 @@ class JSONParser(Parser, LegacyItemAccess):
 
 class ScanMeta(type):
     def __new__(cls, name, parents, dct):
-        dct["scanners"] = []
-        dct["scanner_keys"] = set()
+        dct["scanners"] = dict()
         return super(ScanMeta, cls).__new__(cls, name, parents, dct)
 
 
@@ -866,6 +879,7 @@ class Scannable(six.with_metaclass(ScanMeta, Parser)):
     strings or False).
 
     """
+
     def __init__(self, *args, **kwargs):
         deprecated(Scannable, "Please use the :class:`insights.core.Parser` instead.", "3.3.0")
         super(Scannable, self).__init__(*args, **kwargs)
@@ -879,11 +893,10 @@ class Scannable(six.with_metaclass(ScanMeta, Parser)):
         retrieved later by a rule.
         """
 
-        if result_key in cls.scanner_keys:
+        if result_key in cls.scanners:
             raise ValueError("'%s' is already a registered scanner key" % result_key)
 
-        cls.scanners.append(scanner)
-        cls.scanner_keys.add(result_key)
+        cls.scanners.update({result_key: scanner})
 
     @classmethod
     def any(cls, result_key, func):
@@ -891,6 +904,7 @@ class Scannable(six.with_metaclass(ScanMeta, Parser)):
         Sets the `result_key` to the output of `func` if `func` ever returns
         truthy
         """
+
         def scanner(self, obj):
             current_value = getattr(self, result_key, None)
             setattr(self, result_key, current_value or func(obj))
@@ -903,6 +917,7 @@ class Scannable(six.with_metaclass(ScanMeta, Parser)):
         Sets the `result_key` to an iterable of objects for which `func(obj)`
         returns True
         """
+
         def scanner(self, obj):
             if not getattr(self, result_key, None):
                 setattr(self, result_key, [])
@@ -922,13 +937,13 @@ class Scannable(six.with_metaclass(ScanMeta, Parser)):
 
     def parse_content(self, content):
         for obj in self.parse(content):
-            for scanner in self.scanners:
+            for scanner in self.scanners.values():
                 scanner(self, obj)
 
 
 class TextFileOutput(six.with_metaclass(ScanMeta, Parser)):
     """
-    Class for parsing gerenal text file content.
+    Class for parsing general text file content.
 
     File content is stored in raw format in the ``lines`` attribute.
 
@@ -983,13 +998,14 @@ class TextFileOutput(six.with_metaclass(ScanMeta, Parser)):
         True
 
     """
+
     def parse_content(self, content):
         """
         Use all the defined scanners to search the log file, setting the
         properties defined in the scanner.
         """
         self.lines = content
-        for scanner in self.scanners:
+        for scanner in self.scanners.values():
             scanner(self)
 
     def __contains__(self, s):
@@ -1018,8 +1034,7 @@ class TextFileOutput(six.with_metaclass(ScanMeta, Parser)):
         """
         if isinstance(s, six.string_types):
             return lambda l: s in l
-        elif (isinstance(s, list) and len(s) > 0 and
-              all(isinstance(w, six.string_types) for w in s)):
+        elif isinstance(s, list) and len(s) > 0 and all(isinstance(w, six.string_types) for w in s):
             return lambda l: check(w in l for w in s)
         elif s is not None:
             raise TypeError('Search items must be given as a string or a list of strings')
@@ -1065,15 +1080,14 @@ class TextFileOutput(six.with_metaclass(ScanMeta, Parser)):
             ValueError: When `result_key` is already a registered scanner key.
         """
 
-        if result_key in cls.scanner_keys:
+        if result_key in cls.scanners:
             raise ValueError("'%s' is already a registered scanner key" % result_key)
 
         def scanner(self):
             result = func(self)
             setattr(self, result_key, result)
 
-        cls.scanners.append(scanner)
-        cls.scanner_keys.add(result_key)
+        cls.scanners.update({result_key: scanner})
 
     @classmethod
     def token_scan(cls, result_key, token, check=all):
@@ -1090,6 +1104,7 @@ class TextFileOutput(six.with_metaclass(ScanMeta, Parser)):
             (bool): the property will contain True if a line contained (any
             or all) of the tokens given.
         """
+
         def _scan(self):
             search_by_expression = self._valid_search(token, check)
             return any(search_by_expression(l) for l in self.lines)
@@ -1112,6 +1127,7 @@ class TextFileOutput(six.with_metaclass(ScanMeta, Parser)):
         Returns:
             (list): list of dictionaries corresponding to the parsed lines contain the `token`.
         """
+
         def _scan(self):
             return self.get(token, check=check, num=num, reverse=reverse)
 
@@ -1131,6 +1147,7 @@ class TextFileOutput(six.with_metaclass(ScanMeta, Parser)):
         Returns:
             (dict): dictionary corresponding to the last parsed line contains the `token`.
         """
+
         def _scan(self):
             ret = self.get(token, check=check, num=1, reverse=True)
             return ret[0] if ret else dict()
@@ -1247,12 +1264,15 @@ class LogFileOutput(TextFileOutput):
         # character sets.  Note that we don't include time zone or other
         # outputs (e.g. day-of-year) that don't usually occur in time stamps.
         format_conversion_for = {
-            'a': r'\w{3}', 'A': r'\w+',  # Week day name
+            'a': r'\w{3}',
+            'A': r'\w+',  # Week day name
             'w': r'[0123456]',  # Week day number
             'd': r'([0 ][123456789]|[12]\d|3[01])',  # Day of month
-            'b': r'\w{3}', 'B': r'\w+',  # Month name
+            'b': r'\w{3}',
+            'B': r'\w+',  # Month name
             'm': r'([0 ]\d|1[012])',  # Month number
-            'y': r'\d{2}', 'Y': r'\d{4}',  # Year
+            'y': r'\d{2}',
+            'Y': r'\d{4}',  # Year
             'H': r'([01 ]\d|2[0123])',  # Hour - 24 hour format
             'I': r'([0 ]?\d|1[012])',  # Hour - 12 hour format
             'p': r'\w{2}',  # AM / PM
@@ -1269,9 +1289,7 @@ class LogFileOutput(TextFileOutput):
                 return format_conversion_for[match.group(1)]
             else:
                 raise ParseException(
-                    "get_after does not understand strptime format '{c}'".format(
-                        c=match.group(0)
-                    )
+                    "get_after does not understand strptime format '{c}'".format(c=match.group(0))
                 )
 
         # Please do not attempt to be tricky and put a regular expression
@@ -1284,18 +1302,19 @@ class LogFileOutput(TextFileOutput):
         if isinstance(time_format, dict):
             time_format = list(time_format.values())
         if isinstance(time_format, six.string_types):
-            logs_have_year = ('%Y' in time_format or '%y' in time_format)
+            logs_have_year = '%Y' in time_format or '%y' in time_format
             time_re = re.compile('(' + timefmt_re.sub(replacer, time_format) + ')')
 
             # Curry strptime with time_format string.
             def test_parser(logstamp):
                 return datetime.datetime.strptime(logstamp, time_format)
+
             parse_fn = test_parser
         elif isinstance(time_format, list):
             logs_have_year = all('%Y' in tf or '%y' in tf for tf in time_format)
-            time_re = re.compile('(' + '|'.join(
-                timefmt_re.sub(replacer, tf) for tf in time_format
-            ) + ')')
+            time_re = re.compile(
+                '(' + '|'.join(timefmt_re.sub(replacer, tf) for tf in time_format) + ')'
+            )
 
             def test_all_parsers(logstamp):
                 # One of these must match, because the regex has selected only
@@ -1306,12 +1325,11 @@ class LogFileOutput(TextFileOutput):
                     except ValueError:
                         pass
                 return ts
+
             parse_fn = test_all_parsers
         else:
             raise ParseException(
-                "get_after does not recognise time formats of type {t}".format(
-                    t=type(time_format)
-                )
+                "get_after does not recognise time formats of type {t}".format(t=type(time_format))
             )
 
         # Most logs will appear in string format, but some logs (e.g.
@@ -1356,6 +1374,73 @@ class LogFileOutput(TextFileOutput):
                 # If we're including lines, add this continuation line
                 if including_lines:
                     yield self._parse_line(line)
+
+
+class LazyLogFileOutput(LogFileOutput):
+    """
+    Another class for parsing log file content. Doesn't like the LogFileOutput,
+    this LazyLogFileOutput doesn't load the content during initialization.
+    Its content will be loaded later whenever the parser instance being used.
+    It's useful for the cases where need to load thousands of files that
+    belong to one single Spec in one pass of running.
+    If any "scan" functions are pre-defined with it, to ensure the "scan"
+    results being available, the `do_scan` method should be called explicitly
+    before using them.
+    Other than the lazy content loading feature, it's the same as its base
+    LogFileOutput.
+
+    Examples:
+        >>> class LzayLogOne(LazyLogFileOutput):
+        >>> LazyLogOne.keep_scan('get_one', 'one')
+        >>> LazyLogOne.last_scan('last_match', 'file')
+        >>> LazyLogOne.token_scan('find_it', 'more')
+        >>> my_log1 = LazyLogOne(context_wrap(contents, path='/var/log/log1'))
+        >>> hasattr(my_log1, 'get_one')
+        False
+        >>> hasattr(my_log1, 'last_match')
+        False
+        >>> hasattr(my_log1, 'find_id')
+        False
+        >>> my_log1.do_scan('get_one')
+        >>> my_log1.get_one
+        [{'raw_line': 'Text file line one'}]
+        >>> my_log1.do_scan()
+        >>> hasattr(my_log1, 'last_match')
+        True
+        >>> hasattr(my_log1, 'find_id')
+        True
+        >>> my_log2 = LazyLogOne(context_wrap(contents, path='/var/log/log2'))
+        >>> my_log2.get(['three', 'more'])
+        [{'raw_line': 'Text file line three, and more'}]
+    """
+
+    def _handle_content(self, context):
+        self._lines = None
+        self._context = context
+        self._scanned = set()
+
+    def do_scan(self, result_key=None):
+        """
+        Do the actual scanning operations as per the specified `result_key`.
+        When `result_key` is not specified, all registered scanners will be
+        executed.  Each registered scanner can only be executed once.
+        """
+        if result_key:
+            if result_key not in self._scanned and result_key in self.scanners:
+                self.scanners[result_key](self)
+                self._scanned.add(result_key)
+        else:
+            for key, scanner in self.scanners.items():
+                if key not in self._scanned:
+                    self._scanned.add(key)
+                    scanner(self)
+
+    @property
+    def lines(self):
+        if self._lines is None:
+            # one-shot load all content lines here
+            self._lines = self._context.content
+        return self._lines
 
 
 class Syslog(LogFileOutput):
@@ -1405,6 +1490,7 @@ class Syslog(LogFileOutput):
         the year of the logs will be inferred from the year in your timestamp.
         This will also work around December/January crossovers.
     """
+
     time_format = '%b %d %H:%M:%S'
 
     def _parse_line(self, line):
@@ -1501,8 +1587,11 @@ class IniConfigFile(ConfigParser):
         >>> my_config.has_option('logging', 'log')
         True
     """
+
     def parse_doc(self, content):
-        return iniparser.parse_doc("\n".join(content), self, return_defaults=True, return_booleans=False)
+        return iniparser.parse_doc(
+            "\n".join(content), self, return_defaults=True, return_booleans=False
+        )
 
     def parse_content(self, content, allow_no_value=False):
         super(IniConfigFile, self).parse_content(content)
@@ -1584,7 +1673,7 @@ class IniConfigFile(ConfigParser):
             'true': True,
             'false': False,
             'on': True,
-            'off': False
+            'off': False,
         }
 
         if val.lower() not in boolean_states:
@@ -1658,7 +1747,8 @@ class IniConfigFile(ConfigParser):
 
     def __repr__(self):
         return "INI file '{filename}' - sections:{sections}".format(
-            filename=self.file_name, sections=self.sections())
+            filename=self.file_name, sections=self.sections()
+        )
 
 
 class FileListing(Parser):
@@ -1743,7 +1833,9 @@ class FileListing(Parser):
         # the directory name in the output).  Obviously if we don't have the
         # '-R' flag we should grab this but it's probably not worth parsing
         # the flags to ls for this.
-        deprecated(FileListing, "Please use the :class:`insights.parsers.ls.FileListing instead.", "3.5.0")
+        deprecated(
+            FileListing, "Please use the :class:`insights.parsers.ls.FileListing instead.", "3.5.0"
+        )
         self.first_path = None
         path_re = re.compile(r'ls_-\w+(?P<path>.*)$')
         match = path_re.search(context.path)
