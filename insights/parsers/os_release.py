@@ -67,3 +67,11 @@ class OsRelease(Parser, dict):
             Deprecated, it will be removed from 3.7.0
         """
         return self
+
+    @property
+    def is_rhel_ai(self):
+        """
+        Returns:
+            bool: True when the system is from RHEL AI image.
+        """
+        return self.get("VARIANT", None) == "RHEL AI" and self.get("VARIANT_ID", None) == "rhel_ai"
