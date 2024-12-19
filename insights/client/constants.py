@@ -50,7 +50,9 @@ class InsightsConstants(object):
     default_payload_log = os.path.join(log_dir, app_name + '-payload.log')
     custom_network_log_level = 11
     default_sed_file = os.path.join(default_conf_dir, '.exp.sed')
+    # base_url = 'cert-api.access.redhat.com/r/insights/platform'
     base_url = 'cert-api.access.redhat.com/r/insights/platform'
+    # legacy_base_url = 'cert-api.access.redhat.com/r/insights'
     legacy_base_url = 'cert-api.access.redhat.com/r/insights'
     unregistered_files = [os.path.join(default_conf_dir, '.unregistered'),
                           os.path.join(simple_find_replace_dir, '.unregistered')]
@@ -90,3 +92,6 @@ class InsightsConstants(object):
     rhsm_facts_file = os.path.join(os.sep, 'etc', 'rhsm', 'facts', 'insights-client.facts')
     # In MB
     archive_filesize_max = 100
+    insights_ip_prod = "23.37.45.238"
+    insights_ip_stage = "23.53.5.13"
+    stable_public_ip = "1.1.1.1"  # Public CloudFlare DNS

@@ -3,6 +3,9 @@ Module handling HTTP Requests and Connection Diagnostics
 """
 from __future__ import print_function
 from __future__ import absolute_import
+
+import socket
+
 import requests
 import os
 import six
@@ -132,6 +135,10 @@ class InsightsConnection(object):
             self.branch_info_url = base_url_base + '/v1/branch_info'
         self.inventory_url = self.api_url + "/inventory/v1"
 
+        self.ping_url = self.base_url
+        if not self.config.legacy_upload:
+            self.ping_url = self.base_url + '/apicast-tests/ping'
+
         self.authmethod = self.config.authmethod
         self.systemid = self.config.systemid or None
         self.get_proxies()
@@ -160,7 +167,7 @@ class InsightsConnection(object):
         session.trust_env = False
         return session
 
-    def _http_request(self, url, method, log_response_text=True, **kwargs):
+    def _http_request(self, url, method, log_response_text=True, log_prefix="", log_level=NETWORK, **kwargs):
         '''
         Perform an HTTP request, net logging, and error handling
         Parameters
@@ -170,7 +177,7 @@ class InsightsConnection(object):
         Returns
             HTTP response object
         '''
-        log_message = "{method} {url}".format(method=method, url=url)
+        log_message = "{log_prefix}{method} {url}".format(log_prefix=log_prefix, method=method, url=url)
         if "data" in kwargs.keys():
             log_message += " data={data}".format(data=kwargs["data"])
         if "json" in kwargs.keys():
@@ -185,14 +192,14 @@ class InsightsConnection(object):
                 else:
                     attachments.append(name)
             log_message += " attachments={files}".format(files=",".join(attachments))
-        logger.log(NETWORK, log_message)
+        logger.log(log_level, log_message)
         try:
             res = self.session.request(url=url, method=method, timeout=self.config.http_timeout, **kwargs)
         except Exception:
             raise
-        logger.log(NETWORK, "HTTP Status: %d %s", res.status_code, res.reason)
+        logger.log(log_level, "%sHTTP Status: %d %s", log_prefix, res.status_code, res.reason)
         if log_response_text or res.status_code // 100 != 2:
-            logger.log(NETWORK, "HTTP Response Text: %s", res.text)
+            logger.log(log_level, "%sHTTP Response Text: %s", log_prefix, res.text)
         return res
 
     def get(self, url, **kwargs):
@@ -349,28 +356,25 @@ class InsightsConnection(object):
         test_url = url.scheme + "://" + url.netloc
         last_ex = None
         paths = (url.path + '/', '', '/r', '/r/insights')
+        log_level = NETWORK if self.config.verbose else logging.DEBUG
         for ext in paths:
             try:
-                logger.log(NETWORK, "Testing: %s", test_url + ext)
+                logger.info("    Testing %s", test_url + ext)
                 if method == "POST":
-                    test_req = self.post(test_url + ext, data=test_flag)
+                    test_req = self.post(test_url + ext, data=test_flag, log_prefix="      ", log_level=log_level)
                 elif method == "GET":
-                    test_req = self.get(test_url + ext)
+                    test_req = self.get(test_url + ext, log_prefix="      ", log_level=log_level)
                 # Strata returns 405 on a GET sometimes, this isn't a big deal
                 if test_req.status_code in (200, 201):
-                    logger.info(
-                        "Successfully connected to: %s", test_url + ext)
                     return True
                 else:
-                    logger.info("Connection failed")
                     return False
             except REQUEST_FAILED_EXCEPTIONS as exc:
                 last_ex = exc
-                logger.error(
-                    "Could not successfully connect to: %s", test_url + ext)
-                print(exc)
-        if last_ex:
-            raise last_ex
+                logger.debug("      Caught %s: %s", type(exc).__name__, exc)
+                logger.error("      Failed.")
+
+        return not last_ex
 
     def _test_urls(self, url, method):
         '''
@@ -379,59 +383,207 @@ class InsightsConnection(object):
         if self.config.legacy_upload:
             return self._legacy_test_urls(url, method)
         try:
-            logger.log(NETWORK, 'Testing %s', url)
+            logger.info('    Testing %s', url)
+
+            log_prefix = "      "
+            log_level = NETWORK if self.config.verbose else logging.DEBUG
             if method == 'POST':
                 test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
                 test_files = {
                     'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
                     'metadata': '{\"test\": \"test\"}'
                 }
-                test_req = self.post(url, files=test_files)
+                test_req = self.post(url, files=test_files, log_prefix=log_prefix, log_level=log_level)
             elif method == "GET":
-                test_req = self.get(url)
+                test_req = self.get(url, log_prefix=log_prefix, log_level=log_level)
             if test_req.status_code in (200, 201, 202):
-                logger.info(
-                    "Successfully connected to: %s", url)
                 return True
             else:
-                logger.info("Connection failed")
                 return False
         except REQUEST_FAILED_EXCEPTIONS as exc:
-            logger.error(
-                "Could not successfully connect to: %s", url)
-            print(exc)
-            raise
+            logger.debug("      Caught %s: %s", type(exc).__name__, exc)
+            return False
+
+    def _test_auth_config(self):
+        errors = []
+        if self.authmethod == "BASIC":
+            logger.info("Authentication: login credentials ({})".format(self.authmethod))
+
+            for desc, var, placeholder in [
+                ("Username", self.username, None),
+                ("Password", self.password, "********"),
+            ]:
+                if not var:
+                    error = "{} not set.".format(desc)
+                    errors.append(error)
+
+                val = placeholder or var if var else "not set"
+                logger.info("  %s: %s", desc, val)
+        elif self.authmethod == "CERT":
+            logger.info("Authentication: identity certificate ({})".format(self.authmethod))
+
+            for desc, path_func in [
+                ("Certificate", rhsmCertificate.certpath),
+                ("Key", rhsmCertificate.keypath),
+            ]:
+                path = path_func()
+                exists = os.path.exists(path)
+                if exists:
+                    exists_description = "exists"
+                else:
+                    exists_description = "NOT FOUND"
+                    error = "{} file '{}' missing.".format(desc, path)
+                    errors.append(error)
+                logger.info("  %s: %s (%s)", desc, path, exists_description)
+        else:
+            logger.info("Authentication: unknown")
+            errors.append = "Unknown authentication method '{}'.".format(self.authmethod)
+
+        if errors:
+            logger.error("")
+            logger.error("ERROR. Cannot authenticate:")
+            for error in errors:
+                logger.error("  %s", error)
+
+        return not errors
+
+    def _dump_urls(self):
+        base_parsed = urlparse(self.base_url)
+        if base_parsed.hostname.endswith("stage.redhat.com"):
+            hostname_desc = "Red Hat Insights (staging)"
+        elif base_parsed.hostname.endswith("redhat.com"):
+            if self.config.verbose:
+                hostname_desc = "Red Hat Insights (production)"
+            else:
+                hostname_desc = "Red Hat Insights"
+        else:
+            hostname_desc = "Satellite 6 server"
+
+        logger.info("")
+        logger.info("Connecting to: %s", hostname_desc)
+
+        logger.info("  Base URL: %s", self.base_url)
+        logger.info("  Upload URL: %s", self.upload_url)
+        logger.info("  Inventory URL: %s", self.inventory_url)
+
+        logger.info("  Ping URL: %s", self.ping_url)
+
+        if self.proxies:
+            for proxy_type, proxy_url in self.proxies.items():
+                logger.info("  %s proxy: %s", proxy_type.upper(), proxy_url)
+        else:
+            logger.info("  Proxy: not set")
+
+        logger.info("")
+
+    def _test_dns(self, hostname):
+        port = requests.utils.DEFAULT_PORTS["http"]
+
+        if self.config.verbose:
+            logger.info("  Checking DNS for %s:%s...", hostname, port)
+        else:
+            logger.info("  Resolving %s...", hostname)
+
+        try:
+            with socket.create_connection((hostname, port)) as conn:
+                conn_ip, conn_port = conn.getpeername()
+                logger.debug("    Resolved as: %s:%s", conn_ip, conn_port)
+        except socket.gaierror as exc:
+            logger.debug("    socket.gaierror: %s", exc)
+            logger.error("    Can't resolve the domain name.")
+            logger.error("    FAILED.")
+            logger.error("")
+            return None
+
+        logger.info("    SUCCESS.")
+        logger.info("")
+        return conn_ip
+
+    def _test_ip(self, ip):
+        port = requests.utils.DEFAULT_PORTS["http"]
+
+        try:
+            if self.config.verbose:
+                logger.info("  Connecting to %s:%s...", ip, port)
+            else:
+                logger.info("  Connecting to %s...", ip)
+
+            with socket.create_connection((ip, port)) as conn:
+                logger.info("    SUCCESS.")
+                logger.info("")
+                conn.close()
+        except socket.timeout:
+            logger.error("    Connection to %s:%s timed out.", ip, port)
+            logger.error("    FAILED.")
+            logger.info("")
+            return False
+        except socket.error:
+            logger.error("    Can't connect to %s:%s.", ip, port)
+            logger.error("    FAILED.")
+            logger.info("")
+            return False
+
+        return True
+
+    def _test_connection(self, hostname, fallback_ip=None):
+        resolved_ip = self._test_dns(hostname)
+
+        for ip in filter(None, [resolved_ip, fallback_ip]):
+            success = self._test_ip(ip)
+            if success:
+                return resolved_ip, ip
+
+        return resolved_ip, None
 
     def test_connection(self, rc=0):
         """
         Test connection to Red Hat
         """
-        logger.debug("Proxy config: %s", self.proxies)
-        try:
-            logger.info("=== Begin Upload URL Connection Test ===")
-            upload_success = self._test_urls(self.upload_url, "POST")
-            logger.info("=== End Upload URL Connection Test: %s ===\n",
-                        "SUCCESS" if upload_success else "FAILURE")
-            logger.info("=== Begin API URL Connection Test ===")
-            if self.config.legacy_upload:
-                api_success = self._test_urls(self.base_url, "GET")
-            else:
-                api_success = self._test_urls(self.base_url + '/apicast-tests/ping', 'GET')
-            logger.info("=== End API URL Connection Test: %s ===\n",
-                        "SUCCESS" if api_success else "FAILURE")
-            if upload_success and api_success:
-                logger.info("Connectivity tests completed successfully")
-                print("See %s for more details." % self.config.logging_file)
-            else:
-                logger.info("Connectivity tests completed with some errors")
-                print("See %s for more details." % self.config.logging_file)
-                rc = 1
-        except REQUEST_FAILED_EXCEPTIONS:
-            logger.error('Connectivity test failed! '
-                         'Please check your network configuration')
-            print('Additional information may be in %s' % self.config.logging_file)
+        auth_config_ok = self._test_auth_config()
+        if not auth_config_ok:
             return 1
-        return rc
+
+        self._dump_urls()
+
+        logger.info("Running Connection Tests...")
+        logger.info("")
+
+        base_url_hostname = urlparse(self.base_url).hostname
+        if base_url_hostname.endswith("redhat.com"):
+            if base_url_hostname.endswith("stage.redhat.com"):
+                base_url_ip = constants.insights_ip_stage
+            else:
+                base_url_ip = constants.insights_ip_prod
+        else:
+            base_url_ip = None
+
+        resolved_base_url_ip, success_base_url_ip = self._test_connection(base_url_hostname, base_url_ip)
+        if not resolved_base_url_ip or not success_base_url_ip:
+            resolved_fallback_ip, success_fallback_ip = self._test_connection("www.redhat.com", constants.stable_public_ip)
+            logger.debug("dns %s, conn %s", resolved_fallback_ip, success_fallback_ip)
+            return False
+
+        for description, url, method in [
+            ("Uploading a file to Ingress", self.upload_url, "POST"),
+            ("Getting hosts from Inventory", self.inventory_url + "/hosts", "GET"),
+            ("Pinging the API", self.ping_url, "GET"),
+        ]:
+            logger.info("  %s...", description)
+
+            success = self._test_urls(url, method)
+            if success:
+                logger.info("    SUCCESS.")
+                logger.info("")
+            else:
+                logger.error("    FAILED.")
+                logger.error("")
+                logger.error("    Please check your network configuration")
+                logger.error("    Additional information may be in %s" % self.config.logging_file)
+                logger.error("")
+                return 1
+        else:
+            logger.info("    See %s for more details." % self.config.logging_file)
+            return rc
 
     def handle_fail_rcs(self, req):
         """
@@ -1204,3 +1356,15 @@ class InsightsConnection(object):
         cleaner = spec_cleaner.Cleaner(self.config, pc.get_rm_conf())
         obf_funcs = cleaner.get_obfuscate_functions()
         return _deep_clean(cfacts)
+
+
+URL_DESCRIPTIONS = {
+    "": "Red Hat production (default)",
+    "production": "Red Hat production",
+    "staging": "Red Hat staging",
+    "satellite": "Satellite",
+}
+
+def url_description(url):
+    environment = os.getenv("FAKE_ENVIRONMENT", "").lower()
+    return URL_DESCRIPTIONS[environment] if environment in URL_DESCRIPTIONS else URL_DESCRIPTIONS[""]
