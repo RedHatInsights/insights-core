@@ -74,4 +74,4 @@ class OsRelease(Parser, dict):
         Returns:
             bool: True when the system is from RHEL AI image.
         """
-        return True if self.get("VARIANT", None) == "RHEL AI" and self.get("VARIANT_ID", None) == "rhel_ai" else False
+        return self.get("VARIANT", None) == "RHEL AI" and self.get("VARIANT_ID", None) == "rhel_ai"
