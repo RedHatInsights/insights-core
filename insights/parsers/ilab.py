@@ -36,7 +36,7 @@ class IlabModuleList(CommandParser, list):
         'models/prometheus-8x7b-v2-0'
 
     Attributes:
-        data (list): list of items containing model information
+        models (list): list of model names
 
     """
     def parse_content(self, content):
