@@ -133,6 +133,7 @@ jobs:
         curl -L -O https://files.pythonhosted.org/packages/cb/85/8a1588a04172e0853352ecfe214264c65a62ab35374d9ad9c569cf94c2a3/python_gnupg-0.4.6-py2.py3-none-any.whl
         curl -L -O https://files.pythonhosted.org/packages/e6/35/f187bdf23be87092bd0f1200d43d23076cee4d0dec109f195173fd3ebc79/mock-2.0.0-py2.py3-none-any.whl
         curl -L -O https://files.pythonhosted.org/packages/f2/94/3af39d34be01a24a6e65433d19e107099374224905f1e0cc6bbe1fd22a2f/argparse-1.4.0-py2.py3-none-any.whl
+        curl -L -O https://files.pythonhosted.org/packages/86/84/6bd1384196a6871a9108157ec934a1e1ee0078582cd208b43352566a86dc/pytest_catchlog-1.2.2-py2.py3-none-any.whl
         cd ${CUR_DIR}
         mkdir ../collections_module
         curl -L -o ./../collections_module/collections.py https://raw.githubusercontent.com/RedHatInsights/insights-core/5c8ca0f2fb3de45908e8d931d40758af34a7997a/.collections.py
