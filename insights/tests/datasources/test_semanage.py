@@ -43,15 +43,13 @@ def setup_function(func):
 
 def teardown_function(func):
     filters._CACHE = {}
-    filters.FILTERS = defaultdict(set)
+    filters.FILTERS = defaultdict(dict)
 
 
 def test_linux_users_count_map_staff_u():
     selinux_list = Mock()
     selinux_list.content = SEMANGE_LOGIN_LIST_OUTPUT1.splitlines()
-    broker = {
-        LocalSpecs.selinux_user_mapping: selinux_list
-    }
+    broker = {LocalSpecs.selinux_user_mapping: selinux_list}
     result = users_count_map_selinux_user(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
@@ -64,9 +62,7 @@ def test_linux_users_count_map_staff_u():
 def test_linux_users_count_map_more_selinux_users():
     selinux_list = Mock()
     selinux_list.content = SEMANGE_LOGIN_LIST_OUTPUT1.splitlines()
-    broker = {
-        LocalSpecs.selinux_user_mapping: selinux_list
-    }
+    broker = {LocalSpecs.selinux_user_mapping: selinux_list}
     result = users_count_map_selinux_user(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
@@ -79,8 +75,6 @@ def test_linux_users_count_map_more_selinux_users():
 def test_linux_users_count_map_staff_u_except():
     selinux_list = Mock()
     selinux_list.content = SEMANGE_LOGIN_LIST_OUTPUT2.splitlines()
-    broker = {
-        LocalSpecs.selinux_user_mapping: selinux_list
-    }
+    broker = {LocalSpecs.selinux_user_mapping: selinux_list}
     with pytest.raises(SkipComponent):
         users_count_map_selinux_user(broker)

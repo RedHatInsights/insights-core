@@ -45,7 +45,7 @@ client:
         - name: insights.specs.Specs.hostname
           enabled: true
 
-        - name: insights.tests.test_specs_runtime_ds_obfuscation.Specs
+        - name: insights.tests.specs.test_specs_runtime_ds_obfuscation.Specs
           enabled: true
 
     run_strategy:
@@ -57,7 +57,7 @@ plugins:
     default_component_enabled: false
 
     packages:
-        - insights.tests.test_specs_runtime_ds_obfuscation
+        - insights.tests.specs.test_specs_runtime_ds_obfuscation
 
     configs:
         - name: insights.core.spec_factory
@@ -68,9 +68,9 @@ plugins:
           enabled: true
         - name: insights.parsers.hostname.Hostname
           enabled: true
-        - name: insights.tests.test_specs_runtime_ds_obfuscation.Specs
+        - name: insights.tests.specs.test_specs_runtime_ds_obfuscation.Specs
           enabled: true
-        - name: insights.tests.test_specs_runtime_ds_obfuscation.Stuff
+        - name: insights.tests.specs.test_specs_runtime_ds_obfuscation.Stuff
           enabled: true
 """.strip()
 
@@ -91,11 +91,7 @@ class Stuff(Specs):
         # the hostname must be not obfuscated
         return '{0}{1}'.format(base_path, hn)
 
-    ds_read_hostname = command_with_args(
-            'ls -l  %s',
-            path_with_hostname,
-            save_as='localhost_empty'
-    )
+    ds_read_hostname = command_with_args('ls -l  %s', path_with_hostname, save_as='localhost_empty')
 
 
 #
@@ -123,15 +119,12 @@ def test_specs_ds_with_hn_collect(mock_fun, obfuscate):
     for pkg in manifest.get("plugins", {}).get("packages", []):
         dr.load_components(pkg, exclude=None)
     # For verifying convenience, test obfuscate=False only
-    conf = InsightsConfig(
-            obfuscate=obfuscate, obfuscate_hostname=obfuscate,
-            manifest=manifest)
+    conf = InsightsConfig(obfuscate=obfuscate, obfuscate_hostname=obfuscate, manifest=manifest)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
     output_path, errors = collect.collect(
-            tmp_path=arch.tmp_dir,
-            archive_name=arch.archive_name,
-            client_config=conf)
+        tmp_path=arch.tmp_dir, archive_name=arch.archive_name, client_config=conf
+    )
     meta_data_root = os.path.join(output_path, 'meta_data')
     data_root = os.path.join(output_path, 'data')
 
@@ -139,7 +132,9 @@ def test_specs_ds_with_hn_collect(mock_fun, obfuscate):
     count = 0
     for spec in Specs.__dict__:
         if not spec.startswith(('__', 'context_handlers', 'registry')):
-            file_name = "insights.tests.test_specs_runtime_ds_obfuscation.Specs.{0}.json".format(spec)
+            file_name = (
+                "insights.tests.specs.test_specs_runtime_ds_obfuscation.Specs.{0}.json".format(spec)
+            )
             meta_data = os.path.join(meta_data_root, file_name)
             with open(meta_data, 'r') as fp:
                 mdata = json.load(fp)

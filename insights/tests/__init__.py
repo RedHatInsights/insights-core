@@ -36,11 +36,14 @@ find = spec_factory.find
 
 def _intercept_add_filter(func):
     @wraps(func)
-    def inner(component, pattern):
-        ret = add_filter(component, pattern)
+    def inner(component, pattern, max_match=filters.MAX_MATCH):
+        ret = add_filter(component, pattern, max_match=max_match)
         calling_module = inspect.stack()[1][0].f_globals.get("__name__")
-        ADDED_FILTERS[calling_module] |= set(r for r in dr.get_registry_points(component) if r.filterable)
+        ADDED_FILTERS[calling_module] |= set(
+            r for r in dr.get_registry_points(component) if r.filterable
+        )
         return ret
+
     return inner
 
 
@@ -51,6 +54,7 @@ def _intercept_find(func):
         calling_module = inspect.stack()[1][0].f_globals.get("__name__")
         ADDED_FILTERS[calling_module].add(ds)
         return ret
+
     return inner
 
 
@@ -92,8 +96,11 @@ def _beautify_deep_compare_diff(result, expected):
         diff.append('\tkey "{0}" not in Result;'.format(k))
     for k in common_keys:
         if not eq(result[k], expected[k]):
-            diff.append('\tkey "{0}" unequal values:\n\t\tExpected: {1}\n\t\tResult  : {2}'.format(
-                            k, expected[k], result[k]))
+            diff.append(
+                '\tkey "{0}" unequal values:\n\t\tExpected: {1}\n\t\tResult  : {2}'.format(
+                    k, expected[k], result[k]
+                )
+            )
     if not diff:
         diff.append('\tUnrecognized unequal values in result layer one;')
 
@@ -118,7 +125,7 @@ def deep_compare(result, expected):
     # This case ensures that when rules return a make_none() response, all of the older
     # CI tests that are looking for None instead of make_none() will still pass
     if result is None or (isinstance(result, dict) and result.get("type") == "none"):
-        assert (expected is None or expected == MAKE_NONE_RESULT), result
+        assert expected is None or expected == MAKE_NONE_RESULT, result
         return
 
     if isinstance(result, dict) and expected is None:
@@ -150,12 +157,11 @@ COMPONENT_FILTERED_PARSERS = {
     'CloudInstance': ['insights.parsers.subscription_manager.SubscriptionManagerFacts'],
     'CloudProvider': ['insights.parsers.rhsm_conf.RHSMConf'],
     'OSRelease': ['insights.parsers.dmesg.DmesgLineList'],
-    'Sap': ['insights.parsers.saphostctrl.SAPHostCtrlInstances']
+    'Sap': ['insights.parsers.saphostctrl.SAPHostCtrlInstances'],
 }
 
 
-def run_test(component, input_data,
-             expected=_UNDEFINED, return_make_none=False, do_filter=True):
+def run_test(component, input_data, expected=_UNDEFINED, return_make_none=False, do_filter=True):
     """
     Arguments:
         component: The insights component need to test.
@@ -165,6 +171,7 @@ def run_test(component, input_data,
         do_filter: Does need to check dependency spec filter warning?
             - it's not required to check the filters for sosreport
     """
+
     def get_filtered_specs(module):
         filtered = set()
         mods = dir(importlib.import_module(module))
@@ -183,7 +190,9 @@ def run_test(component, input_data,
         rps = dr.get_registry_points(component)
         filtered = get_filtered_specs(mod)
         filterable = set(d for d in rps if dr.get_delegate(d).filterable) - filtered
-        missing_filters = filterable - ADDED_FILTERS.get(mod, set()) - ADDED_FILTERS.get(sup_mod, set())
+        missing_filters = (
+            filterable - ADDED_FILTERS.get(mod, set()) - ADDED_FILTERS.get(sup_mod, set())
+        )
         if missing_filters:
             names = [dr.get_name(m) for m in missing_filters]
             msg = "%s must add filters to %s"
@@ -204,16 +213,18 @@ def integrate(input_data, component):
     return run_test(component, input_data)
 
 
-def context_wrap(lines,
-                 path="path",
-                 hostname=DEFAULT_HOSTNAME,
-                 release=DEFAULT_RELEASE,
-                 version="-1.-1",
-                 machine_id="machine_id",
-                 strip=True,
-                 split=True,
-                 filtered_spec=None,
-                 **kwargs):
+def context_wrap(
+    lines,
+    path="path",
+    hostname=DEFAULT_HOSTNAME,
+    release=DEFAULT_RELEASE,
+    version="-1.-1",
+    machine_id="machine_id",
+    strip=True,
+    split=True,
+    filtered_spec=None,
+    **kwargs
+):
     if isinstance(lines, six.string_types):
         if strip:
             lines = lines.strip()
@@ -223,10 +234,16 @@ def context_wrap(lines,
     if filtered_spec is not None and filtered_spec in filters.FILTERS:
         lines = [l for l in lines if any([f in l for f in filters.FILTERS[filtered_spec]])]
 
-    return Context(content=lines,
-                   path=path, hostname=hostname,
-                   release=release, version=version.split("."),
-                   machine_id=machine_id, relative_path=path, **kwargs)
+    return Context(
+        content=lines,
+        path=path,
+        hostname=hostname,
+        release=release,
+        version=version.split("."),
+        machine_id=machine_id,
+        relative_path=path,
+        **kwargs
+    )
 
 
 input_data_cache = {}
@@ -236,10 +253,7 @@ counter = itertools.count()
 
 
 def create_metadata(system_id, product):
-    ctx_metadata = {
-        "system_id": system_id,
-        "links": []
-    }
+    ctx_metadata = {"system_id": system_id, "links": []}
     ctx_metadata["type"] = product.role
     ctx_metadata["product"] = product.__class__.__name__
     return json.dumps(ctx_metadata)
@@ -265,6 +279,7 @@ class InputData(object):
     contain the specified value in the context.path field.  This is useful for
     testing pattern-like file parsers.
     """
+
     def __init__(self, name=None, hostname=None):
         cnt = input_data_cache.get(name, 0)
         self.name = "{0}-{1:0>5}".format(name, cnt)
@@ -421,6 +436,7 @@ def archive_provider(component, test_func=deep_compare, stride=1):
 
     [1] insights.tests.deep_compare()
     """
+
     def _wrap(func):
         @six.wraps(func)
         def __wrap(stride=stride):
@@ -430,4 +446,5 @@ def archive_provider(component, test_func=deep_compare, stride=1):
         __wrap.stride = stride
         ARCHIVE_GENERATORS.append(__wrap)
         return __wrap
+
     return _wrap

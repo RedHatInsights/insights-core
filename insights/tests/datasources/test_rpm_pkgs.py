@@ -29,12 +29,25 @@ RELATIVE_PATH = "insights_commands/rpm_pkgs"
 
 def setup_function(func):
     if func is test_rpm_v_pkgs:
-        filters.add_filter(Specs.rpm_V_package_list, ['coreutils', 'procps', 'procps-ng', 'shadow-utils', 'passwd', 'sudo', 'chrony', 'findutils', 'glibc'])
+        filters.add_filter(
+            Specs.rpm_V_package_list,
+            [
+                'coreutils',
+                'procps',
+                'procps-ng',
+                'shadow-utils',
+                'passwd',
+                'sudo',
+                'chrony',
+                'findutils',
+                'glibc',
+            ],
+        )
 
 
 def teardown_function(func):
     filters._CACHE = {}
-    filters.FILTERS = defaultdict(set)
+    filters.FILTERS = defaultdict(dict)
 
 
 def get_users():
@@ -77,4 +90,14 @@ def test_pkgs_list_empty():
 
 def test_rpm_v_pkgs():
     ret = rpm_v_pkg_list({})
-    assert ret == ['chrony', 'coreutils', 'findutils', 'glibc', 'passwd', 'procps', 'procps-ng', 'shadow-utils', 'sudo']
+    assert ret == [
+        'chrony',
+        'coreutils',
+        'findutils',
+        'glibc',
+        'passwd',
+        'procps',
+        'procps-ng',
+        'shadow-utils',
+        'sudo',
+    ]

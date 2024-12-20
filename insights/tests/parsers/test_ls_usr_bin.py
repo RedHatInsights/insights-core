@@ -20,15 +20,22 @@ lrwxrwxrwx.  1 0  0        9 Oct 22  2019 python2 -> python2.7
 
 def teardown_function(func):
     filters._CACHE = {}
-    filters.FILTERS = defaultdict(set)
+    filters.FILTERS = defaultdict(dict)
 
 
 def test_ls_usr_bin():
     ls_usr_bin = LsUsrBin(context_wrap(LS_USR_BIN, path='insights_commands/ls_-ln_.usr.bin'))
-    assert ls_usr_bin.files_of('/usr/bin') == ['python', 'python-argcomplete-check-easy-install-script', 'python-argcomplete-tcsh', 'python-config', 'python2']
+    assert ls_usr_bin.files_of('/usr/bin') == [
+        'python',
+        'python-argcomplete-check-easy-install-script',
+        'python-argcomplete-tcsh',
+        'python-config',
+        'python2',
+    ]
     python = ls_usr_bin.dir_entry('/usr/bin', 'python')
     assert python is not None
-    assert python == {'date': 'Oct 22  2019',
+    assert python == {
+        'date': 'Oct 22  2019',
         'dir': '/usr/bin',
         'group': '0',
         'link': 'python2',
@@ -38,7 +45,8 @@ def test_ls_usr_bin():
         'perms': 'rwxrwxrwx.',
         'raw_entry': 'lrwxrwxrwx.  1 0  0        7 Oct 22  2019 python -> python2',
         'size': 7,
-        'type': 'l'}
+        'type': 'l',
+    }
 
 
 def test_ls_usr_bin_doc_examples():
