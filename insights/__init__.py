@@ -27,9 +27,9 @@ import yaml
 from collections import defaultdict
 from contextlib import contextmanager
 
-from insights.core import (CommandParser, ContainerParser, FileListing, IniConfigFile, JSONParser, LegacyItemAccess,  # noqa: F401
-                           LogFileOutput, Parser, Scannable, SysconfigOptions, Syslog, XMLParser, YAMLParser, dr,  # noqa: F401
-                           taglang)
+from insights.core import (CommandParser, ContainerParser, IniConfigFile, JSONParser, LegacyItemAccess,  # noqa: F401
+                           LogFileOutput, Parser, Scannable, SysconfigOptions, Syslog, XMLParser, YAMLParser,  # noqa: F401
+                           dr, taglang)
 from insights.core.archives import COMPRESSION_TYPES, extract
 from insights.core.context import (ClusterArchiveContext, ExecutionContext, HostContext,  # noqa: F401
                                    HostArchiveContext, SerializedArchiveContext)
@@ -42,6 +42,7 @@ from insights.core.plugins import (combiner, condition, datasource, fact, incide
 from insights.core.spec_factory import RawFileProvider, TextFileProvider
 from insights.formats import Formatter as FormatterClass, get_formatter
 from insights.parsers import get_active_lines  # noqa: F401
+from insights.parsers.ls import FileListing  # noqa: F401
 from insights.util import defaults  # noqa: F401
 
 log = logging.getLogger(__name__)
