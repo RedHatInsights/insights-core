@@ -356,7 +356,10 @@ class DefaultSpecs(Specs):
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     fstab = simple_file("/etc/fstab")
-    fw_security = simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal])
+    fw_security = first_of([
+        simple_command("/usr/bin/fwupdmgr security --force --json", deps=[IsBareMetal]),
+        simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal])
+    ])
     galera_cnf = first_file(
         [
             "/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf",
