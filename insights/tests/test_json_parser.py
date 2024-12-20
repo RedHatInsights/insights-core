@@ -62,8 +62,6 @@ def test_json_parser_with_extra_header_lines():
 
     ctx = context_wrap(JSON_CONTENT_WITH_EXTRA_HEADER_LINES_2)
     assert MyJsonParser(ctx).data == {}
-    # with pytest.raises(SkipComponent) as ex:
-    #     MyJsonParser(ctx)
 
     ctx = context_wrap(JSON_CONTENT_WITH_EXTRA_HEADER_LINES_3)
     with pytest.raises(ParseException) as ex:
