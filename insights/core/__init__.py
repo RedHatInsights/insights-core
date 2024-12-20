@@ -782,7 +782,16 @@ class JSONParser(Parser, LegacyItemAccess):
     def parse_content(self, content):
         try:
             if isinstance(content, list):
-                self.data = json.loads('\n'.join(content))
+                # Find the actual json start line with '{' and '[' as identifier
+                # To skip any extra lines before the actual json start line
+                actual_start_index = 0
+                for idx, _line in enumerate(content):
+                    line = _line.strip()
+                    if line and line.startswith('{') or line.startswith('['):
+                        actual_start_index = idx
+                        break
+                print("content[actual_start_index:]: ", content[actual_start_index:])
+                self.data = json.loads('\n'.join(content[actual_start_index:]))
             else:
                 self.data = json.loads(content)
         except:
