@@ -1,6 +1,5 @@
 import os
 
-from mock.mock import patch, Mock
 from pytest import mark
 
 from insights.client.archive import InsightsArchive
@@ -11,13 +10,6 @@ test_file_data = 'test\nabcd\n1234\npwd: p4ssw0rd\n'
 test_file_data_sensitive = 'test\nabcd\n1234\npassword: p4ssw0rd here\npassword=  p4ssw0rd here\npassword'
 
 
-@patch('insights.client.archive.InsightsArchive', Mock())
-@patch('insights.client.core_collector.CoreCollector._write_branch_info', Mock())
-@patch('insights.client.core_collector.CoreCollector._write_display_name', Mock())
-@patch('insights.client.core_collector.CoreCollector._write_version_info', Mock())
-@patch('insights.client.core_collector.CoreCollector._write_tags', Mock())
-@patch('insights.client.core_collector.CoreCollector._write_blacklist_report', Mock())
-@patch('insights.client.core_collector.collect.collect', Mock(return_value=('/var/tmp/testarchive/insights-test', {})))
 def test_redact_core():
     conf = InsightsConfig()
     rm_conf = {'test': 'test'}
