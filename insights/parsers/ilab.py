@@ -9,7 +9,7 @@ IlabModuleList - command ``/usr/bin/ilab model list``
 """
 from insights.core import CommandParser
 from insights.core.plugins import parser
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import SkipComponent, ParseException
 from insights.specs import Specs
 
 
@@ -43,7 +43,7 @@ class IlabModuleList(CommandParser, list):
         if not content:
             raise SkipComponent("Empty")
         if not content[0].startswith("+-"):
-            raise SkipComponent("Unexpected format")
+            raise ParseException("Unexpected format of content[0]: %s" % content[0])
         for line in content:
             if line.startswith("|") and "Model Name" not in line:
                 split_items = line.split("|")
@@ -56,5 +56,5 @@ class IlabModuleList(CommandParser, list):
                         }
                     )
                 else:
-                    raise SkipComponent("Unexpected format")
+                    raise ParseException("Unexpected format: %s" % line)
         self.models = [m['model_name'] for m in self]

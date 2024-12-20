@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import SkipComponent, ParseException
 from insights.parsers import ilab
 from insights.parsers.ilab import IlabModuleList
 from insights.tests import context_wrap
@@ -49,10 +49,10 @@ def test_ilab_model_list():
     with pytest.raises(SkipComponent):
         IlabModuleList(context_wrap(ILAB_MODULE_LIST_EMPTY))
 
-    with pytest.raises(SkipComponent):
+    with pytest.raises(ParseException):
         IlabModuleList(context_wrap(ILAB_MODULE_LIST_ERROR))
 
-    with pytest.raises(SkipComponent):
+    with pytest.raises(ParseException):
         IlabModuleList(context_wrap(ILAB_MODULE_LIST_ISSUE_FORMAT))
 
 
