@@ -276,7 +276,7 @@ class Specs(SpecSet):
     ibm_lparcfg = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
     ifcfg = RegistryPoint(multi_output=True)
     ifcfg_static_route = RegistryPoint(filterable=True, multi_output=True)
-    ilab_model_list = RegistryPoint()
+    ilab_model_list = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     imagemagick_policy = RegistryPoint(multi_output=True, filterable=True, no_obfuscate=['ip'])
     image_builder_facts = RegistryPoint()
     init_ora = RegistryPoint()

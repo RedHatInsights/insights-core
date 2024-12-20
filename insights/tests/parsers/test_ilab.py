@@ -44,6 +44,7 @@ def test_ilab_model_list():
     assert ilab_module_list_info[0]["model_name"] == "models/prometheus-8x7b-v2-0"
     assert ilab_module_list_info[1]["last_modified"] == "2024-08-09 13:28:24"
     assert ilab_module_list_info[2]["size"] == "12.6 GB"
+    assert ilab_module_list_info.models == ["models/prometheus-8x7b-v2-0", "models/mixtral-8x7b-instruct-v0-1", "models/granite-7b-redhat-lab", "models/granite-7b-starter"]
 
     with pytest.raises(SkipComponent):
         IlabModuleList(context_wrap(ILAB_MODULE_LIST_EMPTY))

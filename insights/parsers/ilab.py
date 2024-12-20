@@ -57,3 +57,4 @@ class IlabModuleList(CommandParser, list):
                     )
                 else:
                     raise SkipComponent("Unexpected format")
+        self.models = [m['model_name'] for m in self]
