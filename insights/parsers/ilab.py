@@ -43,7 +43,7 @@ class IlabModuleList(CommandParser, list):
         if not content:
             raise SkipComponent("Empty")
         if not content[0].startswith("+-"):
-            raise ParseException("Unexpected format of content[0]: %s" % content[0])
+            raise ParseException("Unexpected format: %s" % content[0])
         for line in content:
             if line.startswith("|") and "Model Name" not in line:
                 split_items = line.split("|")
