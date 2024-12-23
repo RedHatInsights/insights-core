@@ -37,7 +37,9 @@ WARNING: Some warning line-1 from a command spec output
 def test_json_parser_success():
     for jsonstr in json_test_strings:
         ctx = context_wrap(jsonstr)
-        assert MyJsonParser(ctx).data == json_test_strings[jsonstr]
+        my_json_parser = MyJsonParser(ctx)
+        assert my_json_parser.data == json_test_strings[jsonstr]
+        assert my_json_parser.unparsed_lines == []
 
 
 def test_json_parser_failure():
@@ -58,10 +60,17 @@ def test_json_parser_null_value():
 
 def test_json_parser_with_extra_header_lines():
     ctx = context_wrap(JSON_CONTENT_WITH_EXTRA_HEADER_LINES_1)
-    assert MyJsonParser(ctx).data == {'a': [{'b': 'x'}, {'b': 'y'}]}
+    my_json_parser = MyJsonParser(ctx)
+    assert my_json_parser.data == {'a': [{'b': 'x'}, {'b': 'y'}]}
+    assert my_json_parser.unparsed_lines == [
+        "INFO: The fwupdagent command is deprecated, use `fwupdmgr --json` instead",
+        "WARNING: UEFI firmware can not be updated in legacy BIOS mode",
+        "  See https://github.com/fwupd/fwupd/wiki/PluginFlag:legacy-bios for more information."]
 
     ctx = context_wrap(JSON_CONTENT_WITH_EXTRA_HEADER_LINES_2)
-    assert MyJsonParser(ctx).data == {}
+    my_json_parser = MyJsonParser(ctx)
+    assert my_json_parser.data == {}
+    assert len(my_json_parser.unparsed_lines) == 3
 
     ctx = context_wrap(JSON_CONTENT_WITH_EXTRA_HEADER_LINES_3)
     with pytest.raises(ParseException) as ex:

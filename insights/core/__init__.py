@@ -778,6 +778,14 @@ class YAMLParser(Parser, LegacyItemAccess):
 class JSONParser(Parser, LegacyItemAccess):
     """
     A parser class that reads JSON files.  Base your own parser on this.
+
+    Attributes:
+        data (dict): The loaded json content
+        unparsed_lines (list): The skipped unparsed lines
+
+    Raises:
+        ParseException: When any error be thrown during the json loading of `content`.
+        SkipComponent: When `content` is empty or the loaded data is empty.
     """
     def parse_content(self, content):
         # If content is empty then raise a skip exception instead of a parse exception.
@@ -793,6 +801,7 @@ class JSONParser(Parser, LegacyItemAccess):
                     if line and line.startswith('{') or line.startswith('['):
                         actual_start_index = idx
                         break
+                self.unparsed_lines = content[:actual_start_index]
                 self.data = json.loads('\n'.join(content[actual_start_index:]))
             else:
                 self.data = json.loads(content)
