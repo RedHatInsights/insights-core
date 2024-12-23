@@ -791,24 +791,40 @@ class YAMLParser(Parser, LegacyItemAccess):
 class JSONParser(Parser, LegacyItemAccess):
     """
     A parser class that reads JSON files.  Base your own parser on this.
+
+    Attributes:
+        data (dict): The loaded json content
+        unparsed_lines (list): The skipped unparsed lines
+
+    Raises:
+        ParseException: When any error be thrown during the json loading of `content`.
+        SkipComponent: When `content` is empty or the loaded data is empty.
     """
 
     def parse_content(self, content):
+        # If content is empty then raise a skip exception instead of a parse exception.
+        if not content:
+            raise SkipComponent("Empty output.")
         try:
             if isinstance(content, list):
-                self.data = json.loads('\n'.join(content))
+                # Find the actual json start line with '{' and '[' as identifier
+                # To skip any extra lines before the actual json start line
+                actual_start_index = 0
+                for idx, _line in enumerate(content):
+                    line = _line.strip()
+                    if line and line.startswith('{') or line.startswith('['):
+                        actual_start_index = idx
+                        break
+                self.unparsed_lines = content[:actual_start_index]
+                self.data = json.loads('\n'.join(content[actual_start_index:]))
             else:
                 self.data = json.loads(content)
         except:
-            # If content is empty then raise a skip exception instead of a parse exception.
-            if not content:
-                raise SkipComponent("Empty output.")
-            else:
-                tb = sys.exc_info()[2]
-                cls = self.__class__
-                name = ".".join([cls.__module__, cls.__name__])
-                msg = "%s couldn't parse json." % name
-                six.reraise(ParseException, ParseException(msg), tb)
+            tb = sys.exc_info()[2]
+            cls = self.__class__
+            name = ".".join([cls.__module__, cls.__name__])
+            msg = "%s couldn't parse json." % name
+            six.reraise(ParseException, ParseException(msg), tb)
         # Kept for backwards compatibility;
         # JSONParser used to raise an exception for valid "null" JSON string
         if self.data is None:
