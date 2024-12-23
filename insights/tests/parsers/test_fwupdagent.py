@@ -133,6 +133,32 @@ WARNING: UEFI firmware can not be updated in legacy BIOS mode
 }
 """
 
+SECURITY_FWUPDMGR = """
+WARNING: UEFI firmware can not be updated in legacy BIOS mode
+See https://github.com/fwupd/fwupd/wiki/PluginFlag:legacy-bios for more information.
+{
+  "HostSecurityAttributes" : [
+    {
+      "AppstreamId" : "org.fwupd.hsi.Kernel.Tainted",
+      "HsiResult" : "not-tainted",
+      "Name" : "Linux kernel",
+      "Uri" : "https://fwupd.github.io/hsi.html#org.fwupd.hsi.Kernel.Tainted",
+      "Flags" : [
+        "success",
+        "runtime-issue"
+      ]
+    },
+    {
+      "AppstreamId" : "org.fwupd.hsi.EncryptedRam",
+      "HsiLevel" : 4,
+      "HsiResult" : "not-supported",
+      "Name" : "Encrypted RAM",
+      "Uri" : "https://fwupd.github.io/hsi.html#org.fwupd.hsi.EncryptedRam"
+    }
+  ]
+}
+"""
+
 SECURITY_ERROR_1 = """
 Failed to parse arguments: Unknown option --force
 """
@@ -184,6 +210,16 @@ def test_security():
         "INFO: The fwupdagent command is deprecated, use `fwupdmgr --json` instead",
         "WARNING: UEFI firmware can not be updated in legacy BIOS mode",
         "  See https://github.com/fwupd/fwupd/wiki/PluginFlag:legacy-bios for more information."]
+
+    security = FwupdagentSecurity(context_wrap(SECURITY_FWUPDMGR))
+    assert len(security["HostSecurityAttributes"]) == 2
+    assert security["HostSecurityAttributes"][0]["Name"] == "Linux kernel"
+    assert security["HostSecurityAttributes"][0]["HsiResult"] == "not-tainted"
+    assert security["HostSecurityAttributes"][1]["Name"] == "Encrypted RAM"
+    assert security["HostSecurityAttributes"][1]["HsiLevel"] == 4
+    assert security.unparsed_lines == [
+        "WARNING: UEFI firmware can not be updated in legacy BIOS mode",
+        "See https://github.com/fwupd/fwupd/wiki/PluginFlag:legacy-bios for more information."]
 
     with pytest.raises(ParseException):
         FwupdagentSecurity(context_wrap(SECURITY_ERROR_1))
