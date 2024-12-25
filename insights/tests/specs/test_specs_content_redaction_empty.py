@@ -34,7 +34,7 @@ client:
         keywords: []
 
     persist:
-        - name: insights.tests.test_specs_content_redaction_empty.Specs
+        - name: insights.tests.specs.test_specs_content_redaction_empty.Specs
           enabled: true
 
     run_strategy:
@@ -46,12 +46,12 @@ plugins:
     default_component_enabled: false
 
     packages:
-        - insights.tests.test_specs_content_redaction_empty
+        - insights.tests.specs.test_specs_content_redaction_empty
 
     configs:
-        - name: insights.tests.test_specs_content_redaction_empty.Specs
+        - name: insights.tests.specs.test_specs_content_redaction_empty.Specs
           enabled: true
-        - name: insights.tests.test_specs_content_redaction_empty.Stuff
+        - name: insights.tests.specs.test_specs_content_redaction_empty.Stuff
           enabled: true
 """.strip()
 
@@ -77,7 +77,8 @@ def setup_function(func):
 
 
 def teardown_function(func):
-    os.remove(tmp_file_path)
+    if os.path.exists(tmp_file_path):
+        os.remove(tmp_file_path)
     # Reset Test ENV
     dr.COMPONENTS = defaultdict(lambda: defaultdict(set))
     dr.TYPE_OBSERVERS = defaultdict(set)
@@ -96,10 +97,8 @@ def test_specs_ds_with_hn_collect(mock_fun):
     arch.create_archive_dir()
     rm_conf = {'patterns': {'regex': ['KEEEY']}, 'keywords': ['TeST']}
     output_path, errors = collect.collect(
-            tmp_path=arch.tmp_dir,
-            archive_name=arch.archive_name,
-            rm_conf=rm_conf,
-            client_config=conf)
+        tmp_path=arch.tmp_dir, archive_name=arch.archive_name, rm_conf=rm_conf, client_config=conf
+    )
     meta_data_root = os.path.join(output_path, 'meta_data')
     data_root = os.path.join(output_path, 'data')
 
@@ -108,7 +107,11 @@ def test_specs_ds_with_hn_collect(mock_fun):
     line_count = 0
     for spec in Specs.__dict__:
         if not spec.startswith(('__', 'context_handlers', 'registry')):
-            file_name = "insights.tests.test_specs_content_redaction_empty.Specs.{0}.json".format(spec)
+            file_name = (
+                "insights.tests.specs.test_specs_content_redaction_empty.Specs.{0}.json".format(
+                    spec
+                )
+            )
             meta_data = os.path.join(meta_data_root, file_name)
             with open(meta_data, 'r') as fp:
                 mdata = json.load(fp)
