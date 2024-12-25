@@ -66,7 +66,8 @@ NEVER_FIRES_RESULT = {
     'rule_fqdn': 'insights.plugins.never_fires.report',
     'reason': 'MISSING_REQUIREMENTS',
     'details': "All: ['insights.plugins.never_fires.thing'] Any: ",
-    'type': 'skip'}
+    'type': 'skip',
+}
 REDHAT_RELEASE = "Red Hat Enterprise Linux Server release 7.3 (Maipo)"
 UNAME = "Linux test.redhat.com 3.10.0-514.el7.x86_64 #1 SMP Wed Oct 19 11:24:13 EDT 2016 x86_64 x86_64 x86_64 GNU/Linux"
 
@@ -89,7 +90,9 @@ def test_run_command(tmpdir):
     assert broker[always_fires.report] == ALWAYS_FIRES_RESULT
     assert broker[never_fires.report] == NEVER_FIRES_RESULT
 
-    broker = run([Specs.redhat_release, always_fires.report, never_fires.report], root=tmpdir.strpath)
+    broker = run(
+        [Specs.redhat_release, always_fires.report, never_fires.report], root=tmpdir.strpath
+    )
     assert broker is not None
     assert always_fires.report in broker
     assert never_fires.report in broker
@@ -134,9 +137,15 @@ def test_bare_files(tmpdir):
 
     testargs = [
         "insights-run",
-        "-t", "-m",
-        "-b", 'insights.tests.spec_tests.TSpecs.sample_multioutput_file={fname}'.format(fname=os.path.join(tmpdir.strpath, 'bare', 'sample.log')),
-        "-p", "insights.tests.spec_tests"]
+        "-t",
+        "-m",
+        "-b",
+        'insights.tests.spec_tests.TSpecs.sample_multioutput_file={fname}'.format(
+            fname=os.path.join(tmpdir.strpath, 'bare', 'sample.log')
+        ),
+        "-p",
+        "insights.tests.spec_tests",
+    ]
     with patch.object(sys, 'argv', testargs):
         broker = run(print_summary=True)
         assert broker is not None
@@ -145,9 +154,15 @@ def test_bare_files(tmpdir):
 
     testargs = [
         "insights-run",
-        "-t", "-m",
-        "-b", 'insights.tests.spec_tests.TSpecs.sample_nonexistent={fname}'.format(fname=os.path.join(tmpdir.strpath, 'bare', 'sample.log')),
-        "-p", "insights.tests.spec_tests"]
+        "-t",
+        "-m",
+        "-b",
+        'insights.tests.spec_tests.TSpecs.sample_nonexistent={fname}'.format(
+            fname=os.path.join(tmpdir.strpath, 'bare', 'sample.log')
+        ),
+        "-p",
+        "insights.tests.spec_tests",
+    ]
     with patch.object(sys, 'argv', testargs):
         broker = run(print_summary=True)
         assert broker is not None
@@ -156,9 +171,15 @@ def test_bare_files(tmpdir):
 
     testargs = [
         "insights-run",
-        "-t", "-m",
-        "-b", 'insights.tests.spec_tests.TSpecs.sample_raw_file={fname}'.format(fname=os.path.join(tmpdir.strpath, 'bare', 'sample.log')),
-        "-p", "insights.tests.spec_tests"]
+        "-t",
+        "-m",
+        "-b",
+        'insights.tests.spec_tests.TSpecs.sample_raw_file={fname}'.format(
+            fname=os.path.join(tmpdir.strpath, 'bare', 'sample.log')
+        ),
+        "-p",
+        "insights.tests.spec_tests",
+    ]
     with patch.object(sys, 'argv', testargs):
         broker = run(print_summary=True)
         assert broker is not None
