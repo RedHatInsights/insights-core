@@ -8,7 +8,9 @@ from insights.plugins import vulnerable_kernel
 
 ERROR_KEY = 'VULNERABLE_KERNEL'
 
-UNAME_TEMPLATE = "Linux testhost1 %s #1 SMP Tue Jan 29 11:47:41 EST 2013 x86_64 x86_64 x86_64 GNU/Linux"
+UNAME_TEMPLATE = (
+    "Linux testhost1 %s #1 SMP Tue Jan 29 11:47:41 EST 2013 x86_64 x86_64 x86_64 GNU/Linux"
+)
 
 NOT_VULNERABLE = [
     '2.4.32-100.el6.x86_64',
