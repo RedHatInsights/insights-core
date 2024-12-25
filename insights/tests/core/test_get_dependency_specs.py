@@ -64,10 +64,15 @@ def condition_07(*args):
     return True
 
 
-@rule(Lsof, condition_01, condition_02,
-      [LsCPU, condition_03], [condition_04, LsSCSI],
-      [condition_05, condition_06],
-      optional=[LSBlock, condition_07])
+@rule(
+    Lsof,
+    condition_01,
+    condition_02,
+    [LsCPU, condition_03],
+    [condition_04, LsSCSI],
+    [condition_05, condition_06],
+    optional=[LSBlock, condition_07],
+)
 def report_01(*args):
     return make_fail("HIT")
 

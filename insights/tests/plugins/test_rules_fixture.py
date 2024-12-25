@@ -8,7 +8,7 @@ UNAME = {
     'spec': Specs.uname,
     'data': """
 Linux testbox.redhat.com 2.6.32-642.el6.x86_64 #1 SMP Tue Sep 16 01:56:35 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux
-""".strip()
+""".strip(),
 }
 RPMS = {
     'spec': Specs.installed_rpms,
@@ -17,7 +17,7 @@ RPMS = {
 kernel-2.6.32-573.el6.x86_64
 bash-4.1.23-6.fc29.x86_64
 rh-nginx112-nginx-1.12.1-2.el7.x86_64
-""".strip()
+""".strip(),
 }
 
 
