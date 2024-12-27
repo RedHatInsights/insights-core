@@ -31,7 +31,7 @@ class OdCpuDmaLatency(CommandParser):
     """
 
     def parse_content(self, content):
-        if content and content[0].isdigit():
-            self.force_latency = int(content[0])
+        if content and content[0].strip().isdigit():
+            self.force_latency = int(content[0].strip())
         else:
             raise SkipComponent('Nothing to parse.')
