@@ -82,7 +82,7 @@ def teardown_function():
         os.remove(yaml_file)
 
     filters._CACHE = {}
-    filters.FILTERS = defaultdict(set)
+    filters.FILTERS = defaultdict(dict)
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Skip py26')

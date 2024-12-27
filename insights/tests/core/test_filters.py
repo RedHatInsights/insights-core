@@ -43,19 +43,22 @@ class LocalSpecsNoFilters(object):
 
 def setup_function(func):
     if func is test_get_filter:
-        filters.add_filter(Specs.ps_aux, "COMMAND")
+        filters.add_filter(Specs.ps_aux, "COMMAND", 99999)
+        filters.add_filter(Specs.ps_aux, ["COMMAND", "PID"], 99)
 
     if func is test_get_filter_registry_point:
         filters.add_filter(Specs.ps_aux, "COMMAND")
         filters.add_filter(DefaultSpecs.ps_aux, "MEM")
 
     if func is test_filter_dumps_loads:
-        filters.add_filter(Specs.ps_aux, ["PID", "COMMAND", "TEST"])
+        filters.add_filter(Specs.ps_aux, ["PID", "COMMAND"])
+        filters.add_filter(Specs.ps_aux, "TEST_10", 10)
+        filters.add_filter(Specs.ps_aux, ["PID", "TEST_5"], 5)
 
 
 def teardown_function(func):
     filters._CACHE = {}
-    filters.FILTERS = defaultdict(set)
+    filters.FILTERS = defaultdict(dict)
 
 
 def test_filter_dumps_loads():
@@ -65,7 +68,12 @@ def test_filter_dumps_loads():
     filters.loads(r)
 
     assert Specs.ps_aux in filters.FILTERS
-    assert filters.FILTERS[Specs.ps_aux] == set(["PID", "COMMAND", "TEST"])
+    assert filters.FILTERS[Specs.ps_aux] == {
+        'COMMAND': filters.MAX_MATCH,
+        'PID': filters.MAX_MATCH,  # max match
+        'TEST_10': 10,
+        'TEST_5': 5,
+    }
 
     r2 = filters.dumps()
     assert r2 == r  # 'filters' are in the same order in every dumps()
@@ -75,8 +83,10 @@ def test_get_filter():
     f = filters.get_filters(Specs.ps_aux)
     assert "COMMAND" in f
 
-    f = filters.get_filters(DefaultSpecs.ps_aux)
+    f = filters.get_filters(DefaultSpecs.ps_aux, True)
     assert "COMMAND" in f
+    assert f["COMMAND"] == 99999  # max match
+    assert f["PID"] == 99
 
 
 def test_get_filter_registry_point():
@@ -185,6 +195,11 @@ def test_add_filter_exception_empty():
         filters.add_filter(Specs.ps_aux, "")
 
 
+def test_add_filter_exception_None():
+    with pytest.raises(Exception):
+        filters.add_filter(Specs.ps_aux, None)
+
+
 def test_get_filters():
     _filter = 'A filter'
     filters.add_filter(MySpecs.has_filters, _filter)
@@ -193,3 +208,6 @@ def test_get_filters():
     assert _filter in ret_has
     ret_no = filters.get_filters(MySpecs.no_filters)
     assert len(ret_no) == 0
+
+    assert filters.get_filters(None) == set()
+    assert filters.get_filters(None, True) == dict()

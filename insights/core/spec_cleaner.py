@@ -11,6 +11,8 @@ The following processes will be applied to clean the collected specs:
   Obfuscate the IP or Hostname appears in the spec content according to the
   specs native requirement and user configuration.
 
+- Filtering
+  Filter line as per the allow list got from the "filters.yaml"
 """
 
 import logging
@@ -360,7 +362,7 @@ class Cleaner(object):
             for a_key in list(allow_info.keys()):
                 # keep line when any filter match
                 # FIXME:
-                # Considering performance, din't handle multiple filters in one same line
+                # Considering performance, didn't handle multiple filters in one same line
                 if a_key in line:
                     allow_info[a_key] -= 1
                     # stop checking it when enough lines contain the key were found
