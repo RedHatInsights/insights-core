@@ -23,7 +23,6 @@ from insights.core.exceptions import (
 from insights.core.plugins import component, datasource, is_datasource
 from insights.core.serde import deserializer, serializer
 from insights.util import fs, streams, which
-from insights.util import deprecated
 from insights.util.mangle import mangle_command
 
 log = logging.getLogger(__name__)
@@ -237,52 +236,6 @@ class FileProvider(ContentProvider):
 
     def __repr__(self):
         return '%s("%r")' % (self.__class__.__name__, self.path)
-
-
-class MetadataProvider(FileProvider):
-    """
-    .. warning::
-        This Class is deprecated and will be removed from 3.5.0.
-        Please collect built-in file by using datasource spec directly, see
-        :mod:`insights.specs.datasources.client_metadata`.
-
-    Class used for insights-core built-in files.  These files should not
-    be filtered, redacted or blocked.
-    """
-
-    def __init__(self, relative_path, root="/", save_as=None, ds=None, ctx=None, cleaner=None):
-        deprecated(
-            MetadataProvider,
-            "Please collect the built-in file via datasource spec instead.",
-            "3.5.0",
-        )
-        super(MetadataProvider, self).__init__(relative_path, root, save_as, ds, ctx, cleaner)
-
-    def _stream(self):
-        """
-        Returns a generator of lines instead of a list of lines.
-        """
-        if self._exception:
-            raise self._exception
-        try:
-            with safe_open(self.path, "r", encoding=encoding, errors="surrogateescape") as f:
-                yield f
-        except StopIteration:
-            raise
-        except Exception as ex:
-            self._exception = ex
-            raise ContentException(str(ex))
-
-    def validate(self):
-        # Validate built-in metedata files only when insights-run
-        if not isinstance(self.ctx, HostContext):
-            super(MetadataProvider, self).validate()
-        # But DO NOT validate them when core-collecting
-
-    def load(self):
-        self.loaded = True
-        with safe_open(self.path, "r", encoding=encoding, errors="surrogateescape") as f:
-            return [l.rstrip("\n") for l in f]
 
 
 class RawFileProvider(FileProvider):
@@ -1692,28 +1645,6 @@ def serialize_datasource_provider(obj, root):
 
 @deserializer(DatasourceProvider)
 def deserialize_datasource_provider(_type, data, root, ctx, ds):
-    res = SerializedOutputProvider(data["relative_path"], root=root, ctx=ctx, ds=ds)
-    return res
-
-
-@serializer(MetadataProvider)
-def serialize_metadata_provider(obj, root):
-    # Built-in metadata files are put in the root instead of '/data'
-    root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
-    rel = obj.relative_path
-    if obj.save_as:
-        rel = obj.save_as
-        if obj.save_as.endswith("/"):
-            rel = os.path.join(rel, os.path.basename(obj.relative_path))
-    dst = os.path.join(root, obj.relative_path)
-    obj.write(dst)
-    return {"relative_path": rel, "save_as": obj.save_as}
-
-
-@deserializer(MetadataProvider)
-def deserialize_metadata_provider(_type, data, root, ctx, ds):
-    # Built-in metadata files are put in the root instead of '/data'
-    root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
     res = SerializedOutputProvider(data["relative_path"], root=root, ctx=ctx, ds=ds)
     return res
 
