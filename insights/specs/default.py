@@ -340,10 +340,12 @@ class DefaultSpecs(Specs):
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     fstab = simple_file("/etc/fstab")
-    fw_security = first_of([
-        simple_command("/usr/bin/fwupdmgr security --force --json", deps=[IsBareMetal]),
-        simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal])
-    ])
+    fw_security = first_of(
+        [
+            simple_command("/usr/bin/fwupdmgr security --force --json", deps=[IsBareMetal]),
+            simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal]),
+        ]
+    )
     galera_cnf = first_file(
         [
             "/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf",
@@ -498,7 +500,7 @@ class DefaultSpecs(Specs):
     )  # Result is filtered
     ls_lanL = command_with_args('/bin/ls -lanL %s', ls.list_with_lanL, keep_rc=True)
     ls_lanR = command_with_args('/bin/ls -lanR %s', ls.list_with_lanR, keep_rc=True)
-    ls_lanRL = command_with_args('/bin/ls -lanRl %s', ls.list_with_lanRL, keep_rc=True)
+    ls_lanRL = command_with_args('/bin/ls -lanRL %s', ls.list_with_lanRL, keep_rc=True)
     ls_laRZ = command_with_args('/bin/ls -laRZ %s', ls.list_with_laRZ, keep_rc=True)
     ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, keep_rc=True)
     # Useful individual `ls` Specs
