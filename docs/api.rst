@@ -92,7 +92,7 @@ that are executed.  Contexts enable different collection methods for data for
 each unique context, and also provide a default set of data sources that are
 common among one or more contexts.  All available contexts are defined in the
 module :py:mod:`insights.core.context`.
-  
+
 .. _datasources-ref:
 
 Data Sources
@@ -115,7 +115,7 @@ The Insights client stores that information as a file in an archive.
 When the client uploads that information to the Red Hat Insights
 service it is processed in the :py:class:`insights.core.context.HostArchiveContext`.
 Because the ``fdisk -l`` data is now in a file in the archive the data sources
-defined in :py:class:`insights.specs.insights_archive.InsightsArchiveSpecs` are 
+defined in :py:class:`insights.specs.insights_archive.InsightsArchiveSpecs` are
 used instead.  In this case Insights will collect the data from a file
 named ``insights_commands/fdisk_-l``.
 
@@ -163,13 +163,13 @@ of data sources are listed below.
 
 :py:func:`insights.core.spec_factory.simple_file`
     simple_file collects the contents of files, for example::
-        
+
         auditd_conf = simple_file("/etc/audit/auditd.conf")
         audit_log = simple_file("/var/log/audit/audit.log")
 
 :py:func:`insights.core.spec_factory.simple_command`
     simple_command collects the output from a command, for example::
-        
+
         blkid = simple_command("/sbin/blkid -c /dev/null")
         brctl_show = simple_command("/usr/sbin/brctl show")
 
@@ -178,7 +178,7 @@ of data sources are listed below.
     glob_file also can take a list of patterns as well as an ignore keyword
     arg that is a regular expression telling it which of the matching files to throw out,
     for example::
-        
+
         httpd_conf = glob_file(["/etc/httpd/conf/httpd.conf", "/etc/httpd/conf.d/*.conf"])
         ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
         rabbitmq_logs = glob_file("/var/log/rabbitmq/rabbit@*.log", ignore=".*rabbit@.*(?<!-sasl).log$")
@@ -187,7 +187,7 @@ of data sources are listed below.
 :py:func:`insights.core.spec_factory.first_file`
     first_file collects the contents of the first readable file from a list
     of files, for example::
-        
+
         meminfo = first_file(["/proc/meminfo", "/meminfo"])
         postgresql_conf = first_file([
                                      "/var/lib/pgsql/data/postgresql.conf",
@@ -198,7 +198,7 @@ of data sources are listed below.
 :py:func:`insights.core.spec_factory.listdir`
     listdir collects a simple directory listing of all the files and
     directories in a path, for example::
-        
+
         block_devices = listdir("/sys/block")
         ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
 
@@ -208,7 +208,7 @@ of data sources are listed below.
     elements or a list of tuples.  This spec factory is typically utilized
     in combination with a simple_file, simple_command or listdir spec factory
     to generate the input elements, for example::
-        
+
         ceph_socket_files = listdir("/var/run/ceph/ceph-*.*.asok", context=HostContext)
         ceph_config_show = foreach_execute(ceph_socket_files, "/usr/bin/ceph daemon %s config show")
         ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
@@ -219,7 +219,7 @@ of data sources are listed below.
     the files at the resulting paths.  This spec factory is typically utilized
     in combination with a simple_command or listdir spec factory to generate
     the input elements, for example::
-    
+
         httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
         httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
         block_devices = listdir("/sys/block")
@@ -231,7 +231,7 @@ of data sources are listed below.
     one must be present, or this component won't fire.  This spec factory is
     typically utilized in combination with other spec factories to generate
     the input list, for example::
-        
+
         postgresql_log = first_of([glob_file("/var/lib/pgsql/data/pg_log/postgresql-*.log"),
                                    glob_file("/opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-*.log"),
                                    glob_file("/database/postgresql-*.log")])
@@ -371,7 +371,7 @@ in the ``@rule`` decorator. This is best demonstrated by an example:
     @rule(InstalledRpms, Lsof, Netstat)
     def heartburn(installed_rpms, lsof, netstat):
         # Rule implementation
-        
+
 Line 1 of this example indicates that the rule depends on 3 parsers,
 ``InstalledRpms``, ``Lsof``, and ``Netstat``.  The signature for the
 rule function on line 2 contains the parameters that correspond respectively
@@ -525,11 +525,11 @@ Insights-core release timeline
    =======  =====================
    Version  Expected release date
    =======  =====================
-   3.2.0    June 2023
-   3.3.0    December 2023
    3.4.0    June 2024
    3.5.0    December 2024
    3.6.0    June 2025
+   3.7.0    December 2025
+   3.8.0    June 2026
    =======  =====================
 
 .. note::
