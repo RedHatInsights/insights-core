@@ -23,24 +23,50 @@ class InsightsArchiveSpecs(Specs):
     alternatives_display_python = simple_file("insights_commands/alternatives_--display_python")
     auditctl_rules = simple_file("insights_commands/auditctl_-l")
     auditctl_status = simple_file("insights_commands/auditctl_-s")
-    aws_instance_id_doc = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_id_doc")
-    aws_instance_id_pkcs7 = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_id_pkcs7")
+    aws_instance_id_doc = simple_file(
+        "insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_id_doc"
+    )
+    aws_instance_id_pkcs7 = simple_file(
+        "insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_id_pkcs7"
+    )
     awx_manage_check_license = simple_file("insights_commands/awx-manage_check_license")
-    awx_manage_print_settings = simple_file("insights_commands/awx-manage_print_settings_INSIGHTS_TRACKING_STATE_SYSTEM_UUID_INSTALL_UUID_TOWER_URL_BASE_AWX_CLEANUP_PATHS_AWX_PROOT_BASE_PATH_LOG_AGGREGATOR_ENABLED_LOG_AGGREGATOR_LEVEL_--format_json")
-    azure_instance_id = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_azure_instance_id")
-    azure_instance_type = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_azure_instance_type")
-    azure_instance_plan = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_azure_instance_plan")
+    awx_manage_print_settings = simple_file(
+        "insights_commands/awx-manage_print_settings_INSIGHTS_TRACKING_STATE_SYSTEM_UUID_INSTALL_UUID_TOWER_URL_BASE_AWX_CLEANUP_PATHS_AWX_PROOT_BASE_PATH_LOG_AGGREGATOR_ENABLED_LOG_AGGREGATOR_LEVEL_--format_json"
+    )
+    azure_instance_id = simple_file(
+        "insights_commands/python_-m_insights.tools.cat_--no-header_azure_instance_id"
+    )
+    azure_instance_type = simple_file(
+        "insights_commands/python_-m_insights.tools.cat_--no-header_azure_instance_type"
+    )
+    azure_instance_plan = simple_file(
+        "insights_commands/python_-m_insights.tools.cat_--no-header_azure_instance_plan"
+    )
     blkid = simple_file("insights_commands/blkid_-c_.dev.null")
     brctl_show = simple_file("insights_commands/brctl_show")
-    ceph_insights = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_ceph_insights")
-    ceph_osd_dump = first_file(["insights_commands/ceph_osd_dump_-f_json-pretty", "insights_commands/ceph_osd_dump_-f_json"])
-    ceph_osd_tree = first_file(["insights_commands/ceph_osd_tree_-f_json-pretty", "insights_commands/ceph_osd_tree_-f_json"])
+    ceph_insights = simple_file(
+        "insights_commands/python_-m_insights.tools.cat_--no-header_ceph_insights"
+    )
+    ceph_osd_dump = first_file(
+        [
+            "insights_commands/ceph_osd_dump_-f_json-pretty",
+            "insights_commands/ceph_osd_dump_-f_json",
+        ]
+    )
+    ceph_osd_tree = first_file(
+        [
+            "insights_commands/ceph_osd_tree_-f_json-pretty",
+            "insights_commands/ceph_osd_tree_-f_json",
+        ]
+    )
     ceph_v = simple_file("insights_commands/ceph_-v")
-    certificates_enddate = first_file([
-        "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_.etc.ipa_.etc.tower.tower.cert_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName",
-        "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_.etc.ipa_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName",
-        "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName"
-    ])
+    certificates_enddate = first_file(
+        [
+            "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_.etc.ipa_.etc.tower.tower.cert_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName",
+            "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_.etc.ipa_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName",
+            "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName",
+        ]
+    )
     chkconfig = simple_file("insights_commands/chkconfig_--list")
     chronyc_sources = simple_file("insights_commands/chronyc_sources")
     corosync_cmapctl = glob_file("insights_commands/corosync-cmapctl*")
@@ -89,9 +115,25 @@ class InsightsArchiveSpecs(Specs):
     getconf_page_size = simple_file("insights_commands/getconf_PAGE_SIZE")
     getenforce = simple_file("insights_commands/getenforce")
     getsebool = simple_file("insights_commands/getsebool_-a")
-    grubenv = first_file(["insights_commands/grub2-editenv_list", "/boot/grub2/grubenv", "/boot/efi/EFI/redhat/grubenv"])
-    grub1_config_perms = first_file(["insights_commands/ls_-lH_.boot.grub.grub.conf", "insights_commands/ls_-l_.boot.grub.grub.conf"])
-    grub_config_perms = first_file(["insights_commands/ls_-lH_.boot.grub2.grub.cfg", "insights_commands/ls_-l_.boot.grub2.grub.cfg"])
+    grubenv = first_file(
+        [
+            "insights_commands/grub2-editenv_list",
+            "/boot/grub2/grubenv",
+            "/boot/efi/EFI/redhat/grubenv",
+        ]
+    )
+    grub1_config_perms = first_file(
+        [
+            "insights_commands/ls_-lH_.boot.grub.grub.conf",
+            "insights_commands/ls_-l_.boot.grub.grub.conf",
+        ]
+    )
+    grub_config_perms = first_file(
+        [
+            "insights_commands/ls_-lH_.boot.grub2.grub.cfg",
+            "insights_commands/ls_-l_.boot.grub2.grub.cfg",
+        ]
+    )
     grubby_default_index = simple_file("insights_commands/grubby_--default-index")
     grubby_default_kernel = simple_file("insights_commands/grubby_--default-kernel")
     gluster_v_info = simple_file("insights_commands/gluster_volume_info")
@@ -104,7 +146,7 @@ class InsightsArchiveSpecs(Specs):
             "/etc/httpd/conf/httpd.conf",
             "/etc/httpd/conf.d/*.conf",
             "/etc/httpd/conf.d/*/*.conf",
-            "/etc/httpd/conf.modules.d/*.conf"
+            "/etc/httpd/conf.modules.d/*.conf",
         ]
     )
     httpd_conf_scl_httpd24 = glob_file(
@@ -112,7 +154,7 @@ class InsightsArchiveSpecs(Specs):
             "/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf",
             "/opt/rh/httpd24/root/etc/httpd/conf.d/*.conf",
             "/opt/rh/httpd24/root/etc/httpd/conf.d/*/*.conf",
-            "/opt/rh/httpd24/root/etc/httpd/conf.modules.d/*.conf"
+            "/opt/rh/httpd24/root/etc/httpd/conf.modules.d/*.conf",
         ]
     )
     httpd_conf_scl_jbcs_httpd24 = glob_file(
@@ -120,11 +162,13 @@ class InsightsArchiveSpecs(Specs):
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf",
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*.conf",
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*/*.conf",
-            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf"
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf",
         ]
     )
     httpd_M = glob_file("insights_commands/*httpd*_-M")
-    httpd_on_nfs = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_httpd_on_nfs")
+    httpd_on_nfs = simple_file(
+        "insights_commands/python_-m_insights.tools.cat_--no-header_httpd_on_nfs"
+    )
     httpd_V = glob_file("insights_commands/*httpd*_-V")
     initctl_lst = simple_file("insights_commands/initctl_--system_list")
     ip6tables = simple_file("insights_commands/ip6tables-save")
@@ -147,32 +191,11 @@ class InsightsArchiveSpecs(Specs):
     lpstat_p = simple_file("insights_commands/lpstat_-p")
     ls_boot = simple_file("insights_commands/ls_-lanR_.boot")
     ls_dev = simple_file("insights_commands/ls_-lanR_.dev")
-    ls_disk = simple_file("insights_commands/ls_-lanR_.dev.disk")
-    ls_edac_mc = simple_file("insights_commands/ls_-lan_.sys.devices.system.edac.mc")
-    ls_etc = first_file(["insights_commands/ls_-lan_.etc_.etc.cloud.cloud.cfg.d_.etc.nova.migration_.etc.pki.ovirt-vmconsole_.etc.pki.tls.certs_.etc.pki.tls.private_.etc.rc.d.init.d_.etc.selinux.targeted.policy_.etc.sysconfig_.etc.watchdog.d", "insights_commands/ls_-lan_.etc_.etc.cloud.cloud.cfg.d_.etc.nova.migration_.etc.pki.ovirt-vmconsole_.etc.pki.tls.certs_.etc.pki.tls.private_.etc.rc.d.init.d_.etc.selinux.targeted.policy_.etc.sysconfig", "insights_commands/ls_-lan_.etc_.etc.cloud.cloud.cfg.d_.etc.nova.migration_.etc.pki.ovirt-vmconsole_.etc.pki.tls.certs_.etc.pki.tls.private_.etc.rc.d.init.d_.etc.sysconfig"])
-    ls_etc_ssh = simple_file("insights_commands/ls_-lanL_.etc.ssh")
-    ls_ipa_idoverride_memberof = simple_file("insights_commands/ls_-lan_.usr.share.ipa.ui.js.plugins.idoverride-memberof")
-    ls_lib_firmware = simple_file("insights_commands/ls_-lanR_.lib.firmware")
-    ls_osroot = simple_file("insights_commands/ls_-lan")
     ls_sys_firmware = simple_file("insights_commands/ls_-lanR_.sys.firmware")
-    ls_systemd_units = first_file([
-        "insights_commands/ls_-lanRL_.etc.systemd_.run.systemd_.usr.lib.systemd_.usr.local.lib.systemd_.usr.local.share.systemd_.usr.share.systemd",
-        "insights_commands/ls_-lanRL_.etc.systemd_.run.systemd_.usr.lib.systemd_.usr.local.lib.systemd"
-    ])
-    ls_tmp = simple_file("insights_commands/ls_-la_.tmp")
-    ls_usr_bin = simple_file("insights_commands/ls_-lan_.usr.bin")
-    ls_usr_lib64 = simple_file("insights_commands/ls_-lan_.usr.lib64")
-    ls_var_lib_rpm = simple_file("insights_commands/ls_-lan_.var.lib.rpm")
-    ls_var_lib_rsyslog = simple_file("insights_commands/ls_-lZ_.var.lib.rsyslog")
-    ls_var_log = simple_file("insights_commands/ls_-la_.var.log_.var.log.audit")
-    ls_var_opt_mssql = simple_file("insights_commands/ls_-ld_.var.opt.mssql")
-    ls_var_opt_mssql_log = simple_file("insights_commands/ls_-la_.var.opt.mssql.log")
-    ls_var_spool_clientmq = simple_file("insights_commands/ls_-ln_.var.spool.clientmqueue")
-    ls_var_spool_postfix_maildrop = simple_file("insights_commands/ls_-ln_.var.spool.postfix.maildrop")
-    ls_var_run = simple_file("insights_commands/ls_-lnL_.var.run")
-    ls_var_www = simple_file("insights_commands/ls_-la_.dev.null_.var.www")
     lsblk = simple_file("insights_commands/lsblk")
-    lsblk_pairs = simple_file("insights_commands/lsblk_-P_-o_NAME_KNAME_MAJ_MIN_FSTYPE_MOUNTPOINT_LABEL_UUID_RA_RO_RM_MODEL_SIZE_STATE_OWNER_GROUP_MODE_ALIGNMENT_MIN-IO_OPT-IO_PHY-SEC_LOG-SEC_ROTA_SCHED_RQ-SIZE_TYPE_DISC-ALN_DISC-GRAN_DISC-MAX_DISC-ZERO")
+    lsblk_pairs = simple_file(
+        "insights_commands/lsblk_-P_-o_NAME_KNAME_MAJ_MIN_FSTYPE_MOUNTPOINT_LABEL_UUID_RA_RO_RM_MODEL_SIZE_STATE_OWNER_GROUP_MODE_ALIGNMENT_MIN-IO_OPT-IO_PHY-SEC_LOG-SEC_ROTA_SCHED_RQ-SIZE_TYPE_DISC-ALN_DISC-GRAN_DISC-MAX_DISC-ZERO"
+    )
     lscpu = simple_file("insights_commands/lscpu")
     lsmod = simple_file("insights_commands/lsmod")
     lsof = simple_file("insights_commands/lsof")
@@ -180,15 +203,16 @@ class InsightsArchiveSpecs(Specs):
     lspci_vmmkn = simple_file("insights_commands/lspci_-vmmkn")
     lssap = simple_file("insights_commands/usr.sap.hostctrl.exe.lssap")
     lsscsi = simple_file("insights_commands/lsscsi")
-    lvm_fullreport = simple_file("insights_commands/lvm_fullreport_-a_--nolocking_--reportformat_json")
-    lvmconfig = first_file([
-        "insights_commands/lvmconfig_--type_full",
-        "insights_commands/lvm_dumpconfig_--type_full"
-    ])
+    lvm_fullreport = simple_file(
+        "insights_commands/lvm_fullreport_-a_--nolocking_--reportformat_json"
+    )
+    lvmconfig = first_file(
+        ["insights_commands/lvmconfig_--type_full", "insights_commands/lvm_dumpconfig_--type_full"]
+    )
     lvs_noheadings = first_file(
         [
             "insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_lv_kernel_major_lv_kernel_minor_--config_global_locking_type_0",
-            "insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_--config_global_locking_type_0"
+            "insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_--config_global_locking_type_0",
         ]
     )
     max_uid = simple_file("insights_commands/awk_-F_if_3_max_max_3_END_print_max_.etc.passwd")
@@ -196,7 +220,9 @@ class InsightsArchiveSpecs(Specs):
     mdadm_D = simple_file("insights_commands/mdadm_-D_.dev.md")
     mount = simple_file("insights_commands/mount")
     mokutil_sbstate = simple_file("insights_commands/mokutil_--sb-state")
-    multicast_querier = simple_file("insights_commands/find_.sys.devices.virtual.net._-name_multicast_querier_-print_-exec_cat")
+    multicast_querier = simple_file(
+        "insights_commands/find_.sys.devices.virtual.net._-name_multicast_querier_-print_-exec_cat"
+    )
     multipath_conf_initramfs = simple_file("insights_commands/lsinitrd_-f_.etc.multipath.conf")
     multipath__v4__ll = simple_file("insights_commands/multipath_-v4_-ll")
     mysqladmin_vars = simple_file("insights_commands/mysqladmin_variables")
@@ -216,12 +242,21 @@ class InsightsArchiveSpecs(Specs):
     ovs_vsctl_show = simple_file("insights_commands/ovs-vsctl_show")
     package_provides_command = glob_file("insights_commands/echo_*java*")
     parted__l = simple_file("insights_commands/parted_-l_-s")
-    pci_rport_target_disk_paths = simple_file("insights_commands/find_.sys.devices._-maxdepth_10_-mindepth_9_-name_stat_-type_f")
-    pcp_metrics = simple_file("insights_commands/curl_-s_http_..127.0.0.1_44322.metrics_--connect-timeout_5")
+    pci_rport_target_disk_paths = simple_file(
+        "insights_commands/find_.sys.devices._-maxdepth_10_-mindepth_9_-name_stat_-type_f"
+    )
+    pcp_metrics = simple_file(
+        "insights_commands/curl_-s_http_..127.0.0.1_44322.metrics_--connect-timeout_5"
+    )
     pcs_quorum_status = simple_file("insights_commands/pcs_quorum_status")
     pcs_status = simple_file("insights_commands/pcs_status")
     pidstat = simple_file("insights_commands/pidstat")
-    pmrep_metrics = first_file(["insights_commands/pmrep_-t_1s_-T_1s_network.interface.out.packets_network.interface.collisions_swap.pagesout_mssql.memory_manager.stolen_server_memory_mssql.memory_manager.total_server_memory_-o_csv", "insights_commands/pmrep_-t_1s_-T_1s_network.interface.out.packets_network.interface.collisions_swap.pagesout_-o_csv"])
+    pmrep_metrics = first_file(
+        [
+            "insights_commands/pmrep_-t_1s_-T_1s_network.interface.out.packets_network.interface.collisions_swap.pagesout_mssql.memory_manager.stolen_server_memory_mssql.memory_manager.total_server_memory_-o_csv",
+            "insights_commands/pmrep_-t_1s_-T_1s_network.interface.out.packets_network.interface.collisions_swap.pagesout_-o_csv",
+        ]
+    )
     podman_list_containers = simple_file("insights_commands/podman_ps_--all_--no-trunc")
     postconf_builtin = simple_file("insights_commands/postconf_-C_builtin")
     postconf = simple_file("insights_commands/postconf")
@@ -230,42 +265,68 @@ class InsightsArchiveSpecs(Specs):
     ps_auxcww = simple_file("insights_commands/ps_auxcww")
     ps_auxww = simple_file("insights_commands/ps_auxww")
     ps_ef = simple_file("insights_commands/ps_-ef")
-    ps_eo = first_file(["insights_commands/ps_-eo_pid_ppid_comm_nlwp", "insights_commands/ps_-eo_pid_ppid_comm"])
-    puppet_ca_cert_expire_date = simple_file("insights_commands/openssl_x509_-in_.etc.puppetlabs.puppet.ssl.ca.ca_crt.pem_-enddate_-noout")
-    pvs_noheadings = simple_file("insights_commands/pvs_--nameprefixes_--noheadings_--separator_-a_-o_pv_all_vg_name_--config_global_locking_type_0")
+    ps_eo = first_file(
+        ["insights_commands/ps_-eo_pid_ppid_comm_nlwp", "insights_commands/ps_-eo_pid_ppid_comm"]
+    )
+    puppet_ca_cert_expire_date = simple_file(
+        "insights_commands/openssl_x509_-in_.etc.puppetlabs.puppet.ssl.ca.ca_crt.pem_-enddate_-noout"
+    )
+    pvs_noheadings = simple_file(
+        "insights_commands/pvs_--nameprefixes_--noheadings_--separator_-a_-o_pv_all_vg_name_--config_global_locking_type_0"
+    )
     readlink_e_etc_mtab = simple_file("insights_commands/readlink_-e_.etc.mtab")
-    readlink_e_shift_cert_client = simple_file("insights_commands/readlink_-e_.etc.origin.node.certificates.kubelet-client-current.pem")
-    readlink_e_shift_cert_server = simple_file("insights_commands/readlink_-e_.etc.origin.node.certificates.kubelet-server-current.pem")
+    readlink_e_shift_cert_client = simple_file(
+        "insights_commands/readlink_-e_.etc.origin.node.certificates.kubelet-client-current.pem"
+    )
+    readlink_e_shift_cert_server = simple_file(
+        "insights_commands/readlink_-e_.etc.origin.node.certificates.kubelet-server-current.pem"
+    )
     repquota_agnpuv = simple_file("insights_commands/repquota_-agnpuv")
-    rhsm_katello_default_ca_cert = simple_file("insights_commands/openssl_x509_-in_.etc.rhsm.ca.katello-default-ca.pem_-noout_-issuer")
+    rhsm_katello_default_ca_cert = simple_file(
+        "insights_commands/openssl_x509_-in_.etc.rhsm.ca.katello-default-ca.pem_-noout_-issuer"
+    )
     rndc_status = simple_file("insights_commands/rndc_status")
     rpm_ostree_status = simple_file("insights_commands/rpm-ostree_status_--json")
-    rpm_V_packages = first_file([
-        "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony_findutils_glibc_systemd"
-        "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony_findutils_glibc",
-        "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony_findutils",
-        "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony",
-        "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo"
-    ])
-    saphostctl_getcimobject_sapinstance = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostctrl_-function_GetCIMObject_-enuminstances_SAPInstance")
-    satellite_content_hosts_count = first_file([
-        "insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_count_from_hosts",
-        "insights_commands/sudo_-iu_postgres_psql_-d_foreman_-c_select_count_from_hosts"
-    ])
-    satellite_custom_ca_chain = simple_file("insights_commands/awk_BEGIN_pipe_openssl_x509_-noout_-subject_-enddate_._-_BEGIN_CERT._._-_END_CERT._print_pipe_._-_END_CERT._close_pipe_printf_n_.etc.pki.katello.certs.katello-server-ca.crt")
-    satellite_provision_param_settings = simple_file('insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_name_value_from_parameters_where_name_package_upgrade_and_reference_id_in_select_id_from_operatingsystems_where_name_RedHat_and_major_9_--csv')
-    satellite_qualified_capsules = simple_file("insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_name_from_smart_proxies_where_download_policy_background_--csv")
-    satellite_qualified_katello_repos = simple_file("insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_id_name_url_download_policy_from_katello_root_repositories_where_download_policy_background_or_url_is_NULL_--csv")
+    saphostctl_getcimobject_sapinstance = simple_file(
+        "insights_commands/usr.sap.hostctrl.exe.saphostctrl_-function_GetCIMObject_-enuminstances_SAPInstance"
+    )
+    satellite_content_hosts_count = first_file(
+        [
+            "insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_count_from_hosts",
+            "insights_commands/sudo_-iu_postgres_psql_-d_foreman_-c_select_count_from_hosts",
+        ]
+    )
+    satellite_custom_ca_chain = simple_file(
+        "insights_commands/awk_BEGIN_pipe_openssl_x509_-noout_-subject_-enddate_._-_BEGIN_CERT._._-_END_CERT._print_pipe_._-_END_CERT._close_pipe_printf_n_.etc.pki.katello.certs.katello-server-ca.crt"
+    )
+    satellite_provision_param_settings = simple_file(
+        'insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_name_value_from_parameters_where_name_package_upgrade_and_reference_id_in_select_id_from_operatingsystems_where_name_RedHat_and_major_9_--csv'
+    )
+    satellite_qualified_capsules = simple_file(
+        "insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_name_from_smart_proxies_where_download_policy_background_--csv"
+    )
+    satellite_qualified_katello_repos = simple_file(
+        "insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_id_name_url_download_policy_from_katello_root_repositories_where_download_policy_background_or_url_is_NULL_--csv"
+    )
     sealert = simple_file('insights_commands/sealert_-l')
     sestatus = simple_file("insights_commands/sestatus_-b")
     smbstatus_p = simple_file("insights_commands/smbstatus_-p")
     software_collections_list = simple_file('insights_commands/scl_--list')
-    spamassassin_channels = simple_file('insights_commands/grep_-r_s_CHANNELURL_.etc.mail.spamassassin.channel.d')
+    spamassassin_channels = simple_file(
+        'insights_commands/grep_-r_s_CHANNELURL_.etc.mail.spamassassin.channel.d'
+    )
     ss = simple_file("insights_commands/ss_-tupna")
-    sshd_config_perms = first_file(["insights_commands/ls_-lH_.etc.ssh.sshd_config", "insights_commands/ls_-l_.etc.ssh.sshd_config"])
+    sshd_config_perms = first_file(
+        [
+            "insights_commands/ls_-lH_.etc.ssh.sshd_config",
+            "insights_commands/ls_-l_.etc.ssh.sshd_config",
+        ]
+    )
     subscription_manager_facts = simple_file("insights_commands/subscription-manager_facts")
     subscription_manager_id = simple_file("insights_commands/subscription-manager_identity")
-    subscription_manager_installed_product_ids = simple_file("insights_commands/find_.etc.pki.product-default._.etc.pki.product._-name_pem_-exec_rct_cat-cert_--no-content")
+    subscription_manager_installed_product_ids = simple_file(
+        "insights_commands/find_.etc.pki.product-default._.etc.pki.product._-name_pem_-exec_rct_cat-cert_--no-content"
+    )
     subscription_manager_status = simple_file("insights_commands/subscription-manager_status")
     sysctl = simple_file("insights_commands/sysctl_-a")
     systemctl_cat_rpcbind_socket = simple_file("insights_commands/systemctl_cat_rpcbind.socket")
@@ -275,25 +336,39 @@ class InsightsArchiveSpecs(Specs):
     systemctl_show_all_services = simple_file("insights_commands/systemctl_show_.service")
     systemctl_show_target = simple_file("insights_commands/systemctl_show_.target")
     systemd_analyze_blame = simple_file("insights_commands/systemd-analyze_blame")
-    systemd_docker = first_file(["insights_commands/systemctl_cat_docker.service", "/usr/lib/systemd/system/docker.service"])
-    systemd_openshift_node = first_file(["insights_commands/systemctl_cat_atomic-openshift-node.service", "/usr/lib/systemd/system/atomic-openshift-node.service"])
+    systemd_docker = first_file(
+        ["insights_commands/systemctl_cat_docker.service", "/usr/lib/systemd/system/docker.service"]
+    )
+    systemd_openshift_node = first_file(
+        [
+            "insights_commands/systemctl_cat_atomic-openshift-node.service",
+            "/usr/lib/systemd/system/atomic-openshift-node.service",
+        ]
+    )
     testparm_s = simple_file("insights_commands/testparm_-s")
     testparm_v_s = simple_file("insights_commands/testparm_-v_-s")
     timedatectl_status = simple_file("insights_commands/timedatectl_status")
-    tomcat_vdc_fallback = simple_file("insights_commands/find_.usr.share_-maxdepth_1_-name_tomcat_-exec_.bin.grep_-R_-s_VirtualDirContext_--include_.xml")
+    tomcat_vdc_fallback = simple_file(
+        "insights_commands/find_.usr.share_-maxdepth_1_-name_tomcat_-exec_.bin.grep_-R_-s_VirtualDirContext_--include_.xml"
+    )
     tuned_adm = simple_file("insights_commands/tuned-adm_list")
     uname = simple_file("insights_commands/uname_-a")
     uptime = simple_file("insights_commands/uptime")
     vdo_status = simple_file("insights_commands/vdo_status")
     vgdisplay = simple_file("insights_commands/vgdisplay")
-    vgs_noheadings = simple_file("insights_commands/vgs_--nameprefixes_--noheadings_--separator_-a_-o_vg_all_--config_global_locking_type_0")
+    vgs_noheadings = simple_file(
+        "insights_commands/vgs_--nameprefixes_--noheadings_--separator_-a_-o_vg_all_--config_global_locking_type_0"
+    )
     virsh_list_all = simple_file("insights_commands/virsh_--readonly_list_--all")
     virt_what = simple_file("insights_commands/virt-what")
     wc_proc_1_mountinfo = simple_file("insights_commands/wc_-l_.proc.1.mountinfo")
     xfs_quota_state = simple_file("insights_commands/xfs_quota_-x_-c_state_-gu")
     yum_list_available = simple_file("insights_commands/yum_-C_--noplugins_list_available")
-    yum_repolist = first_file([
-        "insights_commands/yum_-d_2_-C_--noplugins_repolist",
-        "insights_commands/yum_-C_--noplugins_repolist",
-        "insights_commands/yum_-C_repolist"])
+    yum_repolist = first_file(
+        [
+            "insights_commands/yum_-d_2_-C_--noplugins_repolist",
+            "insights_commands/yum_-C_--noplugins_repolist",
+            "insights_commands/yum_-C_repolist",
+        ]
+    )
     yum_updateinfo = simple_file("insights_commands/yum_-C_updateinfo_list")
