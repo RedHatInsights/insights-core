@@ -362,21 +362,14 @@ class InsightsConnection(object):
             try:
                 logger.info("    Testing %s", test_url + ext)
                 if method == "POST":
-                    test_req = self.post(test_url + ext, data=test_flag, log_prefix="      ", log_level=log_level)
+                    return self.post(test_url + ext, data=test_flag, log_prefix="      ", log_level=log_level)
                 elif method == "GET":
-                    test_req = self.get(test_url + ext, log_prefix="      ", log_level=log_level)
-                # Strata returns 405 on a GET sometimes, this isn't a big deal
-                if test_req.status_code in (200, 201):
-                    return True
-                else:
-                    logger.error("      Failed.")
-                    return False
+                    return self.get(test_url + ext, log_prefix="      ", log_level=log_level)
             except REQUEST_FAILED_EXCEPTIONS as exc:
                 last_ex = exc
                 logger.debug("      Caught %s: %s", type(exc).__name__, exc)
                 logger.error("      Failed.")
-        if last_ex:
-            raise last_ex
+        return last_ex
 
     def _test_urls(self, url, method):
         '''
@@ -396,16 +389,12 @@ class InsightsConnection(object):
                     'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
                     'metadata': '{\"test\": \"test\"}'
                 }
-                test_req = self.post(url, files=test_files, log_prefix=log_prefix, log_level=log_level)
+                return self.post(url, files=test_files, log_prefix=log_prefix, log_level=log_level)
             elif method == "GET":
-                test_req = self.get(url, log_prefix=log_prefix, log_level=log_level)
-            if test_req.status_code in (200, 201, 202):
-                return True
-            else:
-                return False
+                return self.get(url, log_prefix=log_prefix, log_level=log_level)
         except REQUEST_FAILED_EXCEPTIONS as exc:
             logger.debug("      Caught %s: %s", type(exc).__name__, exc)
-            raise
+            return exc
 
     def _test_auth_config(self):
         errors = []
@@ -498,13 +487,12 @@ class InsightsConnection(object):
         ]:
             logger.info("  %s...", description)
 
-            try:
-                success = self._test_urls(url, method)
-            except REQUEST_FAILED_EXCEPTIONS as exc:
-                last_ex = exc
-                success = False
+            result = self._test_urls(url, method)
+            if isinstance(result, REQUEST_FAILED_EXCEPTIONS):
+                break
 
-            if not success:
+            # Strata returns 405 on a GET sometimes, this isn't a big deal
+            if result.status_code not in (200, 201, 202):
                 break
 
             logger.info("    SUCCESS.")
