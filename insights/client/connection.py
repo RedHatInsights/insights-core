@@ -77,14 +77,30 @@ def _api_request_failed(exception, message='The Insights API could not be reache
         logger.error(message)
 
 
-def _is_dns_error(exception):
-    while isinstance(exception, Exception):
-        if isinstance(exception, socket.gaierror):
+def _is_basic_auth_error(result):
+    if result.status_code != 401 or result.headers["Content-Type"] != "application/json":
+        return False
+
+    try:
+        body = result.json()
+    except requests.exceptions.JSONDecodeError:
+        return False
+
+    if not isinstance(body, dict) or "errors" not in body or not isinstance(body["errors"], list):
+        return False
+
+    for error in body["errors"]:
+        if "status" in error and error["status"] == 401 and "meta" in error and isinstance(error["meta"], dict) and "response_by" in error["meta"] and error["meta"]["response_by"] == "gateway":
             return True
 
-        exception = exception.__context__
-
     return False
+
+
+def _exception_root_cause(exception):
+    while True:
+        if not exception.__context__:
+            return exception
+        exception = exception.__context__
 
 
 def _fallback_ip(hostname):
@@ -554,8 +570,21 @@ class InsightsConnection(object):
         logger.error("    Additional information may be in %s" % self.config.logging_file)
         logger.error("")
 
-        if _is_dns_error(result):
-            self._test_connection(url)
+        if isinstance(result, REQUEST_FAILED_EXCEPTIONS):
+            root_cause = _exception_root_cause(result)
+            if isinstance(result, requests.exceptions.SSLError):
+                logger.error("    Invalid key or certificate.")
+            elif isinstance(result, requests.exceptions.ConnectionError) and isinstance(root_cause, socket.gaierror):
+                self._test_connection(url)
+            else:
+                logger.error("    Unknown error %s.", result)
+        elif isinstance(result, requests.Response):
+            if _is_basic_auth_error(result):
+                logger.error("    Invalid username or password.")
+            else:
+                logger.error("    Unknown response.")
+        else:
+            logger.error("    Unknown result %s.", result)
 
         return 1
 
