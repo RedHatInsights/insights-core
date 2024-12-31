@@ -77,14 +77,30 @@ def _api_request_failed(exception, message='The Insights API could not be reache
         logger.error(message)
 
 
-def _is_dns_error(exception):
-    while isinstance(exception, Exception):
-        if isinstance(exception, socket.gaierror):
+def _is_basic_auth_error(result):
+    if result.status_code != 401 or result.headers["Content-Type"] != "application/json":
+        return False
+
+    try:
+        body = result.json()
+    except requests.exceptions.JSONDecodeError:
+        return False
+
+    if not isinstance(body, dict) or "errors" not in body or not isinstance(body["errors"], list):
+        return False
+
+    for error in body["errors"]:
+        if "status" in error and error["status"] == 401 and "meta" in error and isinstance(error["meta"], dict) and "response_by" in error["meta"] and error["meta"]["response_by"] == "gateway":
             return True
 
-        exception = exception.__context__
-
     return False
+
+
+def _exception_root_cause(exception):
+    while True:
+        if not exception.__context__:
+            return exception
+        exception = exception.__context__
 
 
 def _fallback_ip(hostname):
@@ -217,6 +233,8 @@ class InsightsConnection(object):
                     attachments.append(name)
             log_message += " attachments={files}".format(files=",".join(attachments))
         logger.log(log_level, log_message)
+        if "verify" not in kwargs:
+            kwargs["verify"] = "/home/insights/simple-http-server/cert.pem"
         try:
             res = self.session.request(url=url, method=method, timeout=self.config.http_timeout, **kwargs)
         except Exception:
@@ -494,15 +512,13 @@ class InsightsConnection(object):
 
         logger.info("")
 
-    def _test_connection(self, url):
-        parsed_url = urlparse(url)
-        logger.error("  Could not resolve %s.", parsed_url.hostname)
+    def _test_connection(self, scheme, hostname):
         fallback = [constants.stable_public_url, constants.stable_public_ip]
-        ip = _fallback_ip(parsed_url.hostname)
+        ip = _fallback_ip(hostname)
         if ip:
             fallback = [ip] + fallback
         for fallback_url in fallback:
-            parsed_ip_url = urlunparse((parsed_url.scheme, fallback_url, "/", "", "", ""))
+            parsed_ip_url = urlunparse((scheme, fallback_url, "/", "", "", ""))
             try:
                 logger.info('    Testing %s', parsed_ip_url)
                 log_prefix = "      "
@@ -555,8 +571,43 @@ class InsightsConnection(object):
         logger.error("    Additional information may be in %s" % self.config.logging_file)
         logger.error("")
 
-        if _is_dns_error(result):
-            self._test_connection(url)
+        if isinstance(result, REQUEST_FAILED_EXCEPTIONS):
+            root_cause = _exception_root_cause(result)
+            if isinstance(result, requests.exceptions.SSLError):
+                if "[SSL: WRONG_VERSION_NUMBER]" in str(root_cause):
+                    logger.error("    Invalid protocol.")
+                else:
+                    logger.error("    Invalid key or certificate.")
+            elif isinstance(result, requests.exceptions.Timeout):
+                if isinstance(result, requests.exceptions.ConnectTimeout):
+                    logger.error("    Connection timed out.")
+                elif isinstance(result, requests.exceptions.ReadTimeout):
+                    logger.error("    Read timed out.")
+                else:
+                    logger.error("    Timeout.")  # Cannot happen.
+
+                parsed_url = urlparse(url)
+                self._test_connection(parsed_url.scheme, parsed_url.hostname)
+            elif isinstance(result, requests.exceptions.ConnectionError):
+                if isinstance(root_cause, socket.gaierror):
+                    parsed_url = urlparse(url)
+                    logger.error("  Could not resolve base URL host %s.", parsed_url.hostname)
+                    self._test_connection(parsed_url.scheme, parsed_url.hostname)
+                if isinstance(root_cause, (ConnectionRefusedError, ConnectionResetError)):
+                    logger.error("    Connection refused.")
+                else:
+                    logger.error("    Connection error.")  # Should not happen.
+            else:
+                logger.error("    Unknown error %s.", result)  # Should not happen.
+        elif isinstance(result, requests.Response):
+            if _is_basic_auth_error(result):
+                logger.error("    Invalid username or password.")
+            elif result.status_code == requests.codes.too_many_requests:
+                logger.error("    Too many requests.")
+            else:
+                logger.error("    Unknown response %s %s.", result.status_code, result.reason)
+        else:
+            logger.error("    Unknown result %s.", result)  # Cannot happen.
 
         return 1
 
