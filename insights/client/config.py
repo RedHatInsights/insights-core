@@ -444,7 +444,7 @@ DEFAULT_OPTS = {
     'legacy_upload': {
         # True: upload to insights classic API
         # False: upload to insights platform API
-        'default': True
+        'default': False
     },
     'payload': {
         'default': None,
@@ -655,6 +655,11 @@ class InsightsConfig(object):
                         'using defaults\n'.format(e)
                     )
                 return
+
+        if d.get("legacy_upload", False):
+            logger.debug("'legacy_upload' is set in the configuration file, but is no longer supported. Ignoring.")
+            del d["legacy_upload"]
+
         self._update_dict(d)
 
     def load_all(self):
@@ -768,6 +773,10 @@ class InsightsConfig(object):
                 "Unable to find app: %s\nList of available apps: %s"
                 % (self.app, ', '.join(sorted(manifests.keys())))
             )
+
+        if self.legacy_upload:
+            logger.debug("Legacy upload is no longer supported. Using current APIs.")
+            self.legacy_upload = False
 
     def _imply_options(self):
         '''
