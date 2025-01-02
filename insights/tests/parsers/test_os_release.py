@@ -94,6 +94,7 @@ def test_rhel():
     rls = OsRelease(context_wrap(REHL_OS_RELEASE))
     assert rls.get("VARIANT_ID") is None
     assert rls.get("VERSION") == "7.2 (Maipo)"
+    assert rls.is_rhel_ai is False
 
 
 def test_rhevh():
@@ -115,6 +116,7 @@ def test_rhel_ai():
     assert rls.get("VARIANT_ID") == "rhel_ai"
     assert rls.get("VARIANT") == "RHEL AI"
     assert rls.get("BUILD_ID") == "v1.1.3"
+    assert rls.is_rhel_ai is True
 
 
 def test_empty():

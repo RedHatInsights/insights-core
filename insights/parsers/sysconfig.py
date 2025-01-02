@@ -84,16 +84,15 @@ VirtWhoSysconfig - file ``/etc/sysconfig/virt-who``
 IfCFGStaticRoute - files ``/etc/sysconfig/network-scripts/route-*``
 -------------------------------------------------------------------
 
-GrubSysconfig - files ``/etc/sysconfig/grub``
----------------------------------------------
+GrubSysconfig - file ``/etc/sysconfig/grub``
+--------------------------------------------
 
-OracleasmSysconfig - files ``/etc/sysconfig/oracleasm``
--------------------------------------------------------
+OracleasmSysconfig - file ``/etc/sysconfig/oracleasm``
+------------------------------------------------------
 
-Pcsd - files ``/etc/sysconfig/pcsd``
-------------------------------------
+PcsdSysconfig - file ``/etc/sysconfig/pcsd``
+--------------------------------------------
 """
-
 
 from insights import parser, SysconfigOptions, get_active_lines
 from insights.specs import Specs
@@ -123,9 +122,10 @@ class CorosyncSysconfig(SysconfigOptions):
         >>> cs_syscfg.options
         ''
     """
+
     @property
     def options(self):
-        """ (str): The value of the ``COROSYNC_OPTIONS`` variable."""
+        """(str): The value of the ``COROSYNC_OPTIONS`` variable."""
         return self.data.get('COROSYNC_OPTIONS', '')
 
 
@@ -148,6 +148,7 @@ class ChronydSysconfig(SysconfigOptions):
         '-d'
 
     """
+
     pass
 
 
@@ -170,6 +171,7 @@ class DirsrvSysconfig(SysconfigOptions):
         >>> 'PID_TIME' in dirsrv_syscfg
         False
     """
+
     pass
 
 
@@ -195,6 +197,7 @@ class DockerStorageSetupSysconfig(SysconfigOptions):
         '60'
 
     """
+
     pass
 
 
@@ -220,9 +223,10 @@ class DockerSysconfig(SysconfigOptions):
         >>> docker_syscfg['DOCKER_CERT_PATH']
         '/etc/docker'
     """
+
     @property
     def options(self):
-        """ Return the value of the 'OPTIONS' variable, or '' if not defined. """
+        """Return the value of the 'OPTIONS' variable, or '' if not defined."""
         return self.data.get('OPTIONS', '')
 
 
@@ -242,9 +246,10 @@ class DockerSysconfigStorage(SysconfigOptions):
         >>> docker_syscfg_storage.storage_options
         '--storage-driver devicemapper --storage-opt dm.fs=xfs --storage-opt dm.thinpooldev=/dev/mapper/dockervg-docker--pool --storage-opt dm.use_deferred_removal=true --storage-opt dm.use_deferred_deletion=true'
     """
+
     @property
     def storage_options(self):
-        """ Return the value of the 'DOCKER_STORAGE_OPTIONS' variable, or '' if not defined. """
+        """Return the value of the 'DOCKER_STORAGE_OPTIONS' variable, or '' if not defined."""
         return self.data.get('DOCKER_STORAGE_OPTIONS', '')
 
 
@@ -266,6 +271,7 @@ class ForemanTasksSysconfig(SysconfigOptions):
         >>> 'AUTO' in ft_syscfg
         False
     """
+
     pass
 
 
@@ -291,6 +297,7 @@ class HttpdSysconfig(SysconfigOptions):
         >>> 'NOOP' in httpd_syscfg
         False
     """
+
     pass
 
 
@@ -316,6 +323,7 @@ class IrqbalanceSysconfig(SysconfigOptions):
         >>> 'ONESHOT' in irqb_syscfg
         False
     """
+
     pass
 
 
@@ -337,6 +345,7 @@ class KdumpSysconfig(SysconfigOptions):
     These are set to the value of the named variable in the kdump sysconfig
     file, or '' if not found.
     """
+
     KDUMP_KEYS = [
         'KDUMP_COMMANDLINE',
         'KDUMP_COMMANDLINE_REMOVE',
@@ -373,6 +382,7 @@ class KernelSysconfig(SysconfigOptions):
         >>> 'DEFAULTKERNEL' in kernel_syscfg
         True
     """
+
     pass
 
 
@@ -392,6 +402,7 @@ class LibvirtGuestsSysconfig(SysconfigOptions):
         >>> libvirt_guests_syscfg.get('ON_BOOT')
         'ignore'
     """
+
     pass
 
 
@@ -415,6 +426,7 @@ class MemcachedSysconfig(SysconfigOptions):
         >>> memcached_syscfg.get('OPTIONS')
         '-U 0 -l 127.0.0.1'
     """
+
     pass
 
 
@@ -436,6 +448,7 @@ class MongodSysconfig(SysconfigOptions):
         >>> 'NOSUCHOPTION' in mongod_syscfg
         False
     """
+
     pass
 
 
@@ -455,6 +468,7 @@ class NetconsoleSysconfig(SysconfigOptions):
         >>> 'DEV' in netcs_syscfg
         False
     '''
+
     pass
 
 
@@ -477,6 +491,7 @@ class NetworkSysconfig(SysconfigOptions):
         >>> net_syscfg['GATEWAY']
         '172.31.0.1'
     """
+
     pass
 
 
@@ -509,6 +524,7 @@ class NfsSysconfig(SysconfigOptions):
         >>> 'STATD_PORT' in nfs_syscfg
         False
     """
+
     pass
 
 
@@ -530,6 +546,7 @@ class NtpdSysconfig(SysconfigOptions):
         >>> ntpd_syscfg['OPTIONS']
         '-x -g'
     """
+
     pass
 
 
@@ -559,6 +576,7 @@ class PrelinkSysconfig(SysconfigOptions):
         >>> prelink_syscfg.get('PRELINKING')
         'no'
     """
+
     pass
 
 
@@ -583,6 +601,7 @@ class SbdSysconfig(SysconfigOptions):
         >>> 'SBD_DELAY_START' in sbd_syscfg
         True
     """
+
     pass
 
 
@@ -614,6 +633,7 @@ class SshdSysconfig(SysconfigOptions):
         >>> 'CRYPTO_POLICY' in sshd_syscfg
         True
     """
+
     pass
 
 
@@ -636,6 +656,7 @@ class PuppetserverSysconfig(SysconfigOptions):
         >>> 'AUTO' in pps_syscfg
         False
     """
+
     pass
 
 
@@ -656,6 +677,7 @@ class StonithSysconfig(SysconfigOptions):
         >>> stonith_syscfg['retry']
         '3'
     """
+
     pass
 
 
@@ -676,6 +698,7 @@ class Up2DateSysconfig(SysconfigOptions):
         >>> u2d_syscfg['serverURL']
         'https://rhnproxy.glb.tech.markit.partners/XMLRPC'
     """
+
     def parse_content(self, content):
         up2date_info = {}
         for line in get_active_lines(content):
@@ -713,6 +736,7 @@ class VirtWhoSysconfig(SysconfigOptions):
         >>> vwho_syscfg.get('TEST_OPT')  # Quotes are stripped
         'A TEST'
     """
+
     pass
 
 
@@ -747,6 +771,7 @@ class IfCFGStaticRoute(SysconfigOptions):
         static_route_name (str): static route name
 
     """
+
     def parse_content(self, content):
         self.static_route_name = self.file_name.split("route-", 1)[1]
         super(IfCFGStaticRoute, self).parse_content(content)
@@ -779,6 +804,7 @@ class GrubSysconfig(SysconfigOptions):
         True
 
     """
+
     pass
 
 
@@ -823,6 +849,7 @@ class OracleasmSysconfig(SysconfigOptions):
         False
 
     """
+
     pass
 
 
@@ -849,4 +876,5 @@ class PcsdSysconfig(SysconfigOptions):
         '3600'
 
     """
+
     pass

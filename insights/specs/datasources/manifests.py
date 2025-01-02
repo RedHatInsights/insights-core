@@ -132,6 +132,8 @@ plugins:
     # determines which specs get loaded
     - name: insights.specs.datasources.compliance.compliance_ds
       enabled: true
+    - name: insights.specs.Specs.compliance
+      enabled: true
     - name: insights.specs.default.DefaultSpecs.compliance
       enabled: true
     - name: insights.specs.default.DefaultSpecs.compliance_policies

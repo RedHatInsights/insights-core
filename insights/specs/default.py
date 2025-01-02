@@ -67,7 +67,6 @@ from insights.specs.datasources import (
     md5chk,
     mdadm,
     mount as mount_ds,
-    nmcli,
     package_provides,
     ps as ps_datasource,
     rpm_pkgs,
@@ -111,22 +110,6 @@ def _make_rpm_formatter(fmt=None):
         ]
     return r"\{" + ",".join(fmt) + r"\}\n"
 
-
-_etc_and_sub_dirs = sorted(
-    [
-        "/etc",
-        "/etc/pki/tls/private",
-        "/etc/pki/tls/certs",
-        "/etc/pki/ovirt-vmconsole",
-        "/etc/nova/migration",
-        "/etc/sysconfig",
-        "/etc/cloud/cloud.cfg.d",
-        "/etc/rc.d/init.d",
-        "/etc/selinux/targeted/policy",
-        "/etc/watchdog.d/",
-    ]
-)
-""" List of directories for spec `ls_etc` """
 
 _rpm_format = _make_rpm_formatter()
 """ Query format for specs `installed_rpms` and `container_installed_rpms` """
@@ -320,8 +303,8 @@ class DefaultSpecs(Specs):
     dracut_kdump_capture_service = simple_file(
         "/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service"
     )
-    dumpe2fs_h = foreach_execute(mount_ds.dumpdev_list, "/sbin/dumpe2fs -h %s")
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
+    dumpe2fs_h = foreach_execute(mount_ds.dumpdev_list, "/sbin/dumpe2fs -h %s")
     du_dirs = foreach_execute(dir_list.du_dir_list, "/bin/du -s -k %s")  # empty filter
     duplicate_machine_id = machine_ids.dup_machine_id_info
     eap_json_reports = foreach_collect(eap_reports.eap_report_files, "%s")
@@ -357,8 +340,12 @@ class DefaultSpecs(Specs):
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     fstab = simple_file("/etc/fstab")
-    fw_devices = simple_command("/bin/fwupdagent get-devices", deps=[IsBareMetal])
-    fw_security = simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal])
+    fw_security = first_of(
+        [
+            simple_command("/usr/bin/fwupdmgr security --force --json", deps=[IsBareMetal]),
+            simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal]),
+        ]
+    )
     galera_cnf = first_file(
         [
             "/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf",
@@ -431,6 +418,7 @@ class DefaultSpecs(Specs):
     ibm_lparcfg = simple_file("/proc/powerpc/lparcfg")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
     ifcfg_static_route = glob_file("/etc/sysconfig/network-scripts/route-*")
+    ilab_model_list = simple_command("/usr/bin/ilab model list")
     imagemagick_policy = glob_file(
         ["/etc/ImageMagick/policy.xml", "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"]
     )
@@ -512,41 +500,13 @@ class DefaultSpecs(Specs):
     )  # Result is filtered
     ls_lanL = command_with_args('/bin/ls -lanL %s', ls.list_with_lanL, keep_rc=True)
     ls_lanR = command_with_args('/bin/ls -lanR %s', ls.list_with_lanR, keep_rc=True)
-    ls_lanRL = command_with_args('/bin/ls -lanRl %s', ls.list_with_lanRL, keep_rc=True)
+    ls_lanRL = command_with_args('/bin/ls -lanRL %s', ls.list_with_lanRL, keep_rc=True)
     ls_laRZ = command_with_args('/bin/ls -laRZ %s', ls.list_with_laRZ, keep_rc=True)
     ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, keep_rc=True)
-    # Old `ls` Specs
-    ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
+    # Useful individual `ls` Specs
     ls_boot = simple_command("/bin/ls -lanR /boot")
     ls_dev = simple_command("/bin/ls -lanR /dev")
-    ls_disk = simple_command("/bin/ls -lanR /dev/disk")
-    ls_edac_mc = simple_command("/bin/ls -lan /sys/devices/system/edac/mc")
-    ls_etc = simple_command("/bin/ls -lan {0}".format(' '.join(_etc_and_sub_dirs)), keep_rc=True)
-    ls_etc_ssh = simple_command("/bin/ls -lanL /etc/ssh")
-    ls_ipa_idoverride_memberof = simple_command(
-        "/bin/ls -lan /usr/share/ipa/ui/js/plugins/idoverride-memberof"
-    )
-    ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
-    ls_osroot = simple_command("/bin/ls -lan /")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
-    ls_systemd_units = simple_command(
-        "/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd /usr/local/lib/systemd /usr/local/share/systemd /usr/share/systemd",
-        keep_rc=True,
-    )
-    ls_tmp = simple_command("/bin/ls -la /tmp")
-    ls_usr_bin = simple_command("/bin/ls -lan /usr/bin")
-    ls_usr_lib64 = simple_command("/bin/ls -lan /usr/lib64")
-    ls_var_lib_rpm = simple_command("/bin/ls -lan /var/lib/rpm")
-    ls_var_lib_rsyslog = simple_command("/bin/ls -lZ /var/lib/rsyslog")
-    ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
-    ls_var_opt_mssql = simple_command("/bin/ls -ld /var/opt/mssql")
-    ls_var_opt_mssql_log = simple_command("/bin/ls -la /var/opt/mssql/log")
-    ls_var_run = simple_command("/bin/ls -lnL /var/run")
-    ls_var_spool_clientmq = simple_command("/bin/ls -ln /var/spool/clientmqueue")
-    ls_var_spool_postfix_maildrop = simple_command("/bin/ls -ln /var/spool/postfix/maildrop")
-    ls_var_www = simple_command(
-        "/bin/ls -la /dev/null /var/www"
-    )  # https://github.com/RedHatInsights/insights-core/issues/827
     lsattr = command_with_args("/bin/lsattr %s", lsattr.paths_to_lsattr)
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command(
@@ -654,7 +614,6 @@ class DefaultSpecs(Specs):
     )
     nmap_ssh = simple_command("/usr/bin/nmap --script ssh2-enum-algos -sV -p 22 127.0.0.1")
     nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
-    nmcli_conn_show_uuids = foreach_execute(nmcli.nmcli_conn_show_uuids, "/usr/bin/nmcli conn show %s")
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
     nova_compute_log = first_file(
         ["/var/log/containers/nova/nova-compute.log", "/var/log/nova/nova-compute.log"]
@@ -782,11 +741,6 @@ class DefaultSpecs(Specs):
     )
     rndc_status = simple_command("/usr/sbin/rndc status")
     ros_config = simple_file("/var/lib/pcp/config/pmlogger/config.ros")
-    rpm_V_packages = simple_command(
-        "/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony findutils glibc systemd",
-        keep_rc=True,
-        signum=signal.SIGTERM,
-    )
     rpm_V_package = foreach_execute(
         rpm_pkgs.rpm_v_pkg_list, "/bin/rpm -V %s", keep_rc=True, signum=signal.SIGTERM
     )
@@ -937,6 +891,7 @@ class DefaultSpecs(Specs):
     sysconfig_grub = simple_file(
         "/etc/default/grub"
     )  # This is the file where the "/etc/sysconfig/grub" point to
+    sysconfig_irqbalance = simple_file("/etc/sysconfig/irqbalance")
     sysconfig_kdump = simple_file("etc/sysconfig/kdump")
     sysconfig_kernel = simple_file("etc/sysconfig/kernel")
     sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
@@ -970,7 +925,7 @@ class DefaultSpecs(Specs):
             simple_file("/etc/sysconfig/rhn/systemid"),
             simple_file("/conf/rhn/sysconfig/rhn/systemid"),
         ]
-    )
+    )  # XML
     teamdctl_config_dump = foreach_execute(
         ethernet.team_interfaces, "/usr/bin/teamdctl %s config dump"
     )

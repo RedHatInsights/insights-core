@@ -204,7 +204,7 @@ class TimeDateCtlStatus(CommandParser, dict):
             elif not line[:colon_index].strip():
                 # this line is also the content of the previous key
                 self[dict_key] += ' ' + line.strip()
-            elif line.lstrip().startswith('Warning:'):
+            elif "Warning: " in line:
                 warning_start = True
                 self['warning'] = line.split(':')[1].strip()
             else:

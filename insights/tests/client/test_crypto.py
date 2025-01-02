@@ -147,7 +147,7 @@ def test_valid_signature():
         signature=home + "/file.txt.asc",
         key=home + "/key.public.gpg",
     )
-    shutil.rmtree(home)
+    shutil.rmtree(home, ignore_errors=True)
 
     # Verify results
     assert True is result.ok
@@ -182,7 +182,7 @@ def test_no_file(file):
     assert result.return_code > 0
     assert "file '{path}' does not exist".format(path=home + file) == result.stderr
 
-    shutil.rmtree(home)
+    shutil.rmtree(home, ignore_errors=True)
 
 
 @mock.patch("insights.client.crypto.GPGCommand.TEMPORARY_GPG_HOME_PARENT_DIRECTORY", "/tmp/")
@@ -220,7 +220,7 @@ def test_invalid_signature():
         signature=home + "/file.txt.asc",
         key=home + "/key.public.gpg",
     )
-    shutil.rmtree(home)
+    shutil.rmtree(home, ignore_errors=True)
 
     # Verify results
     assert not result.ok

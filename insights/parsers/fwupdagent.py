@@ -129,7 +129,9 @@ class FwupdagentDevices(CommandParser, JSONParser):
 @parser(Specs.fw_security)
 class FwupdagentSecurity(CommandParser, JSONParser):
     """
-    Class ``FwupdagentSecurity`` parses the output of the ``/bin/fwupdagent get-devices`` command.
+    Class ``FwupdagentSecurity`` parses the output of any of the commands:
+        - ``/usr/bin/fwupdmgr security --force --json``
+        - ``/bin/fwupdagent security --force``
 
     Attributes:
         data (dict): The parsed output of the command.

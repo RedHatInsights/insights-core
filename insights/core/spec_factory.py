@@ -23,7 +23,6 @@ from insights.core.exceptions import (
 from insights.core.plugins import component, datasource, is_datasource
 from insights.core.serde import deserializer, serializer
 from insights.util import fs, streams, which
-from insights.util import deprecated
 from insights.util.mangle import mangle_command
 
 log = logging.getLogger(__name__)
@@ -61,6 +60,8 @@ class ContentProvider(object):
         self.loaded = False
         self._content = None
         self._exception = None
+        self._filterable = False
+        self._filters = set()
 
     def load(self):
         raise NotImplementedError()
@@ -82,7 +83,7 @@ class ContentProvider(object):
         collection.
         """
         content = self.content  # load first for debugging info order
-        if isinstance(self.ctx, HostContext) and self.ds and self.cleaner:
+        if content and isinstance(self.ctx, HostContext) and self.ds and self.cleaner:
             cleans = []
             # Redacting?
             no_red = getattr(self.ds, 'no_redact', False)
@@ -90,19 +91,26 @@ class ContentProvider(object):
             # Obfuscating?
             no_obf = getattr(self.ds, 'no_obfuscate', [])
             cleans.append("Obfuscate") if len(no_obf) < 2 else None
+            # Filtering?
+            allowlist = None
+            if self._filterable:
+                cleans.append("Filter")
+                allowlist = dict((f, filters.MATCH_COUNT) for f in self._filters)
             # Cleaning - Entry
             if cleans:
-                log.debug("Cleaning (%s) %s", "/".join(cleans), "/" + self.relative_path)
+                log.debug("Cleaning (%s) %s", "/".join(cleans), self.relative_path)
                 content = self.cleaner.clean_content(
-                    content,
+                    content[::-1],  # Scan from bottom
+                    allowlist=allowlist,
                     obf_funcs=self.cleaner.get_obfuscate_functions(self.relative_path, no_obf),
                     no_redact=no_red,
-                )
+                )[::-1]
+                # ^ Reverse to the right order then
                 if len(content) == 0:
                     log.debug("Skipping %s due to empty after cleaning", self.path)
                     raise ContentException("Empty after cleaning: %s" % self.path)
             else:
-                log.debug("Skipping cleaning %s", "/" + self.relative_path)
+                log.debug("Skipping cleaning %s", self.relative_path)
         return content
 
     @property
@@ -195,6 +203,12 @@ class FileProvider(ContentProvider):
         self.relative_path = relative_path.lstrip("/")
         self.save_as = save_as
         self.file_name = os.path.basename(self.path)
+        self._filterable = (
+            any(s.filterable for s in dr.get_registry_points(self.ds))
+            if self.ds and filters.ENABLED
+            else False
+        )
+        self._filters = filters.get_filters(self.ds) if self.ds else set()
 
         self.validate()
 
@@ -205,12 +219,7 @@ class FileProvider(ContentProvider):
         # 2. Check only when collecting
         if isinstance(self.ctx, HostContext):
             # 2.1 No Filters for 'filterable=True' Specs
-            if (
-                self.ds
-                and filters.ENABLED
-                and any(s.filterable for s in dr.get_registry_points(self.ds))
-                and not filters.get_filters(self.ds)
-            ):
+            if self._filterable and not self._filters:
                 raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
             # 2.2 Customer Prohibits Collection
             if not blacklist.allow_file("/" + self.relative_path):
@@ -227,52 +236,6 @@ class FileProvider(ContentProvider):
 
     def __repr__(self):
         return '%s("%r")' % (self.__class__.__name__, self.path)
-
-
-class MetadataProvider(FileProvider):
-    """
-    .. warning::
-        This Class is deprecated and will be removed from 3.5.0.
-        Please collect built-in file by using datasource spec directly, see
-        :mod:`insights.specs.datasources.client_metadata`.
-
-    Class used for insights-core built-in files.  These files should not
-    be filtered, redacted or blocked.
-    """
-
-    def __init__(self, relative_path, root="/", save_as=None, ds=None, ctx=None, cleaner=None):
-        deprecated(
-            MetadataProvider,
-            "Please collect the built-in file via datasource spec instead.",
-            "3.5.0",
-        )
-        super(MetadataProvider, self).__init__(relative_path, root, save_as, ds, ctx, cleaner)
-
-    def _stream(self):
-        """
-        Returns a generator of lines instead of a list of lines.
-        """
-        if self._exception:
-            raise self._exception
-        try:
-            with safe_open(self.path, "r", encoding=encoding, errors="surrogateescape") as f:
-                yield f
-        except StopIteration:
-            raise
-        except Exception as ex:
-            self._exception = ex
-            raise ContentException(str(ex))
-
-    def validate(self):
-        # Validate built-in metedata files only when insights-run
-        if not isinstance(self.ctx, HostContext):
-            super(MetadataProvider, self).validate()
-        # But DO NOT validate them when core-collecting
-
-    def load(self):
-        self.loaded = True
-        with safe_open(self.path, "r", encoding=encoding, errors="surrogateescape") as f:
-            return [l.rstrip("\n") for l in f]
 
 
 class RawFileProvider(FileProvider):
@@ -298,10 +261,13 @@ class TextFileProvider(FileProvider):
     """
 
     def create_args(self):
+        """
+        The "grep" is faster and can be used shrink the size of file.
+        """
         args = []
-        _filters = "\n".join(filters.get_filters(self.ds))
-        if _filters:
-            args.append(["grep", "-F", _filters, self.path])
+        if self._filters:
+            log.debug("Pre-filtering %s", self.relative_path)
+            args.append(["grep", "-F", "\n".join(self._filters), self.path])
 
         return args
 
@@ -390,6 +356,12 @@ class CommandOutputProvider(ContentProvider):
         self._misc_settings()
         self._content = None
         self._env = self.create_env()
+        self._filterable = (
+            any(s.filterable for s in dr.get_registry_points(self.ds))
+            if self.ds and filters.ENABLED
+            else False
+        )
+        self._filters = filters.get_filters(self.ds) if self.ds else set()
 
         self.validate()
 
@@ -405,12 +377,7 @@ class CommandOutputProvider(ContentProvider):
         # 2. Check only when collecting
         if isinstance(self.ctx, HostContext):
             # 2.1 No Filters for 'filterable=True' Specs
-            if (
-                self.ds
-                and filters.ENABLED
-                and any(s.filterable for s in dr.get_registry_points(self.ds))
-                and not filters.get_filters(self.ds)
-            ):
+            if self._filterable and not self._filters:
                 raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
             # 2.2 Customer Prohibits Collection
             if not blacklist.allow_command(self.cmd):
@@ -420,10 +387,9 @@ class CommandOutputProvider(ContentProvider):
     def create_args(self):
         command = [shlex.split(self.cmd)]
 
-        if self.split:
-            _filters = "\n".join(filters.get_filters(self.ds))
-            if _filters:
-                command.append(["grep", "-F", _filters])
+        if self.split and self._filters:
+            log.debug("Pre-filtering  %s", self.relative_path)
+            command.append(["grep", "-F", "\n".join(self._filters)])
 
         return command
 
@@ -1679,28 +1645,6 @@ def serialize_datasource_provider(obj, root):
 
 @deserializer(DatasourceProvider)
 def deserialize_datasource_provider(_type, data, root, ctx, ds):
-    res = SerializedOutputProvider(data["relative_path"], root=root, ctx=ctx, ds=ds)
-    return res
-
-
-@serializer(MetadataProvider)
-def serialize_metadata_provider(obj, root):
-    # Built-in metadata files are put in the root instead of '/data'
-    root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
-    rel = obj.relative_path
-    if obj.save_as:
-        rel = obj.save_as
-        if obj.save_as.endswith("/"):
-            rel = os.path.join(rel, os.path.basename(obj.relative_path))
-    dst = os.path.join(root, obj.relative_path)
-    obj.write(dst)
-    return {"relative_path": rel, "save_as": obj.save_as}
-
-
-@deserializer(MetadataProvider)
-def deserialize_metadata_provider(_type, data, root, ctx, ds):
-    # Built-in metadata files are put in the root instead of '/data'
-    root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
     res = SerializedOutputProvider(data["relative_path"], root=root, ctx=ctx, ds=ds)
     return res
 

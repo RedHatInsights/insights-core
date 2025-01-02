@@ -8,6 +8,8 @@ from insights.specs.datasources.aws import LocalSpecs, aws_imdsv2_token
 
 TOKEN = "1234567890\n"
 
+TOKEN_INVALID = "Warning: /root/.curlrc:1: warning: 'proxy' requires parameter"
+
 
 def test_aws_imdsv2_token():
     input_spec = Mock()
@@ -27,6 +29,12 @@ def test_aws_imdsv2_token_exp():
 
     input_spec = Mock()
     input_spec.content = ["  ", ]
+    broker = {LocalSpecs.aws_imdsv2_token: input_spec}
+    with pytest.raises(SkipComponent) as ex:
+        aws_imdsv2_token(broker)
+
+    input_spec = Mock()
+    input_spec.content = [TOKEN_INVALID, ]
     broker = {LocalSpecs.aws_imdsv2_token: input_spec}
     with pytest.raises(SkipComponent) as ex:
         aws_imdsv2_token(broker)

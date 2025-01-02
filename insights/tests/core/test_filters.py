@@ -1,5 +1,4 @@
 import pytest
-import sys
 
 from collections import defaultdict
 
@@ -36,6 +35,7 @@ class LocalSpecsHasFilters(object):
 class LocalSpecsNoFilters(object):
     pass
 
+
 #
 # TEST
 #
@@ -58,7 +58,6 @@ def teardown_function(func):
     filters.FILTERS = defaultdict(set)
 
 
-@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier code uses oyaml library which is incompatable with this test')
 def test_filter_dumps_loads():
     r = filters.dumps()
     assert r is not None
