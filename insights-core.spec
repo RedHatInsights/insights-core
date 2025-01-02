@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.4.27
+Version:        3.5.0
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,36 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jan 02 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.0-1
+- fix: typo options to the ls_lanRL spec (#4323) (xiangceliu@redhat.com)
+- chore: remove planned deprecations for bumping 3.5.0 (#4308)
+  (xiangceliu@redhat.com)
+- feat: Enhance od_cpu_dma_latency miss strip (#4321) (jiazhang@redhat.com)
+- fix: do not print collection messages for compliance apiv2 options (#4319)
+  (xiangceliu@redhat.com)
+- feat: support line filter in spec Cleaner (#4299) (xiangceliu@redhat.com)
+- feat: add new command fwupdmgr to spec.fw_security (#4320)
+  (xiaoxwan@redhat.com)
+- fix: handler extra header lines in JSONParser (#4317) (xiaoxwan@redhat.com)
+- feat: remove collection of unused spec fw_devices (#4318)
+  (xiaoxwan@redhat.com)
+- feat: Add is_rhel_ai to parser of os_release (#4313) (jiazhang@redhat.com)
+- feat: Add spec and parser for ilab_model_list (#4311) (jiazhang@redhat.com)
+- chore: Use caplog to verify log calls (#4315) (stomsa@redhat.com)
+- test(client): Fix unusual race condition in tests (#4316)
+  (47797196+pkoprda@users.noreply.github.com)
+- feat: add a base parser LazyLogFileOutput (#4309) (xiangceliu@redhat.com)
+- fix(ci): Use dynamic repo URL for python26-test (#4314) (stomsa@redhat.com)
+- fix(test): failures of test_eap_reports in some test env (#4310)
+  (xiangceliu@redhat.com)
+- No longer test the uploader JSON files (#4304) (xiangceliu@redhat.com)
+- feat: download egg as per the RHEL major version (#4266)
+  (xiangceliu@redhat.com)
+- feat: Remove nmcli_conn_show_uuids datasource and parser (#4307)
+  (jiazhang@redhat.com)
+- fix: invalid content of datasource aws_imdsv2_token (#4305)
+  (xiaoxwan@redhat.com)
+
 * Thu Dec 12 2024 Xiangce Liu <xiangceliu@redhat.com> 3.4.27-1
 - fix: ansi color code in parser TimeDateCtlStatus (#4300)
   (xiaoxwan@redhat.com)

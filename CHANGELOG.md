@@ -2,6 +2,28 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0) (2025-01-02)
+
+- fix: typo options to the ls_lanRL spec ([PR 4323](https://github.com/RedHatInsights/insights-core/pull/4323))
+- chore: remove planned deprecations for bumping 3.5.0 ([PR 4308](https://github.com/RedHatInsights/insights-core/pull/4308))
+- feat: Enhance od_cpu_dma_latency miss strip ([PR 4321](https://github.com/RedHatInsights/insights-core/pull/4321))
+- fix: do not print collection messages for compliance apiv2 options ([PR 4319](https://github.com/RedHatInsights/insights-core/pull/4319))
+- feat: support line filter in spec Cleaner ([PR 4299](https://github.com/RedHatInsights/insights-core/pull/4299))
+- feat: add new command fwupdmgr to spec.fw_security ([PR 4320](https://github.com/RedHatInsights/insights-core/pull/4320))
+- fix: handler extra header lines in JSONParser ([PR 4317](https://github.com/RedHatInsights/insights-core/pull/4317))
+- feat: remove collection of unused spec fw_devices ([PR 4318](https://github.com/RedHatInsights/insights-core/pull/4318))
+- feat: Add is_rhel_ai to parser of os_release ([PR 4313](https://github.com/RedHatInsights/insights-core/pull/4313))
+- feat: Add spec and parser for ilab_model_list ([PR 4311](https://github.com/RedHatInsights/insights-core/pull/4311))
+- chore: Use caplog to verify log calls ([PR 4315](https://github.com/RedHatInsights/insights-core/pull/4315))
+- test(client): Fix unusual race condition in tests ([PR 4316](https://github.com/RedHatInsights/insights-core/pull/4316))
+- feat: add a base parser LazyLogFileOutput ([PR 4309](https://github.com/RedHatInsights/insights-core/pull/4309))
+- fix(ci): Use dynamic repo URL for python26-test ([PR 4314](https://github.com/RedHatInsights/insights-core/pull/4314))
+- fix(test): failures of test_eap_reports in some test env ([PR 4310](https://github.com/RedHatInsights/insights-core/pull/4310))
+- No longer test the uploader JSON files ([PR 4304](https://github.com/RedHatInsights/insights-core/pull/4304))
+- feat: download egg as per the RHEL major version ([PR 4266](https://github.com/RedHatInsights/insights-core/pull/4266))
+- feat: Remove nmcli_conn_show_uuids datasource and parser ([PR 4307](https://github.com/RedHatInsights/insights-core/pull/4307))
+- fix: invalid content of datasource aws_imdsv2_token ([PR 4305](https://github.com/RedHatInsights/insights-core/pull/4305))
+
 # [insights-core-3.4.27](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.4.27) (2024-12-12)
 
 - fix: ansi color code in parser TimeDateCtlStatus ([PR 4300](https://github.com/RedHatInsights/insights-core/pull/4300))
