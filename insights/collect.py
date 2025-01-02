@@ -21,24 +21,26 @@ import yaml
 from insights import apply_configs
 from insights import apply_default_enabled
 from insights import get_pool
+from insights.cleaner import Cleaner
 from insights.core import blacklist
 from insights.core import dr
 from insights.core import filters
 from insights.core.serde import Hydration
-from insights.core.spec_cleaner import Cleaner
 from insights.util import fs
 from insights.util import utc
 from insights.util.hostname import determine_hostname
 from insights.util.subproc import call
 
 SAFE_ENV = {
-    "PATH": os.path.pathsep.join([
-        "/bin",
-        "/usr/bin",
-        "/sbin",
-        "/usr/sbin",
-        "/usr/share/Modules/bin",
-    ]),
+    "PATH": os.path.pathsep.join(
+        [
+            "/bin",
+            "/usr/bin",
+            "/sbin",
+            "/usr/sbin",
+            "/usr/share/Modules/bin",
+        ]
+    ),
     "LC_ALL": "C",
 }
 
@@ -247,14 +249,12 @@ plugins:
       enabled: true
 """.strip()
 
-EXCEPTIONS_TO_REPORT = set([
-    OSError
-])
+EXCEPTIONS_TO_REPORT = set([OSError])
 """Exception types that should be reported on after core collection."""
 
 
 def load_manifest(data):
-    """ Helper for loading a manifest yaml doc. """
+    """Helper for loading a manifest yaml doc."""
     if isinstance(data, dict):
         return data
     if os.path.isfile(data):
@@ -338,6 +338,7 @@ def get_to_persist(persisters):
     Given a specification of what to persist, generates the corresponding set
     of components.
     """
+
     def specs():
         for p in persisters:
             if isinstance(p, dict):
@@ -385,8 +386,14 @@ def generate_archive_name():
     return "insights-%s-%s" % (hostname, suffix)
 
 
-def collect(client_config=None, rm_conf=None, tmp_path=None,
-            archive_name=None, compress=False, manifest=None):
+def collect(
+    client_config=None,
+    rm_conf=None,
+    tmp_path=None,
+    archive_name=None,
+    compress=False,
+    manifest=None,
+):
     """
     This is the collection entry point. It accepts a manifest, a temporary
     directory in which to store output, and a boolean for optional compression.
@@ -520,7 +527,13 @@ def main():
     # The main fxn is only invoked as a cli, if calling from another cli then
     # use the collect function instead
     collect_args = [arg for arg in sys.argv[1:]] if len(sys.argv) > 1 else []
-    sys.argv = [sys.argv[0], ] if sys.argv else sys.argv
+    sys.argv = (
+        [
+            sys.argv[0],
+        ]
+        if sys.argv
+        else sys.argv
+    )
 
     p = argparse.ArgumentParser()
     p.add_argument("-m", "--manifest", help="Manifest yaml.")
@@ -542,9 +555,12 @@ def main():
     logging.basicConfig(level=level)
 
     out_path = args.out_path or tempfile.gettempdir()
-    archive, errors = collect(manifest=args.manifest, tmp_path=out_path,
-                              archive_name=generate_archive_name(),
-                              compress=args.compress)
+    archive, errors = collect(
+        manifest=args.manifest,
+        tmp_path=out_path,
+        archive_name=generate_archive_name(),
+        compress=args.compress,
+    )
     print(archive)
 
 

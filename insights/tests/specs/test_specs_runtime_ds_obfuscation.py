@@ -112,7 +112,7 @@ def teardown_function(func):
 
 
 @pytest.mark.parametrize("obfuscate", [True, False])
-@patch('insights.core.spec_cleaner.Cleaner.generate_report')
+@patch('insights.cleaner.Cleaner.generate_report')
 def test_specs_ds_with_hn_collect(mock_fun, obfuscate):
     # Preparation
     manifest = collect.load_manifest(specs_manifest)
