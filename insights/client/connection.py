@@ -573,7 +573,19 @@ class InsightsConnection(object):
 
         if isinstance(result, REQUEST_FAILED_EXCEPTIONS):
             root_cause = _exception_root_cause(result)
-            if isinstance(result, requests.exceptions.SSLError):
+            if isinstance(result, requests.exceptions.ProxyError):
+                scheme = urlparse(url).scheme
+                proxy_url = self.proxies[scheme]
+                if isinstance(root_cause, socket.gaierror):
+                    logger.error("    Could not resolve proxy host %s.", proxy_url)
+                    self._test_connection(scheme, proxy_url)
+                elif "407 Proxy Authentication Required" in str(root_cause):
+                    logger.error("    Invalid proxy credentials %s.", proxy_url)
+                elif isinstance(root_cause, (ConnectionRefusedError, ConnectionResetError)):
+                    logger.error("    Connection to proxy %s refused.", proxy_url)
+                else:
+                    logger.error("    Proxy %s error %s.", proxy_url, result)
+            elif isinstance(result, requests.exceptions.SSLError):
                 if "[SSL: WRONG_VERSION_NUMBER]" in str(root_cause):
                     logger.error("    Invalid protocol.")
                 else:
