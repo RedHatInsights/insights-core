@@ -572,8 +572,19 @@ class InsightsConnection(object):
 
         if isinstance(result, REQUEST_FAILED_EXCEPTIONS):
             root_cause = _exception_root_cause(result)
-            if isinstance(result, requests.exceptions.SSLError):
-                logger.error("    Invalid key or certificate.")
+            if isinstance(result, requests.exceptions.ProxyError):
+                proxy_url = self.proxies[urlparse(url).scheme]
+                if isinstance(root_cause, socket.gaierror):
+                    logger.error("    Could not resolve proxy address %s.", proxy_url)
+                elif "407 Proxy Authentication Required" in str(root_cause):
+                    logger.error("    Invalid proxy credentials %s.", proxy_url)
+                else:
+                    logger.error("    Invalid proxy settings %s.", proxy_url)
+            elif isinstance(result, requests.exceptions.SSLError):
+                if "[SSL: WRONG_VERSION_NUMBER]" in str(root_cause):
+                    logger.error("    Invalid proxy address protocol.")
+                else:
+                    logger.error("    Invalid key or certificate.")
             elif isinstance(result, requests.exceptions.ConnectionError) and isinstance(root_cause, socket.gaierror):
                 self._test_connection(url)
             else:
