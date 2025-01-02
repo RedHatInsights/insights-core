@@ -200,6 +200,24 @@ def test_add_filter_exception_None():
         filters.add_filter(Specs.ps_aux, None)
 
 
+def test_add_filter_exception_with_invalid_max_match():
+    with pytest.raises(Exception) as ex:
+        filters.add_filter(Specs.ps_aux, 'abctest', 'str')
+    assert "Invalid argument: str" in str(ex)
+
+    with pytest.raises(Exception) as ex:
+        filters.add_filter(Specs.ps_aux, 'abctest', 0)
+    assert "Invalid argument: 0" in str(ex)
+
+    with pytest.raises(Exception) as ex:
+        filters.add_filter(Specs.ps_aux, 'abctest', -1)
+    assert "Invalid argument: -1" in str(ex)
+
+    with pytest.raises(Exception) as ex:
+        filters.add_filter(Specs.ps_aux, 'abctest', None)
+    assert "Invalid argument: None" in str(ex)
+
+
 def test_get_filters():
     _filter = 'A filter'
     filters.add_filter(MySpecs.has_filters, _filter)

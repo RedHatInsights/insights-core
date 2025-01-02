@@ -107,6 +107,11 @@ def add_filter(component, patterns, max_match=MAX_MATCH):
 
         FILTERS[comp].update(max_matchs(FILTERS[comp], patterns))
 
+    if max_match is None or type(max_match) is not int or max_match <= 0:
+        raise Exception(
+            "Invalid argument: {0}. It can only be a positive integer.".format(max_match)
+        )
+
     if not plugins.is_datasource(component):
         deps = get_dependency_datasources(component)
         if deps:
