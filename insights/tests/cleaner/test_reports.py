@@ -7,23 +7,25 @@ from pytest import mark
 
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
-from insights.core.spec_cleaner import Cleaner
+from insights.cleaner import Cleaner
+from insights.cleaner.utilities import write_report
 
 hostname = "report.test.com"
 test_file_data = 'ip: 10.0.2.155\ntestword\n{0}'.format(hostname)
 
 
 @mark.parametrize(
-    ("obfuscate", "obfuscate_hostname"),
+    ("obfuscate", "obfuscate_hostname", "keywords"),
     [
-        (False, False), (True, False), (True, True),
-    ]
+        (False, False, []),
+        (True, False, ['testword']),
+        (True, True, ['testword']),
+    ],
 )
 @mark.parametrize("test_umask", [0o000, 0o022])
-def test_rhsm_facts(test_umask, obfuscate, obfuscate_hostname):
+def test_rhsm_facts(test_umask, obfuscate, obfuscate_hostname, keywords):
     rhsm_facts_file = '/tmp/insights_test_rhsm.facts'
-    conf = InsightsConfig(obfuscate=obfuscate,
-                          obfuscate_hostname=obfuscate_hostname)
+    conf = InsightsConfig(obfuscate=obfuscate, obfuscate_hostname=obfuscate_hostname)
     conf.rhsm_facts_file = rhsm_facts_file
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
@@ -34,7 +36,7 @@ def test_rhsm_facts(test_umask, obfuscate, obfuscate_hostname):
         t.write(test_file_data)
 
     old_umask = os.umask(test_umask)
-    pp = Cleaner(conf, {'keywords': ['testword']}, hostname)
+    pp = Cleaner(conf, {'keywords': keywords}, hostname)
     pp.clean_file(test_file, [])
     pp.generate_report(arch.archive_name)
     arch.delete_archive_dir()
@@ -50,24 +52,27 @@ def test_rhsm_facts(test_umask, obfuscate, obfuscate_hostname):
         # hostname
         assert facts['insights_client.hostname'] == hostname
         assert facts['insights_client.obfuscate_hostname_enabled'] == obfuscate_hostname
-        hns = json.loads(facts['insights_client.hostnames'])
+        hns = json.loads(facts['insights_client.obfuscated_hostname'])
         if obfuscate_hostname:
             assert hns[0]['original'] == hostname
             assert '.example.com' in hns[0]['obfuscated']
         else:
-            hns == []
+            assert hns == []
         # ip
         assert facts['insights_client.obfuscate_ip_enabled'] == obfuscate
-        ips = json.loads(facts['insights_client.ips'])
+        ips = json.loads(facts['insights_client.obfuscated_ipv4'])
         if obfuscate:
             assert ips[0]['original'] == '10.0.2.155'
             assert ips[0]['obfuscated'] == '10.230.230.1'
         else:
             assert ips == []
         # keyword
-        kws = json.loads(facts['insights_client.keywords'])
-        assert kws[0]['original'] == 'testword'
-        assert kws[0]['obfuscated'] == 'keyword0'
+        kws = json.loads(facts['insights_client.obfuscated_keyword'])
+        if keywords:
+            assert kws[0]['original'] == 'testword'
+            assert kws[0]['obfuscated'] == 'keyword0'
+        else:
+            assert kws == []
 
     os.unlink(rhsm_facts_file)
 
@@ -76,13 +81,14 @@ def test_rhsm_facts(test_umask, obfuscate, obfuscate_hostname):
 @mark.parametrize(
     ("obfuscate", "obfuscate_hostname"),
     [
-        (False, False), (True, False), (True, True),
-    ]
+        (False, False),
+        (True, False),
+        (True, True),
+    ],
 )
-@patch('insights.core.spec_cleaner.Cleaner.generate_rhsm_facts', return_value=None)
+@patch('insights.cleaner.Cleaner.generate_rhsm_facts', return_value=None)
 def test_all_csv_reports(rhsm_facts, obfuscate, rm_conf, obfuscate_hostname):
-    conf = InsightsConfig(obfuscate=obfuscate,
-                          obfuscate_hostname=obfuscate_hostname)
+    conf = InsightsConfig(obfuscate=obfuscate, obfuscate_hostname=obfuscate_hostname)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -141,3 +147,9 @@ def test_all_csv_reports(rhsm_facts, obfuscate, rm_conf, obfuscate_hostname):
         os.unlink(kw_report_file)
     else:
         assert not os.path.isfile(kw_report_file)
+
+
+def test_wirte_report_exp():
+    report_file = '/tmp/_test.csv'
+    write_report(None, report_file)
+    os.unlink(report_file)
