@@ -1,7 +1,5 @@
 import json
 import os
-import pytest
-import sys
 import yaml
 
 from collections import defaultdict
@@ -85,7 +83,6 @@ def teardown_function():
     filters.FILTERS = defaultdict(dict)
 
 
-@pytest.mark.skipif(sys.version_info < (2, 7), reason='Skip py26')
 def test_apply_specs_filters_json():
     apply_spec_filters.apply_filters("json", 'insights.parsers', JSON_file)
 
