@@ -83,14 +83,14 @@ class NftListRuleSet(JSONParser):
     Examples:
         >>> type(nft_obj)
         <class 'insights.parsers.nftables.NftListRuleSet'>
-        >>> [str(item) for item in nft_obj.tables('ip')]   # change unicode to string to be compatible with python2.6/2.7
+        >>> [str(item) for item in nft_obj.tables('ip')]   # change unicode to string to be compatible with python2.7
         ['table1']
         >>> chains = nft_obj.chains('ip', 'table1')
         >>> len(chains)
         1
-        >>> str(chains[0]['name'].value)  # change unicode to string to be compatible with python2.6/2.7
+        >>> str(chains[0]['name'].value)  # change unicode to string to be compatible with python2.7
         'chain1'
-        >>> str(chains[0]['type'].value)  # change unicode to string to be compatible with python2.6/2.7
+        >>> str(chains[0]['type'].value)  # change unicode to string to be compatible with python2.7
         'filter'
         >>> rules = nft_obj.rules('ip', 'table1', 'chain1')
         >>> len(rules)
