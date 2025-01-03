@@ -4,6 +4,7 @@ Module handling HTTP Requests and Connection Diagnostics
 from __future__ import print_function
 from __future__ import absolute_import
 import requests
+import urllib3
 import socket
 import os
 import six
@@ -481,6 +482,31 @@ class InsightsConnection(object):
 
         return not errors
 
+    def _test_url_config(self):
+        logger.info("URL configuration:")
+
+        urls = [("Base URL", self.base_url)]
+        if self.proxies:
+            for proxy_protocol, proxy_url in self.proxies.items():
+                proxy_description = "{} proxy URL".format(proxy_protocol.upper())
+                urls.append((proxy_description, proxy_url))
+
+        valid = True
+        for description, url in urls:
+            try:
+                urllib3.util.url.parse_url(url)
+            except urllib3.exceptions.LocationParseError:
+                valid = False
+                logger.error("  %s: %s (INVALID!)", description, url)
+            else:
+                logger.info("  %s: %s", description, url)
+        if not self.proxies:
+            logger.info("  No proxy.")
+
+        logger.info("")
+
+        return valid
+
     def _dump_urls(self):
         base_parsed = urlparse(self.base_url)
         if base_parsed.hostname.endswith("stage.redhat.com"):
@@ -496,19 +522,12 @@ class InsightsConnection(object):
         logger.info("Running Connection Tests against %s...", hostname_desc)
 
         urls = [
-            (self.base_url, "Base"),
             (self.upload_url, "Upload"),
             (self.inventory_url, "Inventory"),
             (self.ping_url, "Ping"),
         ]
         for url, title in urls:
             logger.info("  %s URL: %s", title, url)
-
-        if self.proxies:
-            for proxy_type, proxy_url in self.proxies.items():
-                logger.info("  %s proxy: %s", proxy_type.upper(), proxy_url)
-        else:
-            logger.info("  Proxy: not set")
 
         logger.info("")
 
@@ -537,9 +556,10 @@ class InsightsConnection(object):
         """
         Test connection to Red Hat
         """
-        auth_config_ok = self._test_auth_config()
-        if not auth_config_ok:
-            return 1
+        for config_test in [self._test_auth_config, self._test_url_config]:
+            success = config_test()
+            if not success:
+                return 1
 
         self._dump_urls()
 
