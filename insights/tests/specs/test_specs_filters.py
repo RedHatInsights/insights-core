@@ -13,7 +13,7 @@ from insights.core import filters
 from insights.core.context import HostContext
 from insights.core.filters import add_filter
 from insights.core.plugins import datasource
-from insights.core.spec_cleaner import Cleaner
+from insights.cleaner import Cleaner
 from insights.core.spec_factory import (
     RegistryPoint,
     SpecSet,
@@ -289,7 +289,7 @@ def test_exp_no_filters():
 
 
 @pytest.mark.parametrize("obfuscate", [True, False])
-@patch('insights.core.spec_cleaner.Cleaner.generate_report', return_value=None)
+@patch('insights.cleaner.Cleaner.generate_report', return_value=None)
 def test_specs_filters_collect(gen, obfuscate):
     add_filter(Stuff.many_glob_filter, " ")
     add_filter(Stuff.many_foreach_exe_filter, " ")

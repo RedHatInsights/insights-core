@@ -13,7 +13,7 @@ from insights.core import filters
 from insights.core.context import HostContext
 from insights.core.filters import add_filter
 from insights.core.plugins import datasource
-from insights.core.spec_cleaner import Cleaner
+from insights.cleaner import Cleaner
 from insights.core.spec_factory import (
     RawFileProvider,
     RegistryPoint,
@@ -206,7 +206,7 @@ def test_specs_save_as_no_collect():
 
 
 @mark.parametrize("obfuscate", [True, False])
-@patch('insights.core.spec_cleaner.Cleaner.generate_report', Mock())
+@patch('insights.cleaner.Cleaner.generate_report', Mock())
 def test_specs_save_as_collect(obfuscate):
     add_filter(Stuff.smpl_cmd_w_filter, " hello ")
     add_filter(Stuff.smpl_file_w_filter, "def test")
