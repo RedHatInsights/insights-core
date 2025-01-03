@@ -24,7 +24,7 @@ Features
 --------
 
 * Over 200 Enterprise Linux data parsers
-* Support for Python 2.6+ and 3.3+
+* Support for Python 2.7+ and 3.3+
 * Built in support for local host collection
 * Data collection support for several archive formats
 

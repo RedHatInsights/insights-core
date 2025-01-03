@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import pytest
-import sys
 import warnings
 
 from insights.tests import deep_compare
@@ -256,7 +255,6 @@ def test_case_variants():
     assert case_variants('hosts:') == ['hosts:', 'HOSTS:', 'Hosts:']
 
 
-@pytest.mark.skipif(sys.version_info < (2, 7), reason='Code with PYTEST_CURRENT_TEST is incompatible with py26')
 def test_deprecated():
     def normal_fn():
         return 1
