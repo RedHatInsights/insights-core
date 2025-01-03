@@ -243,7 +243,7 @@ def setup_function(func):
 def teardown_function(func):
     # Reset Test ENV
     filters._CACHE = {}
-    filters.FILTERS = defaultdict(set)
+    filters.FILTERS = defaultdict(dict)
     dr.COMPONENTS = defaultdict(lambda: defaultdict(set))
     dr.TYPE_OBSERVERS = defaultdict(set)
     dr.ENABLED = defaultdict(lambda: True)
