@@ -4,6 +4,7 @@ Module handling HTTP Requests and Connection Diagnostics
 from __future__ import print_function
 from __future__ import absolute_import
 import requests
+import urllib3
 import socket
 import os
 import six
@@ -479,9 +480,15 @@ class InsightsConnection(object):
 
         return not errors
 
-    def _dump_urls(self):
-        base_parsed = urlparse(self.base_url)
-        if base_parsed.hostname.endswith("stage.redhat.com"):
+    def _test_url_config(self):
+        try:
+            base_parsed = urllib3.util.url.parse_url(self.base_url)
+        except urllib3.exceptions.LocationParseError:
+            base_parsed = None
+
+        if not base_parsed:
+            hostname_desc = "invalid URL"
+        elif base_parsed.hostname.endswith("stage.redhat.com"):
             hostname_desc = "Red Hat Insights (staging)"
         elif base_parsed.hostname.endswith("redhat.com"):
             if self.config.verbose:
@@ -499,13 +506,31 @@ class InsightsConnection(object):
 
         logger.info("  Ping URL: %s", self.ping_url)
 
+        invalid_proxies = {}
         if self.proxies:
             for proxy_type, proxy_url in self.proxies.items():
-                logger.info("  %s proxy: %s", proxy_type.upper(), proxy_url)
+                try:
+                    urllib3.util.url.parse_url(proxy_url)
+                except urllib3.exceptions.LocationParseError:
+                    invalid_proxies[proxy_type] = proxy_url
+                proxy_desc = " (invalid)" if proxy_type in invalid_proxies else ""
+                logger.info("  %s proxy: %s%s", proxy_type.upper(), proxy_url, proxy_desc)
         else:
             logger.info("  Proxy: not set")
 
         logger.info("")
+
+        if not base_parsed or invalid_proxies:
+            if not base_parsed:
+                logger.error("Invalid base URL: %s", self.base_url)
+
+            for proxy_type, proxy_url in invalid_proxies.items():
+                logger.error("Invalid %s proxy: %s", proxy_type.upper(), proxy_url)
+
+            logger.error("")
+            return False
+
+        return True
 
     def _test_connection(self, url):
         parsed_url = urlparse(url)
@@ -534,11 +559,10 @@ class InsightsConnection(object):
         """
         Test connection to Red Hat
         """
-        auth_config_ok = self._test_auth_config()
-        if not auth_config_ok:
-            return 1
-
-        self._dump_urls()
+        for config_test in [self._test_auth_config, self._test_url_config]:
+            config_ok = config_test()
+            if not config_ok:
+                return 1
 
         logger.info("Running Connection Tests...")
         logger.info("")
