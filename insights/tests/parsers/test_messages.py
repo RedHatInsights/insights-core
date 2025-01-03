@@ -19,26 +19,16 @@ Apr 22 10:40:01 boy-bona CROND[30677]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1
 Apr 22 10:41:13 boy-bona crontab[32515]: (root) LIST (root)
 """.strip()
 
-filters.add_filter(Specs.messages, [
-    "LIST",
-    "CROND",
-    "jabberd",
-    "Wrapper",
-    "Launching",
-    "yum"
-])
+filters.add_filter(Specs.messages, ["LIST", "CROND", "jabberd", "Wrapper", "Launching", "yum"])
 
 
 def teardown_function(func):
     filters._CACHE = {}
-    filters.FILTERS = defaultdict(set)
+    filters.FILTERS = defaultdict(dict)
 
 
 def test_doc_examples():
-    env = {
-        'msgs': messages.Messages(context_wrap(MSGINFO)),
-        'Messages': messages.Messages
-    }
+    env = {'msgs': messages.Messages(context_wrap(MSGINFO)), 'Messages': messages.Messages}
     failed, total = doctest.testmod(messages, globs=env)
     assert failed == 0
 
@@ -54,5 +44,8 @@ def test_messages():
     assert crond[0].get('procname') == "CROND[27921]"
     assert msg_info.get('jabberd/sm[11057]')[0].get('hostname') == "lxc-rhel68-sat56"
     assert msg_info.get('Wrapper')[0].get('message') == "--> Wrapper Started as Daemon"
-    assert msg_info.get('Launching')[0].get('raw_message') == "May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: Launching a JVM..."
+    assert (
+        msg_info.get('Launching')[0].get('raw_message')
+        == "May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: Launching a JVM..."
+    )
     assert 2 == len(msg_info.get('yum'))
