@@ -1,13 +1,15 @@
+import os
+import six
+import tempfile
+
 from glob import glob
-from insights.client.connection import InsightsConnection
-from insights.client.constants import InsightsConstants as constants
 from logging import getLogger
 from re import findall
 from sys import exit
-import tempfile
+
+from insights.client.connection import InsightsConnection
+from insights.client.constants import InsightsConstants as constants
 from insights.util.subproc import call
-import os
-import six
 
 
 NONCOMPLIANT_STATUS = 2
@@ -211,21 +213,21 @@ class ComplianceClient:
                     print("%-12s %-40s %s" % (is_assigned, policy['id'], policy['title']))
             return 0
         else:
-            logger.error("An error has occured while communicating with the API.\n")
+            logger.error("An error has occurred while communicating with the API.\n")
             return constants.sig_kill_bad
 
-    def policy_link(self, policy_id, dir):
+    def policy_link(self, policy_id, opt):
         url = "https://{0}/compliance/v2/policies/{1}/systems/{2}"
         full_url = url.format(self.config.base_url, policy_id, self.inventory_id)
         logger.debug("Fetching: {0}".format(full_url))
-        response = getattr(self.conn.session, dir)(full_url)
+        response = getattr(self.conn.session, opt)(full_url)
         logger.debug("Content of the response {0} - {1}".format(response, response.content))
 
         if response.status_code == 202:
             logger.info("Operation completed successfully.\n")
             return 0
         else:
-            logger.error("An error has occured while communicating with the API.\n")
+            logger.error("Policy ID {0} does not exist.".format(policy_id))
             return constants.sig_kill_bad
 
     def get_system_policies(self):
