@@ -4,7 +4,7 @@ crio configuration
 The crio files are normally available to rules as a list of CrioConf objects.
 """
 
-from insights.contrib.ConfigParser import NoOptionError, NoSectionError
+from insights.core.exceptions import NoOptionError, NoSectionError
 from insights.core.plugins import combiner
 from insights.parsers.crio_conf import CrioConf
 
@@ -80,6 +80,7 @@ class AllCrioConf(object):
     Attributes:
         files (list): The list of configuration file names.
     """
+
     def __init__(self, crio_confs):
         self.data = {}
         self.files = []

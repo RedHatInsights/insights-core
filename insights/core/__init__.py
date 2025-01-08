@@ -12,8 +12,13 @@ import yaml
 from collections import OrderedDict
 from fnmatch import fnmatch
 
-from insights.contrib.ConfigParser import NoOptionError, NoSectionError
-from insights.core.exceptions import ContentException, ParseException, SkipComponent  # noqa: F401
+from insights.core.exceptions import (
+    ContentException,
+    NoOptionError,
+    NoSectionError,
+    ParseException,
+    SkipComponent,
+)  # noqa: F401
 from insights.core.serde import deserializer, serializer
 from insights.parsr import iniparser
 from insights.parsr.query import Directive, Entry, Result, Section, compile_queries
