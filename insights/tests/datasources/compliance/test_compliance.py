@@ -9,6 +9,7 @@ except Exception:
 
 from pytest import raises
 
+from insights.client.constants import InsightsConstants as constants
 from insights.specs.datasources.compliance import ComplianceClient
 
 ENV_TZ = None
@@ -292,8 +293,9 @@ def test__inventory_id(config):
     assert compliance_client.inventory_id == '12345'
 
 
+@patch('insights.specs.datasources.compliance.logger')
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
-def test_assignable_policies(config):
+def test_assignable_policies(config, log):
     compliance_client = ComplianceClient(config=config)
     compliance_client.conn.session.get = Mock(
         return_value=Mock(status_code=200, json=Mock(return_value={'data': ['test']}))
@@ -310,10 +312,58 @@ def test_assignable_policies(config):
     assert compliance_client.assignable_policies() == 0
     url = "https://localhost/app/compliance/v2/policies?filter=(os_major_version=9 and os_minor_version=3)"
     compliance_client.conn.session.get.assert_called_with(url)
+    log.warning.assert_not_called()
+    log.error.assert_not_called()
 
 
+@patch('insights.specs.datasources.compliance.logger')
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
-def test_policy_link_assign(config):
+def test_assignable_policies_failed_code(config, log):
+    compliance_client = ComplianceClient(config=config)
+    compliance_client.conn.session.get = Mock(
+        return_value=Mock(status_code=200, json=Mock(return_value={'data': ['test']}))
+    )
+    compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
+    compliance_client.get_system_policies = lambda: []
+    compliance_client.os_major = 9
+    compliance_client.os_minor = 3
+    compliance_client.conn.session.get = Mock(
+        return_value=Mock(
+            status_code=422, json=Mock(return_value={'data': [{"id": 123456, "title": "foo"}]})
+        )
+    )
+    assert compliance_client.assignable_policies() == constants.sig_kill_bad
+    url = "https://localhost/app/compliance/v2/policies?filter=(os_major_version=9 and os_minor_version=3)"
+    compliance_client.conn.session.get.assert_called_with(url)
+    log.error.assert_called_with("An error has occurred while communicating with the API.\n")
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_assignable_policies_failed_empty(config, log):
+    compliance_client = ComplianceClient(config=config)
+    compliance_client.conn.session.get = Mock(
+        return_value=Mock(status_code=200, json=Mock(return_value={'data': ['test']}))
+    )
+    compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
+    compliance_client.get_system_policies = lambda: []
+    compliance_client.os_major = 9
+    compliance_client.os_minor = 3
+    compliance_client.conn.session.get = Mock(
+        return_value=Mock(
+            status_code=200, json=Mock(return_value={'data': []})
+        )
+    )
+    assert compliance_client.assignable_policies() == constants.sig_kill_bad
+    url = "https://localhost/app/compliance/v2/policies?filter=(os_major_version=9 and os_minor_version=3)"
+    compliance_client.conn.session.get.assert_called_with(url)
+    log.warning.assert_called_with("System is not assignable to any policy. Create supported policy using the Compliance web UI.\n")
+    log.error.assert_not_called()
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_policy_link_assign(config, log):
     compliance_client = ComplianceClient(config=config)
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     policy_id = "d83ddbac-ab56-420b-9e71-878795375af5"
@@ -325,10 +375,29 @@ def test_policy_link_assign(config):
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.patch.assert_called_with(url)
+    log.info.assert_called_with("Operation completed successfully.\n")
 
 
+@patch('insights.specs.datasources.compliance.logger')
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
-def test_policy_link_unassign(config):
+def test_policy_link_assign_invalid_policy_id(config, log):
+    compliance_client = ComplianceClient(config=config)
+    compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
+    policy_id = "________-ab56-420b-9e71-878795375af5"
+    compliance_client.conn.session.patch = Mock(
+        return_value=Mock(status_code=404, json=Mock(return_value={}))
+    )
+    assert compliance_client.policy_link(policy_id, 'patch') == constants.sig_kill_bad
+    url = "https://localhost/app/compliance/v2/policies/{0}/systems/{1}".format(
+        policy_id, compliance_client.inventory_id
+    )
+    compliance_client.conn.session.patch.assert_called_with(url)
+    log.error.assert_called_with("Policy ID {0} does not exist.".format(policy_id))
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_policy_link_unassign(config, log):
     compliance_client = ComplianceClient(config=config)
     compliance_client.conn.session.delete = Mock(
         return_value=Mock(status_code=202, json=Mock(return_value={}))
@@ -340,3 +409,21 @@ def test_policy_link_unassign(config):
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.delete.assert_called_with(url)
+    log.info.assert_called_with("Operation completed successfully.\n")
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_policy_link_unassign_invalid_policy_id(config, log):
+    compliance_client = ComplianceClient(config=config)
+    compliance_client.conn.session.delete = Mock(
+        return_value=Mock(status_code=404, json=Mock(return_value={}))
+    )
+    compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
+    policy_id = "________-ab56-420b-9e71-878795375af5"
+    assert compliance_client.policy_link(policy_id, 'delete') == constants.sig_kill_bad
+    url = "https://localhost/app/compliance/v2/policies/{0}/systems/{1}".format(
+        policy_id, compliance_client.inventory_id
+    )
+    compliance_client.conn.session.delete.assert_called_with(url)
+    log.error.assert_called_with("Policy ID {0} does not exist.".format(policy_id))
