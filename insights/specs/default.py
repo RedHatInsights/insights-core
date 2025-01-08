@@ -16,7 +16,7 @@ import signal
 # - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
-from insights.components.rhel_version import IsRhel6, IsGtOrRhel86
+from insights.components.rhel_version import IsGtOrRhel86
 from insights.components.satellite import (
     IsSatellite,
     IsSatellite611,
@@ -220,7 +220,6 @@ class DefaultSpecs(Specs):
         keep_rc=True,
     )
     cgroups = simple_file("/proc/cgroups")
-    chkconfig = simple_command("/sbin/chkconfig --list", deps=[IsRhel6])
     chrony_conf = simple_file("/etc/chrony.conf")
     chronyc_sources = simple_command("/usr/bin/chronyc sources")
     cib_xml = simple_file("/var/lib/pacemaker/cib/cib.xml")
