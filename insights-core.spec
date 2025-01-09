@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.0
+Version:        3.5.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,16 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jan 09 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.1-1
+- fix: error msg for compliance apiv2 assign/unassign (#4328)
+  (xiangceliu@redhat.com)
+- chore: sort out exceptions (#4327) (xiangceliu@redhat.com)
+- chore: do not collect chkconfig on RHEL 7+ (#4326) (xiangceliu@redhat.com)
+- fix(client): Display correct Insights URL (#4297)
+  (47797196+pkoprda@users.noreply.github.com)
+- feat: enhance add_filter to support the max matched lines  (#4303)
+  (xiangceliu@redhat.com)
+
 * Thu Jan 02 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.0-1
 - fix: typo options to the ls_lanRL spec (#4323) (xiangceliu@redhat.com)
 - chore: remove planned deprecations for bumping 3.5.0 (#4308)

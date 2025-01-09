@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.1) (2025-01-09)
+
+- fix: error msg for compliance apiv2 assign/unassign ([PR 4328](https://github.com/RedHatInsights/insights-core/pull/4328))
+- chore: sort out exceptions ([PR 4327](https://github.com/RedHatInsights/insights-core/pull/4327))
+- chore: do not collect chkconfig on RHEL 7+ ([PR 4326](https://github.com/RedHatInsights/insights-core/pull/4326))
+- fix(client): Display correct Insights URL ([PR 4297](https://github.com/RedHatInsights/insights-core/pull/4297))
+- feat: enhance add_filter to support the max matched lines  ([PR 4303](https://github.com/RedHatInsights/insights-core/pull/4303))
+
 # [insights-core-3.5.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0) (2025-01-02)
 
 - fix: typo options to the ls_lanRL spec ([PR 4323](https://github.com/RedHatInsights/insights-core/pull/4323))
