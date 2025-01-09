@@ -47,18 +47,6 @@ These features allow these archives to be processed quickly and more
 securely in the Insights production environment.  On the other hand, the
 reduced data set narrows the scope of uses to be Insights-specific.
 
-OCP 4 Archives
---------------
-
-OCP 4 can generate diagnostic archives with a component called the
-``insights-operator``.  They are automatically uploaded to Red Hat for analysis.
-
-The openshift-must-gather CLI tool produces more comprehensive archives than
-the operator. ``insights-core`` recognizes them as well.
-
-.. _openshift-must-gather: https://github.com/openshift/must-gather
-
-
 Execution Model
 ===============
 
