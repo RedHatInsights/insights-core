@@ -18,6 +18,7 @@ entry_points = {
         'insights-dupkeycheck = insights.tools.dupkeycheck:main',
         'insights-inspect = insights.tools.insights_inspect:main',
         'insights-info = insights.tools.query:main',
+        'insights-ocpshell= insights.ocpshell:main',
         'mangle = insights.util.mangle:main',
     ]
 }
