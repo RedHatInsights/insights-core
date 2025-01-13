@@ -65,7 +65,10 @@ yaml_file = os.path.join(os.path.dirname(insights.__file__), filters._filename)
 
 
 def setup_function():
-    filters.add_filter(Specs.ps_alxwww, ['COMMAND', 'CMD'])
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(dict)
+
+    filters.add_filter(Specs.ps_alxwww, ['COMMAND', 'CMD', '-ma'])
     filters.add_filter(Specs.ps_aux, 'COMMAND')
     filters.add_filter(Specs.yum_conf, '[')
     filters.add_filter(Specs.yum_log, ['Installed', 'Updated', 'Erased'])
@@ -93,7 +96,8 @@ def test_apply_specs_filters_json():
     with open(JSON_file, 'r') as f:
         ret = json.load(f)
         # ps_alxwww
-        assert len(ret['commands'][0]['pattern']) == 2
+        assert len(ret['commands'][0]['pattern']) == 3
+        assert '\\-ma' in ret['commands'][0]['pattern']
         count += 1
         # ps_aux
         assert len(ret['commands'][1]['pattern']) == 1
@@ -121,7 +125,8 @@ def test_apply_specs_filters_yaml():
     with open(YAML_file, 'r') as f:
         ret = yaml.safe_load(f)
         # ps_alxwww
-        assert len(ret['insights.specs.Specs.ps_alxwww']) == 2
+        assert len(ret['insights.specs.Specs.ps_alxwww']) == 3
+        assert '\\-ma' in ret['insights.specs.Specs.ps_alxwww']
         count += 1
         # ps_aux
         assert len(ret['insights.specs.Specs.ps_aux']) == 1
@@ -147,7 +152,8 @@ def test_apply_specs_filters_yaml():
     with open(yaml_file, 'r') as f:
         ret = yaml.safe_load(f)
         # ps_alxwww
-        assert len(ret['insights.specs.Specs.ps_alxwww']) == 2
+        assert len(ret['insights.specs.Specs.ps_alxwww']) == 3
+        assert '\\-ma' in ret['insights.specs.Specs.ps_alxwww']
         count += 1
         # ps_aux
         assert len(ret['insights.specs.Specs.ps_aux']) == 1

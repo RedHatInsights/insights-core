@@ -96,9 +96,8 @@ def add_filter(component, patterns, max_match=MAX_MATCH):
             raise TypeError("Filter patterns must be of type string, list, or set.")
 
         if isinstance(patterns, six.string_types):
-            patterns = {patterns: max_match}
-        elif isinstance(patterns, list):
-            patterns = dict((pt, max_match) for pt in patterns)
+            patterns = [patterns]
+        patterns = dict(('\\' + pt if pt and pt[0] == '-' else pt, max_match) for pt in patterns)
         # here patterns is a dict
 
         for pat in patterns:
