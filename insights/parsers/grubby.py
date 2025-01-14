@@ -18,6 +18,7 @@ from insights.core import CommandParser
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.grubby_default_index)
@@ -51,6 +52,10 @@ class GrubbyDefaultIndex(CommandParser):
 @parser(Specs.grubby_default_kernel)
 class GrubbyDefaultKernel(CommandParser):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.7.0.
+        Please use the :class:`insights.combiners.grubby.Grubby` instead.
+
     This parser parses the output of command ``grubby --default-kernel``.
 
     The typical output of this command is::
@@ -69,6 +74,11 @@ class GrubbyDefaultKernel(CommandParser):
     Attributes:
         default_kernel(str): The default kernel name for next boot
     """
+    def __init__(self, context):
+        deprecated(GrubbyDefaultKernel,
+                   "Please use the :class:`insights.combiners.grubby.Grubby` instead.", "3.7.0")
+        super(GrubbyDefaultKernel, self).__init__(context)
+
     def parse_content(self, content):
         if not content:
             raise SkipComponent('Empty output')

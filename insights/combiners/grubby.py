@@ -21,7 +21,9 @@ class Grubby(object):
 
     Attributes:
         boot_entries (dict): All boot entries indexed by the entry "index"
-        default_index (int): the numeric index of the current default boot entry
+        default_index (int): The numeric index of the default boot entry
+        default_boot_entry (dict): The boot information for default kernel
+        default_kernel (str): The path of the default kernel
 
     Raises:
         ParseException: when parsing into error.
@@ -30,9 +32,12 @@ class Grubby(object):
         self.boot_entries = grubby_info_all.boot_entries
         self.default_index = grubby_default_index.default_index
 
-    @property
-    def default_boot_entry(self):
         if self.default_index not in self.boot_entries:
             raise ParseException("DEFAULT index %s not exist in parsed boot_entries: %s" %
                                     (self.default_index, list(self.boot_entries.keys())))
-        return self.boot_entries[self.default_index]
+        self.default_boot_entry = self.boot_entries[self.default_index]
+
+        self.default_kernel = self.default_boot_entry.get("kernel")
+        if not self.default_kernel:
+            raise ParseException("DEFAULT kernel-path not exist in default-index: %s" %
+                                    self.default_index)
