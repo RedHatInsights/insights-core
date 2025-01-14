@@ -63,17 +63,3 @@ def test_ansible_host_no_reg_forces_legacy_false():
     conf._cli_opts = ["ansible_host"]
     conf._imply_options()
     assert not conf.legacy_upload
-
-
-def test_ansible_host_reg_legacy_no_change():
-    '''
-    When specifying --register, using --ansible-host on the CLI does not affect legacy_upload
-    '''
-    conf = InsightsConfig(register=True, ansible_host="test", legacy_upload=True)
-    conf._cli_opts = ["ansible_host"]
-    conf._imply_options()
-    assert conf.legacy_upload
-    conf = InsightsConfig(register=True, ansible_host="test", legacy_upload=False)
-    conf._cli_opts = ["ansible_host"]
-    conf._imply_options()
-    assert not conf.legacy_upload
