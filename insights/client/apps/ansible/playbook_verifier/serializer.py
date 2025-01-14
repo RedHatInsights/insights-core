@@ -49,7 +49,20 @@ class PlaybookSerializer:
         # single'quote  "single'quote"
         # double"quote  'double"quote'
         # both"'quotes  'both"\'quotes'
+        # \backslash    '\\backslash'
+        # new\nline     'new\\nline'
+        # tab\tchar     'tab\\tchar'
 
+        special_chars = {
+            "\\": "\\\\",
+            "\n": "\\n",
+            "\t": "\\t",
+        }
+        escaped_string = ""
+        for char in value:
+            escaped_string += special_chars.get(char, char)
+
+        value = escaped_string
         quote = "'"
         if "'" in value:
             if '"' not in value:
