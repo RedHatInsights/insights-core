@@ -91,19 +91,18 @@ def add_filter(component, patterns, max_match=MAX_MATCH):
         if comp in _CACHE:
             del _CACHE[comp]
 
-        types = six.string_types + (list, set)
-        if not isinstance(patterns, types):
+        if not isinstance(patterns, (six.string_types, list, set)):
             raise TypeError("Filter patterns must be of type string, list, or set.")
 
         if isinstance(patterns, six.string_types):
-            patterns = {patterns: max_match}
-        elif isinstance(patterns, list):
-            patterns = dict((pt, max_match) for pt in patterns)
-        # here patterns is a dict
+            patterns = [patterns]
 
         for pat in patterns:
             if not pat:
                 raise Exception("Filter patterns must not be empty.")
+
+        patterns = dict((pt, max_match) for pt in patterns)
+        # here patterns is a dict
 
         FILTERS[comp].update(max_matchs(FILTERS[comp], patterns))
 
