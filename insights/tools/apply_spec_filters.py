@@ -52,6 +52,7 @@ def apply_filters(_format, _plugins, output=None):
             )
             filters.dump()
         else:
+            yaml_path = os.path.realpath(yaml_path)
             logger.info("Output filters to '{0}'".format(yaml_path))
             with open(yaml_path, 'w') as fp:
                 filters.dump(fp)
@@ -62,6 +63,7 @@ def apply_filters(_format, _plugins, output=None):
             logger.error("Provide uploader.json location to load and output.")
             return 1
 
+        json_path = os.path.realpath(json_path)
         if not os.path.exists(json_path):
             logger.error("Provided '{0}' path does not exist.".format(json_path))
             return 1
@@ -85,12 +87,12 @@ def apply_filters(_format, _plugins, output=None):
         uploader_json["version"] = datetime.now().isoformat()
 
         pattern = re.compile(",")
-        output = "\n".join(
+        json_content = "\n".join(
             pattern.sub(",", l) for l in json.dumps(uploader_json, indent=4).splitlines()
         )
 
         with open(json_path, "w") as fp:
-            fp.write(output)
+            fp.write(json_content)
     return 0
 
 
