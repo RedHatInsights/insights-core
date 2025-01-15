@@ -244,6 +244,7 @@ class Specs(SpecSet):
     grub_efi_conf = RegistryPoint()
     grubby_default_index = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     grubby_default_kernel = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    grubby_info_all = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     grubenv = RegistryPoint()
     hammer_ping = RegistryPoint()
     hammer_task_list = RegistryPoint()
