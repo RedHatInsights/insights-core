@@ -65,6 +65,9 @@ yaml_file = os.path.join(os.path.dirname(insights.__file__), filters._filename)
 
 
 def setup_function():
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(dict)
+
     filters.add_filter(Specs.ps_alxwww, ['COMMAND', 'CMD'])
     filters.add_filter(Specs.ps_aux, 'COMMAND')
     filters.add_filter(Specs.yum_conf, '[')
