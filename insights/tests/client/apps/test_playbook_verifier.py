@@ -329,6 +329,12 @@ class TestPlaybookSerializer:
         expected = "['value1', 'value2']"
         assert result == expected
 
+    def test_dict_empty(self):
+        source = {}
+        result = playbook_verifier.PlaybookSerializer.serialize(source)
+        expected = "ordereddict()"
+        assert result == expected
+
     def test_dict_empty_value(self):
         source = {"key": None}
         result = playbook_verifier.PlaybookSerializer.serialize(source)
