@@ -1,23 +1,21 @@
 """
 Custom datasource for collecting yum updates
+============================================
 """
 import json
 import logging
 import time
 
+from distutils.version import LooseVersion as version
+from functools import cmp_to_key
+
 from insights import datasource, HostContext, SkipComponent
 from insights.components.rhel_version import IsRhel7, IsRhel8, IsRhel9
 from insights.core.spec_factory import DatasourceProvider
-from distutils.version import LooseVersion as version
 
-try:
-    from functools import cmp_to_key
 
-    # cmp_to_key is not available in python 2.6, but it has sorted function which accepts cmp function
-    def sorted_cmp(it, cmp):
-        return sorted(it, key=cmp_to_key(cmp))
-except ImportError:
-    sorted_cmp = sorted
+def sorted_cmp(it, cmp):
+    return sorted(it, key=cmp_to_key(cmp))
 
 
 class DnfManager:
