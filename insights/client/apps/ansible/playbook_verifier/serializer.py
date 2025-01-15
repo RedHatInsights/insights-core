@@ -78,6 +78,8 @@ class PlaybookSerializer:
         :type value: dict | yaml.comments.CommentedMap
         :rtype: str
         """
+        if not value:
+            return "ordereddict()"
         result = "ordereddict(["
         result += ", ".join(
             "('{key}', {value})".format(key=k, value=cls._obj(v))
