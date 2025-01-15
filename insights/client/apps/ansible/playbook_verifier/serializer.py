@@ -37,7 +37,7 @@ class PlaybookSerializer:
         logger.debug("Value type not recognized, it may misbehave: {value} ({typ})".format(
             value=value, typ=type(value).__name__)
         )
-        return "'" + str(value) + "'"
+        return str(value)
 
     @classmethod
     def _str(cls, value):
