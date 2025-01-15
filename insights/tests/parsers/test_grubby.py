@@ -3,11 +3,7 @@ import pytest
 
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import grubby
-from insights.parsers.grubby import (
-    GrubbyDefaultIndex,
-    GrubbyDefaultKernel,
-    GrubbyInfoAll
-)
+from insights.parsers.grubby import GrubbyDefaultIndex, GrubbyDefaultKernel, GrubbyInfoAll
 from insights.tests import context_wrap
 
 DEFAULT_INDEX_1 = '0'
@@ -179,7 +175,9 @@ def test_grubby_info_all():
             'crashkernel': ['1G-4G:192M,4G-64G:256M,64G-:512M'],
             'resume': ['/dev/mapper/rhel-swap'],
             'rd.lvm.lv': ['rhel/root', 'rhel/swap'],
-            'rhgb': [True], 'quiet': [True], 'retbleed': ['stuff'],
+            'rhgb': [True],
+            'quiet': [True],
+            'retbleed': ['stuff'],
         },
         root="/dev/mapper/rhel-root",
         initrd="/boot/initramfs-5.14.0-162.6.1.el9_1.x86_64.img",
@@ -216,9 +214,9 @@ def test_grubby_info_all_ab():
 
 def test_doc_examples():
     env = {
-            'grubby_default_index': GrubbyDefaultIndex(context_wrap(DEFAULT_INDEX_1)),
-            'grubby_default_kernel': GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL)),
-            'grubby_info_all': GrubbyInfoAll(context_wrap(GRUBBY_INFO_ALL_1)),
-          }
+        'grubby_default_index': GrubbyDefaultIndex(context_wrap(DEFAULT_INDEX_1)),
+        'grubby_default_kernel': GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL)),
+        'grubby_info_all': GrubbyInfoAll(context_wrap(GRUBBY_INFO_ALL_1)),
+    }
     failed, total = doctest.testmod(grubby, globs=env)
     assert failed == 0

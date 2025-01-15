@@ -1,5 +1,5 @@
 """
-grubby - command ``/usr/sbin/grubby``
+Grubby - command ``/usr/sbin/grubby``
 =====================================
 
 This is a collection of parsers that all deal with the command ``grubby``.
@@ -14,6 +14,7 @@ GrubbyDefaultKernel - command ``grubby --default-kernel``
 GrubbyInfoAll - command ``grubby --info=ALL``
 ---------------------------------------------
 """
+
 from insights.core import CommandParser
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
@@ -41,6 +42,7 @@ class GrubbyDefaultIndex(CommandParser):
     Attributes:
         default_index (int): the numeric index of the current default boot entry, count from 0
     """
+
     def parse_content(self, content):
         if not content:
             raise SkipComponent('Empty output')
@@ -74,9 +76,13 @@ class GrubbyDefaultKernel(CommandParser):
     Attributes:
         default_kernel(str): The default kernel name for next boot
     """
+
     def __init__(self, context):
-        deprecated(GrubbyDefaultKernel,
-                   "Please use the :class:`insights.combiners.grubby.Grubby` instead.", "3.7.0")
+        deprecated(
+            GrubbyDefaultKernel,
+            "Please use the :class:`insights.combiners.grubby.Grubby` instead.",
+            "3.7.0",
+        )
         super(GrubbyDefaultKernel, self).__init__(context)
 
     def parse_content(self, content):
@@ -145,6 +151,7 @@ class GrubbyInfoAll(CommandParser):
         SkipComponent: When output is empty
         ParseException: When output is invalid
     """
+
     def parse_content(self, content):
 
         def _parse_args(args):

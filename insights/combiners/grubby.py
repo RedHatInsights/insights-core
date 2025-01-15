@@ -1,7 +1,6 @@
 """
 Grubby
 ======
-
 Combiner for command ``/usr/sbin/grubby`` parsers.
 
 This combiner uses the parsers:
@@ -28,16 +27,20 @@ class Grubby(object):
     Raises:
         ParseException: when parsing into error.
     """
+
     def __init__(self, grubby_info_all, grubby_default_index):
         self.boot_entries = grubby_info_all.boot_entries
         self.default_index = grubby_default_index.default_index
 
         if self.default_index not in self.boot_entries:
-            raise ParseException("DEFAULT index %s not exist in parsed boot_entries: %s" %
-                                    (self.default_index, list(self.boot_entries.keys())))
+            raise ParseException(
+                "DEFAULT index %s not exist in parsed boot_entries: %s"
+                % (self.default_index, list(self.boot_entries.keys()))
+            )
         self.default_boot_entry = self.boot_entries[self.default_index]
 
         self.default_kernel = self.default_boot_entry.get("kernel")
         if not self.default_kernel:
-            raise ParseException("DEFAULT kernel-path not exist in default-index: %s" %
-                                    self.default_index)
+            raise ParseException(
+                "DEFAULT kernel-path not exist in default-index: %s" % self.default_index
+            )
