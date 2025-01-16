@@ -1,4 +1,3 @@
-import sys
 import pytest
 from six import StringIO
 from insights import dr, make_fail, rule
@@ -81,7 +80,6 @@ def test_syslog_format_archive():
     assert SL_PATH in data
 
 
-@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier code uses oyaml library which is incompatable with this test')
 def test_yaml_format():
     broker = dr.Broker()
     output = StringIO()

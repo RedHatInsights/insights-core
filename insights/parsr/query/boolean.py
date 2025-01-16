@@ -39,9 +39,9 @@ when it's fully applied.
         gt_five_and_lt_10 = gt(5) & lt(10)
 
 """
+
 from itertools import count
 import six
-import sys
 
 
 class Boolean(object):
@@ -61,10 +61,6 @@ class Boolean(object):
         return self.test(value)
 
     def to_pyfunc(self):
-        ver = sys.version_info
-        if ver[0] == 2 and ver[1] == 6:
-            return self.test
-
         env = {}
         ids = count()
 
@@ -100,7 +96,9 @@ def predicate(value):
         return {body}
     except Exception as ex:
         return False
-        """.format(body=expr(self))
+        """.format(
+            body=expr(self)
+        )
 
         six.exec_(func, env, env)
         return env["predicate"]
@@ -169,6 +167,7 @@ def pred2(func, ignore_case=False):
         if ignore_case:
             return CaselessPredicate(func, val.lower())
         return Predicate(func, val)
+
     return inner
 
 
