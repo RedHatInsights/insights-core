@@ -207,6 +207,7 @@ class Specs(SpecSet):
     findmnt_lo_propagation = RegistryPoint()
     firewall_cmd_list_all_zones = RegistryPoint()
     firewalld_conf = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
+    flatpak_list = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     foreman_production_log = RegistryPoint(filterable=True)
     foreman_proxy_conf = RegistryPoint()
     foreman_proxy_log = RegistryPoint(filterable=True)
