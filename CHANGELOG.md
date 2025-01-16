@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.2) (2025-01-16)
+
+- spec: collect output of 'flatpak list' ([PR 4337](https://github.com/RedHatInsights/insights-core/pull/4337))
+- fix(client): Serialize properly playbooks with empty maps ([PR 4340](https://github.com/RedHatInsights/insights-core/pull/4340))
+- fix(client): Serialize properly playbooks with empty values ([PR 4338](https://github.com/RedHatInsights/insights-core/pull/4338))
+- fix(client): Serialize properly escape characters ([PR 4335](https://github.com/RedHatInsights/insights-core/pull/4335))
+- feat: Enhanced CephVersion parser to support more versions ([PR 4334](https://github.com/RedHatInsights/insights-core/pull/4334))
+- fix: reverse the filters order when grep ([PR 4332](https://github.com/RedHatInsights/insights-core/pull/4332))
+- feat: add spec parser and combiner for grubby_info ([PR 4329](https://github.com/RedHatInsights/insights-core/pull/4329))
+- fix: set should be supported by add_filter ([PR 4333](https://github.com/RedHatInsights/insights-core/pull/4333))
+
 # [insights-core-3.5.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.1) (2025-01-09)
 
 - fix: error msg for compliance apiv2 assign/unassign ([PR 4328](https://github.com/RedHatInsights/insights-core/pull/4328))

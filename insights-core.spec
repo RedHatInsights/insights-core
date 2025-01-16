@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.1
+Version:        3.5.2
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,21 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jan 16 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.2-1
+- spec: collect output of 'flatpak list' (#4337) (lichen@redhat.com)
+- fix(client): Serialize properly playbooks with empty maps (#4340)
+  (47797196+pkoprda@users.noreply.github.com)
+- fix(client): Serialize properly playbooks with empty values (#4338)
+  (47797196+pkoprda@users.noreply.github.com)
+- fix(client): Serialize properly escape characters (#4335)
+  (47797196+pkoprda@users.noreply.github.com)
+- feat: Enhanced CephVersion parser to support more versions (#4334)
+  (30404410+qinpingli@users.noreply.github.com)
+- fix: reverse the filters order when grep (#4332) (xiangceliu@redhat.com)
+- feat: add spec parser and combiner for grubby_info (#4329)
+  (xiaoxwan@redhat.com)
+- fix: set should be supported by add_filter (#4333) (xiangceliu@redhat.com)
+
 * Thu Jan 09 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.1-1
 - fix: error msg for compliance apiv2 assign/unassign (#4328)
   (xiangceliu@redhat.com)
