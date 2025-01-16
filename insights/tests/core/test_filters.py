@@ -136,7 +136,7 @@ def test_add_filter_to_LocalSpecsHasFilters():
 
 
 # General Parser
-def test_add_filter_to_PsAux():
+def test_add_filter_to_parser_patterns_string():
     """
     "filters" added to Specs.x will add to DefaultSpecs.x
     """
@@ -165,6 +165,23 @@ def test_add_filter_to_parser_patterns_list():
 
     parser_filters = filters.get_filters(PsAux)
     assert not parser_filters
+
+
+def test_add_filter_to_parser_patterns_set():
+    filters_set = set(["bash", "systemd", "Network"])
+    filters.add_filter(PsAux, filters_set)
+
+    spec_filters = filters.get_filters(Specs.ps_aux)
+    assert all(f in spec_filters for f in filters_set)
+
+    parser_filters = filters.get_filters(PsAux)
+    assert not parser_filters
+
+
+def test_add_filter_to_parser_patterns_tupple():
+    filters_tup = ("bash", "systemd", "Network")
+    with pytest.raises(TypeError):
+        filters.add_filter(PsAux, filters_tup)
 
 
 def test_add_filter_exception_spec_not_filterable():

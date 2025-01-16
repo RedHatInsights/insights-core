@@ -37,7 +37,7 @@ class PlaybookSerializer:
         logger.debug("Value type not recognized, it may misbehave: {value} ({typ})".format(
             value=value, typ=type(value).__name__)
         )
-        return "'" + str(value) + "'"
+        return str(value)
 
     @classmethod
     def _str(cls, value):
@@ -49,7 +49,20 @@ class PlaybookSerializer:
         # single'quote  "single'quote"
         # double"quote  'double"quote'
         # both"'quotes  'both"\'quotes'
+        # \backslash    '\\backslash'
+        # new\nline     'new\\nline'
+        # tab\tchar     'tab\\tchar'
 
+        special_chars = {
+            "\\": "\\\\",
+            "\n": "\\n",
+            "\t": "\\t",
+        }
+        escaped_string = ""
+        for char in value:
+            escaped_string += special_chars.get(char, char)
+
+        value = escaped_string
         quote = "'"
         if "'" in value:
             if '"' not in value:
@@ -65,6 +78,8 @@ class PlaybookSerializer:
         :type value: dict | yaml.comments.CommentedMap
         :rtype: str
         """
+        if not value:
+            return "ordereddict()"
         result = "ordereddict(["
         result += ", ".join(
             "('{key}', {value})".format(key=k, value=cls._obj(v))

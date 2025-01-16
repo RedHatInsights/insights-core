@@ -18,7 +18,7 @@ from insights.util import rsplit
 
 # TODO: the following metrics need update timely per:
 # - https://access.redhat.com/solutions/2045583
-# - https://access.redhat.com/articles/1372203
+# - https://access.redhat.com/support/policy/updates/ceph-storage
 community_to_release_map = {
     "0.80.8-5": {'version': "1.2.3", 'major': '1.2', 'minor': '3', 'downstream_release': 'NA'},
     "0.94.1-15": {'version': "1.3", 'major': '1.3', 'minor': '0', 'downstream_release': 'NA'},
@@ -88,12 +88,42 @@ community_to_release_map = {
     "14.2.11-199": {'version': "4.2.3", 'major': '4', 'minor': '2', 'downstream_release': '0'},
     "14.2.11-208": {'version': "4.2.4", 'major': '4', 'minor': '2', 'downstream_release': '0'},
     "14.2.22-110": {'version': "4.3", 'major': '4', 'minor': '3', 'downstream_release': '0'},
+    "14.2.22-128": {'version': "4.3.1", 'major': '4', 'minor': '3', 'downstream_release': '1'},
     "16.2.0-117": {'version': "5.0", 'major': '5', 'minor': '0', 'downstream_release': '0'},
     "16.2.0-143": {'version': "5.0.1", 'major': '5', 'minor': '0', 'downstream_release': '0'},
     "16.2.0-146": {'version': "5.0.3", 'major': '5', 'minor': '0', 'downstream_release': '0'},
     "16.2.0-152": {'version': "5.0.4", 'major': '5', 'minor': '0', 'downstream_release': '0'},
     "16.2.7-98": {'version': "5.1", 'major': '5', 'minor': '1', 'downstream_release': '0'},
     "16.2.7-112": {'version': "5.1.1", 'major': '5', 'minor': '1', 'downstream_release': '0'},
+    "16.2.7-126": {'version': "5.1.2", 'major': '5', 'minor': '1', 'downstream_release': '2'},
+    "16.2.8-84": {'version': "5.2", 'major': '5', 'minor': '2', 'downstream_release': '0'},
+    "16.2.8-85": {'version': "5.2", 'major': '5', 'minor': '2', 'downstream_release': 'async'},
+    "16.2.10-94": {'version': "5.3", 'major': '5', 'minor': '3', 'downstream_release': '0'},
+    "16.2.10-138": {'version': "5.3.1", 'major': '5', 'minor': '3', 'downstream_release': '1'},
+    "16.2.10-160": {'version': "5.3.2", 'major': '5', 'minor': '3', 'downstream_release': '2'},
+    "16.2.10-172": {'version': "5.3.3", 'major': '5', 'minor': '3', 'downstream_release': '3'},
+    "16.2.10-187": {'version': "5.3.4", 'major': '5', 'minor': '3', 'downstream_release': '4'},
+    "16.2.10-208": {'version': "5.3.5", 'major': '5', 'minor': '3', 'downstream_release': '5'},
+    "16.2.10-248": {'version': "5.3.6", 'major': '5', 'minor': '3', 'downstream_release': '6'},
+    "16.2.10-266": {'version': "5.3.7", 'major': '5', 'minor': '3', 'downstream_release': '7'},
+    "17.2.5-75": {'version': "6.0", 'major': '6', 'minor': '0', 'downstream_release': '0'},
+    "17.2.6-70": {'version': "6.1", 'major': '6', 'minor': '1', 'downstream_release': '0'},
+    "17.2.6-100": {'version': "6.1.1", 'major': '6', 'minor': '1', 'downstream_release': '1'},
+    "17.2.6-148": {'version': "6.1.2", 'major': '6', 'minor': '1', 'downstream_release': '2'},
+    "17.2.6-167": {'version': "6.1.3", 'major': '6', 'minor': '1', 'downstream_release': '3'},
+    "17.2.6-170": {'version': "6.1.3", 'major': '6', 'minor': '1', 'downstream_release': 'async'},
+    "17.2.6-196": {'version': "6.1.4", 'major': '6', 'minor': '1', 'downstream_release': '4'},
+    "17.2.6-209": {'version': "6.1.5", 'major': '6', 'minor': '1', 'downstream_release': '5'},
+    "17.2.6-216": {'version': "6.1.6", 'major': '6', 'minor': '1', 'downstream_release': '6'},
+    "17.2.6-246": {'version': "6.1.7", 'major': '6', 'minor': '1', 'downstream_release': '7'},
+    "18.2.0-131": {'version': "7.0", 'major': '7', 'minor': '0', 'downstream_release': '0'},
+    "18.2.0-153": {'version': "7.0.1", 'major': '7', 'minor': '0', 'downstream_release': '1'},
+    "18.2.0-192": {'version': "7.0.2", 'major': '7', 'minor': '0', 'downstream_release': '2'},
+    "18.2.1-194": {'version': "7.1", 'major': '7', 'minor': '1', 'downstream_release': '0'},
+    "18.2.1-229": {'version': "7.1.1", 'major': '7', 'minor': '1', 'downstream_release': '1'},
+    "18.2.1-262": {'version': "7.1.2", 'major': '7', 'minor': '1', 'downstream_release': '2'},
+    "19.2.0-53": {'version': "8.0", 'major': '8', 'minor': '0', 'downstream_release': '0'},
+    "19.2.0-55": {'version': "8.0.1", 'major': '8', 'minor': '0', 'downstream_release': '1'},
 }
 
 
