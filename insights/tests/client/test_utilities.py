@@ -1,5 +1,4 @@
 import os
-import sys
 from tarfile import open as tar_open
 import tarfile
 import tempfile
@@ -345,7 +344,6 @@ def test_get_tags_nonexist():
     assert got is None
 
 
-@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier uses oyaml library which is incompatable with this test')
 def test_write_tags():
     tags = {'foo': 'bar'}
     fp = tempfile.NamedTemporaryFile()
