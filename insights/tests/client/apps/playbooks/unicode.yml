@@ -1,29 +1,28 @@
----
-- name: The legend says one day Unicode will just work
+- name: Playbook with various Unicode characters
   hosts: localhost
   become: yes
   vars:
     insights_signature_exclude: /hosts,/vars/insights_signature
     insights_signature: !!binary |
       TFMwdExTMUNSVWRKVGlCUVIxQWdVMGxIVGtGVVZWSkZMUzB0TFMwS1ZtVnljMmx2YmpvZ1IyNTFV
-      RWNnZGpFS0NtbFJTV05DUVVGQ1EwRkJSMEpSU20xdGJpODFRVUZ2U2tWTmRuYzFPRVFyYWpWd1Rr
-      bFVkMUF2TTFkdWFGWjNPVmRoZDFoSVMwTXhTR0pEVkhSRGNsQUtPR1JPY2xveFZuUmlla2xXUkd3
-      NFQwTkZZVVJQYzNOSU4xbDFUMDVxU1haMGVGUlNOVXBxTHpKYVkyZFVhMnRRYzJwRkwwYzRaRlZq
-      Tm1kUE1GbDViUXBpUTJreFprSm9XVkZIVW1sdVZUbHpiME5yWlU5UlVYQnFZVVZSUVRoME1XZHli
-      VEI1TVRKTGVXcERkVGQ2WmxSR1EyMXFiSEpDVEVjM2RsbEdkMlZRQ2xneFp6VkpPSHB1TkN0Mk0w
-      WTNhbXhFWVZseVdTOWhhM1EzTTBVeVNEVk1aVllyTWxoblQzTk5WblZMUXpGd1JGVm9NV3RqYkRk
-      V00yVjNRV3RtWlhZS1ZWbG5Ta3BHYzJ0MmFVNXlSVGRrV0hSRFRYY3liRkpwYkVselNIa3hNRFpP
-      S3l0VWJYQTROMVpTTTNWU09XWlBNRFpRU1ZsRFRUVnhORXhHYzFCVFZBcDZRMFJESzFST1NESXJV
-      akF6WjJ0WGVFaFRUMlZtVjBscVRqUnNWakJzUkd0dFNEaEdaM1ZGZFdSbFYzWkthMVpaZG5OMVJH
-      NUtVbE5sVDBWYVUzSkxDa3hrYUVJMlFWYzFlbHBKV25Wb1FXeDJWRTE2YjFoMlJ6TXhRbHBpTkho
-      VlVqRjFZWEZaVjNkaU4yVkhkaXRzTlhoSmFVUnNORzV5ZHpWUlR6SjZlbGdLVmpKVmRXdE1RM1Z5
-      TUd4UVptSTVWblFyWjI1VmJYbzBhbVpCYVU1UVlUQm9SRzAxWldWU1luWlJhSGs0V0hsSFZEQXJR
-      a0phYldoelVXSTJSRkZNUXdwRWJGZHpXbFZJU3pRdkwzTlRVMjFCVEM5V1FuQnBTR0ZpU1VkRlVV
-      dFVOR2RMWlhSaWJYcFFhRXB0TjNWbE1uWXJORlJqVlRCMmIzQmFMMUZOU25wM0NuaFFaVzlGVWpC
-      c0x6UklaVWhUU0VjcmRtMXJkakZUU0ZWdmFXcEVWUzlETjNGUGN6bGtNVXM0V1Zsc2RsUkJjbXhV
-      U1ZseE4yMUZUMkphTHpsSlpFNEthREExYzBOWk5sRnRSM05yZEV0TVNrTTJWVGhFWm05R1VHeFJi
-      MGhIUWpOWE9ITXhVVVZqV0RObmVITmhiVWgxYW5sRlZUbG1kbUpLVURKR1oyOXhWQXBIVW5GMGNs
-      aHZZblJIYm5aU1dtUTNVbXB1VXdvOVpYVXhZZ290TFMwdExVVk9SQ0JRUjFBZ1UwbEhUa0ZVVlZK
+      RWNnZGpFS0NtbFJTV05DUVVGQ1EwRkJSMEpSU201dFFYcDNRVUZ2U2tWTmRuYzFPRVFyYWpWd1Rt
+      NXNkMUZCU2tWRFR5OTRkelJ3ZVZvMVpVdGpRVVUzWkdSNWJGY0taME5STDJwdmVWaEZibVZXVUVV
+      NVUxaElWbXRhUVVWc1NqUTViVEp1Tm5aQkwyNVVjM2R4YW5kVU5TODJLMFp2VFdSQlZDdEhkVGhy
+      TDBzeVFYUnhhQXBJY0Vod1Z5dDRNM1E0YVc1alZWVjViR1YzSzA5TFpDOU1TbWxqZDI5aWNUaHVS
+      RXh2YWpWNk1XNVFSWGhGT1VkM1FWUkZTVE5SWlc5T2FucFpNMUZDQ2sxM1kzSk5hMFZEU21reU1I
+      RkRWMHc0YlVoVFVHRlhSSFpSVTNKeWFtd3pkR0ZUTHpaSVEyaHFSM3AxY0dkMVIyMWphbGR0VjNS
+      ck1IbDFSakkwVjBjS1YzSkNOalJ3Y1RGaFExUXhURk15VVZSd2QxUjFkbTUyVERJM1NWbFZURlJ2
+      ZFdsbGNFWjVhM1JXWTJob2R5OVdXR1l4TmtKMFQybHlTbWRZUmlzellncE9jVXRpV0RsM0wySlJi
+      RlJSUlZnM2VFRkhNRUUzV0RaV05uZE5VbnBhY2pCQ1pGTnBhVEE1VWtsa2NGbE1XVmRqTVV0TFVU
+      bGhZMWs1Y1N0dWRqZEdDbFF4VGpkRmNrSkNTbFE0YkhWM01IQkRPVnB5Y1VneFVuQTVhVTlKUjB4
+      WlVHdFVOVWRRV1dkYVVHUkpRekI1Tm1sTWNrRjZNMEpsU21aaFZrRnFhR2NLU1VSc09EZE1TVFEy
+      Y2tzMGJETnlMMVJVUW5WU1lXZGxSVmhuZVU1a2JuVmxhRkpLZVZOUGVXTmhiV1ZCWjFNck5uQlVa
+      RVpNVEVKaE16TkZWVFp0ZGdwUlNURTRiSEp2UVdaSlRIUlNTRFF4YzB4NlpHUTFZMDgxU2tWV1Qx
+      Wm5RV0Z4UVVkTFVrUlFjbko2TjJvd01rcDNNU3RQZEdseGNtWjBiWGg2UkVVckNrWkxPWEZST0Zs
+      VVJubDZabGN4VDFsMFZIbzRVMDFJV1ZOdGJubFRPRXBOVlVZMlZTdHhSR1ZWYlZsQlFUaFpaRXQz
+      ZVRaS2MwdE1SR3B1VTFOR09Wb0tSMnd3TXpWYWRURkxka1JCZERKM05IQk5Wa1JDY2tWalQwOVFl
+      VmR6YVdac1Jpc3ZLekF5SzB0WVEyUjVZemRKZUZsbVZYUmhXRE5uV1hCUEswMTZhUXBUTm0wNFFr
+      eFJWMFpxTmxKaVYyeHlUMDF5VHdvOU9HSkRUQW90TFMwdExVVk9SQ0JRUjFBZ1UwbEhUa0ZVVlZK
       RkxTMHRMUzBL
   tasks:
     - name: Not all languages are as boring as English /s
@@ -35,6 +34,8 @@
           - /电脑/汉堡包
           - /אני פה/הוא אכל את העוגה/
           - /تَكَاتَبْنَا/كيف حالك؟/
+          - /რამდენიმე/ქართული/
+          - /κάποιο/ελληνικό/
 
     - name: Linux supports emojis in paths. Now you know.
       ansible.builtin.find:
@@ -42,3 +43,16 @@
           - /🍏/👨🏼‍🚀/
           - /usr/bin/🙀
           - /var/lib/ඞ/
+
+    - name: Various special characters
+      ansible.builtin.find:
+        paths:
+          # Zero-width joiner
+          - /👨‍👩‍👦/👨‍🌾/👨‍🦰/
+          - /ണ്‍/ශ්‍ර/क्‍ष/
+
+          # Zero-width non-joiner
+          - /text‌joined‌by‌zero‌width‌non‌joiner/
+
+          # Zero-width space
+          - /text​joined​by​zero​width​space/
