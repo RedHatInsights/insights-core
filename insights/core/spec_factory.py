@@ -268,7 +268,7 @@ class TextFileProvider(FileProvider):
         if self._filters:
             log.debug("Pre-filtering %s", self.relative_path)
             args.append(
-                ["tail", "-n" ,"1000000", self.path]
+                ["tail", "-n", "1000000", self.path]
             )
             args.append(
                 ["grep", "-F", "\n".join(sorted(self._filters.keys(), reverse=True))]
