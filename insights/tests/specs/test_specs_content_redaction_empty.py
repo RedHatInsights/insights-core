@@ -85,7 +85,7 @@ def teardown_function(func):
     dr.ENABLED = defaultdict(lambda: True)
 
 
-@patch('insights.core.spec_cleaner.Cleaner.generate_report')
+@patch('insights.cleaner.Cleaner.generate_report')
 def test_specs_ds_with_hn_collect(mock_fun):
     # Preparation
     manifest = collect.load_manifest(specs_manifest)

@@ -12,6 +12,7 @@ from collections import defaultdict
 from glob import glob
 from subprocess import call
 
+from insights.cleaner import DEFAULT_OBFUSCATIONS
 from insights.core import blacklist, dr, filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.exceptions import (
@@ -79,8 +80,8 @@ class ContentProvider(object):
 
     def _clean_content(self):
         """
-        Clean (Obfuscate and Redact) the Spec Content ONLY when doing
-        collection.
+        Clean (Redact, Filter, and Obfuscate) the Spec Content ONLY when
+        collecting data.
         """
         content = self.content  # load first for debugging info order
         if content and isinstance(self.ctx, HostContext) and self.ds and self.cleaner:
@@ -90,7 +91,7 @@ class ContentProvider(object):
             cleans.append("Redact") if not no_red else None
             # Obfuscating?
             no_obf = getattr(self.ds, 'no_obfuscate', [])
-            cleans.append("Obfuscate") if len(no_obf) < 2 else None
+            cleans.append("Obfuscate") if set(no_obf) != DEFAULT_OBFUSCATIONS else None
             # Filtering?
             allowlist = None
             if self._filterable:
@@ -101,9 +102,10 @@ class ContentProvider(object):
                 log.debug("Cleaning (%s) %s", "/".join(cleans), self.relative_path)
                 content = self.cleaner.clean_content(
                     content[::-1],  # Scan from bottom
+                    no_obfuscate=no_obf,
                     allowlist=allowlist,
-                    obf_funcs=self.cleaner.get_obfuscate_functions(self.relative_path, no_obf),
                     no_redact=no_red,
+                    width=self.relative_path.endswith("netstat_-neopa"),
                 )[::-1]
                 # ^ Reverse to the right order then
                 if len(content) == 0:
@@ -241,7 +243,11 @@ class FileProvider(ContentProvider):
 class RawFileProvider(FileProvider):
     """
     Class used in datasources that returns the contents of a file a single
-    string. The file is not filtered/obfuscated/redacted.
+    string.
+
+    .. note::
+
+        The content of RawFileProvider is not filtered/obfuscated/redacted.
     """
 
     def load(self):
