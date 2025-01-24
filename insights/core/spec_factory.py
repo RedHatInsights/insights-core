@@ -27,7 +27,7 @@ from insights.util.mangle import mangle_command
 
 log = logging.getLogger(__name__)
 
-
+MAX_LINES_FOR_FILTERABLE_FILE = 1000000
 SAFE_ENV = {
     "PATH": os.path.pathsep.join(
         [
@@ -268,7 +268,10 @@ class TextFileProvider(FileProvider):
         if self._filters:
             log.debug("Pre-filtering %s", self.relative_path)
             args.append(
-                ["grep", "-F", "\n".join(sorted(self._filters.keys(), reverse=True)), self.path]
+                ["tail", "-n", str(MAX_LINES_FOR_FILTERABLE_FILE), self.path]
+            )
+            args.append(
+                ["grep", "-F", "\n".join(sorted(self._filters.keys(), reverse=True))]
             )
 
         return args
