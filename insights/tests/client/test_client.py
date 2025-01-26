@@ -157,33 +157,6 @@ def test_get_log_handler_by_client_version(get_version_info, mock_path_dirname):
         TEMP_TEST_REG_DIR2 + '/.unregistered'])
 @patch('insights.client.utilities.constants.machine_id_file',
        TEMP_TEST_REG_DIR + '/machine-id')
-def test_register_legacy(utilities_write, delete_unregistered_file, generate_machine_id):
-    config = InsightsConfig(register=True, legacy_upload=True)
-    client = InsightsClient(config)
-    client.connection = _mock_InsightsConnection(registered=None)
-    client.connection.config = config
-    client.session = True
-    with _mock_no_register_files():
-        client.register() is True
-    delete_unregistered_file.assert_called_once()
-    generate_machine_id.assert_called_once_with()
-    utilities_write.assert_has_calls((
-        call(constants.registered_files[0]),
-        call(constants.registered_files[1])
-    ))
-
-
-@patch('insights.client.client.generate_machine_id')
-@patch('insights.client.utilities.delete_unregistered_file')
-@patch('insights.client.utilities.write_to_disk')
-@patch('insights.client.utilities.constants.registered_files',
-       [TEMP_TEST_REG_DIR + '/.registered',
-        TEMP_TEST_REG_DIR2 + '/.registered'])
-@patch('insights.client.utilities.constants.unregistered_files',
-       [TEMP_TEST_REG_DIR + '/.unregistered',
-        TEMP_TEST_REG_DIR2 + '/.unregistered'])
-@patch('insights.client.utilities.constants.machine_id_file',
-       TEMP_TEST_REG_DIR + '/machine-id')
 def test_register_legacy_error_machineid(utilities_write, delete_unregistered_file, generate_machine_id):
     config = InsightsConfig(register=True, legacy_upload=True)
     client = InsightsClient(config)
@@ -304,32 +277,8 @@ def test_reg_check_unregistered():
 
     # test function and integration in .register()
     with _mock_no_register_files():
-        assert client.get_registration_status()['status'] is False
-        for r in constants.registered_files:
-            assert os.path.isfile(r) is False
-        for u in constants.unregistered_files:
-            assert os.path.isfile(u) is True
-
-
-@patch('insights.client.utilities.constants.registered_files',
-       [TEMP_TEST_REG_DIR + '/.registered',
-        TEMP_TEST_REG_DIR2 + '/.registered'])
-@patch('insights.client.utilities.constants.unregistered_files',
-       [TEMP_TEST_REG_DIR + '/.unregistered',
-        TEMP_TEST_REG_DIR2 + '/.unregistered'])
-@patch('insights.client.utilities.constants.machine_id_file',
-       TEMP_TEST_REG_DIR + '/machine-id')
-def test_reg_check_registered_res_unreg_legacy():
-    # system is registered but receives the unregistration status
-    config = InsightsConfig(legacy_upload=True)
-    client = InsightsClient(config)
-    client.connection = _mock_InsightsConnection(registered=None)
-    client.connection.config = config
-    client.session = True
-
-    # test function and integration in .register()
-    with _mock_registered_files():
-        assert client.get_registration_status()['status'] is False
+        status = client.get_registration_status()
+        assert status is False
         for r in constants.registered_files:
             assert os.path.isfile(r) is False
         for u in constants.unregistered_files:
@@ -359,29 +308,6 @@ def test_reg_check_registered_res_unreg():
             assert os.path.isfile(r) is False
         for u in constants.unregistered_files:
             assert os.path.isfile(u) is True
-
-
-@patch('insights.client.utilities.constants.registered_files',
-       [TEMP_TEST_REG_DIR + '/.registered',
-        TEMP_TEST_REG_DIR2 + '/.registered'])
-@patch('insights.client.utilities.constants.unregistered_files',
-       [TEMP_TEST_REG_DIR + '/.unregistered',
-        TEMP_TEST_REG_DIR2 + '/.unregistered'])
-@patch('insights.client.utilities.constants.machine_id_file',
-       TEMP_TEST_REG_DIR + '/machine-id')
-def test_reg_check_registered_unreachable_legacy():
-    config = InsightsConfig(legacy_upload=True)
-    client = InsightsClient(config)
-    client.connection = _mock_InsightsConnection(registered=False)
-    client.connection.config = config
-    client.session = True
-
-    with _mock_registered_files():
-        assert client.get_registration_status()['unreachable'] is True
-        for r in constants.registered_files:
-            assert os.path.isfile(r) is True
-        for u in constants.unregistered_files:
-            assert os.path.isfile(u) is False
 
 
 @patch('insights.client.utilities.constants.registered_files',
@@ -431,29 +357,6 @@ def test_reg_check_unregistered_unreachable():
             assert os.path.isfile(u) is True
 
 
-@patch('insights.client.utilities.constants.registered_files',
-       [TEMP_TEST_REG_DIR + '/.registered',
-        TEMP_TEST_REG_DIR2 + '/.registered'])
-@patch('insights.client.utilities.constants.unregistered_files',
-       [TEMP_TEST_REG_DIR + '/.unregistered',
-        TEMP_TEST_REG_DIR2 + '/.unregistered'])
-@patch('insights.client.utilities.constants.machine_id_file',
-       TEMP_TEST_REG_DIR + '/machine-id')
-def test_reg_check_unregistered_unreachable_legacy():
-    config = InsightsConfig(legacy_upload=True)
-    client = InsightsClient(config)
-    client.connection = _mock_InsightsConnection(registered=False)
-    client.connection.config = config
-    client.session = True
-
-    with _mock_no_register_files():
-        assert client.get_registration_status()['unreachable'] is True
-        for r in constants.registered_files:
-            assert os.path.isfile(r) is False
-        for u in constants.unregistered_files:
-            assert os.path.isfile(u) is True
-
-
 @patch('insights.client.client.constants.sleep_time', 0)
 @patch('insights.client.client.InsightsConnection._init_session', return_value=None)
 @patch('insights.client.client.InsightsConnection.upload_archive', return_value=Mock(status_code=500))
@@ -486,7 +389,7 @@ def test_upload_500_retry(logger, _, upload_archive, __):
 @patch('insights.client.client.InsightsConnection.upload_archive')
 @patch("insights.client.client.logger")
 def test_upload_exception_retry(logger, upload_archive, _):
-    from requests.exceptions import ConnectionError, ProxyError, Timeout, HTTPError, SSLError
+    from requests.exceptions import ConnectionError, ProxyError, Timeout
     upload_archive.side_effect = [ConnectionError("Connection Error"),
                                   ProxyError("Proxy Error"),
                                   Timeout("Timeout Error")]
@@ -504,23 +407,6 @@ def test_upload_exception_retry(logger, upload_archive, _):
     logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 3, config.retries, "Timeout Error")
     logger.error.assert_called_with("All attempts to upload have failed!")
 
-    # Test legacy uploads
-    logger.reset_mock()
-    upload_archive.reset_mock()
-    upload_archive.side_effect = [HTTPError("HTTP Error"),
-                                  SSLError("SSL Error")]
-    retries = 2
-    config = InsightsConfig(legacy_upload=True, logging_file='/tmp/insights.log', retries=retries)
-    client = InsightsClient(config)
-    with patch('insights.client.os.path.exists', return_value=True):
-        with pytest.raises(RuntimeError):
-            client.upload('/tmp/insights.tar.gz')
-    assert upload_archive.call_count == retries
-    logger.debug.assert_any_call("Legacy upload attempt %d of %d ...", 1, config.retries)
-    logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 1, config.retries, "HTTP Error")
-    logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 2, config.retries, "SSL Error")
-    logger.error.assert_called_with("All attempts to upload have failed!")
-
 
 @patch('insights.client.client.InsightsConnection._init_session', return_value=None)
 @patch('insights.client.client.InsightsConnection.handle_fail_rcs')
@@ -533,36 +419,12 @@ def test_upload_412_no_retry(_, upload_archive, handle_fail_rcs, __):
     sys.argv = []
 
     try:
-        config = InsightsConfig(logging_file='/tmp/insights.log', retries=3)
+        config = InsightsConfig(logging_file='/tmp/insights.log')
         client = InsightsClient(config)
         with pytest.raises(RuntimeError):
             client.upload('/tmp/insights.tar.gz')
 
         upload_archive.assert_called_once()
-    finally:
-        sys.argv = tmp
-
-
-@patch('insights.client.client.InsightsConnection._init_session', return_value=None)
-@patch('insights.client.connection.write_unregistered_file')
-@patch('insights.client.client.InsightsConnection.upload_archive',
-       return_value=Mock(**{"status_code": 412,
-                            "json.return_value": {"unregistered_at": "now", "message": "msg"}}))
-@patch('insights.client.os.path.exists', return_value=True)
-def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistered_file, __):
-
-    # Hack to prevent client from parsing args to py.test
-    tmp = sys.argv
-    sys.argv = []
-
-    try:
-        config = InsightsConfig(logging_file='/tmp/insights.log', retries=3)
-        client = InsightsClient(config)
-        with pytest.raises(RuntimeError):
-            client.upload('/tmp/insights.tar.gz')
-
-        unregistered_at = upload_archive.return_value.json()["unregistered_at"]
-        write_unregistered_file.assert_called_once_with(unregistered_at)
     finally:
         sys.argv = tmp
 
@@ -607,28 +469,6 @@ def test_cleanup_tmp_obfuscation(storing_archive):
     storing_archive.assert_called_once()
 
 
-@patch('insights.client.client._legacy_handle_registration')
-def test_legacy_register(_legacy_handle_registration):
-    '''
-    _legacy_handle_registration called when legacy upload
-    '''
-    config = InsightsConfig(legacy_upload=True)
-    client = InsightsClient(config)
-    client.register()
-    _legacy_handle_registration.assert_called_once()
-
-
-@patch('insights.client.client._legacy_handle_unregistration')
-def test_legacy_unregister(_legacy_handle_unregistration):
-    '''
-    _legacy_handle_unregistration called when legacy upload
-    '''
-    config = InsightsConfig(legacy_upload=True)
-    client = InsightsClient(config)
-    client.unregister()
-    _legacy_handle_unregistration.assert_called_once()
-
-
 @patch('insights.client.client.handle_registration')
 def test_register_upload(handle_registration):
     '''
@@ -655,20 +495,6 @@ def test_unregister_upload(handle_unregistration):
 @patch('insights.client.connection.InsightsConnection.upload_archive', Mock(return_value=Mock(status_code=200)))
 @patch('insights.client.client._legacy_upload')
 @patch('insights.client.client.write_to_disk', Mock())
-def test_legacy_upload(_legacy_upload, path_exists):
-    '''
-    _legacy_upload called when legacy upload
-    '''
-    config = InsightsConfig(legacy_upload=True)
-    client = InsightsClient(config)
-    client.upload('test.gar.gz', 'test.content.type')
-    _legacy_upload.assert_called_once()
-
-
-@patch('insights.client.os.path.exists', return_value=True)
-@patch('insights.client.connection.InsightsConnection.upload_archive', Mock(return_value=Mock(status_code=200)))
-@patch('insights.client.client._legacy_upload')
-@patch('insights.client.client.write_to_disk', Mock())
 def test_platform_upload(_legacy_upload, path_exists):
     '''
     _legacy_upload not called when platform upload
@@ -677,20 +503,6 @@ def test_platform_upload(_legacy_upload, path_exists):
     client = InsightsClient(config)
     client.upload('test.gar.gz', 'test.content.type')
     _legacy_upload.assert_not_called()
-
-
-@patch('insights.client.os.path.exists', return_value=True)
-@patch('insights.client.connection.InsightsConnection.upload_archive', return_value=Mock(status_code=200))
-@patch('insights.client.client._legacy_upload')
-def test_platform_upload_with_no_log_path(_legacy_upload, _, path_exists):
-    '''
-    testing logger when no path is given
-    '''
-    config = InsightsConfig(legacy_upload=True, logging_file='tmp.log')
-    client = InsightsClient(config)
-    response = client.upload('test.gar.gz', 'test.content.type')
-    _legacy_upload.assert_called_once()
-    assert response is not None
 
 
 @patch('insights.client.shutil')
