@@ -1,6 +1,7 @@
 """
 Custom datasource for client metadata
 """
+
 import json
 import logging
 import os
@@ -39,8 +40,9 @@ def ansible_host(broker):
     """
     insights_config = broker.get('client_config')
     if insights_config and insights_config.ansible_host:
-        return DatasourceProvider(content=insights_config.ansible_host,
-                                  relative_path='ansible_host')
+        return DatasourceProvider(
+            content=insights_config.ansible_host, relative_path='ansible_host'
+        )
     raise SkipComponent
 
 
@@ -77,6 +79,7 @@ def blacklist_report(broker):
     Returns:
         str: The JSON strings
     """
+
     def length(lst):
         '''
         Because of how the INI remove.conf is parsed,
@@ -115,13 +118,11 @@ def blacklist_report(broker):
         )
         if isinstance(redact_config.get('patterns'), dict):
             ret.update(
-                patterns=length(redact_config['patterns']['regex']),
-                using_patterns_regex=True
+                patterns=length(redact_config['patterns']['regex']), using_patterns_regex=True
             )
         else:
             ret.update(patterns=length(redact_config.get('patterns')))
-    return DatasourceProvider(content=json.dumps(ret),
-                              relative_path='blacklist_report')
+    return DatasourceProvider(content=json.dumps(ret), relative_path='blacklist_report')
 
 
 @datasource(HostContext)
@@ -137,8 +138,9 @@ def blacklisted_specs(broker):
         str: The JSON strings
     """
     if BLACKLISTED_SPECS:
-        return DatasourceProvider(content=json.dumps({"specs": BLACKLISTED_SPECS}),
-                                  relative_path='blacklisted_specs')
+        return DatasourceProvider(
+            content=json.dumps({"specs": BLACKLISTED_SPECS}), relative_path='blacklisted_specs'
+        )
     raise SkipComponent
 
 
@@ -157,8 +159,7 @@ def branch_info(broker):
             branch_info = constants.default_branch_info
         else:
             branch_info = insights_config.branch_info
-    return DatasourceProvider(content=json.dumps(branch_info),
-                              relative_path='branch_info')
+    return DatasourceProvider(content=json.dumps(branch_info), relative_path='branch_info')
 
 
 @datasource(HostContext)
@@ -175,8 +176,9 @@ def display_name(broker):
     """
     insights_config = broker.get('client_config')
     if insights_config and insights_config.display_name:
-        return DatasourceProvider(content=insights_config.display_name,
-                                  relative_path='display_name')
+        return DatasourceProvider(
+            content=insights_config.display_name, relative_path='display_name'
+        )
     raise SkipComponent
 
 
@@ -198,10 +200,13 @@ def egg_release(broker):
             egg_release = fil.read()
     except (IOError, MemoryError) as e:
         logger.debug('Could not read the egg release file: %s', str(e))
+    try:
+        os.remove(constants.egg_release_file)
+    except OSError as e:
+        logger.debug('Could not remove the egg release file: %s', str(e))
 
     if egg_release:
-        return DatasourceProvider(content=egg_release,
-                                  relative_path='egg_release')
+        return DatasourceProvider(content=egg_release, relative_path='egg_release')
     raise SkipComponent
 
 
@@ -227,13 +232,10 @@ def tags(broker):
         except (yaml.YAMLError, yaml.parser.ParserError) as e:
             # can't parse yaml from conf
             logger.error("Invalid YAML. Unable to load '%s'" % tags_file_path)
-            raise ContentException('ERROR: Cannot parse %s.\n\nError details: \n%s\n' % (tags_file_path, e))
+            raise ContentException(
+                'ERROR: Cannot parse %s.\n\nError details: \n%s\n' % (tags_file_path, e)
+            )
 
-        # --START--
-        # NOTE:
-        # The following code is from the following function
-        # - insights.client.core_collector.CoreCollector._write_tags
-        # Please keep them consistence before removing that.
         def f(k, v):
             if type(v) is list:
                 col = []
@@ -247,18 +249,17 @@ def tags(broker):
                 return list(chain.from_iterable(col))
             else:
                 return [{"key": k, "value": v, "namespace": constants.app_name}]
+
         t = []
         for k, v in tags.items():
             iv = f(k, v)
             t.append(iv)
         t = list(chain.from_iterable(t))
-        # --END--
 
         if t:
             # The actual file path in archive:
             # - insights-archive-xxx/data/tags.json
-            return DatasourceProvider(content=json.dumps(t),
-                                      relative_path='tags.json')
+            return DatasourceProvider(content=json.dumps(t), relative_path='tags.json')
         msg = "Empty YAML. Unable to load '%s'." % tags_file_path
         logger.error(msg)
         raise ContentException(msg)
@@ -280,9 +281,9 @@ def version_info(broker):
         client_version = None
 
     version_info = {}
-    version_info['core_version'] = '{0}-{1}'.format(package_info['VERSION'],
-                                                    package_info['RELEASE'])
+    version_info['core_version'] = '{0}-{1}'.format(
+        package_info['VERSION'], package_info['RELEASE']
+    )
     version_info['client_version'] = client_version
 
-    return DatasourceProvider(content=json.dumps(version_info),
-                              relative_path='version_info')
+    return DatasourceProvider(content=json.dumps(version_info), relative_path='version_info')
