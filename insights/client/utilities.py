@@ -444,6 +444,12 @@ def get_parent_process():
         return "unknown"
 
 
+def _read_file(path):
+    # type: (str) -> list[str]
+    with open(path, mode="r") as f:
+        return f.readlines()
+
+
 def os_release_info():
     '''
     Use insights-core to fetch the os-release or redhat-release info
@@ -454,8 +460,7 @@ def os_release_info():
     os_release = ""
     for p in ["/etc/os-release", "/etc/redhat-release"]:
         try:
-            with open(p) as f:
-                data = f.readlines()
+            data = _read_file(p)  # type: list[str]
 
             ctx = Context(content=data, path=p, relative_path=p)
             if p == "/etc/os-release":
@@ -471,7 +476,7 @@ def os_release_info():
             continue
         except Exception as e:
             logger.warning("Failed to detect OS version: %s", e)
-    return (os_family, os_release)
+    return os_family, os_release
 
 
 def largest_spec_in_archive(archive_file):
