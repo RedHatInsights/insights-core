@@ -379,6 +379,21 @@ class TestPlaybookSerializer:
         result = playbook_verifier.PlaybookSerializer.serialize(source)
         assert result == expected
 
+    @pytest.mark.parametrize(
+        "source,expected",
+        [
+            pytest.param("zw​space", "'zw\\u200bspace'", id="zero-width space"),
+            pytest.param("zw‌nonjoiner", "'zw\\u200cnonjoiner'", id="zero-width non-joiner"),
+            pytest.param("👨🏼‍🚀", "'👨🏼\\u200d🚀'", id="zero-width joiner"),
+        ],
+    )
+    def test_strings_unicode(self, source, expected):
+        if sys.version_info < (3, 0):
+            raise pytest.skip("Unicode characters are not supported on Python 2 systems")
+
+        result = playbook_verifier.PlaybookSerializer.serialize(source)
+        assert result == expected
+
 
 class TestSerializePlaybookSnippet:
     def test_serialize_dictionary(self):
@@ -427,10 +442,8 @@ class TestSerializePlaybookSnippet:
 
     @pytest.mark.parametrize("filename", ("insights_setup", "insights_remove", "document-from-hell", "unicode"))
     def test_real(self, filename):
-        if filename == "unicode" and sys.version_info < (3, 0):
-            raise pytest.skip("Playbooks containing unicode are not supported in Python 2 systems")
-        if filename == "unicode" and sys.version_info >= (3, 12):
-            raise pytest.xfail("Known RFE in Unicode serialization.")
+        if filename == "unicode" and sys.version_info < (3, 7):
+            raise pytest.skip("Python 3.7 or later is required to test playbooks containing unicode")
 
         parent = os.path.dirname(__file__)  # type: str
         with open("{parent}/playbooks/{filename}.yml".format(parent=parent, filename=filename), "r") as f:
