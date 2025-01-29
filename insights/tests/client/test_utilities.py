@@ -471,3 +471,25 @@ def test_os_release_info__redhat_release(family, version, raw_redhat_release):
     with patch("insights.client.utilities._read_file", side_effect=[IOError, raw_redhat_release]):
         actual_family, actual_version = util.os_release_info()
         assert (actual_family, actual_version) == (family, version)
+
+
+@pytest.mark.parametrize(
+    "expected,distribution,version",
+    [
+        (9, "Red Hat Enterprise Linux", "9.5"),
+        (8, "Red Hat Enterprise Linux", "8.9"),
+        (7, "Red Hat Enterprise Linux Server", "7.9"),
+        (6, "Red Hat Enterprise Linux Server", "6.10"),
+        (10, "Fedora", "41"),
+        (10, "CentOS Stream", "10"),
+        (9, "CentOS Stream", "9"),
+        (8, "CentOS Stream", "8"),
+        (8, "CentOS Linux", "8.4.2105"),
+        (7, "CentOS Linux", "7.9.2009"),
+    ]
+)
+def test_get_rhel_version(expected, distribution, version):
+    # type: (str, str, str) -> None
+    with patch("insights.client.utilities.os_release_info", return_value=(distribution, version)):
+        actual = insights.client.utilities.get_rhel_version()
+        assert actual == expected

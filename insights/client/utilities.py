@@ -479,6 +479,43 @@ def os_release_info():
     return os_family, os_release
 
 
+def get_rhel_version():
+    # type: () -> int
+    """Reads /etc/os-release to determine RHEL version.
+
+    For RHEL, the major version is always returned.
+
+    For CentOS, the major version is always returned.
+
+    For Fedora, the latest known RHEL version is returned.
+    RHEL 10 was branched from Fedora 40; until RHEL 11 is branched,
+    this method returns `10` for all Fedora versions.
+
+    :returns: Major RHEL version (or an equivalent for non-RHEL systems)
+    :raises ValueError: Version could not be determined.
+    """
+    distribution, release = os_release_info()
+    if distribution == "Unknown":
+        raise ValueError("Could not determine distribution family.")
+    if release == "":
+        raise ValueError("Could not determine version of {}.".format(distribution))
+
+    _distribution = distribution.lower()  # type: str
+    version = 0  # type: int
+    for family_name in ("red hat enterprise linux", "centos"):
+        if family_name in _distribution:
+            version = int(release.split(".")[0])
+    for family_name in ("fedora", ):
+        if family_name in _distribution:
+            version = 10
+
+    if version == 0:
+        raise ValueError("Unknown distribution: {}.".format(distribution))
+
+    logger.debug("{} {} matches RHEL version {}.".format(distribution, release, version))
+    return version
+
+
 def largest_spec_in_archive(archive_file):
     logger.info("Checking for large files...")
     tar_file = tarfile.open(archive_file, 'r')
