@@ -19,7 +19,7 @@ from .utilities import (write_data_to_file,
                         get_tags,
                         write_tags,
                         migrate_tags,
-                        os_release_info,
+                        get_rhel_version,
                         get_parent_process)
 
 NETWORK = constants.custom_network_log_level
@@ -131,11 +131,12 @@ class InsightsClient(object):
         self.tmpdir = tempfile.mkdtemp()
         atexit.register(self.delete_tmpdir)
         try:
-            _, os_release = os_release_info()
-            rhel_major = os_release.split('.')[0]
+            rhel_major = get_rhel_version()
             # set egg name as 'insights-core.el#.egg' per RHEL #
             egg_name = 'insights-core.el{0}.egg'.format(rhel_major)
-        except Exception:
+            logger.debug("Using versioned egg: {}".format(rhel_major))
+        except ValueError as exc:
+            logger.debug("Using non-versioned egg: {}".format(exc))
             # set default egg as 'insights-core.egg'
             egg_name = 'insights-core.egg'
 
