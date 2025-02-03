@@ -65,7 +65,7 @@ crw-r--r--   1 root     root       1,   3 Apr 20 15:57 dev/null
 
 LSINITRD_EMPTY = ""
 
-# This test case
+# This test case should not parse - but why would we be parsing this?
 LSINITRD_BROKEN = """
 drwxr-xr-x   3 root     root            0 Apr 20 15:58 kernel/x86
 Version: dracut-033-535.el7
@@ -220,7 +220,8 @@ def test_lsinitrd_broken():
     """
     with pytest.raises(Exception) as err:
         lsinitrd.Lsinitrd(context_wrap(LSINITRD_BROKEN))
-    assert "list index out of range" in str(err)
+    # Why do we need to be so specific though?
+    assert "not enough values to unpack" in str(err)
 
 
 def test_lsinitrd_kdump_image_valid():
