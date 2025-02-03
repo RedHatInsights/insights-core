@@ -244,8 +244,8 @@ def parse(lines, root=None):
             # Some old directory listings don't have an initial name line,
             # so we put any entries we collected before a named directory in
             # our 'root' directory - if we got a 'root' directory at all...
-            if not(name is None and root is None):
-                old_name = root if name is None else name
+            old_name = root if name is None else name
+            if old_name is not None:
                 doc[old_name] = Directory(old_name, total, entries)
             name = line[:-1]
             total = None
