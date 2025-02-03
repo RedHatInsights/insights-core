@@ -19,14 +19,12 @@ def parse_path(path):
     return path, link
 
 
-def parse_non_selinux(parts):
+def parse_non_selinux(links, owner, group, last):
     """
     Parse part of an ls output line that isn't selinux.
 
     Args:
-        parts (list): A four element list of strings representing the initial
-            parts of an ls line after the permission bits. The parts are link
-            count, owner, group, and everything else.
+        link count, owner, group, and everything else.
 
     Returns:
         A dict containing links, owner, group, date, and name. If the line
@@ -34,9 +32,11 @@ def parse_non_selinux(parts):
         size is included. If the raw name was a symbolic link, link is
         included.
     """
-    links, owner, group, last = parts
+    # prw-------.  1 0 0   0 Jun 28 09:44 5.ref
+    # l??????????  ? ? ?    ?            ? invocation:auditd.service
+
     result = {
-        "links": int(links),
+        "links": int(links) if links.isdigit() else links,
         "owner": owner,
         "group": group,
     }
@@ -50,7 +50,7 @@ def parse_non_selinux(parts):
         result["minor"] = int(minor)
     else:
         size, rest = last.split(None, 1)
-        result["size"] = int(size)
+        result["size"] = int(size) if size.isdigit() else size
 
     # The date part is always 12 characters regardless of content.
     result["date"] = rest[:12]
@@ -64,14 +64,12 @@ def parse_non_selinux(parts):
     return result
 
 
-def parse_selinux(parts):
+def parse_selinux(owner, group, selinux_str, name_part):
     """
     Parse part of an ls output line that is selinux.
 
     Args:
-        parts (list): A four element list of strings representing the initial
-            parts of an ls line after the permission bits. The parts are owner
-            group, selinux info, and the path.
+        owner, group, selinux info, and the path.
 
     Returns:
         A dict containing owner, group, se_user, se_role, se_type, se_mls, and
@@ -79,10 +77,9 @@ def parse_selinux(parts):
 
     """
 
-    owner, group = parts[:2]
-    selinux = parts[2].split(":")
+    selinux = selinux_str.split(":")
     lsel = len(selinux)
-    path, link = parse_path(parts[-1])
+    name, link = parse_path(name_part)
     result = {
         "owner": owner,
         "group": group,
@@ -90,21 +87,19 @@ def parse_selinux(parts):
         "se_role": selinux[1] if lsel > 1 else None,
         "se_type": selinux[2] if lsel > 2 else None,
         "se_mls": selinux[3] if lsel > 3 else None,
-        "name": path,
+        "name": name
     }
     if link:
         result["link"] = link
     return result
 
 
-def parse_rhel8_selinux(parts):
+def parse_rhel8_selinux(links, owner, group, last):
     """
     Parse part of an ls output line that is selinux on RHEL8.
 
     Args:
-        parts (list): A four element list of strings representing the initial
-            parts of an ls line after the permission bits. The parts are link
-            count, owner, group, and everything else
+        link count, owner, group, and everything else.
 
     Returns:
         A dict containing links, owner, group, se_user, se_role, se_type,
@@ -112,14 +107,12 @@ def parse_rhel8_selinux(parts):
         link is also included.
 
     """
-
-    links, owner, group, last = parts
     result = {
-        "links": int(links),
+        "links": int(links) if links.isdigit() else links,
         "owner": owner,
         "group": group,
     }
-    selinux, last = parts[-1].split(None, 1)
+    selinux, last = last.split(None, 1)
     selinux = selinux.split(":")
     lsel = len(selinux)
     if "," in last:
@@ -128,7 +121,7 @@ def parse_rhel8_selinux(parts):
         result['minor'] = int(minor)
     else:
         size, last = last.split(None, 1)
-        result['size'] = int(size)
+        result['size'] = int(size) if size.isdigit() else size
     date = last[:12]
     path, link = parse_path(last[13:])
     result.update(
@@ -146,33 +139,51 @@ def parse_rhel8_selinux(parts):
     return result
 
 
+parse_mode = {
+    'normal': parse_non_selinux,
+    'selinux': parse_selinux,
+    'rhel8_selinux': parse_rhel8_selinux
+}
+
+
 class Directory(dict):
     def __init__(self, name, total, body):
         dirs = []
         ents = {}
         files = []
         specials = []
+        mode = None
         for line in body:
             # we can't split(None, 5) here b/c rhel 6/7 selinux lines only have
             # 4 parts before the path, and the path itself could contain
             # spaces. Unfortunately, this means we have to split the line again
             # below
-            parts = line.split(None, 4)
-            perms = parts[0]
+            perms, links, owner, group, rest = line.split(None, 4)
             typ = perms[0]
-            entry = {"type": typ, "perms": perms[1:]}
-            if parts[1][0].isdigit():
-                # We have to split the line again to see if this is a RHEL8
-                # selinux stanza. This assumes that the context section will
-                # always have at least two pieces separated by ':'.
-                # '?' as the whole RHEL8 security context is also acceptable.
-                rhel8_selinux_ctx = line.split()[4].strip()
-                if ":" in rhel8_selinux_ctx or '?' == rhel8_selinux_ctx:
-                    rest = parse_rhel8_selinux(parts[1:])
+            entry = {
+                "type": typ,
+                "perms": perms[1:]
+            }
+            # determine mode once per directory
+            if mode is None:
+                if links[0].isdigit():
+                    # We have to split the line again to see if this is a RHEL8
+                    # selinux stanza. This assumes that the context section will
+                    # always have at least two pieces separated by ':'.
+                    # '?' as the whole RHEL8 security context is also acceptable.
+                    rhel8_selinux_ctx = line.split()[4]
+                    if ":" in rhel8_selinux_ctx or '?' == rhel8_selinux_ctx.strip():
+                        # drwxr-xr-x. 2 root root unconfined_u:object_r:var_lib_t:s0 54 Apr  8 16:41 abcd-efgh-ijkl-mnop
+                        mode = 'rhel8_selinux'
+                    else:
+                        # crw-------.  1 0 0 10,  236 Jul 25 10:00 control
+                        # lrwxrwxrwx.  1 0 0       11 Aug  4  2014 menu.lst -> ./grub.conf
+                        mode = 'normal'
                 else:
-                    rest = parse_non_selinux(parts[1:])
-            else:
-                rest = parse_selinux(parts[1:])
+                    # -rw-r--r--. root root system_u:object_r:boot_t:s0      config-3.10.0-267
+                    mode = 'selinux'
+            # Now parse based on mode
+            rest = parse_mode[mode](links, owner, group, rest)
 
             # Update our entry and put it into the correct buckets
             # based on its type.
@@ -226,23 +237,23 @@ def parse(lines, root=None):
         # Skip empty line and non-exist dir line
         if not line or ': No such file or directory' in line:
             continue
-        if line and line[0] == "/" and line[-1] == ":":
-            if name is None:
-                name = line[:-1]
-                if entries:
-                    d = Directory(name, total or len(entries), entries)
-                    doc[root] = d
-                    total = None
-                    entries = []
-            else:
-                d = Directory(name, total or len(entries), entries)
-                doc[name or root] = d
-                total = None
-                entries = []
-                name = line[:-1]
+        if line[0] == "/" and line[-1] == ":":
+            # Directory name - like '/tmp:'
+            if total is None:
+                total = len(entries)
+            # Some old directory listings don't have an initial name line,
+            # so we put any entries we collected before a named directory in
+            # our 'root' directory - if we got a 'root' directory at all...
+            if not(name is None and root is None):
+                old_name = root if name is None else name
+                doc[old_name] = Directory(old_name, total, entries)
+            name = line[:-1]
+            total = None
+            entries = []
             continue
         if line.startswith("total"):
-            total = int(line.split(None, 1)[1])
+            # Should be first line after directory name
+            total = int(line[6:])
             continue
         entries.append(line)
     name = name or root
