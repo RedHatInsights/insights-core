@@ -19,7 +19,31 @@ def parse_path(path):
     return path, link
 
 
-def parse_non_selinux(links, owner, group, last):
+def parse_major_minor(last, result):
+    """
+    Parse the size / major, minor section of the line.
+
+    Args:
+        last (str): the rest of the line after the owner and group.
+        result (dict): the dirent dict to put details in.
+
+    Returns:
+        The rest of the line after the size / major, minor.
+    """
+    # device numbers only go to 256.
+    # If a comma is in the first four characters, the next two elements are
+    # major and minor device numbers. Otherwise, the next element is the size.
+    if "," in last[:4]:
+        major, minor, rest = last.split(None, 2)
+        result["major"] = int(major.rstrip(","))
+        result["minor"] = int(minor)
+    else:
+        size, rest = last.split(None, 1)
+        result["size"] = int(size) if size.isdigit() else size
+    return rest
+
+
+def parse_non_selinux(entry, links, owner, group, last):
     """
     Parse part of an ls output line that isn't selinux.
 
@@ -35,36 +59,23 @@ def parse_non_selinux(links, owner, group, last):
     # prw-------.  1 0 0   0 Jun 28 09:44 5.ref
     # l??????????  ? ? ?    ?            ? invocation:auditd.service
 
-    result = {
-        "links": int(links) if links.isdigit() else links,
-        "owner": owner,
-        "group": group,
-    }
+    entry["links"] = links if links == '?' else int(links)
+    entry["owner"] = owner
+    entry["group"] = group
 
-    # device numbers only go to 256.
-    # If a comma is in the first four characters, the next two elements are
-    # major and minor device numbers. Otherwise, the next element is the size.
-    if "," in last[:4]:
-        major, minor, rest = last.split(None, 2)
-        result["major"] = int(major.rstrip(","))
-        result["minor"] = int(minor)
-    else:
-        size, rest = last.split(None, 1)
-        result["size"] = int(size) if size.isdigit() else size
+    rest = parse_major_minor(last, entry)
 
     # The date part is always 12 characters regardless of content.
-    result["date"] = rest[:12]
+    entry["date"] = rest[:12]
 
     # Jump over the date and the following space to get the path part.
     path, link = parse_path(rest[13:])
-    result["name"] = path
+    entry["name"] = path
     if link:
-        result["link"] = link
-
-    return result
+        entry["link"] = link
 
 
-def parse_selinux(owner, group, selinux_str, name_part):
+def parse_selinux(entry, owner, group, selinux_str, name_part):
     """
     Parse part of an ls output line that is selinux.
 
@@ -80,21 +91,18 @@ def parse_selinux(owner, group, selinux_str, name_part):
     selinux = selinux_str.split(":")
     lsel = len(selinux)
     name, link = parse_path(name_part)
-    result = {
-        "owner": owner,
-        "group": group,
-        "se_user": selinux[0],
-        "se_role": selinux[1] if lsel > 1 else None,
-        "se_type": selinux[2] if lsel > 2 else None,
-        "se_mls": selinux[3] if lsel > 3 else None,
-        "name": name
-    }
+    entry["owner"] = owner
+    entry["group"] = group
+    entry["se_user"] = selinux[0]
+    entry["se_role"] = selinux[1] if lsel > 1 else None
+    entry["se_type"] = selinux[2] if lsel > 2 else None
+    entry["se_mls"] = selinux[3] if lsel > 3 else None
+    entry["name"] = name
     if link:
-        result["link"] = link
-    return result
+        entry["link"] = link
 
 
-def parse_rhel8_selinux(links, owner, group, last):
+def parse_rhel8_selinux(entry, links, owner, group, last):
     """
     Parse part of an ls output line that is selinux on RHEL8.
 
@@ -107,36 +115,23 @@ def parse_rhel8_selinux(links, owner, group, last):
         link is also included.
 
     """
-    result = {
-        "links": int(links) if links.isdigit() else links,
-        "owner": owner,
-        "group": group,
-    }
+    entry["links"] = int(links) if links.isdigit() else links
+    entry["owner"] = owner
+    entry["group"] = group
     selinux, last = last.split(None, 1)
     selinux = selinux.split(":")
     lsel = len(selinux)
-    if "," in last:
-        major, minor, last = last.split(None, 2)
-        result['major'] = int(major.rstrip(","))
-        result['minor'] = int(minor)
-    else:
-        size, last = last.split(None, 1)
-        result['size'] = int(size) if size.isdigit() else size
-    date = last[:12]
-    path, link = parse_path(last[13:])
-    result.update(
-        {
-            "se_user": selinux[0],
-            "se_role": selinux[1] if lsel > 1 else None,
-            "se_type": selinux[2] if lsel > 2 else None,
-            "se_mls": selinux[3] if lsel > 3 else None,
-            "name": path,
-            "date": date,
-        }
-    )
+    rest = parse_major_minor(last, entry)
+    date = rest[:12]
+    path, link = parse_path(rest[13:])
+    entry["se_user"] = selinux[0]
+    entry["se_role"] = selinux[1] if lsel > 1 else None
+    entry["se_type"] = selinux[2] if lsel > 2 else None
+    entry["se_mls"] = selinux[3] if lsel > 3 else None
+    entry["name"] = path
+    entry["date"] = date
     if link:
-        result["link"] = link
-    return result
+        entry["link"] = link
 
 
 parse_mode = {
@@ -147,7 +142,7 @@ parse_mode = {
 
 
 class Directory(dict):
-    def __init__(self, name, total, body):
+    def __init__(self, dirname, total, body):
         dirs = []
         ents = {}
         files = []
@@ -166,7 +161,8 @@ class Directory(dict):
             typ = perms[0]
             entry = {
                 "type": typ,
-                "perms": perms[1:]
+                "perms": perms[1:],
+                "dir": dirname,
             }
             # determine mode once per directory
             if mode is None:
@@ -175,9 +171,9 @@ class Directory(dict):
                     # selinux stanza. This assumes that the context section will
                     # always have at least two pieces separated by ':'.
                     # '?' as the whole RHEL8 security context is also acceptable.
-                    rhel8_selinux_ctx = line.split()[4]
+                    rhel8_selinux_ctx = rest.split()[0]
                     if ":" in rhel8_selinux_ctx or '?' == rhel8_selinux_ctx.strip():
-                        # drwxr-xr-x. 2 root root unconfined_u:object_r:var_lib_t:s0 54 Apr  8 16:41 abcd-efgh-ijkl-mnop
+                        # unconfined_u:object_r:var_lib_t:s0 54 Apr  8 16:41 abcd-efgh-ijkl-mnop
                         mode = 'rhel8_selinux'
                     else:
                         # crw-------.  1 0 0 10,  236 Jul 25 10:00 control
@@ -187,7 +183,7 @@ class Directory(dict):
                     # -rw-r--r--. root root system_u:object_r:boot_t:s0      config-3.10.0-267
                     mode = 'selinux'
             # Now parse based on mode
-            rest = parse_mode[mode](links, owner, group, rest)
+            rest = parse_mode[mode](entry, links, owner, group, rest)
 
             # Update our entry and put it into the correct buckets
             # based on its type.
@@ -196,7 +192,7 @@ class Directory(dict):
             # - The `raw_entry` key is deprecated and will be removed from 3.6.0.
             #   Please use the `insights.parsers.ls.FileListingParser.raw_entry_of` instead.
             entry["raw_entry"] = line
-            entry["dir"] = name
+
             nm = entry["name"]
             ents[nm] = entry
             if typ not in "bcd":
@@ -239,7 +235,7 @@ def parse(lines, root=None):
     for line in lines:
         line = line.strip()
         # Skip empty line and non-exist dir line
-        if not line or ': No such file or directory' in line:
+        if not line or ': No such file or directory' in line or 'cannot open directory' in line:
             continue
         if line[0] == "/" and line[-1] == ":":
             # Directory name - like '/tmp:'
