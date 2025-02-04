@@ -158,7 +158,11 @@ class Directory(dict):
             # 4 parts before the path, and the path itself could contain
             # spaces. Unfortunately, this means we have to split the line again
             # below
-            perms, links, owner, group, rest = line.split(None, 4)
+            try:
+                perms, links, owner, group, rest = line.split(None, 4)
+            except ValueError:
+                # Ignore malformed lines completely
+                continue
             typ = perms[0]
             entry = {
                 "type": typ,
