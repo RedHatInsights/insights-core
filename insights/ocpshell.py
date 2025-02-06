@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import logging
+import warnings
 
 from insights.ocp import analyze
 
@@ -48,6 +49,11 @@ def parse_exclude(exc):
 
 
 def main():
+    warnings.warn(
+        "This '{0}' is deprecated and will be removed in {1}.".format('insights.ocpshell', '3.6.0'),
+        DeprecationWarning,
+        stacklevel=2,
+    )
     args = parse_args()
     archives = args.archives
     if args.debug:

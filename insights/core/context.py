@@ -85,8 +85,7 @@ class RHEL(object):
         self.release = release
 
     def __bool__(self):
-        return all([(self.version != DEFAULT_VERSION),
-                   bool(self.release)])
+        return all([(self.version != DEFAULT_VERSION), bool(self.release)])
 
     __nonzero__ = __bool__
 
@@ -102,9 +101,18 @@ class Context(object):
         self.loaded = True
         self.cmd = None
         optional_attrs = [
-            "content", "path", "hostname", "release",
-            "machine_id", "target", "last_client_run", "relative_path",
-            "args", "engine", "image", "container_id"
+            "content",
+            "path",
+            "hostname",
+            "release",
+            "machine_id",
+            "target",
+            "last_client_run",
+            "relative_path",
+            "args",
+            "engine",
+            "image",
+            "container_id",
         ]
         for k in optional_attrs:
             setattr(self, k, kwargs.pop(k, None))
@@ -168,7 +176,7 @@ class ExecutionContext(six.with_metaclass(ExecutionContextMeta)):
             if m in f:
                 i = f.find(m)
                 if f.endswith(m) or f[i + len(m)] == sep:
-                    root = os.path.dirname(f[:i + 1])
+                    root = os.path.dirname(f[: i + 1])
                     marker_root.add(root)
         if len(marker_root) == 1:
             return (marker_root.pop(), cls)
@@ -182,11 +190,13 @@ class ExecutionContext(six.with_metaclass(ExecutionContextMeta)):
         return (None, None)
 
     def check_output(self, cmd, timeout=None, keep_rc=False, env=None, signum=None):
-        """ Subclasses can override to provide special
-            environment setup, command prefixes, etc.
         """
-        return subproc.call(cmd, timeout=timeout or self.timeout, signum=signum,
-                keep_rc=keep_rc, env=env)
+        Subclasses can override to provide special
+        environment setup, command prefixes, etc.
+        """
+        return subproc.call(
+            cmd, timeout=timeout or self.timeout, signum=signum, keep_rc=keep_rc, env=env
+        )
 
     def shell_out(self, cmd, split=True, timeout=None, keep_rc=False, env=None, signum=None):
         env = env or os.environ
@@ -263,18 +273,6 @@ class JDRContext(ExecutionContext):
     def locate_path(self, path):
         p = path.replace("$JBOSS_HOME", "JBOSS_HOME")
         return super(JDRContext, self).locate_path(p)
-
-
-@fs_root
-class InsightsOperatorContext(ExecutionContext):
-    """Recognizes insights-operator archives"""
-    marker = "config/featuregate"
-
-
-@fs_root
-class MustGatherContext(ExecutionContext):
-    """Recognizes must-gather archives"""
-    marker = "cluster-scoped-resources"
 
 
 class OpenStackContext(ExecutionContext):

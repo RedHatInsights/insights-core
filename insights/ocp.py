@@ -7,18 +7,17 @@ archives.
 import logging
 import os
 import yaml
+import warnings
 
 from fnmatch import fnmatch
 from insights.core.plugins import component, datasource
-from insights.core.context import InsightsOperatorContext, MustGatherContext
+from insights.core.context import ExecutionContext, fs_root
 
 from insights.core.archives import extract
 from insights.parsr.query import from_dict, Result
 from insights.util import content_type
 
-
 log = logging.getLogger(__name__)
-contexts = [InsightsOperatorContext, MustGatherContext]
 
 try:
     # requires pyyaml installed after libyaml
@@ -26,6 +25,21 @@ try:
 except:
     log.info("Couldn't find libyaml loader. Falling back to python loader.")
     Loader = yaml.SafeLoader
+
+
+@fs_root
+class InsightsOperatorContext(ExecutionContext):
+    """Recognizes insights-operator archives"""
+    marker = "config/featuregate"
+
+
+@fs_root
+class MustGatherContext(ExecutionContext):
+    """Recognizes must-gather archives"""
+    marker = "cluster-scoped-resources"
+
+
+contexts = [InsightsOperatorContext, MustGatherContext]
 
 
 def _get_files(path):
@@ -53,6 +67,11 @@ def _process(path, excludes=None):
 
 
 def analyze(paths, excludes=None):
+    warnings.warn(
+        "This '{0}' is deprecated and will be removed in {1}.".format('ocp.analyze', '3.6.0'),
+        DeprecationWarning,
+        stacklevel=2,
+    )
     if not isinstance(paths, list):
         paths = [paths]
 
@@ -85,5 +104,6 @@ def conf(root):
     `tutorial`_ for details.
 
     .. _tutorial: https://insights-core.readthedocs.io/en/latest/notebooks/Parsr%20Query%20Tutorial.html
+
     """
     return analyze(root, excludes=["*.log"])
