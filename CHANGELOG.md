@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.3) (2025-02-06)
+
+- fix: remove /dev, /boot and /sys/firmware from ls_lanR ([PR 4347](https://github.com/RedHatInsights/insights-core/pull/4347))
+- fix: remove the MustGatherContext and InsightsOperatorContext ([PR 4330](https://github.com/RedHatInsights/insights-core/pull/4330))
+- fix(client): Status code should indicate registration status ([PR 4344](https://github.com/RedHatInsights/insights-core/pull/4344))
+- fix(client): Support playbooks with unicode for Python 3.12+ ([PR 4342](https://github.com/RedHatInsights/insights-core/pull/4342))
+- fix: default return value type of ls.listing_of() ([PR 4343](https://github.com/RedHatInsights/insights-core/pull/4343))
+- fix: 'tail' filterable text files before filtering with 'grep' ([PR 4341](https://github.com/RedHatInsights/insights-core/pull/4341))
+- Fix/cct-375: Change location of /tmp/insights-client.ppid ([PR 4269](https://github.com/RedHatInsights/insights-core/pull/4269))
+- remove support of python 2.6 ([PR 4325](https://github.com/RedHatInsights/insights-core/pull/4325))
+
 # [insights-core-3.5.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.2) (2025-01-16)
 
 - spec: collect output of 'flatpak list' ([PR 4337](https://github.com/RedHatInsights/insights-core/pull/4337))

@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.2
+Version:        3.5.3
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,23 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 06 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.3-1
+- fix: remove /dev, /boot and /sys/firmware from ls_lanR (#4347)
+  (xiangceliu@redhat.com)
+- fix: remove the MustGatherContext and InsightsOperatorContext (#4330)
+  (xiangceliu@redhat.com)
+- fix(client): Status code should indicate registration status (#4344)
+  (47797196+pkoprda@users.noreply.github.com)
+- fix(client): Support playbooks with unicode for Python 3.12+ (#4342)
+  (47797196+pkoprda@users.noreply.github.com)
+- fix: default return value type of ls.listing_of() (#4343)
+  (xiaoxwan@redhat.com)
+- fix: 'tail' filterable text files before filtering with 'grep' (#4341)
+  (lichen@redhat.com)
+- Fix/cct-375: Change location of /tmp/insights-client.ppid (#4269)
+  (34436146+tcnk-dev@users.noreply.github.com)
+- remove support of python 2.6 (#4325) (xiangceliu@redhat.com)
+
 * Thu Jan 16 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.2-1
 - spec: collect output of 'flatpak list' (#4337) (lichen@redhat.com)
 - fix(client): Serialize properly playbooks with empty maps (#4340)
