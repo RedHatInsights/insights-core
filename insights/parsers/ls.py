@@ -31,6 +31,7 @@ LSlaRZ - command ``ls -lanRZ <dirs>``
 LSlaZ - command ``ls -lanZ <dirs>``
 -----------------------------------
 """
+
 from insights.core import ls_parser, Parser
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
@@ -40,13 +41,6 @@ from insights.util.file_permissions import FilePermissions
 # Required basic filters for `LS` specs that the content needs to be filtered
 add_filter(Specs.ls_la_filtered, ['total '])
 add_filter(Specs.ls_lan_filtered, ['total '])
-
-# Required directories to collect for `LSlanR` specs, to:
-# 1. keep compatible with sosreport archives
-# 2. Ensure that the related applications to work properly:
-#    - archive data extraction  (cee-data-engineering)
-#    - insights-facts  (cee-data-engineering)
-add_filter(Specs.ls_lanR_dirs, ['/boot', '/dev', '/sys/firmware'])
 
 
 class FileListing(Parser, dict):
@@ -158,6 +152,7 @@ class FileListing(Parser, dict):
         >>> fp.perms_owner
         'rw-'
     """
+
     __root_path = None
     """
     The root path of the dir when there is only one list target.  It only works
@@ -279,6 +274,7 @@ class LSla(FileListing):
     Parses output of ``ls -la <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -288,6 +284,7 @@ class LSlaFiltered(FileListing):
     Parses output of ``ls -la <dirs> | grep -F <keywords>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -297,6 +294,7 @@ class LSlan(FileListing):
     Parses output of ``ls -lan <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -306,6 +304,7 @@ class LSlanFiltered(FileListing):
     Parses output of ``ls -lan <dirs> | grep -F <keywords>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -315,6 +314,7 @@ class LSlanL(FileListing):
     Parses output of ``ls -lanR <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -324,6 +324,7 @@ class LSlanR(FileListing):
     Parses output of ``ls -lanR <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -333,6 +334,7 @@ class LSlanRL(FileListing):
     Parses output of ``ls -lanRL <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -342,6 +344,7 @@ class LSlaRZ(FileListing):
     Parses output of ``ls -laRZ <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -351,4 +354,5 @@ class LSlaZ(FileListing):
     Parses output of ``ls -laZ <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
