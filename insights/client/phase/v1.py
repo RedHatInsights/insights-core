@@ -244,9 +244,10 @@ def post_update(client, config):
     if config.status:
         if reg_check:
             logger.info('This host is registered.')
+            sys.exit(constants.sig_kill_ok)
         else:
             logger.info('This host is unregistered.')
-        sys.exit(constants.sig_kill_ok)
+            sys.exit(constants.sig_kill_bad)
 
     # put this first to avoid conflicts with register
     if config.unregister:
