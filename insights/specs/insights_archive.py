@@ -109,6 +109,7 @@ class InsightsArchiveSpecs(Specs):
         "insights_commands/fwupdmgr_security_--force_--json",
         "insights_commands/fwupdagent_security_--force",
     ])
+    flatpak_list = simple_file("insights_commands/flatpak_list")
     gcp_instance_type = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_gcp_instance_type")
     gcp_license_codes = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_gcp_license_codes")
     getcert_list = simple_file("insights_commands/getcert_list")

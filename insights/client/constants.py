@@ -80,7 +80,7 @@ class InsightsConstants(object):
     cache_dir = os.path.join(os.sep, 'var', 'cache', 'insights-client')
     insights_tmp_prefix = 'insights-client'
     egg_release_file = os.path.join(os.sep, cache_dir, 'insights-client-egg-release')
-    ppidfile = os.path.join(os.sep, 'tmp', 'insights-client.ppid')
+    ppidfile = os.path.join(os.sep, 'run', 'insights-client.ppid')
     valid_compressors = ("gz", "xz", "bz2", "none")
     # RPM version in which core collection was released
     core_collect_rpm_version = '3.1.0'

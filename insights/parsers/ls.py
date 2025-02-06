@@ -218,7 +218,7 @@ class FileListing(Parser, dict):
         """
         if directory in self:
             return self[directory]['entries']
-        return []
+        return {}
 
     def dir_contains(self, directory, name):
         """

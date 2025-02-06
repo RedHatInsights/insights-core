@@ -35,8 +35,7 @@ runtime = set(
         'lockfile',
         'jinja2<=2.11.3; python_version <= "2.7"',
         'jinja2; python_version > "2.7"',
-        'pyyaml>=3.10,<=3.13; python_version < "2.7"',
-        'pyyaml; python_version >= "2.7"',
+        'pyyaml',
         'setuptools; python_version >= "3.12"',
     ]
 )
@@ -82,17 +81,12 @@ docs = set(
     ]
 )
 
-# python 2.6 requires setuptools~=36.8.0 to support this syntax
 testing = set(
     [
-        'coverage==4.3.4; python_version < "2.7"',
-        'coverage; python_version >= "2.7"',
-        'pytest==3.0.6; python_version < "2.7"',
-        'pytest_catchlog; python_version < "2.7"',
+        'coverage',
         'pytest~=4.6.0; python_version == "2.7"',
         'pytest; python_version >= "3"',
-        'pytest-cov==2.4.0; python_version < "2.7"',
-        'pytest-cov; python_version >= "2.7"',
+        'pytest-cov',
         'mock==2.0.0',
     ]
 )
@@ -107,7 +101,7 @@ cluster = set(
 
 openshift = set(['openshift'])
 
-linting = set(['flake8==2.6.2; python_version < "2.7"', 'flake8; python_version >= "2.7"'])
+linting = set(['flake8'])
 
 optional = set(
     [
@@ -136,7 +130,6 @@ if __name__ == "__main__":
         license='Apache 2.0',
         extras_require={
             'develop': list(runtime | develop | client | docs | linting | testing | cluster),
-            'develop26': list(runtime | develop | client | linting | testing | cluster),
             'client': list(runtime | client),
             'client-develop': list(runtime | develop | client | linting | testing),
             'cluster': list(runtime | cluster),
@@ -152,7 +145,6 @@ if __name__ == "__main__":
             'Natural Language :: English',
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python',
-            'Programming Language :: Python :: 2.6',
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3.3',
             'Programming Language :: Python :: 3.4',

@@ -12,20 +12,14 @@ import shutil
 from mock.mock import patch
 from pytest import raises
 
-
-# Because pytest 3 does not allow module-level skips, we have to import these
-# modules conditionally and skip each individual module here.
-if sys.version_info > (2, 6):
-    from insights.client.constants import InsightsConstants as constants
-    from insights.client.apps.ansible import playbook_verifier
-    from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError, get_play_revocation_list, normalize_play_py2, load_playbook_yaml  # noqa
+from insights.client.constants import InsightsConstants as constants
+from insights.client.apps.ansible import playbook_verifier
+from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError, get_play_revocation_list, normalize_play_py2, load_playbook_yaml  # noqa
 
 
-SKIP_BELOW_27 = pytest.mark.skipif(sys.version_info < (2, 7), reason="Unsupported; needs Python 2.7+ or 3.6+")
 SKIP_ON_3 = pytest.mark.skipif(sys.version_info[0] > 2, reason="Only required in Python 2")
 
 
-@SKIP_BELOW_27
 class TestErrors:
     @patch("insights.client.apps.ansible.playbook_verifier.get_play_revocation_list", return_value=[])
     def test_vars_not_found_error(self, mock_method):
@@ -206,7 +200,6 @@ class TestErrors:
 
 
 @SKIP_ON_3
-@SKIP_BELOW_27
 def test_normalize_snippet():
     playbook = '''task:
   when:
@@ -227,7 +220,6 @@ def test_normalize_snippet():
     assert normalize_play_py2(snippet) == want
 
 
-@SKIP_BELOW_27
 class TestExcludeDynamicElements:
     def test_ok_signature(self):
         source = {
@@ -320,13 +312,24 @@ class TestExcludeDynamicElements:
         assert excinfo.value.message == expected
 
 
-@SKIP_BELOW_27
 class TestPlaybookSerializer:
 
     def test_list(self):
         source = ["value1", "value2"]
         result = playbook_verifier.PlaybookSerializer.serialize(source)
         expected = "['value1', 'value2']"
+        assert result == expected
+
+    def test_dict_empty(self):
+        source = {}
+        result = playbook_verifier.PlaybookSerializer.serialize(source)
+        expected = "ordereddict()"
+        assert result == expected
+
+    def test_dict_empty_value(self):
+        source = {"key": None}
+        result = playbook_verifier.PlaybookSerializer.serialize(source)
+        expected = "ordereddict([('key', None)])"
         assert result == expected
 
     def test_dict_single_key(self):
@@ -366,15 +369,32 @@ class TestPlaybookSerializer:
             ("no quote", "'no quote'"),
             ("single'quote", '''"single'quote"'''),
             ("double\"quote", """'double"quote'"""),
-            ("both\"'quotes", r"""'both"\'quotes'""")
+            ("both\"'quotes", r"""'both"\'quotes'"""),
+            ("\\backslash", "'\\\\backslash'"),
+            ("new\nline", "'new\\nline'"),
+            ("tab\tchar", "'tab\\tchar'"),
         ]
     )
     def test_strings(self, source, expected):
         result = playbook_verifier.PlaybookSerializer.serialize(source)
         assert result == expected
 
+    @pytest.mark.parametrize(
+        "source,expected",
+        [
+            pytest.param("zw​space", "'zw\\u200bspace'", id="zero-width space"),
+            pytest.param("zw‌nonjoiner", "'zw\\u200cnonjoiner'", id="zero-width non-joiner"),
+            pytest.param("👨🏼‍🚀", "'👨🏼\\u200d🚀'", id="zero-width joiner"),
+        ],
+    )
+    def test_strings_unicode(self, source, expected):
+        if sys.version_info < (3, 0):
+            raise pytest.skip("Unicode characters are not supported on Python 2 systems")
 
-@SKIP_BELOW_27
+        result = playbook_verifier.PlaybookSerializer.serialize(source)
+        assert result == expected
+
+
 class TestSerializePlaybookSnippet:
     def test_serialize_dictionary(self):
         raw = "\n".join([
@@ -422,10 +442,8 @@ class TestSerializePlaybookSnippet:
 
     @pytest.mark.parametrize("filename", ("insights_setup", "insights_remove", "document-from-hell", "unicode"))
     def test_real(self, filename):
-        if filename == "unicode" and sys.version_info < (3, 0):
-            raise pytest.skip("Playbooks containing unicode are not supported in Python 2 systems")
-        if filename == "unicode" and sys.version_info >= (3, 12):
-            raise pytest.xfail("Known RFE in Unicode serialization.")
+        if filename == "unicode" and sys.version_info < (3, 7):
+            raise pytest.skip("Python 3.7 or later is required to test playbooks containing unicode")
 
         parent = os.path.dirname(__file__)  # type: str
         with open("{parent}/playbooks/{filename}.yml".format(parent=parent, filename=filename), "r") as f:
@@ -438,7 +456,6 @@ class TestSerializePlaybookSnippet:
         assert result == expected
 
 
-@SKIP_BELOW_27
 class TestGetPlaybookSnippetRevocationList:
     @mock.patch(
         "insights.client.apps.ansible.playbook_verifier.verify_play",
@@ -494,7 +511,6 @@ class TestGetPlaybookSnippetRevocationList:
         assert mocked_verify_play.call_count == 1
 
 
-@SKIP_BELOW_27
 class TestHashPlaybookSnippets:
     @pytest.mark.parametrize("filename", ("insights_remove", "document-from-hell", "unicode"))
     def test_real(self, filename):

@@ -17,6 +17,7 @@ CV9 = "ceph version 12.2.5-59.el7cp (d4b9f17b56b3348566926849313084dd6efc2ca2)"
 CV10 = "ceph version 12.2.8-128.el7cp (030358773c5213a14c1444a5147258672b2dc15f)"
 CV10_1 = "ceph version 12.2.12-74.el7cp (030358773c5213a14c1444a5147258672b2dc15f)"
 CV_els = "ceph version 10.2.10-51.el7cp (030358773c5213a14c1444a5147258672b2dc15f)"
+CV18 = "ceph version 18.2.1-229.el9cp (b83334e01379f267fb2f9ce729d74a0a8fa1e92c)"
 
 
 def test_ceph_version():
@@ -98,3 +99,10 @@ def test_ceph_version():
     assert ceph_version_els.upstream_version['release'] == 10
     assert ceph_version_els.upstream_version['major'] == 2
     assert ceph_version_els.upstream_version['minor'] == 10
+
+    ceph_version18 = CephVersion(context_wrap(CV18))
+    assert ceph_version18.version == "7.1.1"
+    assert ceph_version18.major == '7'
+    assert ceph_version18.minor == "1"
+    assert not ceph_version18.is_els
+    assert ceph_version18.downstream_release == "1"

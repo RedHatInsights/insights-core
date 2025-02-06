@@ -14,6 +14,7 @@ from insights.core.context import HostContext
 from insights.core.filters import add_filter
 from insights.core.plugins import datasource
 from insights.core.spec_cleaner import Cleaner
+from insights.core import spec_factory
 from insights.core.spec_factory import (
     RegistryPoint,
     SpecSet,
@@ -33,6 +34,7 @@ FILTER_DATA = "Some test data"
 
 this_file = os.path.abspath(__file__).rstrip("c")
 test_large_file = '/tmp/_insights_test.large_file_filter'
+test_large_file_without_filter = '/tmp/_insights_test.large_file_without_filter'
 test_one_line_left = '/tmp/_insights_test.one_line_left'
 test_empty_after_filter = '/tmp/_insights_test.empty_after_filter'
 
@@ -91,6 +93,7 @@ class Specs(SpecSet):
     empty_after_filter = RegistryPoint(filterable=True)
     cmd_w_args_filter = RegistryPoint(filterable=True)
     large_filter = RegistryPoint(filterable=True)
+    large_file_without_filter = RegistryPoint(filterable=False)
     one_line_left = RegistryPoint(filterable=True)
 
 
@@ -122,6 +125,7 @@ class Stuff(Specs):
     empty_after_filter = simple_file(test_empty_after_filter)
     cmd_w_args_filter = command_with_args('ls -lt %s', files2)
     large_filter = simple_file(test_large_file)
+    large_file_without_filter = simple_file(test_large_file_without_filter)
     one_line_left = simple_file(test_one_line_left)
 
 
@@ -140,6 +144,7 @@ class stage(dr.ComponentType):
     Stuff.first_of_spec_w_filter,
     Stuff.cmd_w_args_filter,
     Stuff.large_filter,
+    Stuff.large_file_without_filter,
     Stuff.one_line_left,
     optional=[Stuff.empty_after_filter],
 )
@@ -178,6 +183,9 @@ def setup_function(func):
     with open(test_large_file, 'w') as fd:
         for i in range(filters.MAX_MATCH + 1):
             fd.write(str(i) + FILTER_DATA + '\n')
+    with open(test_large_file_without_filter, 'w') as fd:
+        for i in range(filters.MAX_MATCH + 1):
+            fd.write(str(i) + FILTER_DATA + '\n')
     with open(test_one_line_left, 'w') as fd:
         for i in range(filters.MAX_MATCH + 1):
             fd.write(str(i) + FILTER_DATA + '\n')
@@ -195,6 +203,8 @@ def teardown_function(func):
         os.remove(test_empty_after_filter)
     if os.path.exists(test_large_file):
         os.remove(test_large_file)
+    if os.path.exists(test_large_file_without_filter):
+        os.remove(test_large_file_without_filter)
     if os.path.exists(test_one_line_left):
         os.remove(test_one_line_left)
 
@@ -225,6 +235,18 @@ def test_specs_filters_spec_factory():
     assert len(broker[Stuff.first_of_spec_w_filter].content) == 1
     assert len(broker.exceptions) == 1  # empty_after_filter
     assert len(broker.tracebacks) == 1  # empty_after_filter
+
+
+def test_max_lines_limit_filterable_file():
+    spec_factory.MAX_LINES_FOR_FILTERABLE_FILE = 10
+    add_filter(Stuff.large_filter, ["Some"])
+    broker = dr.Broker()
+    broker[HostContext] = HostContext()
+    broker['cleaner'] = Cleaner(None, None)
+    broker = dr.run(dr.get_dependency_graph(dostuff), broker)
+    assert len(broker[Stuff.large_filter].content) == 10
+    assert len(broker[Stuff.large_file_without_filter].content) == filters.MAX_MATCH + 1
+    spec_factory.MAX_LINES_FOR_FILTERABLE_FILE = 1000000
 
 
 def test_line_terminators():
@@ -319,6 +341,9 @@ def test_specs_filters_collect(gen, obfuscate):
     assert not errors
     count = 0
     for spec in Specs.__dict__:
+        if str(spec) == "large_file_without_filter":
+            # skip the  without filter file
+            continue
         if not spec.startswith(('__', 'context_handlers', 'registry')):
             file_name = "insights.tests.specs.test_specs_filters.Specs.{0}.json".format(spec)
             meta_data = os.path.join(meta_data_root, file_name)

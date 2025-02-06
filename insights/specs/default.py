@@ -337,6 +337,7 @@ class DefaultSpecs(Specs):
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
+    flatpak_list = simple_command("/usr/bin/flatpak list")
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     fstab = simple_file("/etc/fstab")
     fw_security = first_of(
@@ -377,6 +378,7 @@ class DefaultSpecs(Specs):
         "/usr/sbin/grubby --default-index"
     )  # only RHEL7 and updwards
     grubby_default_kernel = simple_command("/sbin/grubby --default-kernel")
+    grubby_info_all = simple_command("/usr/sbin/grubby --info=ALL")
     grub_conf = simple_file("/boot/grub/grub.conf")
     grub_config_perms = simple_command(
         "/bin/ls -lH /boot/grub2/grub.cfg"
