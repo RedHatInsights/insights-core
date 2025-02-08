@@ -410,7 +410,7 @@ class Specs(SpecSet):
     lvs_noheadings = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     lvs_noheadings_all = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     mac_addresses = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
-    machine_id = RegistryPoint(no_obfuscate=['hostname', 'ip'], no_redact=True)
+    machine_id = RegistryPoint(no_obfuscate=['hostname', 'ip', 'password'], no_redact=True)
     manila_conf = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     mariadb_log = RegistryPoint(filterable=True)
     max_uid = RegistryPoint(no_obfuscate=['hostname', 'ip'])
@@ -549,8 +549,8 @@ class Specs(SpecSet):
     pcp_metrics = RegistryPoint()
     pcp_openmetrics_log = RegistryPoint(filterable=True)
     pcp_raw_data = RegistryPoint(
-        raw=True, multi_output=True, no_obfuscate=['hostname', 'ip'], no_redact=True
-    )  # No Parser required
+        raw=True, multi_output=True
+    )  # No Parser required; Raw Spec will be not Obfuscated/Redacted/Filterd
     pcs_config = RegistryPoint()
     pcs_quorum_status = RegistryPoint()
     pcs_status = RegistryPoint()
@@ -718,13 +718,13 @@ class Specs(SpecSet):
     sshd_config = RegistryPoint(filterable=True)
     sshd_config_d = RegistryPoint(multi_output=True, filterable=True)
     sshd_config_perms = RegistryPoint(no_obfuscate=['hostname', 'ip'])
-    sshd_test_mode = RegistryPoint(filterable=True, no_redact=True)
+    sshd_test_mode = RegistryPoint(filterable=True, no_obfuscate=['password'])
     sssd_config = RegistryPoint()
     sssd_conf_d = RegistryPoint(multi_output=True)
     sssd_logs = RegistryPoint(multi_output=True, filterable=True)
     sys_block_queue_stable_writes = RegistryPoint(multi_output=True)
     subscription_manager_facts = RegistryPoint(filterable=True)
-    subscription_manager_id = RegistryPoint(no_obfuscate=['ip'], no_redact=True)
+    subscription_manager_id = RegistryPoint(no_obfuscate=['ip'])
     subscription_manager_installed_product_ids = RegistryPoint(
         filterable=True, no_obfuscate=['hostname', 'ip']
     )
