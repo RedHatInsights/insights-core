@@ -8,6 +8,7 @@ from collections import defaultdict
 from mock.mock import patch
 
 from insights import collect
+from insights.cleaner import Cleaner
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
 from insights.core import Parser, dr
@@ -16,7 +17,6 @@ from insights.core.context import HostContext
 from insights.core.exceptions import ContentException
 from insights.core.filters import add_filter
 from insights.core.plugins import datasource
-from insights.core.spec_cleaner import Cleaner
 from insights.core.spec_factory import (
     DatasourceProvider,
     RegistryPoint,
@@ -367,7 +367,7 @@ def test_exp_no_filters():
 
 
 @pytest.mark.parametrize("obfuscate", [True, False])
-@patch('insights.core.spec_cleaner.Cleaner.generate_report', return_value=None)
+@patch('insights.cleaner.Cleaner.generate_report', return_value=None)
 def test_specs_collect(gen, obfuscate):
     add_filter(Stuff.many_glob_filter, " ")
     add_filter(Stuff.many_foreach_exe_filter, " ")
