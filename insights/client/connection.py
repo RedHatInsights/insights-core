@@ -33,9 +33,8 @@ from .utilities import (determine_hostname,
                         size_in_mb)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
-from insights import package_info
+from insights import cleaner, package_info
 from insights.client.collection_rules import InsightsUploadConf
-from insights.core import spec_cleaner
 from insights.util.canonical_facts import get_canonical_facts
 
 warnings.simplefilter('ignore')
@@ -1194,13 +1193,9 @@ class InsightsConnection(object):
                 for i, item in enumerate(data):
                     data[i] = _deep_clean(item)
             elif isinstance(data, str):
-                return cleaner.clean_content(
-                    data,
-                    obf_funcs=obf_funcs,
-                    no_redact=False)
+                return _cleaner.clean_content(data)
             return data
         # Clean (obfuscate and redact) the "c_facts"
         pc = InsightsUploadConf(self.config)
-        cleaner = spec_cleaner.Cleaner(self.config, pc.get_rm_conf())
-        obf_funcs = cleaner.get_obfuscate_functions()
+        _cleaner = cleaner.Cleaner(self.config, pc.get_rm_conf())
         return _deep_clean(cfacts)

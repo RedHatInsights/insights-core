@@ -71,9 +71,73 @@ insights.core.spec_factory
     :undoc-members:
 
 insights.core.taglang
---------------------------
+---------------------
 
 .. automodule:: insights.core.taglang
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.cleaner
+----------------
+
+.. automodule:: insights.cleaner
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.cleaner.filters
+------------------------
+
+.. automodule:: insights.cleaner.filters
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.cleaner.hostname
+-------------------------
+
+.. automodule:: insights.cleaner.hostname
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.cleaner.ip
+-------------------
+
+.. automodule:: insights.cleaner.ip
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.cleaner.keyword
+------------------------
+
+.. automodule:: insights.cleaner.keyword
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.cleaner.mac
+--------------------
+
+.. automodule:: insights.cleaner.mac
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.cleaner.password
+-------------------------
+
+.. automodule:: insights.cleaner.password
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.cleaner.pattern
+------------------------
+
+.. automodule:: insights.cleaner.pattern
     :members:
     :show-inheritance:
     :undoc-members:
