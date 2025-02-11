@@ -19,16 +19,8 @@ def test_registration_check_ok_reg(get_proxies, _init_session, _machine_id_exist
     res = requests.Response()
     res._content = json.dumps(
         {
-            "count": 1,
-            "page": 1,
-            "per_page": 50,
-            "results": [
-                {
-                    'insights_id': 'xxxxxx',
-                    'id': 'yyyyyy'
-                }
-            ],
-            "total": 1
+            'insights_id': 'xxxxxx',
+            'id': 'yyyyyy'
         })
     res.status_code = 200
 
