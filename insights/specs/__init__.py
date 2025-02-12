@@ -204,6 +204,7 @@ class Specs(SpecSet):
     )
     fc_match = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     fcoeadm_i = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    filefrag_grubenv = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     findmnt_lo_propagation = RegistryPoint()
     firewall_cmd_list_all_zones = RegistryPoint()
     firewalld_conf = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
