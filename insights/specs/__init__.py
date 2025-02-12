@@ -830,6 +830,7 @@ class Specs(SpecSet):
     vsftpd_conf = RegistryPoint(filterable=True)
     watchdog_logs = RegistryPoint(filterable=True, multi_output=True)
     wc_proc_1_mountinfo = RegistryPoint()
+    wc_var_lib_pcp_config_pmda = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     x86_ibpb_enabled = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     x86_ibrs_enabled = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     x86_pti_enabled = RegistryPoint(no_obfuscate=['hostname', 'ip'])

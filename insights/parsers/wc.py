@@ -25,7 +25,7 @@ class WcProc1Mountinfo(Parser):
 
     Examples:
         >>> type(wc_info)
-        <class 'insights.parsers.wc_proc_1_mountinfo.WcProc1Mountinfo'>
+        <class 'insights.parsers.wc.WcProc1Mountinfo'>
         >>> wc_info.line_count
         37
 
@@ -41,3 +41,36 @@ class WcProc1Mountinfo(Parser):
         if not count_str.isdigit():
             raise ParseException("Error: unparsable output from command wc: ", content[0])
         self.line_count = int(count_str)
+
+
+@parser(Specs.wc_var_lib_pcp_config_pmda)
+class WcPcpConfigPmda(Parser, dict):
+    """
+    Provides the line counts of file ``/proc/1/mountinfo`` by parsing the
+    output of command ``/usr/bin/wc -l /proc/1/mountinfo``.
+
+    Attributes:
+        line_count(int): the line counts of file ``/proc/1/mountinfo``
+
+    Typical content looks like::
+
+        37 /proc/1/mountinfo
+
+    Examples:
+        >>> type(wc_pcp_config_pmda)
+        <class 'insights.parsers.wc.WcPcpConfigPmda'>
+        >>> wc_pcp_config_pmda['/var/lib/pcp/config/pmda/62.0']
+        24
+
+    Raises:
+        SkipComponent: if the command output is empty or missing file
+        ParseException: if the command output is unparsable
+    """
+
+    def parse_content(self, content):
+        if len(content) == 0 or 'No such file or directory' in content[0]:
+            raise SkipComponent("Error: ", content[0] if content else 'empty file')
+        for line in content:
+            count_str, file = line.split()
+            if file.startswith('/var/lib/pcp/config/pmda/') and count_str.isdigit():
+                self[file] = int(count_str)

@@ -972,6 +972,7 @@ class DefaultSpecs(Specs):
     vsftpd_conf = simple_file("/etc/vsftpd/vsftpd.conf")
     watchdog_logs = glob_file("/var/log/watchdog/*.std*")
     wc_proc_1_mountinfo = simple_command("/usr/bin/wc -l /proc/1/mountinfo")
+    wc_var_lib_pcp_config_pmda = simple_command("/usr/bin/wc -l /var/lib/pcp/config/pmda/*")
     x86_ibpb_enabled = simple_file("sys/kernel/debug/x86/ibpb_enabled")
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")
     x86_pti_enabled = simple_file("sys/kernel/debug/x86/pti_enabled")
