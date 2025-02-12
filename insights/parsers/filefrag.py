@@ -5,7 +5,7 @@ FilefragGrubenv - Command ``/sbin/filefrag /boot/grub2/grubenv``
 Parser for parsing the output of command ``/sbin/filefrag /boot/grub2/grubenv``.
 """
 from insights.core import Parser
-from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
