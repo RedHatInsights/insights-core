@@ -64,7 +64,7 @@ DEFAULT_OPTS = {
     },
     'base_url': {
         # non-CLI
-        'default': constants.legacy_base_url
+        'default': constants.base_url
     },
     'branch_info': {
         # non-CLI
