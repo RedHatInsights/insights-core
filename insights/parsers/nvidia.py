@@ -3,13 +3,27 @@ NVIDIA Related Information
 ==========================
 
 NvidiaSmiL - command ``/usr/bin/nvidia-smi -L``
-------------------------------------------------
+NvidiaSmiActiveClocksEventReasons - command ``/usr/bin/nvidia-smi --query-gpu=name,clocks_event_reasons.active --format=csv,noheader``
+--------------------------------------------------------------------------------------------------------------------------------------
 """
 
 from insights.core import Parser
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
+
+# Refer to the following doc for the detailed bitmask of active clock event reasons:
+# - https://docs.nvidia.com/deploy/nvml-api/group__nvmlClocksEventReasons.html
+NONE = 0x0000000000000000
+GPU_IDLE = 0x0000000000000001
+APPLICATIONS_CLOCKS_SETTING = 0x0000000000000002
+SW_POWER_CAP = 0x0000000000000004
+HW_SLOWDOWN = 0x0000000000000008
+SYNC_BOOST = 0x0000000000000010
+SW_THERMAL_SLOWDOWN = 0x0000000000000020
+HW_THERMAL_SLOWDOWN = 0x0000000000000040
+HW_POWER_BRAKE_SLOWDOWN = 0x0000000000000080
+DISPLAY_CLOCK_SETTING = 0x0000000000000100
 
 
 @parser(Specs.nvidia_smi_l)
@@ -64,10 +78,12 @@ class NvidiaSmiL(Parser, list):
                 if not (gpu_model and gpu_uuid):
                     raise ParseException("Unparsable GPU line: %s" % line)
 
-                self.append({
-                    "model": gpu_model,
-                    "uuid": gpu_uuid,
-                })
+                self.append(
+                    {
+                        "model": gpu_model,
+                        "uuid": gpu_uuid,
+                    }
+                )
 
         if len(self) < 1:
             raise ParseException("Empty GPU info after parse: %s" % content)
@@ -85,3 +101,59 @@ class NvidiaSmiL(Parser, list):
         str: Returns the GPUs model set
         """
         return set([gpu["model"] for gpu in self])
+
+
+@parser(Specs.nvidia_smi_active_clocks_event_reasons)
+class NvidiaSmiActiveClocksEventReasons(Parser, list):
+    """
+    Parser for the output of command `/usr/bin/nvidia-smi --query-gpu=name,clocks_event_reasons.active --format=csv,noheader`.
+    This command lists each of the NVIDIA GPUs in the system, along with their names and bitmasks
+    of active clock event reasons.
+
+    Raises:
+        ParseException: When run into an unparsable line
+
+    Sample Content::
+        NVIDIA L4, 0x0000000000000001
+        NVIDIA A1, 0x0000000000000000
+        NVIDIA H1, 0x0000000000000084
+
+    Examples::
+        >>> type(active_clocks_event_reasons)
+        <class 'insights.parsers.nvidia.NvidiaSmiActiveClocksEventReasons'>
+        >>> len(active_clocks_event_reasons)
+        3
+        >>> active_clocks_event_reasons[0]['applications_clocks_setting']
+        False
+        >>> active_clocks_event_reasons[2]['hw_power_brake_slowdown']
+        True
+        >>> active_clocks_event_reasons[2]['none']
+        False
+    """
+
+    def parse_content(self, content):
+        for line in content:
+            items = line.split(",")
+            if len(items) != 2 or not items[1].strip().startswith("0x"):
+                raise ParseException(
+                    "Not an expected command output for active clocks event reasons: %s" % line
+                )
+            bitmask = int(items[1].strip().strip("LL"), 16)
+            self.append(
+                {
+                    "gpu_name": items[0].strip(),
+                    "applications_clocks_setting": APPLICATIONS_CLOCKS_SETTING & bitmask
+                    == APPLICATIONS_CLOCKS_SETTING,
+                    "display_clock_setting": DISPLAY_CLOCK_SETTING & bitmask
+                    == DISPLAY_CLOCK_SETTING,
+                    "gpu_idle": GPU_IDLE & bitmask == GPU_IDLE,
+                    "none": NONE | bitmask == NONE,
+                    "sw_power_cap": SW_POWER_CAP & bitmask == SW_POWER_CAP,
+                    "sw_thermal_slowdown": SW_THERMAL_SLOWDOWN & bitmask == SW_THERMAL_SLOWDOWN,
+                    "sync_boosst": SYNC_BOOST & bitmask == SYNC_BOOST,
+                    "hw_power_brake_slowdown": HW_POWER_BRAKE_SLOWDOWN & bitmask
+                    == HW_POWER_BRAKE_SLOWDOWN,
+                    "hw_slowdown": HW_SLOWDOWN & bitmask == HW_SLOWDOWN,
+                    "hw_thermal_slowdown": HW_THERMAL_SLOWDOWN & bitmask == HW_THERMAL_SLOWDOWN,
+                }
+            )
