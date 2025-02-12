@@ -46,15 +46,24 @@ class WcProc1Mountinfo(Parser):
 @parser(Specs.wc_var_lib_pcp_config_pmda)
 class WcPcpConfigPmda(Parser, dict):
     """
-    Provides the line counts of file ``/proc/1/mountinfo`` by parsing the
-    output of command ``/usr/bin/wc -l /proc/1/mountinfo``.
-
-    Attributes:
-        line_count(int): the line counts of file ``/proc/1/mountinfo``
+    Provides the line counts of file ``/var/lib/pcp/config/pmda/*`` by parsing the
+    output of command ``/usr/bin/wc -l /var/lib/pcp/config/pmda/*``.
 
     Typical content looks like::
-
-        37 /proc/1/mountinfo
+        6 /var/lib/pcp/config/pmda/144.0.py
+        3 /var/lib/pcp/config/pmda/60.1
+        5 /var/lib/pcp/config/pmda/60.10
+        3 /var/lib/pcp/config/pmda/60.11
+        275 /var/lib/pcp/config/pmda/60.12
+        16 /var/lib/pcp/config/pmda/60.17
+        3 /var/lib/pcp/config/pmda/60.24
+        6 /var/lib/pcp/config/pmda/60.28
+        17 /var/lib/pcp/config/pmda/60.3
+        21 /var/lib/pcp/config/pmda/60.32
+        974 /var/lib/pcp/config/pmda/60.4
+        140113 /var/lib/pcp/config/pmda/60.40
+        24 /var/lib/pcp/config/pmda/62.0
+        141466 total
 
     Examples:
         >>> type(wc_pcp_config_pmda)
@@ -64,7 +73,6 @@ class WcPcpConfigPmda(Parser, dict):
 
     Raises:
         SkipComponent: if the command output is empty or missing file
-        ParseException: if the command output is unparsable
     """
 
     def parse_content(self, content):
