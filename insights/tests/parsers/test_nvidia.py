@@ -137,6 +137,23 @@ INVALID_ACTIVE_CLOCKS_EVENT_REASONS_2 = """
 NVIDIA L4
 """.strip()
 
+INVALID_ACTIVE_CLOCKS_EVENT_REASONS_3 = """
+NVIDIA L4, 0x0000000000000001
+
+NVIDIA A1, 0x0000000000000000
+""".strip()
+
+INVALID_ACTIVE_CLOCKS_EVENT_REASONS_4 = """
+NVIDIA L4, 0x0000000000000001
+NVIDIA H1, 0000000000000084
+NVIDIA A1, 0x0000000000000000
+""".strip()
+
+INVALID_ACTIVE_CLOCKS_EVENT_REASONS_5 = """
+
+
+"""
+
 
 def test_nvidia_smi_active_clocks_event_reasons_exceptions():
     with pytest.raises(ParseException) as err:
@@ -146,6 +163,18 @@ def test_nvidia_smi_active_clocks_event_reasons_exceptions():
     with pytest.raises(ParseException) as err:
         NvidiaSmiActiveClocksEventReasons(context_wrap(INVALID_ACTIVE_CLOCKS_EVENT_REASONS_2))
     assert "Not an expected command output for active clocks event reasons" in str(err)
+
+    with pytest.raises(ParseException) as err:
+        NvidiaSmiActiveClocksEventReasons(context_wrap(INVALID_ACTIVE_CLOCKS_EVENT_REASONS_3))
+    assert "Not an expected command output for active clocks event reasons" in str(err)
+
+    with pytest.raises(ParseException) as err:
+        NvidiaSmiActiveClocksEventReasons(context_wrap(INVALID_ACTIVE_CLOCKS_EVENT_REASONS_4))
+    assert "Not an expected command output for active clocks event reasons" in str(err)
+
+    with pytest.raises(SkipComponent) as err:
+        NvidiaSmiActiveClocksEventReasons(context_wrap(INVALID_ACTIVE_CLOCKS_EVENT_REASONS_5))
+    assert "Empty content." in str(err)
 
 
 def test_nvidia_doc_examples():

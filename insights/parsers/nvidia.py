@@ -3,6 +3,8 @@ NVIDIA Related Information
 ==========================
 
 NvidiaSmiL - command ``/usr/bin/nvidia-smi -L``
+-----------------------------------------------
+
 NvidiaSmiActiveClocksEventReasons - command ``/usr/bin/nvidia-smi --query-gpu=name,clocks_event_reasons.active --format=csv,noheader``
 --------------------------------------------------------------------------------------------------------------------------------------
 """
@@ -112,6 +114,7 @@ class NvidiaSmiActiveClocksEventReasons(Parser, list):
 
     Raises:
         ParseException: When run into an unparsable line
+        SkipComponent: When content is empty
 
     Sample Content::
         NVIDIA L4, 0x0000000000000001
@@ -132,6 +135,9 @@ class NvidiaSmiActiveClocksEventReasons(Parser, list):
     """
 
     def parse_content(self, content):
+        if not content:
+            raise SkipComponent("Empty content.")
+
         for line in content:
             items = line.split(",")
             if len(items) != 2 or not items[1].strip().startswith("0x"):
