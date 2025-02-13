@@ -26,6 +26,7 @@ except ImportError:
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         machine_id_exists,
+                        write_to_disk,
                         write_unregistered_file,
                         write_registered_file,
                         os_release_info,
@@ -811,6 +812,11 @@ class InsightsConnection(object):
 
         results = self._fetch_system_by_machine_id()
         if not results:
+            if machine_id_exists() or os.path.exists(constants.registered_files[0]) or os.path.exists(constants.registered_files[1]):
+                write_unregistered_file()
+                write_to_disk(constants.machine_id_file, delete=True)
+                logger.info("Successfully unregistered from the Red Hat Insights Service")
+                return True
             logger.info('This host could not be found.')
             return False
         try:
@@ -1043,6 +1049,9 @@ class InsightsConnection(object):
 
         system = self._fetch_system_by_machine_id()
         if not system:
+            if machine_id_exists() or os.path.exists(constants.registered_files[0]) or os.path.exists(constants.registered_files[1]):
+                logger.error('Could not update display name. Registration files exist locally, but system was not found in Inventory. '
+                             'Unregister the system first and then register it again.')
             return system
         inventory_id = system[0]['id']
 
@@ -1064,6 +1073,9 @@ class InsightsConnection(object):
         '''
         system = self._fetch_system_by_machine_id()
         if not system:
+            if machine_id_exists() or os.path.exists(constants.registered_files[0]) or os.path.exists(constants.registered_files[1]):
+                logger.error('Could not update Ansible hostname. Registration files exist locally, but system was not found in Inventory. '
+                             'Unregister the system first and then register it again.')
             return system
         inventory_id = system[0]['id']
 
