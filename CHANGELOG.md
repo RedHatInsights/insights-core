@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.4) (2025-02-13)
+
+- refactor: split spec_cleaner to multiple sub-modules ([PR 4324](https://github.com/RedHatInsights/insights-core/pull/4324))
+
 # [insights-core-3.5.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.3) (2025-02-06)
 
 - fix: remove /dev, /boot and /sys/firmware from ls_lanR ([PR 4347](https://github.com/RedHatInsights/insights-core/pull/4347))

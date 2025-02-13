@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.3
+Version:        3.5.4
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 13 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.4-1
+- refactor: split spec_cleaner to multiple sub-modules (#4324)
+  (xiangceliu@redhat.com)
+
 * Thu Feb 06 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.3-1
 - fix: remove /dev, /boot and /sys/firmware from ls_lanR (#4347)
   (xiangceliu@redhat.com)
