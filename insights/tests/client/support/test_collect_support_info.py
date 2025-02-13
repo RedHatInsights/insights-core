@@ -3,6 +3,7 @@
 from insights.client.config import InsightsConfig
 from insights.client.connection import InsightsConnection
 from insights.client.support import InsightsSupport, registration_check
+from insights.client.constants import InsightsConstants as constants
 from mock.mock import Mock, patch
 
 
@@ -110,6 +111,22 @@ def test_registration_check_registered_unreach(_, __):
     conn.api_registration_check = Mock(return_value=None)
     assert registration_check(conn) is None
     conn.api_registration_check.assert_called_once()
+
+
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+@patch("insights.client.connection.InsightsConnection.api_registration_check", return_value=False)
+@patch("insights.client.support.machine_id_exists", return_value=True)
+@patch("os.path.exists", side_effect=lambda path: path == constants.registered_files[0])
+def test_registration_check_registered_no_inventory(mock_os_path_exists, machine_id_exists, api_registration_check, get_proxies, _init_session):
+    '''
+    Test the registration check function when the system does not exist in Inventory,
+    but the machine-id and .registered files are present locally on the system.
+    '''
+    config = Mock(base_url=None, legacy_upload=False)
+    conn = InsightsConnection(config)
+    check = registration_check(conn)
+    assert check is True
 
 
 @patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
