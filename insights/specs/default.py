@@ -633,6 +633,9 @@ class DefaultSpecs(Specs):
     ntpq_pn = simple_command("/usr/sbin/ntpq -pn")
     numa_cpus = glob_file("/sys/devices/system/node/node[0-9]*/cpulist")
     numeric_user_group_name = simple_command("/bin/grep -c '^[[:digit:]]' /etc/passwd /etc/group")
+    nvidia_smi_active_clocks_event_reasons = simple_command(
+        "/usr/bin/nvidia-smi --query-gpu=name,clocks_event_reasons.active --format=csv,noheader"
+    )
     nvidia_smi_l = simple_command("/usr/bin/nvidia-smi -L")
     nvme_core_io_timeout = simple_file("/sys/module/nvme_core/parameters/io_timeout")
     od_cpu_dma_latency = simple_command("/usr/bin/od -An -t d /dev/cpu_dma_latency")
