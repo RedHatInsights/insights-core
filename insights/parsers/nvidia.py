@@ -16,16 +16,18 @@ from insights.specs import Specs
 
 # Refer to the following doc for the detailed bitmask of active clock event reasons:
 # - https://docs.nvidia.com/deploy/nvml-api/group__nvmlClocksEventReasons.html
-NONE = 0x0000000000000000
-GPU_IDLE = 0x0000000000000001
-APPLICATIONS_CLOCKS_SETTING = 0x0000000000000002
-SW_POWER_CAP = 0x0000000000000004
-HW_SLOWDOWN = 0x0000000000000008
-SYNC_BOOST = 0x0000000000000010
-SW_THERMAL_SLOWDOWN = 0x0000000000000020
-HW_THERMAL_SLOWDOWN = 0x0000000000000040
-HW_POWER_BRAKE_SLOWDOWN = 0x0000000000000080
-DISPLAY_CLOCK_SETTING = 0x0000000000000100
+BITMASK = {
+    "none": 0x0000000000000000,
+    "gpu_idle": 0x0000000000000001,
+    "applications_clocks_setting": 0x0000000000000002,
+    "sw_power_cap": 0x0000000000000004,
+    "hw_slowdown": 0x0000000000000008,
+    "sync_boost": 0x0000000000000010,
+    "sw_thermal_slowdown": 0x0000000000000020,
+    "hw_thermal_slowdown": 0x0000000000000040,
+    "hw_power_brake_slowdown": 0x0000000000000080,
+    "display_clock_setting": 0x0000000000000100,
+}
 
 
 @parser(Specs.nvidia_smi_l)
@@ -145,21 +147,11 @@ class NvidiaSmiActiveClocksEventReasons(Parser, list):
                     "Not an expected command output for active clocks event reasons: %s" % line
                 )
             bitmask = int(items[1].strip().strip("LL"), 16)
-            self.append(
-                {
-                    "gpu_name": items[0].strip(),
-                    "applications_clocks_setting": APPLICATIONS_CLOCKS_SETTING & bitmask
-                    == APPLICATIONS_CLOCKS_SETTING,
-                    "display_clock_setting": DISPLAY_CLOCK_SETTING & bitmask
-                    == DISPLAY_CLOCK_SETTING,
-                    "gpu_idle": GPU_IDLE & bitmask == GPU_IDLE,
-                    "none": NONE | bitmask == NONE,
-                    "sw_power_cap": SW_POWER_CAP & bitmask == SW_POWER_CAP,
-                    "sw_thermal_slowdown": SW_THERMAL_SLOWDOWN & bitmask == SW_THERMAL_SLOWDOWN,
-                    "sync_boosst": SYNC_BOOST & bitmask == SYNC_BOOST,
-                    "hw_power_brake_slowdown": HW_POWER_BRAKE_SLOWDOWN & bitmask
-                    == HW_POWER_BRAKE_SLOWDOWN,
-                    "hw_slowdown": HW_SLOWDOWN & bitmask == HW_SLOWDOWN,
-                    "hw_thermal_slowdown": HW_THERMAL_SLOWDOWN & bitmask == HW_THERMAL_SLOWDOWN,
-                }
-            )
+
+            data = dict(gpu_name=items[0].strip())
+            for key, bm in BITMASK.items():
+                if key == "none":
+                    data[key] = bm | bitmask == bm
+                else:
+                    data[key] = bm & bitmask == bm
+            self.append(data)
