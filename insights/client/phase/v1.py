@@ -106,10 +106,7 @@ def pre_update(client, config):
         sys.exit(constants.sig_kill_ok)
 
     if config.diagnosis:
-        remediation_id = None
-        if config.diagnosis is not True:
-            remediation_id = config.diagnosis
-        resp = client.get_diagnosis(remediation_id)
+        resp = client.get_diagnosis()
         if not resp:
             sys.exit(constants.sig_kill_bad)
         print(json.dumps(resp))

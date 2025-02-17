@@ -518,7 +518,7 @@ class InsightsClient(object):
         return self.connection.set_ansible_host(ansible_host)
 
     @_net
-    def get_diagnosis(self, remediation_id=None):
+    def get_diagnosis(self):
         '''
             returns JSON of diagnosis data on success, None on failure
             Optional arg remediation_id to get a particular remediation set.
@@ -526,7 +526,7 @@ class InsightsClient(object):
         if self.config.offline:
             logger.error('Cannot get diagnosis in offline mode.')
             return None
-        return self.connection.get_diagnosis(remediation_id)
+        return self.connection.get_diagnosis()
 
     def delete_cached_branch_info(self):
         '''
