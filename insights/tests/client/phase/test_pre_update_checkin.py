@@ -22,8 +22,9 @@ def patch_insights_config(old_function):
 
 
 @patch("insights.client.phase.v1.InsightsClient", **{"return_value.checkin.return_value": True})
+@patch("insights.client.phase.v1._get_rhsm_identity", **{"return_value": True})
 @patch_insights_config
-def test_checkin_success(insights_config, insights_client):
+def test_checkin_success(insights_config, _get_rhsm_identity, insights_client):
     """
     InsightsSupport is constructed with InsightsConfig and collect_support_info is called.
     """
@@ -35,8 +36,9 @@ def test_checkin_success(insights_config, insights_client):
 
 
 @patch("insights.client.phase.v1.InsightsClient", **{"return_value.checkin.return_value": False})
+@patch("insights.client.phase.v1._get_rhsm_identity", **{"return_value": True})
 @patch_insights_config
-def test_checkin_failure(insights_config, insights_client):
+def test_checkin_failure(insights_config, _get_rhsm_identity, insights_client):
     """
     Support collection replaces the normal client run.
     """
