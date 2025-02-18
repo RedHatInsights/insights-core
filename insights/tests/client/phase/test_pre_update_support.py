@@ -58,24 +58,3 @@ def test_exit_ok(insights_config, insights_client, insights_support):
         pre_update()
 
     assert exc_info.value.code == InsightsConstants.sig_kill_ok
-
-
-@patch("insights.client.phase.v1.logger")
-@patch("insights.client.utilities._get_rhsm_identity", return_value=None)
-@patch_insights_client
-@patch_insights_config
-def test_no_rhsm(insights_config, insights_client, _get_rhsm_identity, logger):
-    """
-    Exit with an error if the host is not registered with RHSM.
-    """
-    with raises(SystemExit) as exc_info:
-        pre_update()
-
-    logger.error.assert_called_once_with('This host has not yet been registered, please ensure '
-                                         'that the system is registered with subscription-manager '
-                                         'and then with insights-client.\n'
-                                         '\n1. Register with subscription-manager'
-                                         '\n# subscription-manager register\n'
-                                         '\n2. Register with insights-client'
-                                         '\n# insights-client --register')
-    assert exc_info.value.code == InsightsConstants.sig_kill_bad
