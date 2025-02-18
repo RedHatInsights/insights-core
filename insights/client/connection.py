@@ -1142,9 +1142,7 @@ class InsightsConnection(object):
         logger.info("Checking in...")
 
         if not self._fetch_system_by_machine_id():
-            logger.error("This host is not registered. "
-                         "Use --register to register this host.\n"
-                         "# insights-client --register")
+            logger.error("This host is not registered. To register, run 'insights-client --register'.")
             return False
 
         try:
