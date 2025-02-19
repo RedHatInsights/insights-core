@@ -384,6 +384,7 @@ class Specs(SpecSet):
     # Useful individual `ls` Specs
     ls_boot = RegistryPoint()
     ls_dev = RegistryPoint()
+    ls_rsyslog_errorfile = RegistryPoint()
     ls_sys_firmware = RegistryPoint()
     # ^ End of ls
     lsattr = RegistryPoint(no_obfuscate=['hostname', 'ip'])
