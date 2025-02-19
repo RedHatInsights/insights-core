@@ -20,12 +20,12 @@ FILEFRAG_CONTENT_ERROR2 = """
 """.strip()
 
 
-def test_wc_proc_1_mountinfo():
+def test_filefrag():
     results = Filefrag(context_wrap(FILEFRAG_CONTENT))
     assert results['/boot/grub2/grubenv'] == 1
 
 
-def test_wc_proc_1_mountinfo_errors():
+def test_filefrag_errors():
     with pytest.raises(SkipComponent) as ex:
         Filefrag(context_wrap(FILEFRAG_CONTENT_ERROR))
         assert FILEFRAG_CONTENT_ERROR in str(ex)

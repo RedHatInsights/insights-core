@@ -1,11 +1,11 @@
 """
-Filefrag - Command ``/sbin/filefrag /boot/grub2/grubenv``
-=========================================================
+Filefrag - Command ``/sbin/filefrag <specified file>``
+======================================================
 
-Parser for parsing the output of command ``/sbin/filefrag /boot/grub2/grubenv``.
+Parser for parsing the output of command ``/sbin/filefrag <specified file>``.
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -34,7 +34,9 @@ class Filefrag(Parser, dict):
         if len(content) == 0 or (len(content) == 1 and 'No such file or directory' in content[0]):
             raise SkipComponent("Error: ", content[0] if content else 'empty file')
         for line in content:
-            file = line.split()[0].strip(':')
-            extents = line.split()[1]
-            if extents.isdigit():
-                self[file] = int(extents)
+            split_list = line.split()
+            if (not len(split_list) < 2) or 'No such file or directory' in line:
+                file = split_list[0].strip(':')
+                extents = split_list[1]
+                if extents.isdigit():
+                    self[file] = int(extents)
