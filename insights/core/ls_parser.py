@@ -171,8 +171,9 @@ class Directory(dict):
                     # selinux stanza. This assumes that the context section will
                     # always have at least two pieces separated by ':'.
                     # '?' as the whole RHEL8 security context is also acceptable.
-                    rhel8_selinux_ctx = rest.split()[0]
-                    if ":" in rhel8_selinux_ctx or '?' == rhel8_selinux_ctx.strip():
+                    # substring to index of space is faster than strip
+                    rhel8_selinux_ctx = rest[:rest.index(" ")]
+                    if ":" in rhel8_selinux_ctx or '?' == rhel8_selinux_ctx:
                         # unconfined_u:object_r:var_lib_t:s0 54 Apr  8 16:41 abcd-efgh-ijkl-mnop
                         mode = 'rhel8_selinux'
                     else:
