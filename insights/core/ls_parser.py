@@ -147,7 +147,7 @@ class Directory(dict):
         ents = {}
         files = []
         specials = []
-        mode = None
+        parser = None
         for line in body:
             # we can't split(None, 5) here b/c rhel 6/7 selinux lines only have
             # 4 parts before the path, and the path itself could contain
@@ -165,7 +165,7 @@ class Directory(dict):
                 "dir": dirname,
             }
             # determine mode once per directory
-            if mode is None:
+            if parser is None:
                 if links[0].isdigit():
                     # We have to split the line again to see if this is a RHEL8
                     # selinux stanza. This assumes that the context section will
@@ -175,16 +175,16 @@ class Directory(dict):
                     rhel8_selinux_ctx = rest[:rest.index(" ")]
                     if ":" in rhel8_selinux_ctx or '?' == rhel8_selinux_ctx:
                         # unconfined_u:object_r:var_lib_t:s0 54 Apr  8 16:41 abcd-efgh-ijkl-mnop
-                        mode = 'rhel8_selinux'
+                        parser = parse_mode['rhel8_selinux']
                     else:
                         # crw-------.  1 0 0 10,  236 Jul 25 10:00 control
                         # lrwxrwxrwx.  1 0 0       11 Aug  4  2014 menu.lst -> ./grub.conf
-                        mode = 'normal'
+                        parser = parse_mode['normal']
                 else:
                     # -rw-r--r--. root root system_u:object_r:boot_t:s0      config-3.10.0-267
-                    mode = 'selinux'
+                    parser = parse_mode['selinux']
             # Now parse based on mode
-            rest = parse_mode[mode](entry, links, owner, group, rest)
+            rest = parser(entry, links, owner, group, rest)
 
             # final details
             entry["raw_entry"] = line
