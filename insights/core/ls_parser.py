@@ -184,19 +184,19 @@ class Directory(dict):
                     # -rw-r--r--. root root system_u:object_r:boot_t:s0      config-3.10.0-267
                     parser = parse_mode['selinux']
             # Now parse based on mode
-            rest = parser(entry, links, owner, group, rest)
+            parser(entry, links, owner, group, rest)
 
             # final details
             entry["raw_entry"] = line
 
             nm = entry["name"]
             ents[nm] = entry
-            if typ not in "bcd":
-                files.append(nm)
-            elif typ == "d":
+            if typ == "d":
                 dirs.append(nm)
-            elif typ in "bc":
+            elif typ in "bc":  # faster than typ == "b" or typ == "c"
                 specials.append(nm)
+            else:
+                files.append(nm)
 
         super(Directory, self).__init__(
                 {
