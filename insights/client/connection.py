@@ -1079,19 +1079,15 @@ class InsightsConnection(object):
         logger.info('Ansible hostname updated to ' + ansible_host + '.')
         return True
 
-    def get_diagnosis(self, remediation_id=None):
+    def get_diagnosis(self):
         '''
             Reach out to the platform and fetch a diagnosis.
             Spirtual successor to --to-json from the old client.
         '''
         # this uses machine id as identifier instead of inventory id
         diag_url = self.base_url + '/remediations/v1/diagnosis/' + generate_machine_id()
-        params = {}
-        if remediation_id:
-            # validate this?
-            params['remediation'] = remediation_id
         try:
-            res = self.get(diag_url, params=params)
+            res = self.get(diag_url)
         except (requests.ConnectionError, requests.Timeout) as e:
             _api_request_failed(e)
             return False
