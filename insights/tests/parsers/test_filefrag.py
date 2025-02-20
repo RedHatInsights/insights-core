@@ -28,12 +28,12 @@ def test_filefrag_1():
 
 
 def test_filefrag_errors_1():
-    with pytest.raises(SkipComponent) as ex:
+    with pytest.raises(SkipComponent):
         Filefrag(context_wrap(FILEFRAG_CONTENT_NO_FILE))
 
 
 def test_filefrag_errors_2():
-    with pytest.raises(SkipComponent) as ex:
+    with pytest.raises(SkipComponent):
         Filefrag(context_wrap(FILEFRAG_CONTENT_ERROR))
 
 
