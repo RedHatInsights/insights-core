@@ -35,7 +35,7 @@ import six
 
 from insights.cleaner.filters import AllowFilter
 from insights.cleaner.hostname import Hostname
-from insights.cleaner.ip import IPv4  # IPv6
+from insights.cleaner.ip import IPv4, IPv6
 from insights.cleaner.keyword import Keyword
 
 # from insights.cleaner.mac import Mac
@@ -92,8 +92,8 @@ class Cleaner(object):
         if config and config.obfuscate:
             # - IPv4 obfuscation
             self.obfuscate.update(ip=IPv4())
-            # # - IPv6 obfuscation
-            # self.obfuscate.update(ipv6=IPv6()) if config.obfuscate_ipv6 else None
+            # - IPv6 obfuscation
+            self.obfuscate.update(ipv6=IPv6()) if config.obfuscate_ipv6 else None
             # - Hostname obfuscation
             (
                 self.obfuscate.update(hostname=Hostname(self.fqdn))
@@ -211,14 +211,17 @@ class Cleaner(object):
         ipv4 = self.obfuscate.get('ip')
         ipv4_mapping = ipv4.mapping() if ipv4 else []
 
+        ipv6 = self.obfuscate.get('ipv6')
+        ipv6_mapping = ipv6.mapping() if ipv6 else []
+
         facts = {
             'insights_client.hostname': self.fqdn,
             'insights_client.obfuscate_ip_enabled': 'ip' in self.obfuscate,
-            # 'insights_client.obfuscate_ipv6_enabled': 'ipv6' in self.obfuscate,
+            'insights_client.obfuscate_ipv6_enabled': 'ipv6' in self.obfuscate,
             # 'insights_client.obfuscate_mac_enabled': 'mac' in self.obfuscate,
             'insights_client.obfuscate_hostname_enabled': 'hostname' in self.obfuscate,
             'insights_client.obfuscated_ipv4': json.dumps(ipv4_mapping),
-            # 'insights_client.obfuscated_ipv6': json.dumps(),
+            'insights_client.obfuscated_ipv6': json.dumps(ipv6_mapping),
             # 'insights_client.obfuscated_mac': json.dumps(),
             'insights_client.obfuscated_keyword': json.dumps(kw_mapping),
             'insights_client.obfuscated_hostname': json.dumps(hn_mapping),

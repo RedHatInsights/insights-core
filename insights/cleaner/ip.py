@@ -11,9 +11,11 @@ IPv6 Obfuscation
 
 """
 
+import hashlib
 import logging
 import os
 import re
+import six
 import socket
 import struct
 
@@ -32,6 +34,8 @@ class IPv4(object):
         self._ip_db = dict()  # IP database
         self._start_ip = '10.230.230.1'
         self._ignore_list = ["127.0.0.1"]
+        # self.pattern = r'((?<!(\.|\d))([0-9]{1,3}\.){3}([0-9]){1,3}(\/([0-9]{1,2}))?)'
+        self.pattern = r"(((\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
 
     def _ip2int(self, ipstr):
         # converts a dotted decimal IP address into an integer that can be incremented
@@ -114,8 +118,7 @@ class IPv4(object):
         if not line:
             return line
         try:
-            pattern = r"(((\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
-            ips = [each[0] for each in re.findall(pattern, line)]
+            ips = [each[0] for each in re.findall(self.pattern, line)]
             if len(ips) > 0:
                 for ip in sorted(ips, key=len, reverse=True):
                     if ip not in self._ignore_list and ip in line:
@@ -150,10 +153,94 @@ class IPv4(object):
         logger.info('Completed IP Report.')
 
 
-# TODO
 class IPv6(object):
     """
     Class for obfuscating IPv6.
     """
 
-    pass
+    def __init__(self):
+        self._ipv6_db = dict()  # IPv6 database
+        # Ignore list for IPv6
+        self._ignore_list = [r'(?<=\s)::1(?=\s|/|$)']  # ::1
+        # IPv6 pattern, stolen from sos
+        self.pattern = (
+            r"(?<![:\\.\\-a-z0-9])((([0-9a-f]{1,4})(:[0-9a-f]{1,4}){7})|"
+            r"(([0-9a-f]{1,4}(:[0-9a-f]{0,4}){0,5}))([^.])::(([0-9a-f]{1,4}"
+            r"(:[0-9a-f]{1,4}){0,5})?))(/\d{1,3})?(?![:\\a-z0-9])"
+        )
+
+    def _ip2db(self, ip):
+        '''
+        Add an IPv6 address to IPv6 database and return obfuscated address.
+
+        FORMAT:
+        {$original_ip:, $obfuscated_ip}
+        '''
+
+        def obfuscate_hex(_hex):
+            if _hex:
+                n_0_hex = _hex.lstrip('0')
+                if n_0_hex:
+                    old_hex = n_0_hex.encode('utf-8') if six.PY3 else n_0_hex
+                    new_hex = hashlib.sha1(old_hex).hexdigest()[: len(old_hex)]
+                    return '0' * (len(_hex) - len(n_0_hex)) + new_hex
+                return '0' * len(_hex)
+            return ''
+
+        try:
+            if ip in self._ipv6_db:
+                return self._ipv6_db[ip]
+            if ip in self._ipv6_db.values():  # pragma: no cover
+                # avoid nested obfuscating
+                return None
+            self._ipv6_db[ip] = ':'.join(obfuscate_hex(h) for h in ip.split(':'))
+            return self._ipv6_db[ip]
+        except Exception as e:  # pragma: no cover
+            logger.warning(e)
+            raise Exception('SubIPv6Error: Unable to Substitute IPv6 Address - %s', ip)
+
+    def parse_line(self, line, **kwargs):
+
+        def _sub_ip(line, ip):
+            new_ip = self._ip2db(ip)
+            if new_ip:
+                logger.debug("Obfuscating IPv6 - %s > %s", ip, new_ip)
+                return line.replace(ip, new_ip)
+            # it's an obfuscated IP
+            return line
+
+        if not line:
+            return line
+        try:
+            ips = [each[0] for each in re.findall(self.pattern, line, re.I)]
+            if ips:
+                for ip in sorted(ips, key=len, reverse=True):
+                    for skip in self._ignore_list:
+                        if re.findall(skip, ip, re.I):
+                            continue
+                        line = _sub_ip(line, ip)
+            return line
+        except Exception as e:  # pragma: no cover
+            logger.warning(e)
+            raise Exception('SubIPv6Error: Unable to Substitute IPv6 Address - %s', ips)
+
+    def mapping(self):
+        mapping = []
+        for k, v in self._ipv6_db.items():
+            mapping.append({'original': k, 'obfuscated': v})
+        return mapping
+
+    def generate_report(self, report_dir, archive_name):
+        try:
+            ip_report_file = os.path.join(report_dir, "%s-ipv6.csv" % archive_name)
+            logger.info('Creating IPv6 Report - %s', ip_report_file)
+            lines = ['Obfuscated IPv6,Original IPv6']
+            for k, v in self._ipv6_db.items():
+                lines.append('{0},{1}'.format(v, k))
+        except Exception as e:  # pragma: no cover
+            logger.exception(e)
+            raise Exception('CreateReport Error: Error Creating IPv6 Report')
+
+        write_report(lines, ip_report_file)
+
+        logger.info('Completed IPv6 Report.')
