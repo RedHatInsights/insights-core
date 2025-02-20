@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.4
+Version:        3.5.5
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,17 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 20 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.5-1
+- FEAT: Add new parser FilefragGrubenv (#4351) (986222045@qq.com)
+- fix: add oracle cloud to CloudProvider combiner (#4349)
+  (xiangceliu@redhat.com)
+- Bug: Re-adding 'ls_rsyslog_errorfile = RegistryPoint()' (#4358)
+  (lhuett@users.noreply.github.com)
+- Bug: Removing "insights.specs.must_gather_archive.py(#4357)
+  (lhuett@users.noreply.github.com)
+- feat: Add new parser NvidiaSmiActiveClocksEventReasons (#4353)
+  (30404410+qinpingli@users.noreply.github.com)
+
 * Thu Feb 13 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.4-1
 - refactor: split spec_cleaner to multiple sub-modules (#4324)
   (xiangceliu@redhat.com)

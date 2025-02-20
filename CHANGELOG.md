@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.5) (2025-02-20)
+
+- FEAT: Add new parser FilefragGrubenv ([PR 4351](https://github.com/RedHatInsights/insights-core/pull/4351))
+- fix: add oracle cloud to CloudProvider combiner ([PR 4349](https://github.com/RedHatInsights/insights-core/pull/4349))
+- Bug: Re-adding 'ls_rsyslog_errorfile = RegistryPoint()' ([PR 4358](https://github.com/RedHatInsights/insights-core/pull/4358))
+- Bug: Removing "insights.specs.must_gather_archive.py([PR 4357](https://github.com/RedHatInsights/insights-core/pull/4357))
+- feat: Add new parser NvidiaSmiActiveClocksEventReasons ([PR 4353](https://github.com/RedHatInsights/insights-core/pull/4353))
+
 # [insights-core-3.5.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.4) (2025-02-13)
 
 - refactor: split spec_cleaner to multiple sub-modules ([PR 4324](https://github.com/RedHatInsights/insights-core/pull/4324))
