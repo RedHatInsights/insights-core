@@ -30,13 +30,11 @@ def test_filefrag_1():
 def test_filefrag_errors_1():
     with pytest.raises(SkipComponent) as ex:
         Filefrag(context_wrap(FILEFRAG_CONTENT_NO_FILE))
-        assert FILEFRAG_CONTENT_NO_FILE in str(ex)
 
 
 def test_filefrag_errors_2():
     with pytest.raises(SkipComponent) as ex:
         Filefrag(context_wrap(FILEFRAG_CONTENT_ERROR))
-        assert FILEFRAG_CONTENT_ERROR in str(ex)
 
 
 def test_doc_examples():
