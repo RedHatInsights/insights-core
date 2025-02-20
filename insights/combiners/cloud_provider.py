@@ -37,6 +37,7 @@ Examples:
     True
 
 """
+
 from insights.core.filters import add_filter
 from insights.core.plugins import combiner
 from insights.parsers.installed_rpms import InstalledRpms
@@ -78,6 +79,7 @@ class CloudProviderInstance(object):
             this cloud provider.
 
     """
+
     def __init__(self, rpms=None, dmidcd=None, yum_repos=None, rhsm_cfg=None):
         self._rpms = rpms
         self._dmidcd = dmidcd
@@ -100,27 +102,29 @@ class CloudProviderInstance(object):
         self.cp_rhsm_server_hostname = ''
 
     def _get_cp_bios_vendor(self, vendor_version):
-        """ str: Returns BIOS vendor string if it matches ``vendor_version`` """
+        """str: Returns BIOS vendor string if it matches ``vendor_version``"""
         vendor = ''
         if self._dmidcd and self._dmidcd.bios:
             vendor = (
                 self._dmidcd.bios.get('vendor')
-                if vendor_version and vendor_version in self._dmidcd.bios.get('vendor', '').lower() else ''
+                if vendor_version and vendor_version in self._dmidcd.bios.get('vendor', '').lower()
+                else ''
             )
         return vendor
 
     def _get_cp_bios_version(self, vendor_version):
-        """ str: Returns BIOS version string if it matches ``vendor_version`` """
+        """str: Returns BIOS version string if it matches ``vendor_version``"""
         version = ''
         if self._dmidcd and self._dmidcd.bios:
             version = (
                 self._dmidcd.bios.get('version')
-                if vendor_version and vendor_version in self._dmidcd.bios.get('version', '').lower() else ''
+                if vendor_version and vendor_version in self._dmidcd.bios.get('version', '').lower()
+                else ''
             )
         return version
 
     def _get_rpm_cp_info(self, rpm):
-        """ list: Returns list of RPMs matching ``rpm`` """
+        """list: Returns list of RPMs matching ``rpm``"""
         found_rpms = []
         if self._rpms:
             for key, val in self._rpms.packages.items():
@@ -130,17 +134,18 @@ class CloudProviderInstance(object):
         return found_rpms
 
     def _get_cp_from_manuf(self, manuf):
-        """ str: Returns manufacturer string if it matches ``manuf`` """
+        """str: Returns manufacturer string if it matches ``manuf``"""
         manufacturer = ''
         if self._dmidcd and self._dmidcd.system_info:
             manufacturer = (
                 self._dmidcd.system_info.get('manufacturer')
-                if manuf == self._dmidcd.system_info.get('manufacturer', '').lower() else ''
+                if manuf == self._dmidcd.system_info.get('manufacturer', '').lower()
+                else ''
             )
         return manufacturer
 
     def _get_cp_from_yum(self, repo_name):
-        """ list: Returns list of Yum repos matching ``repo_name`` """
+        """list: Returns list of Yum repos matching ``repo_name``"""
         found_repos = []
         if self._yum_repos and hasattr(self._yum_repos, 'data'):
             found_repos = [
@@ -151,7 +156,7 @@ class CloudProviderInstance(object):
         return found_repos
 
     def _get_cp_from_rhsm_conf(self, rhsm_server_hostname):
-        """ str: Returns rhsm server hostname string if it matches ``rhsm_server_hostname`` """
+        """str: Returns rhsm server hostname string if it matches ``rhsm_server_hostname``"""
         server_hostname = ''
         if self._rhsm_cfg and 'server' in self._rhsm_cfg and 'hostname' in self._rhsm_cfg['server']:
             hostname = self._rhsm_cfg.get('server', 'hostname')
@@ -160,32 +165,38 @@ class CloudProviderInstance(object):
         return server_hostname
 
     def _get_cp_from_asset_tag(self, asset_tag):
-        """ str: Returns asset tag string if it matches ``asset_tag`` """
+        """str: Returns asset tag string if it matches ``asset_tag``"""
         tag = ''
         if self._dmidcd and hasattr(self._dmidcd, 'data'):
             ch_info = self._dmidcd.data.get('chassis_information', [])
             if ch_info:
-                tag = ch_info[0].get('asset_tag') if asset_tag and asset_tag == ch_info[0].get('asset_tag', '') else ''
+                tag = (
+                    ch_info[0].get('asset_tag')
+                    if asset_tag and asset_tag == ch_info[0].get('asset_tag', '')
+                    else ''
+                )
         return tag
 
     def _get_cp_from_uuid(self, uuid):
-        """ str: Returns UUID string if it matches ``uuid`` """
+        """str: Returns UUID string if it matches ``uuid``"""
         found_uuid = ''
         if self._dmidcd and self._dmidcd.system_info:
             found_uuid = (
                 self._dmidcd.system_info.get('uuid')
-                if uuid and self._dmidcd.system_info.get('uuid', '').lower().strip().startswith(uuid) else ''
+                if uuid
+                and self._dmidcd.system_info.get('uuid', '').lower().strip().startswith(uuid)
+                else ''
             )
         return found_uuid
 
     @property
     def name(self):
-        """ str: Short cloud provider class name or ID """
+        """str: Short cloud provider class name or ID"""
         return self._NAME
 
     @property
     def long_name(self):
-        """ str: Long cloud provider name """
+        """str: Long cloud provider name"""
         return self._LONG_NAME
 
 
@@ -195,6 +206,7 @@ class GoogleCloudProvider(CloudProviderInstance):
 
     Google CP can be identified by RPM and BIOS vendor/version
     """
+
     _NAME = 'gcp'
     _LONG_NAME = 'Google Cloud Platform'
 
@@ -213,6 +225,7 @@ class AlibabaCloudProvider(CloudProviderInstance):
 
     Alibaba CP can be identified by manufacturer
     """
+
     _NAME = 'alibaba'
     _LONG_NAME = 'Alibaba Cloud'
 
@@ -229,6 +242,7 @@ class AmazonCloudProvider(CloudProviderInstance):
     Amazon CP can be identified by RPM, BIOS verndor/version,
     and system UUID
     """
+
     _NAME = 'aws'
     _LONG_NAME = 'Amazon Web Services'
 
@@ -251,6 +265,7 @@ class AzureCloudProvider(CloudProviderInstance):
 
     Azure CP can be identified by RPM, Yum repo, and system asset tag
     """
+
     _NAME = 'azure'
     _LONG_NAME = 'Microsoft Azure'
 
@@ -270,6 +285,7 @@ class IBMCloudProvider(CloudProviderInstance):
 
     IBM CP can be identified by rhsm.conf server hostname setting
     """
+
     _NAME = 'ibm'
     _LONG_NAME = 'IBM Cloud'
 
@@ -279,6 +295,22 @@ class IBMCloudProvider(CloudProviderInstance):
         self.cp_rpms = self._get_rpm_cp_info(self.rpm)
         self.cp_yum = self._get_cp_from_yum(self.yum)
         self.cp_rhsm_server_hostname = self._get_cp_from_rhsm_conf(self.rhsm_server_hostname)
+
+
+class OracleCloudProvider(CloudProviderInstance):
+    """
+    Class to identify Oracle Cloud provider
+
+    Oracle CP can be identified by RPM for now.
+    """
+
+    _NAME = 'oci'
+    _LONG_NAME = 'Oracle Cloud Infrastructure'
+
+    def __init__(self, *args, **kwargs):
+        super(OracleCloudProvider, self).__init__(*args, **kwargs)
+        self.rpm = 'oracle-cloud-agent'
+        self.cp_rpms = self._get_rpm_cp_info(self.rpm)
 
 
 @combiner([InstalledRpms, DMIDecode, YumRepoList, RHSMConf])
@@ -313,6 +345,7 @@ class CloudProvider(object):
         cloud_provider (str): String representing the cloud provider that was detected.
             If none are detected then it will have the default value `None`.
     """
+
     ALIBABA = AlibabaCloudProvider._NAME
     """Alibaba Cloud Provider short name"""
 
@@ -328,6 +361,9 @@ class CloudProvider(object):
     IBM = IBMCloudProvider._NAME
     """IBM Cloud Provider short name"""
 
+    ORACLE = OracleCloudProvider._NAME
+    """Oracle Cloud Provider short name"""
+
     # Add any new cloud provider classes to this list
     _CLOUD_PROVIDER_CLASSES = [
         GoogleCloudProvider,
@@ -335,21 +371,32 @@ class CloudProvider(object):
         AmazonCloudProvider,
         AzureCloudProvider,
         IBMCloudProvider,
+        OracleCloudProvider,
     ]
 
     def __init__(self, rpms, dmidcd, yrl, rhsm_cfg):
-        self._cp_objects = dict([
-            (cls._NAME, cls(rpms=rpms, dmidcd=dmidcd, yum_repos=yrl, rhsm_cfg=rhsm_cfg))
-            for cls in self._CLOUD_PROVIDER_CLASSES
-        ])
-        self.cp_bios_vendor = dict([(name, cp.cp_bios_vendor) for name, cp in self._cp_objects.items()])
-        self.cp_bios_version = dict([(name, cp.cp_bios_version) for name, cp in self._cp_objects.items()])
+        self._cp_objects = dict(
+            [
+                (cls._NAME, cls(rpms=rpms, dmidcd=dmidcd, yum_repos=yrl, rhsm_cfg=rhsm_cfg))
+                for cls in self._CLOUD_PROVIDER_CLASSES
+            ]
+        )
+        self.cp_bios_vendor = dict(
+            [(name, cp.cp_bios_vendor) for name, cp in self._cp_objects.items()]
+        )
+        self.cp_bios_version = dict(
+            [(name, cp.cp_bios_version) for name, cp in self._cp_objects.items()]
+        )
         self.cp_rpms = dict([(name, cp.cp_rpms) for name, cp in self._cp_objects.items()])
         self.cp_yum = dict([(name, cp.cp_yum) for name, cp in self._cp_objects.items()])
         self.cp_asset_tag = dict([(name, cp.cp_asset_tag) for name, cp in self._cp_objects.items()])
         self.cp_uuid = dict([(name, cp.cp_uuid) for name, cp in self._cp_objects.items()])
-        self.cp_manufacturer = dict([(name, cp.cp_manufacturer) for name, cp in self._cp_objects.items()])
-        self.cp_rhsm_server_hostname = dict([(name, cp.cp_rhsm_server_hostname) for name, cp in self._cp_objects.items()])
+        self.cp_manufacturer = dict(
+            [(name, cp.cp_manufacturer) for name, cp in self._cp_objects.items()]
+        )
+        self.cp_rhsm_server_hostname = dict(
+            [(name, cp.cp_rhsm_server_hostname) for name, cp in self._cp_objects.items()]
+        )
         self.cloud_provider = self._select_provider()
 
     def _select_provider(self):
@@ -386,6 +433,8 @@ class CloudProvider(object):
             return self.GOOGLE
         elif self._cp_objects[self.AZURE].cp_rpms:
             return self.AZURE
+        elif self._cp_objects[self.ORACLE].cp_rpms:
+            return self.ORACLE
 
         # No luck, check for other attributes
         if self._cp_objects[self.AZURE].cp_yum or self._cp_objects[self.AZURE].cp_asset_tag:
@@ -404,5 +453,9 @@ class CloudProvider(object):
 
     @property
     def long_name(self):
-        """ str: Return long name for the specific cloud provider, or ``None`` if no cloud provider """
-        return self._cp_objects[self.cloud_provider].long_name if self.cloud_provider is not None else None
+        """str: Return long name for the specific cloud provider, or ``None`` if no cloud provider"""
+        return (
+            self._cp_objects[self.cloud_provider].long_name
+            if self.cloud_provider is not None
+            else None
+        )
