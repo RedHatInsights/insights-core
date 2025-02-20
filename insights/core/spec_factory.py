@@ -291,7 +291,9 @@ class TextFileProvider(FileProvider):
             return out
 
         with safe_open(self.path, "r", encoding=encoding, errors="surrogateescape") as f:
-            return [l.rstrip("\n") for l in f]
+            all_lines = [l.rstrip("\n") for l in f]
+            printable_lines = [l for l in all_lines if l.isprintable()]
+            return printable_lines
 
     def _stream(self):
         """
