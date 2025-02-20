@@ -10,6 +10,7 @@ FILEFRAG_CONTENT = """
 open: No such file or directory
 /boot/grub2/grubenv: 1 extent found
 /boot/grub2/grubenv: unknow extent found
+/boot/grub2/grubenv unknow extent found
 """.strip()
 
 FILEFRAG_CONTENT_NO_FILE = """
@@ -23,15 +24,16 @@ FILEFRAG_CONTENT_ERROR = """
 def test_filefrag_1():
     results = Filefrag(context_wrap(FILEFRAG_CONTENT))
     assert results['/boot/grub2/grubenv'] == 1
-    assert results.unparsed_lines == ['open: No such file or directory', '/boot/grub2/grubenv: unknow extent found']
+    assert results.unparsed_lines == ['/boot/grub2/grubenv: unknow extent found', '/boot/grub2/grubenv unknow extent found']
 
 
-def test_filefrag_2():
-    results = Filefrag(context_wrap(FILEFRAG_CONTENT_NO_FILE))
-    assert results.unparsed_lines == ['open: No such file or directory']
+def test_filefrag_errors_1():
+    with pytest.raises(SkipComponent) as ex:
+        Filefrag(context_wrap(FILEFRAG_CONTENT_NO_FILE))
+        assert FILEFRAG_CONTENT_NO_FILE in str(ex)
 
 
-def test_filefrag_errors():
+def test_filefrag_errors_2():
     with pytest.raises(SkipComponent) as ex:
         Filefrag(context_wrap(FILEFRAG_CONTENT_ERROR))
         assert FILEFRAG_CONTENT_ERROR in str(ex)
