@@ -18,6 +18,7 @@ class Filefrag(Parser, dict):
 
     Typical content looks like::
 
+        open: No such file or directory
         /boot/grub2/grubenv: 1 extent found
 
     Examples:
@@ -25,8 +26,8 @@ class Filefrag(Parser, dict):
         <class 'insights.parsers.filefrag.Filefrag'>
         >>> filefrag['/boot/grub2/grubenv']
         1
-        >>> filefrag.unparsed_lines[0]
-        '/boot/grub2/grubenv: unknow extent found'
+        >>> filefrag.unparsed_lines
+        []
 
     Raises:
         SkipComponent: if the command output is empty or missing file
