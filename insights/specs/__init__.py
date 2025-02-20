@@ -406,6 +406,8 @@ class Specs(SpecSet):
     ls_laRZ_dirs = RegistryPoint(filterable=True)
     ls_laZ = RegistryPoint()
     ls_laZ_dirs = RegistryPoint(filterable=True)
+    ls_file_perms = RegistryPoint()
+    ls_file_perms_files = RegistryPoint(filterable=True)
     # Useful individual `ls` Specs
     ls_boot = RegistryPoint()
     ls_dev = RegistryPoint()
