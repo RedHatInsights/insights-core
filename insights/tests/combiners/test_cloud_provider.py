@@ -35,6 +35,13 @@ gnu-free-serif-fonts-20120503-17.fc28.noarch
 WALinuxAgent-2.2.18-1.el7
 """.strip()
 
+RPMS_ORACLE = """
+gnome-terminal-3.28.2-2.fc40.x86_64
+python3-IPy-0.81-21.fc40.noarch
+gnu-free-serif-fonts-20120503-17.fc40.noarch
+oracle-cloud-agent-2.2.18-1.fc40
+""".strip()
+
 YUM_REPOLIST_AZURE = """
 Loaded plugins: enabled_repos_upload, package_upload, product-id, search-
               : disabled-repos, security, subscription-manager
@@ -621,6 +628,15 @@ def test_rpm_azure():
     assert ret.long_name == 'Microsoft Azure'
 
 
+def test_rpm_oracle():
+    irpms = IRPMS(context_wrap(RPMS_ORACLE))
+    dmi = DMIDecode(context_wrap(DMIDECODE_BARE_METAL))
+    ret = CloudProvider(irpms, dmi, None, None)
+    assert ret.cloud_provider == CloudProvider.ORACLE
+    assert ret.cp_rpms.get(CloudProvider.ORACLE)[0] == 'oracle-cloud-agent-2.2.18-1.fc40'
+    assert ret.long_name == 'Oracle Cloud Infrastructure'
+
+
 def test__yum_azure():
     irpms = IRPMS(context_wrap(RPMS))
     dmi = DMIDecode(context_wrap(DMIDECODE))
@@ -707,28 +723,21 @@ def test_docs():
         IRPMS(context_wrap(RPMS_AWS)),
         DMIDecode(context_wrap(DMIDECODE_AWS)),
         YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE)),
-        None
+        None,
     )
     cp_azure = CloudProvider(
         IRPMS(context_wrap(RPMS_AZURE)),
         DMIDecode(context_wrap(DMIDECODE_AZURE_ASSET_TAG)),
         YumRepoList(context_wrap(YUM_REPOLIST_AZURE)),
-        None
+        None,
     )
     cp_alibaba = CloudProvider(
         IRPMS(context_wrap(RPMS)),
         DMIDecode(context_wrap(DMIDECODE_ALIBABA)),
         YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE)),
-        None
+        None,
     )
-    cp_ibm = CloudProvider(
-        None, None, None, RHSMConf(context_wrap(IBM_RHSM_CONF))
-    )
-    env = {
-        'cp_aws': cp_aws,
-        'cp_azure': cp_azure,
-        'cp_alibaba': cp_alibaba,
-        'cp_ibm': cp_ibm
-    }
+    cp_ibm = CloudProvider(None, None, None, RHSMConf(context_wrap(IBM_RHSM_CONF)))
+    env = {'cp_aws': cp_aws, 'cp_azure': cp_azure, 'cp_alibaba': cp_alibaba, 'cp_ibm': cp_ibm}
     failed, total = doctest.testmod(cloud_provider, globs=env)
     assert failed == 0
