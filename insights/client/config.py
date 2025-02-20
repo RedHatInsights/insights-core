@@ -279,6 +279,10 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': False
     },
+    'obfuscate_ipv6': {
+        # non-CLI
+        'default': False
+    },
     'obfuscate_hostname': {
         # non-CLI
         'default': False
