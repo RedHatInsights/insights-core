@@ -567,17 +567,16 @@ class InsightsClient(object):
         """
         system = self.connection._fetch_system_by_machine_id()
         if system:
-            if len(system) == 1:
-                try:
-                    id = system[0]["id"]
-                    logger.info("View details about this system on console.redhat.com:")
-                    logger.info(
-                        "https://console.redhat.com/insights/inventory/{0}".format(id)
-                    )
-                except Exception as e:
-                    logger.error(
-                        "Error: malformed system record: {0}: {1}".format(system, e)
-                    )
+            try:
+                id = system["id"]
+                logger.info("View details about this system on console.redhat.com:")
+                logger.info(
+                    "https://console.redhat.com/insights/inventory/{0}".format(id)
+                )
+            except Exception as e:
+                logger.error(
+                    "Error: malformed system record: {0}: {1}".format(system, e)
+                )
 
     def copy_to_output_dir(self, insights_archive):
         '''
