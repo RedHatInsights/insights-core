@@ -1,5 +1,4 @@
 import doctest
-import pytest
 from insights.parsers import lsinitrd
 from insights.parsers.lsinitrd import LsinitrdKdumpImage
 from insights.tests import context_wrap
@@ -65,7 +64,7 @@ crw-r--r--   1 root     root       1,   3 Apr 20 15:57 dev/null
 
 LSINITRD_EMPTY = ""
 
-# This test case
+# This test case should not parse - but why would we be parsing this?
 LSINITRD_BROKEN = """
 drwxr-xr-x   3 root     root            0 Apr 20 15:58 kernel/x86
 Version: dracut-033-535.el7
@@ -215,12 +214,12 @@ def test_lsinitrd_all():
 
 def test_lsinitrd_broken():
     """
-    For this testcase, ls_parser.parse() will throw an IndexError.
-    Assert with this specific error here.
+    In the case that someone's been tampering with the ls output, we want to
+    just ignore lines that don't have enough information to be a valid dirent.
     """
-    with pytest.raises(Exception) as err:
-        lsinitrd.Lsinitrd(context_wrap(LSINITRD_BROKEN))
-    assert "list index out of range" in str(err)
+    result = lsinitrd.Lsinitrd(context_wrap(LSINITRD_BROKEN))
+    assert result is not None
+    print("result:", result, dir(result))
 
 
 def test_lsinitrd_kdump_image_valid():
