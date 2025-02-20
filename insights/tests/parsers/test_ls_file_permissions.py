@@ -1,8 +1,11 @@
 import pytest
-from insights.util.file_permissions import FilePermissions
-from insights.parsers.ls import FileListing
+from insights.core.ls_parser import FilePermissions
+from insights.parsers.ls import FileListingParser, LsFilePermissions
 from insights.tests import context_wrap
-from insights.tests.parsers import test_ls_file_listing
+from insights.tests.parsers.test_ls_file_listing import (
+    LS_FILE_PERMISSIONS_DOC,
+    MULTIPLE_DIRECTORIES,
+)
 
 PERMISSIONS_TEST_EXCEPTION_VECTORS = [
     ('-rw------ 1 root root 762 Sep 23 002 /etc/ssh/sshd_config', True),
@@ -248,7 +251,7 @@ def test_permissions_invalid():
 
 
 def test_multiple_directories():
-    dirs = FileListing(context_wrap(test_ls_file_listing.MULTIPLE_DIRECTORIES))
+    dirs = FileListingParser(context_wrap(MULTIPLE_DIRECTORIES))
     assert '/etc/sysconfig' in dirs
     assert 'cbq' in dirs.dirs_of('/etc/sysconfig')
     # drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq
@@ -258,3 +261,11 @@ def test_multiple_directories():
     assert obj.perms_owner == 'rwx'
     assert obj.perms_group == 'r-x'
     assert obj.perms_other == 'r-x'
+
+    dirs = LsFilePermissions(context_wrap(LS_FILE_PERMISSIONS_DOC))
+    assert '/etc/sysconfig' not in dirs
+    assert '/etc/redhat-release' in dirs
+    obj = dirs['/etc/redhat-release']
+    assert obj.perms_owner == 'rw-'
+    assert obj.perms_group == 'r--'
+    assert obj.perms_other == 'r--'

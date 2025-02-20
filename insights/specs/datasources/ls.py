@@ -92,3 +92,11 @@ def list_with_laRZ(broker):
 @datasource(HostContext)
 def list_with_laZ(broker):
     return ' '.join(_list_items(Specs.ls_laZ_dirs))
+
+
+@datasource(HostContext)
+def list_file_perms(broker):
+    files = [_f for _f in _list_items(Specs.ls_file_perms_files) if os.path.isfile(_f)]
+    if files:
+        return ' '.join(set(files))
+    raise SkipComponent

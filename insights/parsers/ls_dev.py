@@ -8,15 +8,16 @@ The ``ls -lanR /dev`` or ``ls -alZR /dev`` command provides information for the 
 See :class:`insights.parsers.ls.FileListing` for more information.
 
 """
-from insights import CommandParser, parser
-from insights.parsers.ls import FileListing
+
+from insights import parser
+from insights.parsers.ls import FileListingParser
 from insights.specs import Specs
 
 
 @parser(Specs.ls_dev)
-class LsDev(CommandParser, FileListing):
+class LsDev(FileListingParser):
     """
-    Parse the /dev directory listing using a standard FileListing parser.
+    Parse the /dev directory listing using a standard FileListingParser parser.
 
     .. warning::
 
