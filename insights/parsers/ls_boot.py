@@ -9,13 +9,13 @@ See :class:`insights.parsers.ls.FileListing` for more information.
 
 """
 
-from insights import CommandParser, parser
-from insights.parsers.ls import FileListing
+from insights import parser
+from insights.parsers.ls import FileListingParser
 from insights.specs import Specs
 
 
 @parser(Specs.ls_boot)
-class LsBoot(CommandParser, FileListing):
+class LsBoot(FileListingParser):
     """
     Parse the /boot directory listing using a standard FileListing parser.
 

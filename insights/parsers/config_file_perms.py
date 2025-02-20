@@ -2,6 +2,7 @@
 Configuration File Permissions parsers
 ======================================
 
+
 Parsers included in this module are:
 
 SshdConfigPerms - command ``/bin/ls -lH /etc/ssh/sshd_config``
@@ -15,13 +16,18 @@ Grub2ConfigPerms - command ``/bin/ls -lH /boot/grub2/grub.cfg``
 """
 
 from insights.core import CommandParser
+from insights.core.ls_parser import FilePermissions
 from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.util.file_permissions import FilePermissions
+from insights.util import deprecated
 
 
 class FilePermissionsParser(CommandParser, FilePermissions):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.ls.LsFilePermissions` instead.
+
     Base class for ``SshdConfigPerms``, ``Grub1ConfigPerms`` and ``Grub2ConfigPerms`` classes.
 
     Attributes:
@@ -29,6 +35,9 @@ class FilePermissionsParser(CommandParser, FilePermissions):
     """
 
     def __init__(self, context):
+        deprecated(
+            SshdConfigPerms, "Please use insights.parsers.ls.LsFilePermissions instead.", "3.6.0"
+        )
         self.line = ""
         CommandParser.__init__(self, context)
         FilePermissions.__init__(self, self.line)
@@ -41,6 +50,10 @@ class FilePermissionsParser(CommandParser, FilePermissions):
 @parser(Specs.sshd_config_perms)
 class SshdConfigPerms(FilePermissionsParser):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.ls.LsFilePermissions` instead.
+
     Class for parsing ``/bin/ls -lH /etc/ssh/sshd_config`` command.
 
     Sample output of this command is::
@@ -55,12 +68,19 @@ class SshdConfigPerms(FilePermissionsParser):
     """
 
     def __init__(self, context):
+        deprecated(
+            SshdConfigPerms, "Please use insights.parsers.ls.LsFilePermissions instead.", "3.6.0"
+        )
         super(SshdConfigPerms, self).__init__(context)
 
 
 @parser(Specs.grub1_config_perms)
 class Grub1ConfigPerms(FilePermissionsParser):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.ls.LsFilePermissions` instead.
+
     Class for parsing ``/bin/ls -lH /boot/grub/grub.conf`` command.
 
     Sample output of this command is::
@@ -75,12 +95,19 @@ class Grub1ConfigPerms(FilePermissionsParser):
     """
 
     def __init__(self, context):
+        deprecated(
+            Grub1ConfigPerms, "Please use insights.parsers.ls.LsFilePermissions instead.", "3.6.0"
+        )
         super(Grub1ConfigPerms, self).__init__(context)
 
 
 @parser(Specs.grub_config_perms)
 class Grub2ConfigPerms(FilePermissionsParser):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.ls.LsFilePermissions` instead.
+
     Class for parsing ``/bin/ls -lH /boot/grub2/grub.cfg`` command.
 
     Sample output of this command is::
@@ -95,4 +122,7 @@ class Grub2ConfigPerms(FilePermissionsParser):
     """
 
     def __init__(self, context):
+        deprecated(
+            Grub2ConfigPerms, "Please use insights.parsers.ls.LsFilePermissions instead.", "3.6.0"
+        )
         super(Grub2ConfigPerms, self).__init__(context)
