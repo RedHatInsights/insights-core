@@ -444,6 +444,12 @@ def get_parent_process():
         return "unknown"
 
 
+def _read_file(path):
+    # type: (str) -> list[str]
+    with open(path, mode="r") as f:
+        return f.readlines()
+
+
 def os_release_info():
     '''
     Use insights-core to fetch the os-release or redhat-release info
@@ -454,8 +460,7 @@ def os_release_info():
     os_release = ""
     for p in ["/etc/os-release", "/etc/redhat-release"]:
         try:
-            with open(p) as f:
-                data = f.readlines()
+            data = _read_file(p)  # type: list[str]
 
             ctx = Context(content=data, path=p, relative_path=p)
             if p == "/etc/os-release":
@@ -471,7 +476,41 @@ def os_release_info():
             continue
         except Exception as e:
             logger.warning("Failed to detect OS version: %s", e)
-    return (os_family, os_release)
+    return os_family, os_release
+
+
+def get_rhel_version():
+    # type: () -> int
+    """Reads /etc/os-release to determine RHEL version.
+
+    For RHEL, the major version is always returned.
+
+    For CentOS, the major version is always returned.
+
+    For Fedora, the latest known RHEL version is returned.
+    RHEL 10 was branched from Fedora 40; until RHEL 11 is branched,
+    this method returns `10` for all Fedora versions.
+
+    :returns: Major RHEL version (or an equivalent for non-RHEL systems)
+    :raises ValueError: Version could not be determined.
+    """
+    distribution, release = os_release_info()
+    if distribution == "Unknown":
+        raise ValueError("Could not determine distribution family.")
+    if release == "":
+        raise ValueError("Could not determine version of '{}'.".format(distribution))
+
+    _distribution = distribution.lower()  # type: str
+    if _distribution.startswith("red hat enterprise linux") or _distribution.startswith("centos"):
+        version = int(release.split(".")[0])
+    elif _distribution.startswith("fedora"):
+        version = 10
+    else:
+        raise ValueError("Unknown distribution '{}'.".format(distribution))
+
+    if "red hat enterprise linux" not in _distribution:
+        logger.debug("'{}' version '{}' matches RHEL {}.".format(distribution, release, version))
+    return version
 
 
 def largest_spec_in_archive(archive_file):
