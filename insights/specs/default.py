@@ -334,6 +334,7 @@ class DefaultSpecs(Specs):
     falconctl_version = simple_command("/opt/CrowdStrike/falconctl -g --version")
     fapolicyd_rules = glob_file(r"/etc/fapolicyd/rules.d/*.rules")
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
+    filefrag = simple_command("/sbin/filefrag /boot/grub2/grubenv", keep_rc=True)
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
