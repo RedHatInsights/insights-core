@@ -182,7 +182,7 @@ class IPv6(object):
 
         def obfuscate_hex(_hex):
             if _hex:
-                n_0_hex = _hex.lstrip('0')
+                n_0_hex = _hex.lstrip('0').lower()
                 if n_0_hex:
                     old_hex = n_0_hex.encode('utf-8') if six.PY3 else n_0_hex
                     new_hex = hashlib.sha1(old_hex).hexdigest()[: len(old_hex)]

@@ -27,7 +27,7 @@ fe80::2204:fff:fe76:224b dev enp3s0 lladdr router STALE - line 2
 
 IPv6_cases_keep_same = """
 fe80::2204:fff:fe76:224b dev enp3s0 lladdr router STALE - line 1
-fe80::2204:fff:fe76:224b dev enp3s0 lladdr router STALE - line 2
+FE80::2204:FFF:FE76:224B dev enp3s0 lladdr router STALE - line 2
 dev enp3s0 lladdr router fe80:0000:0000:0000:2204:fff:fe76:224b
 dev enp3s0 lladdr router fe80:0:0:0:2204:fff:fe76:224b
 """.strip().splitlines()
@@ -73,9 +73,9 @@ def test_obfuscate_the_same(obfuscate):
     if obfuscate:
         assert len_changed == 0  # length of obfuscated IPv6 is not changed
         assert ip_changed == len(IPv6_cases_keep_same)
-        # Three IPs are obfuscated
+        # Four IPs are obfuscated
         obf_ips = pp.obfuscate.get('ipv6').mapping()
-        assert len(obf_ips) == 3
+        assert len(obf_ips) == 4
         # But they are all the same - 1: in result
         ret_ip = ipaddress.ip_address(
             ret0[0].split()[0] if six.PY3 else u'{0}'.format(ret0[0].split()[0])
@@ -103,3 +103,15 @@ def test_obfuscate_the_same(obfuscate):
     # No obfuscated IP address will be obfuscated:
     ret1 = pp.clean_content(ret0)
     assert ret1 == ret0
+
+
+def test_obfuscate_ipv6_no_obfuscate():
+    c = InsightsConfig(obfuscate=True, obfuscate_ipv6=True)
+    pp = Cleaner(c, {})
+    # no_obfuscate=['ipv6'] will not obfuscate any IPv6 address
+    ret = pp.clean_content(IPv6_cases, no_obfuscate=['ipv6', 'mac'])
+    assert ret == IPv6_cases
+    # no_obfuscate=['ip'] will only obfuscate IPv4 address but not IPv6 address
+    pp = Cleaner(c, {})  # Must initialize a new instance
+    ret = pp.clean_content(IPv6_cases, no_obfuscate=['ip', 'mac'])
+    assert ret != IPv6_cases

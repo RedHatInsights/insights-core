@@ -140,7 +140,6 @@ class Cleaner(object):
         # - Keyword
         # - Mac
         # - Password
-        no_obfuscate.append('ipv6') if no_obfuscate and 'ip' in no_obfuscate else None
         for obf in set(self.obfuscate.keys()) - set(no_obfuscate or []):
             if self.obfuscate[obf]:
                 parsers.append((self.obfuscate[obf], {'width': width}))
