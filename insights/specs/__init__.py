@@ -204,6 +204,7 @@ class Specs(SpecSet):
     )
     fc_match = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     fcoeadm_i = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    filefrag = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     findmnt_lo_propagation = RegistryPoint()
     firewall_cmd_list_all_zones = RegistryPoint()
     firewalld_conf = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
@@ -384,6 +385,7 @@ class Specs(SpecSet):
     # Useful individual `ls` Specs
     ls_boot = RegistryPoint()
     ls_dev = RegistryPoint()
+    ls_rsyslog_errorfile = RegistryPoint()
     ls_sys_firmware = RegistryPoint()
     # ^ End of ls
     lsattr = RegistryPoint(no_obfuscate=['hostname', 'ip'])
