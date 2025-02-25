@@ -463,8 +463,7 @@ DEFAULT_OPTS = {
         'default': None,
         'opt': ['--diagnosis'],
         'help': 'Retrieve a diagnosis for this system',
-        'const': True,
-        'nargs': '?',
+        'action': 'store_true',
         'group': 'actions',
     },
 }
