@@ -119,13 +119,12 @@ class IPv4(object):
             return line
         try:
             ips = [each[0] for each in re.findall(self.pattern, line)]
-            if len(ips) > 0:
-                for ip in sorted(ips, key=len, reverse=True):
-                    if ip not in self._ignore_list and ip in line:
-                        if kwargs.get('width', False):
-                            line = _sub_ip_keep_width(line, ip)
-                        else:
-                            line = _sub_ip(line, ip)
+            for ip in sorted(ips or [], key=len, reverse=True):
+                if ip not in self._ignore_list:  # ip must in line
+                    if kwargs.get('width', False):
+                        line = _sub_ip_keep_width(line, ip)
+                    else:
+                        line = _sub_ip(line, ip)
             return line
         except Exception as e:  # pragma: no cover
             logger.warning(e)
@@ -213,12 +212,10 @@ class IPv6(object):
             return line
         try:
             ips = [each[0] for each in re.findall(self.pattern, line, re.I)]
-            if ips:
-                for ip in sorted(ips, key=len, reverse=True):
-                    for skip in self._ignore_list:
-                        if re.findall(skip, ip, re.I):
-                            continue
-                        line = _sub_ip(line, ip)
+            for ip in sorted(ips or [], key=len, reverse=True):
+                if any(re.findall(_i, ip, re.I) for _i in self._ignore_list):
+                    continue
+                line = _sub_ip(line, ip)
             return line
         except Exception as e:  # pragma: no cover
             logger.warning(e)
