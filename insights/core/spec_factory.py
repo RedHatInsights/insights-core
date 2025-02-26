@@ -13,6 +13,7 @@ from glob import glob
 from subprocess import call
 
 from insights.cleaner import DEFAULT_OBFUSCATIONS
+from insights.cleaner.filters import AllowFilter
 from insights.core import blacklist, dr, filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.exceptions import (
@@ -28,7 +29,7 @@ from insights.util.mangle import mangle_command
 
 log = logging.getLogger(__name__)
 
-MAX_LINES_FOR_FILTERABLE_FILE = 1000000
+MAX_CONTENT_SIZE = 104857600 * 2  # 200 MB
 SAFE_ENV = {
     "PATH": os.path.pathsep.join(
         [
@@ -271,13 +272,11 @@ class TextFileProvider(FileProvider):
         The "grep" is faster and can be used shrink the size of file.
         """
         args = []
-        if self._filters:
+        if isinstance(self.ctx, HostContext) and self._filters:
+            # Pre-filtering ONLY when collecting data
             log.debug("Pre-filtering %s", self.relative_path)
             args.append(
-                ["tail", "-n", str(MAX_LINES_FOR_FILTERABLE_FILE), self.path]
-            )
-            args.append(
-                ["grep", "-F", "\n".join(sorted(self._filters.keys(), reverse=True))]
+                ["grep", "-F", "\n".join(sorted(self._filters.keys(), reverse=True)), self.path]
             )
 
         return args
@@ -290,8 +289,19 @@ class TextFileProvider(FileProvider):
             self.rc = rc
             return out
 
+        fsize = os.stat(self.path).st_size
         with safe_open(self.path, "r", encoding=encoding, errors="surrogateescape") as f:
-            return [l.rstrip("\n") for l in f]
+            if fsize > MAX_CONTENT_SIZE:
+                # read the last ``MAX_CONTENT_SIZE`` MB only
+                f.seek(fsize - MAX_CONTENT_SIZE)
+                log.debug("Extra-huge file is truncated %s", self.relative_path)
+                content = [l.rstrip("\n") for l in f][1:]  # discard the first line which is broken
+            else:
+                content = [l.rstrip("\n") for l in f]
+            if not isinstance(self.ctx, HostContext) and self._filters:
+                # Post-filtering ONLY when processing data
+                return AllowFilter.filter_content(content[::-1], self._filters)[::-1]
+            return content
 
     def _stream(self):
         """
