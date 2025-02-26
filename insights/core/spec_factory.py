@@ -13,6 +13,7 @@ from glob import glob
 from subprocess import call
 
 from insights.cleaner import DEFAULT_OBFUSCATIONS
+from insights.cleaner.filters import AllowFilter
 from insights.core import blacklist, dr, filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.exceptions import (
@@ -28,7 +29,7 @@ from insights.util.mangle import mangle_command
 
 log = logging.getLogger(__name__)
 
-MAX_LINES_FOR_FILTERABLE_FILE = 1000000
+MAX_CONTENT_LINES = 1000000
 SAFE_ENV = {
     "PATH": os.path.pathsep.join(
         [
@@ -271,13 +272,11 @@ class TextFileProvider(FileProvider):
         The "grep" is faster and can be used shrink the size of file.
         """
         args = []
-        if self._filters:
+        # Pre-filtering ONLY when collecting data
+        if isinstance(self.ctx, HostContext) and self._filters:
             log.debug("Pre-filtering %s", self.relative_path)
             args.append(
-                ["tail", "-n", str(MAX_LINES_FOR_FILTERABLE_FILE), self.path]
-            )
-            args.append(
-                ["grep", "-F", "\n".join(sorted(self._filters.keys(), reverse=True))]
+                ["grep", "-F", "\n".join(sorted(self._filters.keys(), reverse=True)), self.path]
             )
 
         return args
@@ -291,7 +290,11 @@ class TextFileProvider(FileProvider):
             return out
 
         with safe_open(self.path, "r", encoding=encoding, errors="surrogateescape") as f:
-            return [l.rstrip("\n") for l in f]
+            valid_content = [l.rstrip("\n") for l in f][-MAX_CONTENT_LINES:]
+            # Post-filtering ONLY when processing data
+            if not isinstance(self.ctx, HostContext) and self._filters:
+                return AllowFilter.filter_content(valid_content[::-1], self._filters)[::-1]
+            return valid_content
 
     def _stream(self):
         """
