@@ -4,19 +4,22 @@ output when selinux is enabled or disabled and also skip "bad" lines.
 """
 
 
-def parse_path(path):
+def set_name_link(entry, is_softlink, path):
     """
-    Convert possible symbolic link into a source -> target pair.
+    Get the name, and possibly the link, from the rest of the path.
 
     Args:
-        path (str): The path portion of an ls output line.
+        entry (dict): the dict to put this data into
+        is_softlink (bool): is this actually a softlink?
+        path (str): the rest of the line, optionally including the link
 
     Returns:
-        A (path, link) tuple where path is always populated and link is a non
-        empty string if the original path is a symoblic link.
+        Does not return, entry keys for name and link added
     """
-    path, _, link = path.partition(" -> ")
-    return path, link
+    if is_softlink:
+        entry['name'], _, entry['link'] = path.partition(" -> ")
+    else:
+        entry['name'] = path
 
 
 def parse_major_minor(last, result):
@@ -43,7 +46,7 @@ def parse_major_minor(last, result):
     return rest
 
 
-def parse_non_selinux(entry, links, owner, group, last):
+def parse_non_selinux(entry, is_softlink, links, owner, group, last):
     """
     Parse part of an ls output line that isn't selinux.
 
@@ -68,14 +71,22 @@ def parse_non_selinux(entry, links, owner, group, last):
     # The date part is always 12 characters regardless of content.
     entry["date"] = rest[:12]
 
-    # Jump over the date and the following space to get the path part.
-    path, link = parse_path(rest[13:])
-    entry["name"] = path
-    if link:
-        entry["link"] = link
+    set_name_link(entry, is_softlink, rest[13:])
 
 
-def parse_selinux(entry, owner, group, selinux_str, name_part):
+def set_selinux(entry, selinux_str):
+    """
+    Set the SELinux part of this entry
+    """
+    selinux = selinux_str.split(":")
+    lsel = len(selinux)
+    entry["se_user"] = selinux[0]
+    entry["se_role"] = selinux[1] if lsel > 1 else None
+    entry["se_type"] = selinux[2] if lsel > 2 else None
+    entry["se_mls"] = selinux[3] if lsel > 3 else None
+
+
+def parse_old_selinux(entry, is_softlink, owner, group, selinux_str, name_part):
     """
     Parse part of an ls output line that is selinux.
 
@@ -88,21 +99,13 @@ def parse_selinux(entry, owner, group, selinux_str, name_part):
 
     """
 
-    selinux = selinux_str.split(":")
-    lsel = len(selinux)
-    name, link = parse_path(name_part)
     entry["owner"] = owner
     entry["group"] = group
-    entry["se_user"] = selinux[0]
-    entry["se_role"] = selinux[1] if lsel > 1 else None
-    entry["se_type"] = selinux[2] if lsel > 2 else None
-    entry["se_mls"] = selinux[3] if lsel > 3 else None
-    entry["name"] = name
-    if link:
-        entry["link"] = link
+    set_selinux(entry, selinux_str)
+    set_name_link(entry, is_softlink, name_part)
 
 
-def parse_rhel8_selinux(entry, links, owner, group, last):
+def parse_rhel8_selinux(entry, is_softlink, links, owner, group, last):
     """
     Parse part of an ls output line that is selinux on RHEL8.
 
@@ -118,25 +121,16 @@ def parse_rhel8_selinux(entry, links, owner, group, last):
     entry["links"] = int(links) if links.isdigit() else links
     entry["owner"] = owner
     entry["group"] = group
-    selinux, last = last.split(None, 1)
-    selinux = selinux.split(":")
-    lsel = len(selinux)
+    selinux_str, last = last.split(None, 1)
+    set_selinux(entry, selinux_str)
     rest = parse_major_minor(last, entry)
-    date = rest[:12]
-    path, link = parse_path(rest[13:])
-    entry["se_user"] = selinux[0]
-    entry["se_role"] = selinux[1] if lsel > 1 else None
-    entry["se_type"] = selinux[2] if lsel > 2 else None
-    entry["se_mls"] = selinux[3] if lsel > 3 else None
-    entry["name"] = path
-    entry["date"] = date
-    if link:
-        entry["link"] = link
+    entry["date"] = rest[:12]
+    set_name_link(entry, is_softlink, rest[13:])
 
 
 parse_mode = {
     'normal': parse_non_selinux,
-    'selinux': parse_selinux,
+    'selinux': parse_old_selinux,
     'rhel8_selinux': parse_rhel8_selinux
 }
 
@@ -171,10 +165,10 @@ class Directory(dict):
                     # selinux stanza. This assumes that the context section will
                     # always have at least two pieces separated by ':'.
                     # '?' as the whole RHEL8 security context is also acceptable.
-                    # substring to index of space is faster than strip
-                    rhel8_selinux_ctx = rest[:rest.index(" ")]
+                    # partition faster than substring to index of space faster than split
+                    rhel8_selinux_ctx, _, _ = rest.partition(" ")
                     if ":" in rhel8_selinux_ctx or '?' == rhel8_selinux_ctx:
-                        # unconfined_u:object_r:var_lib_t:s0 54 Apr  8 16:41 abcd-efgh-ijkl-mnop
+                        # -rwxrwxr-x. 1 user group unconfined_u:object_r:var_lib_t:s0 54 Apr  8 16:41 abcd-efgh-ijkl-mnop
                         parser = parse_mode['rhel8_selinux']
                     else:
                         # crw-------.  1 0 0 10,  236 Jul 25 10:00 control
@@ -184,7 +178,7 @@ class Directory(dict):
                     # -rw-r--r--. root root system_u:object_r:boot_t:s0      config-3.10.0-267
                     parser = parse_mode['selinux']
             # Now parse based on mode
-            parser(entry, links, owner, group, rest)
+            parser(entry, typ == 'l', links, owner, group, rest)
 
             # Update our entry and put it into the correct buckets
             # based on its type.
