@@ -29,7 +29,7 @@ from insights.util.mangle import mangle_command
 
 log = logging.getLogger(__name__)
 
-MAX_CONTENT_LINES = 1000000
+MAX_CONTENT_SIZE = 104857600 * 2  # 200 MB
 SAFE_ENV = {
     "PATH": os.path.pathsep.join(
         [
@@ -289,12 +289,18 @@ class TextFileProvider(FileProvider):
             self.rc = rc
             return out
 
+        fsize = os.stat(self.path).st_size
         with safe_open(self.path, "r", encoding=encoding, errors="surrogateescape") as f:
-            valid_content = [l.rstrip("\n") for l in f][-MAX_CONTENT_LINES:]
+            if fsize > MAX_CONTENT_SIZE:
+                # read the last ``MAX_CONTENT_SIZE`` MB only
+                f.seek(fsize - MAX_CONTENT_SIZE)
+                content = [l.rstrip("\n") for l in f][1:]  # discard the first line which is broken
+            else:
+                content = [l.rstrip("\n") for l in f]
             # Post-filtering ONLY when processing data
             if not isinstance(self.ctx, HostContext) and self._filters:
-                return AllowFilter.filter_content(valid_content[::-1], self._filters)[::-1]
-            return valid_content
+                return AllowFilter.filter_content(content[::-1], self._filters)[::-1]
+            return content
 
     def _stream(self):
         """

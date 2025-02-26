@@ -2,16 +2,17 @@ import os
 import shutil
 import tempfile
 
-from insights.core import dr
+from insights.core import dr, spec_factory
 from insights.core.context import HostArchiveContext
 from insights.core.filters import add_filter
 from insights.core.hydration import initialize_broker
-from insights.core.spec_factory import RegistryPoint, SpecSet, MAX_CONTENT_LINES, simple_file
+from insights.core.spec_factory import RegistryPoint, SpecSet, simple_file
 
 test_large_file = "large_file"
 test_large_file_wf = "large_file_with_filter"
 FILTER_DATA = "Some test data"
 filter_kw = '9Some'
+CONTENT_LINES = 1000
 
 
 class Specs(SpecSet):
@@ -36,6 +37,8 @@ def dostuff(broker):
 
 
 def test_load():
+    old = spec_factory.MAX_CONTENT_SIZE
+    spec_factory.MAX_CONTENT_SIZE = 1024
     add_filter(Stuff.large_file_wf, filter_kw)
     temp_dir = tempfile.mkdtemp(prefix='insights_test', suffix='.dir')
     os.mkdir(os.path.join(temp_dir, 'data'))
@@ -43,13 +46,13 @@ def test_load():
     # Create files with more lines than MAX_CONTENT_LINES in archive/data
     file_path = os.path.join(temp_dir, 'data', test_large_file)
     with open(file_path, 'w') as fd:
-        for i in range(MAX_CONTENT_LINES + 10):
-            fd.write(str(i) + FILTER_DATA + '\n')
+        for i in range(CONTENT_LINES):
+            fd.write('- ' + str(i) + FILTER_DATA + '\n')
 
     file_path = os.path.join(temp_dir, 'data', test_large_file_wf)
     with open(file_path, 'w') as fd:
-        for i in range(MAX_CONTENT_LINES + 10):
-            fd.write(str(i) + FILTER_DATA + '\n')
+        for i in range(CONTENT_LINES):
+            fd.write('- ' + str(i) + FILTER_DATA + '\n')
 
     # Rules
     dr.load_components('insights.tests.core.spec_factory', continue_on_error=False, exclude=None)
@@ -58,15 +61,18 @@ def test_load():
     broker = dr.run(dr.get_dependency_graph(dostuff), broker=broker)
 
     assert Stuff.large_file in broker
-    # Only MAX_CONTENT_LINES lines are loaded
-    assert len(broker[Stuff.large_file].content) == MAX_CONTENT_LINES
-    # Less lines are load due to  MAX_CONTENT_LINES limit and filter
-    assert len(broker[Stuff.large_file_wf].content) <= len(
+    # Less lines are load
+    assert len(broker[Stuff.large_file].content) < CONTENT_LINES
+    assert broker[Stuff.large_file].content[0][0] == '-'  # the first line is complete (non-broken)
+    assert len(broker[Stuff.large_file_wf].content) < len(
         [
             '{0}{1}'.format(i, FILTER_DATA)
-            for i in range(MAX_CONTENT_LINES + 10)
+            for i in range(CONTENT_LINES + 10)
             if filter_kw in '{0}Some'.format(i)
         ]
     )
-
+    print(broker[Stuff.large_file].content)
+    print(broker[Stuff.large_file_wf].content)
+    # Clean up
     shutil.rmtree(temp_dir)
+    spec_factory.MAX_CONTENT_SIZE = old
