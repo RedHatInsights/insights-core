@@ -21,6 +21,8 @@ ff02::1:ff47:17 dev enp3s0 lladdr 33:33:ff:47:00:17 NOARP
 fe80::2204:fff:fe76:224b dev enp3s0 lladdr router STALE - line 1
 dev enp3s0 lladdr router 9d8a::5ef5:342:ac2a:ab52
 D ::1/32 NOARP
+e ::/32 NOARP
+F ::ffff:/32 NOARP
 
 fe80::2204:fff:fe76:224b dev enp3s0 lladdr router STALE - line 2
 """.strip().splitlines()
@@ -47,7 +49,7 @@ def test_obfuscate_ipv6(obfuscate):
         if len(line) != len(org_line):
             len_changed += 1
     if obfuscate:
-        assert ip_changed == len(IPv6_cases) - 3  # empty and 2 lines of "::1" are not obfuscated
+        assert ip_changed == len(IPv6_cases) - 5  # empty and 4 lines of "::" are not obfuscated
         assert len_changed == 0  # length of obfuscated IPv6 is not changed
     else:
         assert ip_changed == 0
