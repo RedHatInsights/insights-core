@@ -109,9 +109,11 @@ class Cleaner(object):
         """
 
         def _clean_line(line):
-            for parser, kwargs in parsers:
-                line = parser.parse_line(line, **kwargs)
-            return line
+            # keep and parse printable line only for Python3
+            if (six.PY3 and line.isprintable()) or six.PY2:
+                for parser, kwargs in parsers:
+                    line = parser.parse_line(line, **kwargs)
+                return line
 
         # List of parsers to be applied with Order
         parsers = list()
