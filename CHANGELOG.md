@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.6) (2025-02-27)
+
+- fix(client): Ignore the input for --diagnosis flag ([PR 4355](https://github.com/RedHatInsights/insights-core/pull/4355))
+
 # [insights-core-3.5.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.5) (2025-02-20)
 
 - FEAT: Add new parser FilefragGrubenv ([PR 4351](https://github.com/RedHatInsights/insights-core/pull/4351))

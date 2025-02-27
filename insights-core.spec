@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.5
+Version:        3.5.6
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 27 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.6-1
+- fix(client): Ignore the input for --diagnosis flag (#4355)
+  (47797196+pkoprda@users.noreply.github.com)
+
 * Thu Feb 20 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.5-1
 - FEAT: Add new parser FilefragGrubenv (#4351) (986222045@qq.com)
 - fix: add oracle cloud to CloudProvider combiner (#4349)
