@@ -472,7 +472,8 @@ def test_ls_laRZ():
     dev_listings = ls.listing_of('/var/log')
     assert 'boot.log' in dev_listings
     assert dev_listings["boot.log"]['se_type'] == 'plymouthd_var_log_t'
-    assert 'kdump.log -> false-link.log' in dev_listings
+    assert 'kdump.log' in dev_listings
+    assert dev_listings["kdump.log"]['link'] == 'false-link.log'
 
     ls = LSlaRZ(context_wrap(LS_LARZ_CONTENT2))
     assert '/var/log/rhsm' in ls
@@ -534,4 +535,5 @@ def test_ls_laZ_on_dev():
     assert dev_listings['block']['size'] == 140
 
     dev_listings = ls.listing_of('/dev/vfio')
-    assert 'vfio -> false_link_2' in dev_listings
+    assert 'vfio' in dev_listings
+    assert dev_listings["vfio"]['link'] == 'false_link_2'
