@@ -160,12 +160,12 @@ class IPv6(object):
     def __init__(self):
         self._ipv6_db = dict()  # IPv6 database
         # Ignore list for IPv6
-        self._ignore_list = [r'(?<=\s)::1(?=\s|/|$)']  # ::1
+        self._ignore_list = [r'\s+']  # ignore whitespace
         # IPv6 pattern, stolen from sos
         # FIXME:
         #   This pattern is not perfect, e.g. it cannot match "::1" perfectly.
-        #   Hence, we add the above ignore list to avoid the roughly match of
-        #   "::1".
+        #   Hence, we add the above ignore list to avoid the roughly match that
+        #   includes whitespace.
         self.pattern = (
             r"(?<![:\\.\\-a-z0-9])((([0-9a-f]{1,4})(:[0-9a-f]{1,4}){7})|"
             r"(([0-9a-f]{1,4}(:[0-9a-f]{0,4}){0,5}))([^.])::(([0-9a-f]{1,4}"
