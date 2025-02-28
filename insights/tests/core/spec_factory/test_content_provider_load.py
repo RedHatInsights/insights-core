@@ -2,7 +2,9 @@ import os
 import shutil
 import tempfile
 
-from insights.core import dr, spec_factory
+from mock.mock import patch
+
+from insights.core import dr
 from insights.core.context import HostArchiveContext
 from insights.core.filters import add_filter
 from insights.core.hydration import initialize_broker
@@ -36,9 +38,8 @@ def dostuff(broker):
     assert Stuff.large_file_wf in broker
 
 
+@patch('insights.core.spec_factory.MAX_CONTENT_SIZE', 1024)
 def test_load():
-    old = spec_factory.MAX_CONTENT_SIZE
-    spec_factory.MAX_CONTENT_SIZE = 1024
     add_filter(Stuff.large_file_wf, filter_kw)
     temp_dir = tempfile.mkdtemp(prefix='insights_test', suffix='.dir')
     os.mkdir(os.path.join(temp_dir, 'data'))
@@ -71,8 +72,5 @@ def test_load():
             if filter_kw in '{0}Some'.format(i)
         ]
     )
-    print(broker[Stuff.large_file].content)
-    print(broker[Stuff.large_file_wf].content)
     # Clean up
     shutil.rmtree(temp_dir)
-    spec_factory.MAX_CONTENT_SIZE = old
