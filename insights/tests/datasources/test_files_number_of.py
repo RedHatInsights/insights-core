@@ -11,13 +11,14 @@ from insights.specs.datasources.files_number_of import files_number_dir
 
 TEST_DIR1 = "/tmp/test_files_number1/"
 TEST_DIR2 = "/tmp/test_files_number2"
+TEST_DIR3 = "/tmp/test_files_number3"
 CREATE_TEST_FILES = "touch " + TEST_DIR1 + "file1" + " " + TEST_DIR1 + "file2"
 REMOVE_DIR = "rm -rf " + TEST_DIR1 + " " + TEST_DIR2
 
 
 def setup_function(func):
     if func is test_module_filters:
-        filters.add_filter(Specs.files_number_filter, [TEST_DIR1, TEST_DIR2])
+        filters.add_filter(Specs.files_number_filter, [TEST_DIR1, TEST_DIR2, TEST_DIR3])
     if func is test_module_filters_empty:
         filters.add_filter(Specs.files_number_filter, [])
 

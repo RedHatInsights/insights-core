@@ -20,6 +20,7 @@ def files_number_dir(broker):
         for item in filters:
             if not item.endswith("/"):
                 item = item + "/"
-            result[item] = len([name for name in os.listdir(item) if os.path.isfile(item + name)])
+            if os.path.exists(item):
+                result[item] = len([name for name in os.listdir(item) if os.path.isfile(item + name)])
         return DatasourceProvider(content=json.dumps(result), relative_path='files_number')
     raise SkipComponent
