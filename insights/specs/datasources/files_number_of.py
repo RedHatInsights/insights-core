@@ -14,7 +14,7 @@ from insights.specs import Specs
 @datasource(HostContext)
 def files_number_dir(broker):
     """ Return a dict of file numbers from the spec filter """
-    filters = sorted(get_filters(Specs.files_number_filter))
+    filters = sorted(get_filters(Specs.files_number_filter), reverse=False)
     result = {}
     if filters:
         for item in filters:
