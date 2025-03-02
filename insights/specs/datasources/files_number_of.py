@@ -14,7 +14,7 @@ from insights.specs import Specs
 @datasource(HostContext)
 def files_number_dir(broker):
     """ Return a dict of file numbers from the spec filter """
-    filters = sorted(get_filters(Specs.files_number_filter), reverse=False)
+    filters = sorted(get_filters(Specs.files_number_filter))
     result = {}
     if filters:
         for item in filters:
@@ -22,5 +22,5 @@ def files_number_dir(broker):
                 item = item + "/"
             if os.path.exists(item):
                 result[item] = len([name for name in os.listdir(item) if os.path.isfile(item + name)])
-        return DatasourceProvider(content=json.dumps(result), relative_path='files_number')
+        return DatasourceProvider(content=json.dumps(result, sort_keys=True), relative_path='files_number')
     raise SkipComponent
