@@ -471,6 +471,8 @@ class InsightsConnection(object):
                    rhsm_hostname != 'subscription.rhsm.redhat.com'):
                     logger.error('Please enable Insights on Satellite server '
                                  '%s to continue.', rhsm_hostname)
+            if req.status_code == 404 or req.status_code == 409:
+                return False
             if req.status_code == 412:
                 try:
                     unreg_date = req.json()["unregistered_at"]
@@ -741,9 +743,9 @@ class InsightsConnection(object):
         try:
             # [circus music]
             if self.config.legacy_upload:
-                url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
+                url = self.base_url + '/platform/inventory/v1/host_exists?insights_id=' + machine_id
             else:
-                url = self.inventory_url + '/hosts?insights_id=' + machine_id
+                url = self.inventory_url + '/host_exists?insights_id=' + machine_id
             res = self.get(url)
         except REQUEST_FAILED_EXCEPTIONS as e:
             _api_request_failed(e)
@@ -752,14 +754,19 @@ class InsightsConnection(object):
             if (self.handle_fail_rcs(res)):
                 return None
             res_json = json.loads(res.content)
+            res_json['insights_id'] = machine_id
         except ValueError as e:
             logger.error(e)
             logger.error('Could not parse response body.')
             return None
-        if res_json['total'] == 0:
-            logger.debug('No hosts found with machine ID: %s', machine_id)
+        if res.status_code == 404 or res.status_code == 409:
+            try:
+                logger.debug(res_json['detail'])
+            except Exception as e:
+                logger.debug(e)
             return False
-        return res_json['results']
+
+        return res_json
 
     def api_registration_check(self):
         '''
@@ -780,8 +787,8 @@ class InsightsConnection(object):
             return results
 
         logger.debug('System found.')
-        logger.debug('Machine ID: %s', results[0]['insights_id'])
-        logger.debug('Inventory ID: %s', results[0]['id'])
+        logger.debug('Machine ID: %s', results['insights_id'])
+        logger.debug('Inventory ID: %s', results['id'])
         return True
 
     # -LEGACY-
@@ -815,7 +822,7 @@ class InsightsConnection(object):
             return False
         try:
             logger.debug("Unregistering host...")
-            url = self.inventory_url + "/hosts/" + results[0]['id']
+            url = self.inventory_url + "/hosts/" + results['id']
             response = self.delete(url)
             response.raise_for_status()
             logger.info(
@@ -1044,7 +1051,7 @@ class InsightsConnection(object):
         system = self._fetch_system_by_machine_id()
         if not system:
             return system
-        inventory_id = system[0]['id']
+        inventory_id = system['id']
 
         req_url = self.inventory_url + '/hosts/' + inventory_id
         try:
@@ -1065,7 +1072,7 @@ class InsightsConnection(object):
         system = self._fetch_system_by_machine_id()
         if not system:
             return system
-        inventory_id = system[0]['id']
+        inventory_id = system['id']
 
         req_url = self.inventory_url + '/hosts/' + inventory_id
         try:
