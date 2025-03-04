@@ -1105,6 +1105,12 @@ class InsightsConnection(object):
             Reach out to the platform and fetch a diagnosis.
             Spirtual successor to --to-json from the old client.
         '''
+        if not self._fetch_system_by_machine_id():
+            logger.error("Could not get diagnosis data.\n"
+                         "This host is not registered. Use --register to register this host:\n"
+                         "# insights-client --register")
+            return False
+
         # this uses machine id as identifier instead of inventory id
         diag_url = self.base_url + '/remediations/v1/diagnosis/' + generate_machine_id()
         try:
