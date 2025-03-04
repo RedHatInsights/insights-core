@@ -8,6 +8,7 @@ class FilePermissions(object):
     It is useful for checking file permissions and owner.
 
     Attributes:
+        type (str): The type indicator (d, c, b, l or -)
         perms_owner (str): Owner permissions, e.g. 'rwx'
         perms_group (str): Group permissions
         perms_other (str): Other permissions
@@ -96,7 +97,7 @@ class FilePermissions(object):
         # Get a new instance without having to provide a line.
         self = cls.__new__(cls)
         # Check that we have at least as much data as the __init__ requires
-        for k in ['perms', 'owner', 'group', 'name', 'dir']:
+        for k in ['type', 'perms', 'owner', 'group', 'name', 'dir']:
             if k not in dirent:
                 raise ValueError("Need required key '{k}'".format(k=k))
         # Copy all values across
