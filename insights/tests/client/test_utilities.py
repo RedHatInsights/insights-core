@@ -7,11 +7,15 @@ import insights.client.utilities as util
 import insights.client.cert_auth
 from insights.client.constants import InsightsConstants as constants
 import re
-import mock
+try:
+    from unittest import mock
+    from unittest.mock import patch
+except ImportError:
+    import mock
+    from mock.mock import patch
 import six
 import pytest
 import errno
-from mock.mock import patch
 from json import loads as json_load
 
 
@@ -427,3 +431,84 @@ def test_largest_spec_in_archive():
     assert largest_file[0] == "insights/big"
     assert largest_file[1] == 100
     assert largest_file[2] == "insights.spec-big"
+
+
+@pytest.mark.parametrize(
+    "family,version,raw_os_release",
+    [
+        ("Red Hat Enterprise Linux", "9.5", ['NAME="Red Hat Enterprise Linux"\n', 'VERSION_ID="9.5"\n']),
+        ("Red Hat Enterprise Linux", "8.9", ['NAME="Red Hat Enterprise Linux"\n', 'VERSION_ID="8.9"\n']),
+        ("Red Hat Enterprise Linux", "7.9", ['NAME="Red Hat Enterprise Linux"\n', 'VERSION_ID="7.9"\n']),
+        ("CentOS Stream", "10", ['NAME="CentOS Stream"\n', 'VERSION_ID="10"\n']),
+        ("CentOS Stream", "8", ['NAME="CentOS Stream"\n', 'VERSION_ID="8"\n']),
+        ("Fedora Linux", "41", ['NAME="Fedora Linux"\n', 'VERSION_ID=41\n']),
+    ]
+)
+def test_os_release_info__os_release(family, version, raw_os_release):
+    # type: (str, str, str) -> None
+    with patch("insights.client.utilities._read_file", return_value=raw_os_release):
+        actual_family, actual_version = util.os_release_info()
+        assert (actual_family, actual_version) == (family, version)
+
+
+@pytest.mark.parametrize(
+    "family,version,raw_redhat_release",
+    [
+        ("Red Hat Enterprise Linux", "9.5", ["Red Hat Enterprise Linux release 9.5 (Plow)"]),
+        ("Red Hat Enterprise Linux", "8.9", ["Red Hat Enterprise Linux release 8.9 (Ootpa)"]),
+        ("Red Hat Enterprise Linux Server", "7.9", ["Red Hat Enterprise Linux Server release 7.9 (Maipo)"]),
+        ("Red Hat Enterprise Linux Server", "6.10", ["Red Hat Enterprise Linux Server release 6.10 (Santiago)"]),
+        ("Fedora", "41", ["Fedora release 41 (Forty One)"]),
+        ("CentOS Stream", "10", ["CentOS Stream release 10"]),
+        ("CentOS Stream", "9", ["CentOS Stream release 9"]),
+        ("CentOS Stream", "8", ["CentOS Stream release 8"]),
+        ("CentOS Linux", "8.4.2105", ["CentOS Linux release 8.4.2105"]),
+        ("CentOS Linux", "7.9.2009", ["CentOS Linux release 7.9.2009 (Core)"]),
+    ]
+)
+def test_os_release_info__redhat_release(family, version, raw_redhat_release):
+    # type: (str, str, str) -> None
+    with patch("insights.client.utilities._read_file", side_effect=[IOError, raw_redhat_release]):
+        actual_family, actual_version = util.os_release_info()
+        assert (actual_family, actual_version) == (family, version)
+
+
+@pytest.mark.parametrize(
+    "expected,distribution,version",
+    [
+        (9, "Red Hat Enterprise Linux", "9.5"),
+        (8, "Red Hat Enterprise Linux", "8.9"),
+        (7, "Red Hat Enterprise Linux Server", "7.9"),
+        (6, "Red Hat Enterprise Linux Server", "6.10"),
+        (10, "Fedora", "41"),
+        (10, "CentOS Stream", "10"),
+        (9, "CentOS Stream", "9"),
+        (8, "CentOS Stream", "8"),
+        (8, "CentOS Linux", "8.4.2105"),
+        (7, "CentOS Linux", "7.9.2009"),
+    ]
+)
+def test_get_rhel_version(expected, distribution, version):
+    # type: (str, str, str) -> None
+    with patch("insights.client.utilities.os_release_info", return_value=(distribution, version)):
+        actual = insights.client.utilities.get_rhel_version()
+        assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "error,distribution,version",
+    [
+        # Defaults of utilities.os_release_info()
+        ("Could not determine distribution family.", "Unknown", ""),
+        # Unlikely irl; might happen with corrupted os-release (?)
+        ("Could not determine version of 'Fedora'.", "Fedora", ""),
+        # When running on non-RHEL distribution
+        ("Unknown distribution 'Alpine Linux'.", "Alpine Linux", "3.21.2"),
+    ]
+)
+def test_get_rhel_version_error(error, distribution, version):
+    # type: (str, str, str) -> None
+    with patch("insights.client.utilities.os_release_info", return_value=(distribution, version)):
+        with pytest.raises(ValueError) as exc_info:
+            insights.client.utilities.get_rhel_version()
+        assert str(exc_info.value) == error
