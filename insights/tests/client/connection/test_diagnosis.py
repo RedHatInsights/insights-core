@@ -89,8 +89,9 @@ def test_get_diagnosis_offline():
 @patch('insights.client.connection.InsightsConnection._init_session', Mock())
 @patch('insights.client.connection.InsightsConnection.get_proxies', Mock())
 @patch('insights.client.utilities.constants.machine_id_file', '/tmp/machine-id')
+@patch("insights.client.connection.InsightsConnection._fetch_system_by_machine_id", return_value=True)
 @patch('insights.client.connection.InsightsConnection.get')
-def test_get_diagnosis_success(get):
+def test_get_diagnosis_success(get, fetch_system_by_machine_id):
     '''
     Verify that fetching a diagnosis without an ID succeeds and
     returns a dict when HTTP response is valid
@@ -99,3 +100,15 @@ def test_get_diagnosis_success(get):
     c = InsightsConnection(conf)
     get.return_value = MockResponse(status_code=200, text="OK", content="{\"test\": \"test\"}")
     assert c.get_diagnosis() == {"test": "test"}
+
+
+@patch('insights.client.connection.InsightsConnection._init_session', Mock())
+@patch('insights.client.connection.InsightsConnection.get_proxies', Mock())
+@patch("insights.client.connection.InsightsConnection._fetch_system_by_machine_id", return_value=False)
+def test_get_diagnosis_not_registered(fetch_system_by_machine_id):
+    '''
+    Verify that fetching a diagnosis fails when the system is not registered
+    '''
+    conf = InsightsConfig()
+    c = InsightsConnection(conf)
+    assert c.get_diagnosis() is False
