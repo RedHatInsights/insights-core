@@ -20,15 +20,27 @@ Examples:
     >>> len(netns_obj.netns_list)
     3
 """
+
 from insights.core import Parser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.namespace)
 class NetworkNamespace(Parser):
+    """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.ls.LSla` instead.
+    """
+
+    def __init__(self, *args, **kwargs):
+        deprecated(NetworkNamespace, "Please use insights.parsers.ls.LSla instead.", "3.6.0")
+        super(NetworkNamespace, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         if not content:
             raise SkipComponent('Nothing to parse.')

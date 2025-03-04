@@ -2,7 +2,7 @@
 import doctest
 
 from insights.parsers import ls as ls_module
-from insights.parsers.ls import FileListing
+from insights.parsers.ls import FileListingParser, LSlan, LsFilePermissions
 from insights.tests import context_wrap
 
 SINGLE_DIRECTORY = """
@@ -131,6 +131,10 @@ FILE_LISTING_DOC = '''
         lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub
 '''
 
+LS_FILE_PERMISSIONS_DOC = '''
+-rw-r--r--. 1 root  root      46 Apr 24  2024 /etc/redhat-release
+-rw-r--r--. 1 liuxc wheel 664118 Feb 20 14:40 /var/log/messages
+'''
 # Note - should we test for anomalous but parseable entries?  E.g. block
 # devices without a major/minor number?  Or non-devices that have a comma in
 # the size?  Permissions that don't make sense?  Dates that don't make sense
@@ -140,7 +144,7 @@ FILE_LISTING_DOC = '''
 def test_single_directory():
     # ctx = context_wrap(SINGLE_DIRECTORY, path='ls_-la_.etc.pki.tls')
     ctx = context_wrap(SINGLE_DIRECTORY)
-    dirs = FileListing(ctx)
+    dirs = FileListingParser(ctx)
 
     assert '/etc/pki/tls' in dirs
     assert '/etc/pki/tls/certs' not in dirs
@@ -157,7 +161,7 @@ def test_single_directory():
 
 
 def test_multiple_directories():
-    dirs = FileListing(context_wrap(MULTIPLE_DIRECTORIES, path='ls_-la_.etc'))
+    dirs = FileListingParser(context_wrap(MULTIPLE_DIRECTORIES, path='ls_-la_.etc'))
 
     assert '/etc/sysconfig' in dirs
     assert '/etc/rc.d/rc3.d' in dirs
@@ -180,45 +184,80 @@ def test_multiple_directories():
     # Testing the main features
     listing = dirs.listing_of('/etc/sysconfig')
     assert listing['..'] == {
-        'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 77, 'owner': '0',
-        'group': '0', 'size': 8192, 'date': 'Jul 13 03:55', 'name': '..',
+        'type': 'd',
+        'perms': 'rwxr-xr-x.',
+        'links': 77,
+        'owner': '0',
+        'group': '0',
+        'size': 8192,
+        'date': 'Jul 13 03:55',
+        'name': '..',
         'raw_entry': 'drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..',
-        'dir': '/etc/sysconfig'
+        'dir': '/etc/sysconfig',
     }
     assert listing['cbq'] == {
-        'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0',
-        'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq',
+        'type': 'd',
+        'perms': 'rwxr-xr-x.',
+        'links': 2,
+        'owner': '0',
+        'group': '0',
+        'size': 41,
+        'date': 'Jul  6 23:32',
+        'name': 'cbq',
         'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
-        'dir': '/etc/sysconfig'
+        'dir': '/etc/sysconfig',
     }
     assert listing['firewalld'] == {
-        'type': '-', 'perms': 'rw-r--r--.', 'links': 1, 'owner': '0',
-        'group': '0', 'size': 72, 'date': 'Sep 15  2015',
-        'name': 'firewalld', 'raw_entry':
-        '-rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld',
-        'dir': '/etc/sysconfig'
+        'type': '-',
+        'perms': 'rw-r--r--.',
+        'links': 1,
+        'owner': '0',
+        'group': '0',
+        'size': 72,
+        'date': 'Sep 15  2015',
+        'name': 'firewalld',
+        'raw_entry': '-rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld',
+        'dir': '/etc/sysconfig',
     }
     assert listing['grub'] == {
-        'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
-        'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
-        'link': '/etc/default/grub', 'raw_entry':
-        'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
-        'dir': '/etc/sysconfig'
+        'type': 'l',
+        'perms': 'rwxrwxrwx.',
+        'links': 1,
+        'owner': '0',
+        'group': '0',
+        'size': 17,
+        'date': 'Jul  6 23:32',
+        'name': 'grub',
+        'link': '/etc/default/grub',
+        'raw_entry': 'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
+        'dir': '/etc/sysconfig',
     }
 
     listing = dirs.listing_of('/etc/rc.d/rc3.d')
     assert listing['..'] == {
-        'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 10, 'owner': '0',
-        'group': '0', 'size': 4096, 'date': 'Sep 16  2015', 'name': '..',
+        'type': 'd',
+        'perms': 'rwxr-xr-x.',
+        'links': 10,
+        'owner': '0',
+        'group': '0',
+        'size': 4096,
+        'date': 'Sep 16  2015',
+        'name': '..',
         'raw_entry': 'drwxr-xr-x. 10 0 0 4096 Sep 16  2015 ..',
-        'dir': '/etc/rc.d/rc3.d'
+        'dir': '/etc/rc.d/rc3.d',
     }
     assert listing['K50netconsole'] == {
-        'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
-        'group': '0', 'size': 20, 'date': 'Jul  6 23:32',
-        'name': 'K50netconsole', 'link': '../init.d/netconsole', 'raw_entry':
-        'lrwxrwxrwx.  1 0 0   20 Jul  6 23:32 K50netconsole -> ../init.d/netconsole',
-        'dir': '/etc/rc.d/rc3.d'
+        'type': 'l',
+        'perms': 'rwxrwxrwx.',
+        'links': 1,
+        'owner': '0',
+        'group': '0',
+        'size': 20,
+        'date': 'Jul  6 23:32',
+        'name': 'K50netconsole',
+        'link': '../init.d/netconsole',
+        'raw_entry': 'lrwxrwxrwx.  1 0 0   20 Jul  6 23:32 K50netconsole -> ../init.d/netconsole',
+        'dir': '/etc/rc.d/rc3.d',
     }
 
     assert dirs.total_of('/etc/sysconfig') == 96
@@ -226,18 +265,30 @@ def test_multiple_directories():
 
     assert dirs.dir_contains('/etc/sysconfig', 'firewalld')
     assert dirs.dir_entry('/etc/sysconfig', 'grub') == {
-        'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
-        'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
-        'link': '/etc/default/grub', 'raw_entry':
-        'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
-        'dir': '/etc/sysconfig'
+        'type': 'l',
+        'perms': 'rwxrwxrwx.',
+        'links': 1,
+        'owner': '0',
+        'group': '0',
+        'size': 17,
+        'date': 'Jul  6 23:32',
+        'name': 'grub',
+        'link': '/etc/default/grub',
+        'raw_entry': 'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
+        'dir': '/etc/sysconfig',
     }
 
     assert dirs.path_entry('/etc/sysconfig/cbq') == {
-        'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0',
-        'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq',
+        'type': 'd',
+        'perms': 'rwxr-xr-x.',
+        'links': 2,
+        'owner': '0',
+        'group': '0',
+        'size': 41,
+        'date': 'Jul  6 23:32',
+        'name': 'cbq',
         'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
-        'dir': '/etc/sysconfig'
+        'dir': '/etc/sysconfig',
     }
     assert dirs.path_entry('no_slash') is None
     assert dirs.path_entry('/') is None
@@ -246,7 +297,7 @@ def test_multiple_directories():
 
 
 def test_complicated_directory():
-    dirs = FileListing(context_wrap(COMPLICATED_FILES))
+    dirs = FileListingParser(context_wrap(COMPLICATED_FILES))
 
     # Test the things we expect to be different:
     listing = dirs.listing_of('/tmp')
@@ -254,10 +305,17 @@ def test_complicated_directory():
     assert listing['menu.lst']['type'] == 'l'
     assert listing['menu.lst']['link'] == './grub.conf'
     assert dirs.dir_entry('/tmp', 'dm-10') == {
-        'type': 'b', 'perms': 'rw-rw----.', 'links': 1, 'owner': '0',
-        'group': '6', 'major': 253, 'minor': 10, 'date': 'Aug  4 16:56',
-        'name': 'dm-10', 'dir': '/tmp', 'raw_entry':
-        'brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10'
+        'type': 'b',
+        'perms': 'rw-rw----.',
+        'links': 1,
+        'owner': '0',
+        'group': '6',
+        'major': 253,
+        'minor': 10,
+        'date': 'Aug  4 16:56',
+        'name': 'dm-10',
+        'dir': '/tmp',
+        'raw_entry': 'brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10',
     }
     assert listing['dm-10']['type'] == 'b'
     assert listing['dm-10']['major'] == 253
@@ -294,32 +352,49 @@ def test_complicated_directory():
 
 
 def test_selinux_directory():
-    dirs = FileListing(context_wrap(SELINUX_DIRECTORY))
+    dirs = FileListingParser(context_wrap(SELINUX_DIRECTORY))
 
     # Test that one entry is exactly what we expect it to be.
     expected = {
-        'type': 'd', 'perms': 'rwxr-xr-x.', 'owner': 'root', 'group': 'root',
-        'se_user': 'system_u', 'se_role': 'object_r', 'se_type': 'boot_t',
-        'se_mls': 's0', 'name': 'grub2', 'raw_entry':
-        'drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2',
-        'dir': '/boot'
+        'type': 'd',
+        'perms': 'rwxr-xr-x.',
+        'owner': 'root',
+        'group': 'root',
+        'se_user': 'system_u',
+        'se_role': 'object_r',
+        'se_type': 'boot_t',
+        'se_mls': 's0',
+        'name': 'grub2',
+        'raw_entry': 'drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2',
+        'dir': '/boot',
     }
     actual = dirs.dir_entry('/boot', 'grub2')
     assert actual == expected
 
 
 def test_files_created_with_selinux_disabled():
-    dirs = FileListing(context_wrap(FILES_CREATED_WITH_SELINUX_DISABLED))
+    dirs = FileListingParser(context_wrap(FILES_CREATED_WITH_SELINUX_DISABLED))
 
     # Test that one entry is exactly what we expect it to be.
     assert dirs.dir_entry('/dev/mapper', 'lv_cpwtk001_data01') == {
-        'group': '0', 'name': 'lv_cpwtk001_data01', 'links': 1, 'perms': 'rwxrwxrwx',
-        'raw_entry': 'lrwxrwxrwx 1 0 0 7 Apr 27 05:34 lv_cpwtk001_data01 -> ../dm-7', 'owner': '0',
-        'link': '../dm-7', 'date': 'Apr 27 05:34', 'type': 'l', 'dir': '/dev/mapper', 'size': 7
+        'group': '0',
+        'name': 'lv_cpwtk001_data01',
+        'links': 1,
+        'perms': 'rwxrwxrwx',
+        'raw_entry': 'lrwxrwxrwx 1 0 0 7 Apr 27 05:34 lv_cpwtk001_data01 -> ../dm-7',
+        'owner': '0',
+        'link': '../dm-7',
+        'date': 'Apr 27 05:34',
+        'type': 'l',
+        'dir': '/dev/mapper',
+        'size': 7,
     }
 
 
 def test_doc_example():
-    env = {'ls_lan': FileListing(context_wrap(FILE_LISTING_DOC))}
+    env = {
+        'ls_lan': LSlan(context_wrap(FILE_LISTING_DOC)),
+        'ls_perms': LsFilePermissions(context_wrap(LS_FILE_PERMISSIONS_DOC)),
+    }
     failed, total = doctest.testmod(ls_module, globs=env)
     assert failed == 0
