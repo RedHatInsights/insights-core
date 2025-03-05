@@ -214,16 +214,12 @@ class IPv6(object):
 
         if not line:
             return line
-        try:
-            ips = [each[0] for each in re.findall(self.pattern, line, re.I)]
-            for ip in sorted(ips or [], key=len, reverse=True):
-                if any(re.findall(_i, ip, re.I) for _i in self._ignore_list):
-                    continue
-                line = _sub_ip(line, ip)
-            return line
-        except Exception as e:  # pragma: no cover
-            logger.warning(e)
-            raise Exception('SubIPv6Error: Unable to Substitute IPv6 Address - %s', ips)
+
+        for ip in re.findall(self.pattern, line, re.I):
+            if any(re.search(_i, ip[0], re.I) for _i in self._ignore_list):
+                continue
+            line = _sub_ip(line, ip[0])
+        return line
 
     def mapping(self):
         mapping = []
