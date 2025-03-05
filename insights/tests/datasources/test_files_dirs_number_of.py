@@ -6,7 +6,7 @@ from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.core import dr
 from insights.specs import Specs
-from insights.specs.datasources.files_number_of import files_number_dir
+from insights.specs.datasources.files_dirs_number_of import files_dirs_number
 
 
 TEST_DIR1 = "/tmp/test_files_number1/"
@@ -18,9 +18,9 @@ REMOVE_DIR = "rm -rf " + TEST_DIR1 + " " + TEST_DIR2
 
 def setup_function(func):
     if func is test_module_filters:
-        filters.add_filter(Specs.files_number_filter, [TEST_DIR1, TEST_DIR2, TEST_DIR3])
+        filters.add_filter(Specs.files_dirs_number_filter, [TEST_DIR1, TEST_DIR2, TEST_DIR3])
     if func is test_module_filters_empty:
-        filters.add_filter(Specs.files_number_filter, [])
+        filters.add_filter(Specs.files_dirs_number_filter, [])
 
 
 def teardown_function(func):
@@ -32,13 +32,14 @@ def test_module_filters():
     broker = dr.Broker()
     os.makedirs(TEST_DIR1)
     os.makedirs(TEST_DIR2)
+    os.makedirs(TEST_DIR1 + "test_dir1")
     os.system(CREATE_TEST_FILES)
-    result = files_number_dir(broker)
+    result = files_dirs_number(broker)
     os.system(REMOVE_DIR)
-    assert result.content == ['{"/tmp/test_files_number1/": 2, "/tmp/test_files_number2/": 0}']
+    assert result.content == ['{"/tmp/test_files_number1/": {"dirs_number": 1, "files_number": 2}, "/tmp/test_files_number2/": {"dirs_number": 0, "files_number": 0}}']
 
 
 def test_module_filters_empty():
     broker = dr.Broker()
     with pytest.raises(SkipComponent):
-        files_number_dir(broker)
+        files_dirs_number(broker)
