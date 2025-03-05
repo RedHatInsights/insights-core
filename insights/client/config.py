@@ -283,6 +283,10 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': False
     },
+    'obfuscate_mac': {
+        # non-CLI
+        'default': False
+    },
     'offline': {
         'default': False,
         'opt': ['--offline'],
