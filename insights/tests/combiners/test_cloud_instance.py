@@ -13,7 +13,7 @@ from insights.parsers.subscription_manager import SubscriptionManagerFacts
 from insights.tests import context_wrap
 from insights.tests.combiners.test_cloud_provider import RPMS_AWS, RPMS_GOOGLE, RPMS_AZURE
 from insights.tests.parsers.test_aws_instance_id import AWS_ID_DOC
-from insights.tests.parsers.test_azure_instance import AZURE_ID, AZURE_TYPE_2
+from insights.tests.parsers.test_azure_instance import AZURE_ID_1, AZURE_TYPE_2
 from insights.tests.parsers.test_gcp_instance_type import GOOGLE_TYPE_1
 from insights.tests.parsers.test_subscription_manager import FACTS_NORMAL_1
 
@@ -49,7 +49,7 @@ def test_cloud_instance_aws():
 
 def test_cloud_instance_azure():
     rpms = InstalledRpms(context_wrap(RPMS_AZURE))
-    _id = AzureInstanceID(context_wrap(AZURE_ID))
+    _id = AzureInstanceID(context_wrap(AZURE_ID_1))
     _type = AzureInstanceType(context_wrap(AZURE_TYPE_2))
     cp = CloudProvider(rpms, None, None, None)
     ret = CloudInstance(cp, None, _id, _type, None, None)
