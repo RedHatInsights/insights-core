@@ -3,11 +3,26 @@ import pytest
 
 from insights.core.exceptions import ContentException, ParseException, SkipComponent
 from insights.parsers import azure_instance
-from insights.parsers.azure_instance import AzureInstanceID, AzureInstancePlan, AzureInstanceType, AzurePublicIpv4Addresses
+from insights.parsers.azure_instance import (
+    AzureInstanceID,
+    AzureInstancePlan,
+    AzureInstanceType,
+    AzurePublicIpv4Addresses,
+)
 from insights.tests import context_wrap
 
 # For AzureInstanceID
-AZURE_ID = "f904ece8-c6c1-4b5c-881f-309b50f25e50"
+AZURE_ID_1 = "f904ece8-c6c1-4b5c-881f-309b50f25e50"
+AZURE_ID_2 = """
+ % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                  Dload  Upload   Total   Spent    Left  Speed
+   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+ 100  1126  100  1126    0     0  1374k      0 --:--:-- --:--:-- --:--:-- 1099k
+
+f904ece8-c6c1-4b5c-881f-309b50f25e50
+""".strip()
+AZURE_ID_AB_1 = '<?xml version="1.0" encoding="utf-8"?>'
+AZURE_ID_AB_2 = 'internal server error '
 
 # For AzureInstanceType
 AZURE_TYPE_1 = "Standard_L32s"
@@ -116,9 +131,21 @@ def test_azure_instance_id_ab_empty():
 
 
 def test_azure_instance_id():
-    azure = AzureInstanceID(context_wrap(AZURE_ID))
+    azure = AzureInstanceID(context_wrap(AZURE_ID_1))
     assert azure.id == "f904ece8-c6c1-4b5c-881f-309b50f25e50"
     assert repr(azure) == "<instance_id: {0}>".format(azure.id)
+
+    azure = AzureInstanceID(context_wrap(AZURE_ID_2))
+    assert azure.id == "f904ece8-c6c1-4b5c-881f-309b50f25e50"
+    assert repr(azure) == "<instance_id: {0}>".format(azure.id)
+
+
+def test_azure_instance_id_ab():
+    with pytest.raises(ParseException):
+        AzureInstanceID(context_wrap(AZURE_ID_AB_1))
+
+    with pytest.raises(ParseException):
+        AzureInstanceID(context_wrap(AZURE_ID_AB_2))
 
 
 # Test AzureInstanceType
@@ -152,7 +179,8 @@ def test_azure_instance_type():
     assert azure.version is None
     assert azure.raw == "Standard_L32s"
     assert repr(azure) == "<azure_type: {t}, size: {s}, version: {v},  raw: {r}>".format(
-                t=azure.type, s=azure.size, v=azure.version, r=azure.raw)
+        t=azure.type, s=azure.size, v=azure.version, r=azure.raw
+    )
 
     azure = AzureInstanceType(context_wrap(AZURE_TYPE_2))
     assert azure.type == "Standard"
@@ -195,7 +223,8 @@ def test_azure_instance_plan():
     assert azure.publisher == "Red Hat"
     assert azure.raw == '{"name": "rhel7", "product": "rhel", "publisher": "Red Hat"}'
     assert repr(azure) == "<azure_plan_name: {n}, product: {pr}, publisher: {pu}, raw: {r}".format(
-            n=azure.name, pr=azure.product, pu=azure.publisher, r=azure.raw)
+        n=azure.name, pr=azure.product, pu=azure.publisher, r=azure.raw
+    )
 
     azure = AzureInstancePlan(context_wrap(AZURE_PLAN_2))
     assert azure.name is None
@@ -212,7 +241,7 @@ def test_azure_instance_plan():
 
 def test_doc_examples():
     env = {
-        'azure_id': AzureInstanceID(context_wrap(AZURE_ID)),
+        'azure_id': AzureInstanceID(context_wrap(AZURE_ID_1)),
         'azure_plan': AzureInstancePlan(context_wrap(AZURE_PLAN_DOC)),
         'azure_type': AzureInstanceType(context_wrap(AZURE_TYPE_DOC)),
     }
