@@ -16,7 +16,10 @@ AzureInstancePlan - 'plan' of Azure Instance
 AzurePublicIpv4Addresses - list of public IPv4 addresses
 --------------------------------------------------------
 """
+
 import json
+
+from uuid import UUID
 
 from insights.core import CommandParser
 from insights.core.exceptions import ParseException, SkipComponent
@@ -26,7 +29,7 @@ from insights.specs import Specs
 
 def validate_content(content):
     if not content or 'curl: ' in content[0]:
-        raise SkipComponent()
+        raise SkipComponent
 
 
 @parser(Specs.azure_instance_id)
@@ -42,6 +45,7 @@ class AzureInstanceID(CommandParser):
 
     Raises:
         SkipComponent: When content is empty or no parse-able content.
+        ParseException: When ID cannot be recognized.
 
     Attributes:
         id (str): The instance ID of the VM instance in Azure.
@@ -54,7 +58,19 @@ class AzureInstanceID(CommandParser):
     def parse_content(self, content):
         validate_content(content)
 
-        self.id = content[0].strip()
+        line = None
+        for line in content:
+            line = line.strip()
+            try:
+                UUID(line)
+                break
+            except Exception:
+                line = None
+
+        if line is None:
+            raise ParseException('Unrecognized Instance ID: "{0}"', content[-1])
+
+        self.id = line
 
     def __repr__(self):
         return "<instance_id: {i}>".format(i=self.id)
@@ -91,6 +107,7 @@ class AzureInstanceType(CommandParser):
         >>> azure_type.raw
         'Standard_L64s_v2'
     """
+
     def parse_content(self, content):
         validate_content(content)
 
@@ -110,7 +127,8 @@ class AzureInstanceType(CommandParser):
 
     def __repr__(self):
         return "<azure_type: {t}, size: {s}, version: {v},  raw: {r}>".format(
-                t=self.type, s=self.size, v=self.version, r=self.raw)
+            t=self.type, s=self.size, v=self.version, r=self.raw
+        )
 
 
 @parser(Specs.azure_instance_plan)
@@ -145,6 +163,7 @@ class AzureInstancePlan(CommandParser):
         >>> azure_plan.publisher == 'planPublisher'
         True
     """
+
     def parse_content(self, content):
         validate_content(content)
 
@@ -191,6 +210,7 @@ class AzurePublicIpv4Addresses(CommandParser, list):
         SkipComponent: When content is empty or curl returned an error.
         ParseException: On JSON parsing error.
     """
+
     def parse_content(self, content):
         validate_content(content)
 
