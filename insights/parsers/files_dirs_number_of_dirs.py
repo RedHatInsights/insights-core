@@ -1,6 +1,6 @@
 """
 Number of files or dirs from dirs
-=========================
+=================================
 
 Parses the output of files or dirs number from dirs.
 """
