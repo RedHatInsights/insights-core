@@ -105,8 +105,11 @@ class Cleaner(object):
 
     def clean_content(self, lines, no_obfuscate=None, no_redact=False, allowlist=None, width=False):
         """
-        Clean lines one by one according to the configuration, the cleaned
-        lines will be returned.
+        Clean lines one by one according to the configuration.
+
+        For some extra large files, e.g. logs, we want to keep the bottom
+        part of them.  So the lines are processed in reverse order.  But the
+        processed result is returned in the original order.
         """
 
         def _clean_line(line):
@@ -147,11 +150,13 @@ class Cleaner(object):
             return _clean_line(lines)
 
         result = []
-        for line in lines:
-            line = _clean_line(line)
+        # process lines in reverse order
+        for idx in range(len(lines) - 1, -1, -1):
+            line = _clean_line(lines[idx])
             result.append(line) if line is not None else None
         if result and any(l for l in result):
-            # When there are some lines Truth
+            # When some lines Truthy, return them in right order
+            result.reverse()
             return result
         # All lines blank
         return []

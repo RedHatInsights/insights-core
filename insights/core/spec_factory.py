@@ -102,13 +102,12 @@ class ContentProvider(object):
             if cleans:
                 log.debug("Cleaning (%s) %s", "/".join(cleans), self.relative_path)
                 content = self.cleaner.clean_content(
-                    content[::-1],  # Scan from bottom
+                    content,
                     no_obfuscate=no_obf,
                     allowlist=allowlist,
                     no_redact=no_red,
                     width=self.relative_path.endswith("netstat_-neopa"),
-                )[::-1]
-                # ^ Reverse to the right order then
+                )
                 if len(content) == 0:
                     log.debug("Skipping %s due to empty after cleaning", self.path)
                     raise ContentException("Empty after cleaning: %s" % self.path)
@@ -300,7 +299,7 @@ class TextFileProvider(FileProvider):
                 content = [l.rstrip("\n") for l in f]
             if not isinstance(self.ctx, HostContext) and self._filters:
                 # Post-filtering ONLY when processing data
-                return AllowFilter.filter_content(content[::-1], self._filters)[::-1]
+                content = AllowFilter.filter_content(content, self._filters)
             return content
 
     def _stream(self):
