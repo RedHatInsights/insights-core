@@ -27,9 +27,10 @@ def files_dirs_number(broker):
                 for name in os.listdir(item):
                     if os.path.isfile(item + name):
                         files_number = files_number + 1
-                    else:
+                    elif os.path.isdir(item + name):
                         dirs_number = dirs_number + 1
                 result[item]["files_number"] = files_number
                 result[item]["dirs_number"] = dirs_number
-        return DatasourceProvider(content=json.dumps(result, sort_keys=True), relative_path='files_dirs_number')
+        if result:
+            return DatasourceProvider(content=json.dumps(result, sort_keys=True), relative_path='files_dirs_number')
     raise SkipComponent
