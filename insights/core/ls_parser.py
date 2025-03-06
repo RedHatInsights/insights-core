@@ -22,16 +22,16 @@ def set_name_link(entry, is_softlink, path):
         entry['name'] = path
 
 
-def parse_major_minor(last, result):
+def parse_major_minor_date(last, result):
     """
-    Parse the size / major, minor section of the line.
+    Parse the size / major, minor and date section of the line.
 
     Args:
         last (str): the rest of the line after the owner and group.
         result (dict): the dirent dict to put details in.
 
     Returns:
-        The rest of the line after the size / major, minor.
+        The file name portion of the line.
     """
     # device numbers only go to 256.
     # If a comma is in the first four characters, the next two elements are
@@ -42,8 +42,10 @@ def parse_major_minor(last, result):
         result["minor"] = int(minor)
     else:
         size, rest = last.split(None, 1)
-        result["size"] = int(size) if size.isdigit() else size
-    return rest
+        result["size"] = size if size == '?'else int(size)
+    # The date part is always 12 characters regardless of content.
+    result['date'] = rest[:12]
+    return rest[13:]
 
 
 def parse_non_selinux(entry, is_softlink, links, owner, group, last):
@@ -66,12 +68,9 @@ def parse_non_selinux(entry, is_softlink, links, owner, group, last):
     entry["owner"] = owner
     entry["group"] = group
 
-    rest = parse_major_minor(last, entry)
+    rest = parse_major_minor_date(last, entry)
 
-    # The date part is always 12 characters regardless of content.
-    entry["date"] = rest[:12]
-
-    set_name_link(entry, is_softlink, rest[13:])
+    set_name_link(entry, is_softlink, rest)
 
 
 def set_selinux(entry, selinux_str):
@@ -123,9 +122,8 @@ def parse_rhel8_selinux(entry, is_softlink, links, owner, group, last):
     entry["group"] = group
     selinux_str, last = last.split(None, 1)
     set_selinux(entry, selinux_str)
-    rest = parse_major_minor(last, entry)
-    entry["date"] = rest[:12]
-    set_name_link(entry, is_softlink, rest[13:])
+    rest = parse_major_minor_date(last, entry)
+    set_name_link(entry, is_softlink, rest)
 
 
 parse_mode = {
@@ -180,22 +178,24 @@ class Directory(dict):
             # Now parse based on mode
             parser(entry, typ == 'l', links, owner, group, rest)
 
-            # Update our entry and put it into the correct buckets
-            # based on its type.
-            entry.update(rest)
-            # TODO
-            # - The `raw_entry` key is deprecated and will be removed from 3.6.0.
-            #   Please use the `insights.parsers.ls.FileListingParser.raw_entry_of` instead.
-            entry["raw_entry"] = line
+            # final details
+            # entry["raw_entry"] = line
 
             nm = entry["name"]
             ents[nm] = entry
-            if typ == "d":
-                dirs.append(nm)
-            elif typ in "bc":  # faster than typ == "b" or typ == "c"
-                specials.append(nm)
-            else:
+            # Files are most common, dirs next, so we handle this in frequency order
+            if typ == "-":
                 files.append(nm)
+            elif typ == "d":
+                dirs.append(nm)
+            else:
+                specials.append(nm)
+            # if typ == "d":
+                # dirs.append(nm)
+            # elif typ in "bc":
+                # specials.append(nm)
+            # else:
+                # files.append(nm)
 
         super(Directory, self).__init__(
             {
