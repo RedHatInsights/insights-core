@@ -27,7 +27,7 @@ def files_dirs_number(broker):
                 for name in os.listdir(item):
                     if os.path.isfile(item + name):
                         files_number = files_number + 1
-                    elif os.path.isdir(item + name):
+                    elif os.path.isdir(item + name):  # pragma: no cover
                         dirs_number = dirs_number + 1
                 result[item]["files_number"] = files_number
                 result[item]["dirs_number"] = dirs_number

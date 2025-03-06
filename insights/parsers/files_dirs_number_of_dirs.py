@@ -34,8 +34,10 @@ class FilesDirsNumberOfDir(JSONParser):
         """Return the number of dirs under specified `dir`"""
         if dir in self.data:
             return self.data[dir]["dirs_number"]
+        raise KeyError("No such %s dir collected", dir)
 
     def files_number_of(self, dir):
         """Return the number of files under specified `dir`"""
         if dir in self.data:
             return self.data[dir]["files_number"]
+        raise KeyError("No such %s dir collected", dir)
