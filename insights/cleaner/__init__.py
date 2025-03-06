@@ -46,6 +46,7 @@ from insights.util.hostname import determine_hostname
 from insights.util.posix_regex import replace_posix
 
 logger = logging.getLogger(__name__)
+MAX_LINE_LENGTH = 1048576  # 1MB
 DEFAULT_OBFUSCATIONS = {
     'hostname',
     'ip',  # ipv4
@@ -109,6 +110,11 @@ class Cleaner(object):
         """
 
         def _clean_line(line):
+            if len(line) > MAX_LINE_LENGTH:
+                # Keep the first MAX_LINE_LENGTH chars only (it rarely happens)
+                line = line[:MAX_LINE_LENGTH]
+                logger.debug('Extra-long line is truncated ...')
+
             for parser, kwargs in parsers:
                 line = parser.parse_line(line, **kwargs)
             return line
