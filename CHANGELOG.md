@@ -2,6 +2,19 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.7) (2025-03-06)
+
+- feat: add spec nvidia_smi_query_gpu ([PR 4375](https://github.com/RedHatInsights/insights-core/pull/4375))
+- feat: Add datasource and spec for dirs/files number ([PR 4370](https://github.com/RedHatInsights/insights-core/pull/4370))
+- fix: truncate line longer than 1MB ([PR 4371](https://github.com/RedHatInsights/insights-core/pull/4371))
+- In `from_dict` set fields from ls parser dict correctly ([PR 4369](https://github.com/RedHatInsights/insights-core/pull/4369))
+- fix: skip unexpected Azure instance id ([PR 4372](https://github.com/RedHatInsights/insights-core/pull/4372))
+- fix: Diagnosis argument should work only when registered ([PR 4366](https://github.com/RedHatInsights/insights-core/pull/4366))
+- fix(client): Ensure unregistration is always explicit ([PR 4354](https://github.com/RedHatInsights/insights-core/pull/4354))
+- Support non-RHEL systems for Core updates ([PR 4345](https://github.com/RedHatInsights/insights-core/pull/4345))
+- fix(client): Change registration endpoint to /host_exists ([PR 4350](https://github.com/RedHatInsights/insights-core/pull/4350))
+- do not collect metadata stuff on client side ([PR 4250](https://github.com/RedHatInsights/insights-core/pull/4250))
+
 # [insights-core-3.5.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.6) (2025-02-27)
 
 - fix(client): Ignore the input for --diagnosis flag ([PR 4355](https://github.com/RedHatInsights/insights-core/pull/4355))

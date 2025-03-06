@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.6
+Version:        3.5.7
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,23 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 06 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.7-1
+- feat: add spec nvidia_smi_query_gpu (#4375) (xiaoxwan@redhat.com)
+- feat: Add datasource and spec for dirs/files number (#4370)
+  (jiazhang@redhat.com)
+- fix: truncate line longer than 1MB (#4371) (xiangceliu@redhat.com)
+- In `from_dict` set fields from ls parser dict correctly (#4369)
+  (paulway@redhat.com)
+- fix: skip unexpected Azure instance id (#4372) (xiangceliu@redhat.com)
+- fix: Diagnosis argument should work only when registered (#4366)
+  (pkoprda@redhat.com)
+- fix(client): Ensure unregistration is always explicit (#4354)
+  (pkoprda@redhat.com)
+- Support non-RHEL systems for Core updates (#4345) (mhorky@redhat.com)
+- fix(client): Change registration endpoint to /host_exists (#4350)
+  (pkoprda@redhat.com)
+- do not collect metadata stuff on client side (#4250) (xiangceliu@redhat.com)
+
 * Thu Feb 27 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.6-1
 - fix(client): Ignore the input for --diagnosis flag (#4355)
   (47797196+pkoprda@users.noreply.github.com)
