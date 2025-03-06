@@ -1,6 +1,6 @@
 Name:           insights-core
 Version:        3.5.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
 License:        ASL 2.0
@@ -50,6 +50,9 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jan 02 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.0-2
+- Support non-RHEL systems for Core updates (#4345) (mhorky@redhat.com)
+
 * Thu Jan 02 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.0-1
 - fix: typo options to the ls_lanRL spec (#4323) (xiangceliu@redhat.com)
 - chore: remove planned deprecations for bumping 3.5.0 (#4308)

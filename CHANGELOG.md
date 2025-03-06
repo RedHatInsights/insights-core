@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.0-2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0-2) (2025-03-06)
+
+- Support non-RHEL systems for Core updates ([PR 4345](https://github.com/RedHatInsights/insights-core/pull/4345))
+
 # [insights-core-3.5.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0) (2025-01-02)
 
 - fix: typo options to the ls_lanRL spec ([PR 4323](https://github.com/RedHatInsights/insights-core/pull/4323))
