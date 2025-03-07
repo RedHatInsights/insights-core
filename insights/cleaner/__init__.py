@@ -127,9 +127,9 @@ class Cleaner(object):
         # 1. Redact when NO "no_redact=True" is set
         if self.redact['pattern'] and not no_redact:
             parsers.append((self.redact['pattern'], {})) if not no_redact else None
-        # 2. Filter as per allowlist got from add_filter
+        # 2. Filter as per allowlist got from add_filter  # copy it to avoid write back
         (
-            parsers.append((self.redact['allow_filter'], {'allowlist': allowlist}))
+            parsers.append((self.redact['allow_filter'], {'allowlist': dict(allowlist)}))
             if allowlist is not None
             else None
         )

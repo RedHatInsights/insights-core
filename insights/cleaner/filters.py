@@ -50,6 +50,7 @@ class AllowFilter(object):
         :param allowlist: dictionary of allowlist
         :return: list of lines
         """
+        allowlist = dict(allowlist)  # copy it to avoid write back
         result = []
         for idx in range(len(lines) - 1, -1, -1):
             for a_key in list(allowlist.keys()):  # copy keys to avoid RuntimeError
