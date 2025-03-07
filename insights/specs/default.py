@@ -53,6 +53,7 @@ from insights.specs.datasources import (
     eap_reports,
     env,
     ethernet,
+    files_dirs_number_of,
     httpd,
     intersystems,
     ipcs,
@@ -334,6 +335,7 @@ class DefaultSpecs(Specs):
     falconctl_version = simple_command("/opt/CrowdStrike/falconctl -g --version")
     fapolicyd_rules = glob_file(r"/etc/fapolicyd/rules.d/*.rules")
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
+    files_dirs_number = files_dirs_number_of.files_dirs_number
     filefrag = simple_command("/sbin/filefrag /boot/grub2/grubenv", keep_rc=True)
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
@@ -638,6 +640,9 @@ class DefaultSpecs(Specs):
         "/usr/bin/nvidia-smi --query-gpu=name,clocks_event_reasons.active --format=csv,noheader"
     )
     nvidia_smi_l = simple_command("/usr/bin/nvidia-smi -L")
+    nvidia_smi_query_gpu = simple_command(
+        "/usr/bin/nvidia-smi --query-gpu=index,name,uuid,memory.total,clocks_event_reasons.active --format=csv,noheader"
+    )
     nvme_core_io_timeout = simple_file("/sys/module/nvme_core/parameters/io_timeout")
     od_cpu_dma_latency = simple_command("/usr/bin/od -An -t d /dev/cpu_dma_latency")
     odbc_ini = simple_file("/etc/odbc.ini")
