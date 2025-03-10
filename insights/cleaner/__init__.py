@@ -46,6 +46,7 @@ from insights.util.hostname import determine_hostname
 from insights.util.posix_regex import replace_posix
 
 logger = logging.getLogger(__name__)
+MAX_LINE_LENGTH = 1048576  # 1MB
 DEFAULT_OBFUSCATIONS = {
     'hostname',
     'ip',  # ipv4
@@ -104,11 +105,19 @@ class Cleaner(object):
 
     def clean_content(self, lines, no_obfuscate=None, no_redact=False, allowlist=None, width=False):
         """
-        Clean lines one by one according to the configuration, the cleaned
-        lines will be returned.
+        Clean lines one by one according to the configuration.
+
+        For some extra large files, e.g. logs, we want to keep the bottom
+        part of them.  So the lines are processed in reverse order.  But the
+        processed result is returned in the original order.
         """
 
         def _clean_line(line):
+            if len(line) > MAX_LINE_LENGTH:
+                # Keep the first MAX_LINE_LENGTH chars only (it rarely happens)
+                line = line[:MAX_LINE_LENGTH]
+                logger.debug('Extra-long line is truncated ...')
+
             for parser, kwargs in parsers:
                 line = parser.parse_line(line, **kwargs)
             return line
@@ -118,9 +127,9 @@ class Cleaner(object):
         # 1. Redact when NO "no_redact=True" is set
         if self.redact['pattern'] and not no_redact:
             parsers.append((self.redact['pattern'], {})) if not no_redact else None
-        # 2. Filter as per allowlist got from add_filter
+        # 2. Filter as per allowlist got from add_filter  # copy it to avoid write back
         (
-            parsers.append((self.redact['allow_filter'], {'allowlist': allowlist}))
+            parsers.append((self.redact['allow_filter'], {'allowlist': dict(allowlist)}))
             if allowlist is not None
             else None
         )
@@ -141,11 +150,13 @@ class Cleaner(object):
             return _clean_line(lines)
 
         result = []
-        for line in lines:
-            line = _clean_line(line)
+        # process lines in reverse order
+        for idx in range(len(lines) - 1, -1, -1):
+            line = _clean_line(lines[idx])
             result.append(line) if line is not None else None
         if result and any(l for l in result):
-            # When there are some lines Truth
+            # When some lines Truthy, return them in right order
+            result.reverse()
             return result
         # All lines blank
         return []

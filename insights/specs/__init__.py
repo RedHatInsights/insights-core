@@ -29,7 +29,7 @@ class Specs(SpecSet):
     auditctl_status = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     auditd_conf = RegistryPoint()
     audispd_conf = RegistryPoint()
-    ausearch_insights_client = RegistryPoint(prio=-1)  # The last spec to collect
+    ausearch_insights = RegistryPoint(prio=-1)  # The last spec to collect
     authselect_current = RegistryPoint()
     autofs_conf = RegistryPoint()
     avc_cache_threshold = RegistryPoint()
@@ -204,6 +204,8 @@ class Specs(SpecSet):
     )
     fc_match = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     fcoeadm_i = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    files_dirs_number_filter = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
+    files_dirs_number = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     filefrag = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     findmnt_lo_propagation = RegistryPoint()
     firewall_cmd_list_all_zones = RegistryPoint()
@@ -496,6 +498,7 @@ class Specs(SpecSet):
     numeric_user_group_name = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     nvidia_smi_active_clocks_event_reasons = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     nvidia_smi_l = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    nvidia_smi_query_gpu = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     nvme_core_io_timeout = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     oc_get_bc = RegistryPoint()
     oc_get_build = RegistryPoint()

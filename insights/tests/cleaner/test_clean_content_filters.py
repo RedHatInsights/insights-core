@@ -16,8 +16,9 @@ def test_clean_content_filters_allowlist(obfuscate):
     assert test_data != ret
     assert 'testabc' in ret  # 1 of 2 matched
     assert 'test123' in ret  # 2 of 2 matched
-    assert 'pwd: p4ssw0rd' in ret  # 1 of 1 matched
-    assert 'pwd:abc' not in ret  # Max count matched
+    # lines are processed in reverse order
+    assert 'pwd:abc' in ret  # 1 of 1 matched
+    assert 'pwd: p4ssw0rd' not in ret  # Max count matched
     assert '1234' not in ret
     assert 'abcd' not in ret
 

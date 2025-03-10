@@ -23,7 +23,7 @@ class rhsmCertificate:
     try:
         PATH = RHSM_CONFIG.get('rhsm', 'consumerCertDir')
     except:
-        pass
+        PATH = "/etc/pki/consumer/"
 
     KEY = 'key.pem'
     CERT = 'cert.pem'

@@ -29,8 +29,8 @@ from insights.cleaner import Cleaner
             ["inet 10.0.2.15", "  netmask 255.255.255.0", " broadcast 10.0.2.255", "dup 10.0.2.15"],
             [
                 "inet 10.230.230.1",
-                "  netmask 10.230.230.2",
-                " broadcast 10.230.230.3",
+                "  netmask 10.230.230.3",
+                " broadcast 10.230.230.2",
                 "dup 10.230.230.1",
             ],
         ),

@@ -234,7 +234,7 @@ plugins:
     - name: insights.parsers.iris.IrisCpf
       enabled: true
 
-    # needed for ausearch_insights_client
+    # needed for ausearch_insights
     - name: insights.components.rhel_version.IsGtOrRhel86
       enabled: true
 

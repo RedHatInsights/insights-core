@@ -8,6 +8,7 @@ class FilePermissions(object):
     It is useful for checking file permissions and owner.
 
     Attributes:
+        type (str): The type indicator (d, c, b, l or -)
         perms_owner (str): Owner permissions, e.g. 'rwx'
         perms_group (str): Group permissions
         perms_other (str): Other permissions
@@ -23,7 +24,7 @@ class FilePermissions(object):
 
     _PERMISSIONS_PATTERN = re.compile(r'''
         ^
-        .([-rwxsS]{3})([-rwxsS]{3})([-rwxsS]{3})   # -rwxrwxrwx
+        (.)([-rwxsS]{3})([-rwxsS]{3})([-rwxsS]{3})   # -rwxrwxrwx
         # -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
         # ^^^^^^^^^^
         # Valid characters are -rwxsS
@@ -79,13 +80,13 @@ class FilePermissions(object):
         self.line = line
         r = self._PERMISSIONS_PATTERN.search(self.line)
         if r:
-            (self.perms_owner, self.perms_group, self.perms_other,
+            (self.type, self.perms_owner, self.perms_group, self.perms_other,
              self.owner, self.group, self.path) = r.groups()
         else:
             raise ValueError('Invalid `ls -l` line "{}"'.format(self.line))
 
     @classmethod
-    def from_dict(self, dirent):
+    def from_dict(cls, dirent):
         """
         Create a new FilePermissions object from the given dictionary.  This
         works with the FileListing parser class, which has already done the
@@ -93,13 +94,17 @@ class FilePermissions(object):
         with all the dictionary keys available as properties, and also split
         the ``perms`` string up into owner, group
         """
+        # Get a new instance without having to provide a line.
+        self = cls.__new__(cls)
         # Check that we have at least as much data as the __init__ requires
-        for k in ['perms', 'owner', 'group', 'name', 'dir']:
+        for k in ['type', 'perms', 'owner', 'group', 'name', 'dir']:
             if k not in dirent:
                 raise ValueError("Need required key '{k}'".format(k=k))
         # Copy all values across
-        for k in dirent:
-            setattr(self, k, dirent[k])
+        for key, val in dirent.items():
+            setattr(self, key, val)
+        # Fill in names that might not have been passed from the ls parser
+        self.path = self.name
         # Create perms parts
         self.perms_owner = self.perms[0:3]
         self.perms_group = self.perms[3:6]

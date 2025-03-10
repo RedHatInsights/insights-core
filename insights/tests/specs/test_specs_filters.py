@@ -14,7 +14,6 @@ from insights.core import filters
 from insights.core.context import HostContext
 from insights.core.filters import add_filter
 from insights.core.plugins import datasource
-from insights.core import spec_factory
 from insights.core.spec_factory import (
     RegistryPoint,
     SpecSet,
@@ -235,18 +234,6 @@ def test_specs_filters_spec_factory():
     assert len(broker[Stuff.first_of_spec_w_filter].content) == 1
     assert len(broker.exceptions) == 1  # empty_after_filter
     assert len(broker.tracebacks) == 1  # empty_after_filter
-
-
-def test_max_lines_limit_filterable_file():
-    spec_factory.MAX_LINES_FOR_FILTERABLE_FILE = 10
-    add_filter(Stuff.large_filter, ["Some"])
-    broker = dr.Broker()
-    broker[HostContext] = HostContext()
-    broker['cleaner'] = Cleaner(None, None)
-    broker = dr.run(dr.get_dependency_graph(dostuff), broker)
-    assert len(broker[Stuff.large_filter].content) == 10
-    assert len(broker[Stuff.large_file_without_filter].content) == filters.MAX_MATCH + 1
-    spec_factory.MAX_LINES_FOR_FILTERABLE_FILE = 1000000
 
 
 def test_line_terminators():
