@@ -281,15 +281,15 @@ def test_build_oscap_command_append_tailoring_path(config):
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test__inventory_id(config):
     compliance_client = ComplianceClient(config=config)
-    compliance_client.conn._fetch_system_by_machine_id = lambda: []
+    compliance_client.conn._fetch_system_by_machine_id = lambda: None
     with raises(SystemExit):
         compliance_client.inventory_id
 
-    compliance_client.conn._fetch_system_by_machine_id = lambda: [{}]
+    compliance_client.conn._fetch_system_by_machine_id = lambda: {}
     with raises(SystemExit):
         compliance_client.inventory_id
 
-    compliance_client.conn._fetch_system_by_machine_id = lambda: [{'id': '12345'}]
+    compliance_client.conn._fetch_system_by_machine_id = lambda: {'id': '12345'}
     assert compliance_client.inventory_id == '12345'
 
 
