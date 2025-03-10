@@ -29,7 +29,7 @@ class Specs(SpecSet):
     auditctl_status = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     auditd_conf = RegistryPoint()
     audispd_conf = RegistryPoint()
-    ausearch_insights_client = RegistryPoint(prio=-1)  # The last spec to collect
+    ausearch_insights = RegistryPoint(prio=-1)  # The last spec to collect
     authselect_current = RegistryPoint()
     autofs_conf = RegistryPoint()
     avc_cache_threshold = RegistryPoint()
