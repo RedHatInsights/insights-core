@@ -150,8 +150,8 @@ class DefaultSpecs(Specs):
     auditctl_status = simple_command("/sbin/auditctl -s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     audispd_conf = simple_file("/etc/audisp/audispd.conf")
-    ausearch_insights_client = simple_command(
-        "/usr/sbin/ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts recent -su insights_client --input-logs",
+    ausearch_insights = simple_command(
+        "/usr/sbin/ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts recent",
         deps=[IsGtOrRhel86],
         keep_rc=True,
     )
