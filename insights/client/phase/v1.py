@@ -230,12 +230,7 @@ def post_update(client, config):
         return
 
     # check registration status before anything else
-    if isfile(constants.machine_id_file):
-        reg_check = client.get_registration_status()
-        if reg_check is None:
-            sys.exit(constants.sig_kill_bad)
-    else:
-        reg_check = False
+    reg_check = isfile(constants.registered_files[0])
 
     # --status
     if config.status:
@@ -262,13 +257,6 @@ def post_update(client, config):
 
     # --register was called
     if config.register:
-        # don't actually need to make a call to register() since
-        #   system creation and upload are a single event on the platform
-        if reg_check is False and isfile(constants.machine_id_file):
-            # Do not register if a machine_id file is found
-            logger.info("Machine-id found, insights-client can not be registered."
-                        " Please, unregister insights-client first: `insights-client --unregister`")
-            sys.exit(constants.sig_kill_bad)
         if reg_check:
             logger.info('This host has already been registered.')
         if not config.disable_schedule:
