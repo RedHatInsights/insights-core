@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.7
+Version:        3.5.8
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Tue Mar 11 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.8-1
+- Fix Compliance inventory data parsing (#4379)
+  (33912805+LightOfHeaven1994@users.noreply.github.com)
+
 * Thu Mar 06 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.7-1
 - feat: add spec nvidia_smi_query_gpu (#4375) (xiaoxwan@redhat.com)
 - feat: Add datasource and spec for dirs/files number (#4370)

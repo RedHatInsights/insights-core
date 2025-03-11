@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.8](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.8) (2025-03-11)
+
+- Fix Compliance inventory data parsing ([PR 4379](https://github.com/RedHatInsights/insights-core/pull/4379))
+
 # [insights-core-3.5.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.7) (2025-03-06)
 
 - feat: add spec nvidia_smi_query_gpu ([PR 4375](https://github.com/RedHatInsights/insights-core/pull/4375))
