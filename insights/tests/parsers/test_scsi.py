@@ -99,7 +99,7 @@ def test_missing_header():
 
 
 def test_has_only_header():
-    with pytest.raises(ParseException) as excinfo:
+    with pytest.raises(SkipComponent) as excinfo:
         result = SCSI(context_wrap(SCSI_OUTPUT_HAS_ONLY_HEADER))
         assert result is None
     assert 'Content has only header but no other content:' in str(excinfo.value)
