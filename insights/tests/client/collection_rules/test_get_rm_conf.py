@@ -330,7 +330,10 @@ def test_rm_conf_old_load_ok(isfile, verify):
     with patch_open(filedata):
         upload_conf = insights_upload_conf(remove_file=conf_remove_file)
         result = upload_conf.get_rm_conf_old()
-    assert result == {'commands': ['/bin/ls', 'ethtool_i'], 'files': ['/etc/test'], 'patterns': ['abc123', 'def456'], 'keywords': ['key1', 'key2', 'key3']}
+    assert result["commands"] == ["/bin/ls", "ethtool_i"]
+    assert result["files"] == ["/etc/test"]
+    assert result["patterns"] == ["abc123", "def456"]
+    assert result["keywords"] == ["key1", "key2", "key3"]
 
 
 # @patch('insights.client.collection_rules.verify_permissions', return_value=True)

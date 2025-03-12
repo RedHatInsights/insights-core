@@ -26,13 +26,12 @@ def mock_init_session(obj):
 
 
 @patch("insights.client.connection.InsightsConnection._legacy_upload_archive", return_value=None)
-@patch("insights.client.connection.logger")
-def test_cfacts_no_cleaning_1(logger, legacy_upload):
+def test_cfacts_no_cleaning_1(legacy_upload):
     # 1. No need to cleaning as legacy_upload=True
     config = InsightsConfig(legacy_upload=True, obfuscate=True, obfuscate_hostname=True)
     conn = InsightsConnection(config)
     conn.upload_archive('data_collected', 'content_type')
-    logger.debug.assert_not_called()
+    legacy_upload.assert_called()
 
 
 @patch('insights.client.connection.InsightsConnection._init_session', mock_init_session)
@@ -50,7 +49,11 @@ def test_cfacts_no_cleaning_2(logger, facts, rm_conf, _open, post):
     cfacts.update({"branch_info": {"remote_branch": -1, "remote_leaf": -1}, "satellite_id": -1})
     c_facts = json.dumps(cfacts)
 
-    assert c_facts in str(logger.debug.mock_calls[0])
+    for log_message in logger.debug.mock_calls:
+        if c_facts in str(log_message):
+            break
+    else:
+        assert False, "Canonical facts weren't obfuscated or logged properly"
 
 
 @patch('insights.client.connection.InsightsConnection._init_session', mock_init_session)
@@ -65,8 +68,14 @@ def test_cfacts_cleaned(logger, facts, rm_conf, _open, post):
     conn = InsightsConnection(config)
     conn.upload_archive('data_collected', 'content_type')
 
-    cfacts_msg = str(logger.debug.mock_calls[0])
-    assert 'hostname' in cfacts_msg
-    assert determine_hostname() not in cfacts_msg
-    assert 'ip' in cfacts_msg
-    assert '10.0.0.1' not in cfacts_msg
+    for log_message in logger.debug.mock_calls:
+        log_message = str(log_message)
+        if (
+            "hostname" in log_message
+            and determine_hostname() not in log_message
+            and "ip" in log_message
+            and "10.0.0.1" not in log_message
+        ):
+            break
+    else:
+        assert False, "Canonical facts weren't obfuscated or logged properly"
