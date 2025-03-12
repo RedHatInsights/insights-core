@@ -62,7 +62,7 @@ class Mac(object):
             if new_mac:
                 logger.debug("Obfuscating MAC Addr - %s > %s", mac, new_mac)
                 return line.replace(mac, new_mac)
-            # it's an obfuscated IP
+            # it's an obfuscated MAC address
             return line
 
         if not line:
