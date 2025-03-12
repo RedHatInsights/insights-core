@@ -66,6 +66,7 @@ DB2_CONFIGURATION_USER = """
  LOCKLIST size to be used by optimizer   (OPT_LOCKLIST) = 0
  MAXLOCKS size to be used by optimizer   (OPT_MAXLOCKS) = 0
  SORTHEAP size to be used by optimizer   (OPT_SORTHEAP) = 0
+ SORTHEAP size to be used by optimizer   (opt_SORTHEAP) = 0
 """.strip()
 
 DB2_CONFIGURATION_USER_EMPTY = ""
@@ -109,6 +110,8 @@ DB2_MANAGER_CONFIGURATION = """
    Lock                                   (DFT_MON_LOCK) = OFF
    Sort                                   (DFT_MON_SORT) = OFF
  WLM dispatcher min. utilization (%) (WLM_DISP_MIN_UTIL) = 5
+ WLM dispatcher min. utilization (%) (WLM_DISP_MIN_util) = 5
+
 
  Communication buffer exit library list (COMM_EXIT_LIST) =
  Current effective arch level         (CUR_EFF_ARCH_LVL) = V:11 R:5 M:9 F:0 I:0 SB:0
@@ -161,6 +164,7 @@ def test_db2_databases_configuration():
     db2_configuration_user = db2.Db2DatabaseConfiguration(context_wrap(DB2_CONFIGURATION_USER, path=db2_databases_configuration_path))
     assert db2_configuration_user["Database configuration release level"] == "0x1500"
     assert db2_configuration_user["All committed transactions have been written to disk"] == "YES"
+    assert db2_configuration_user["SORTHEAP size to be used by optimizer   (opt_SORTHEAP)"] == "0"
     assert db2_configuration_user["user"] == "dbp"
     assert db2_configuration_user["db_name"] == "TESTD1"
 
@@ -177,6 +181,7 @@ def test_db2_database_manager():
     db2_manager_configuration = db2.Db2DatabaseManager(context_wrap(DB2_MANAGER_CONFIGURATION, path=db2_database_manager_path))
     assert db2_manager_configuration["NUMDB"] == "32"
     assert db2_manager_configuration["Database manager configuration release level"] == "0x1500"
+    assert db2_manager_configuration["WLM dispatcher min. utilization (%) (WLM_DISP_MIN_util)"] == "5"
     assert db2_manager_configuration["user"] == "dbp"
 
     with pytest.raises(SkipComponent) as e:
