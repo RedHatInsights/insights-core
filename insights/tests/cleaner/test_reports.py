@@ -62,7 +62,7 @@ def test_rhsm_facts(test_umask, obfuscate, obfuscate_ipv6, obfuscate_hostname, k
         else:
             assert hns == []
         # ip
-        assert facts['insights_client.obfuscate_ip_enabled'] == obfuscate
+        assert facts['insights_client.obfuscate_ipv4_enabled'] == obfuscate
         ips = json.loads(facts['insights_client.obfuscated_ipv4'])
         if obfuscate:
             assert ips[0]['original'] == '10.0.2.155'
@@ -136,7 +136,7 @@ def test_all_csv_reports(rhsm_facts, obfuscate, obfuscate_ipv6, obfuscate_hostna
             ips = list(csv.reader(fp.readlines(), skipinitialspace=True))
             # ip
             assert len(ips) > 1
-            assert ips[0] == ['Obfuscated IP', 'Original IP']
+            assert ips[0] == ['Obfuscated IPv4', 'Original IPv4']
             assert ips[1] == ['10.230.230.1', '10.0.2.155']
         os.unlink(ip_report_file)
     else:
