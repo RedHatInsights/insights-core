@@ -215,7 +215,7 @@ class Cleaner(object):
 
         facts = {
             'insights_client.hostname': self.fqdn,
-            'insights_client.obfuscate_ip_enabled': 'ip' in self.obfuscate,
+            'insights_client.obfuscate_ipv4_enabled': 'ip' in self.obfuscate,
             'insights_client.obfuscate_ipv6_enabled': 'ipv6' in self.obfuscate,
             # 'insights_client.obfuscate_mac_enabled': 'mac' in self.obfuscate,
             'insights_client.obfuscate_hostname_enabled': 'hostname' in self.obfuscate,
