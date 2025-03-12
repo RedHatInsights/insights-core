@@ -160,6 +160,7 @@ def test_db2ls():
 def test_db2_databases_configuration():
     db2_configuration_user = db2.Db2DatabaseConfiguration(context_wrap(DB2_CONFIGURATION_USER, path=db2_databases_configuration_path))
     assert db2_configuration_user["Database configuration release level"] == "0x1500"
+    assert db2_configuration_user["All committed transactions have been written to disk"] == "YES"
     assert db2_configuration_user["user"] == "dbp"
     assert db2_configuration_user["db_name"] == "TESTD1"
 
@@ -174,7 +175,8 @@ def test_db2_databases_configuration():
 
 def test_db2_database_manager():
     db2_manager_configuration = db2.Db2DatabaseManager(context_wrap(DB2_MANAGER_CONFIGURATION, path=db2_database_manager_path))
-    assert db2_manager_configuration["Max number of concurrently active databases     (NUMDB)"] == "32"
+    assert db2_manager_configuration["NUMDB"] == "32"
+    assert db2_manager_configuration["Database manager configuration release level"] == "0x1500"
     assert db2_manager_configuration["user"] == "dbp"
 
     with pytest.raises(SkipComponent) as e:
