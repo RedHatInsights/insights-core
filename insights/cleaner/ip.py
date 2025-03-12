@@ -78,14 +78,14 @@ class IPv4(object):
 
         def _sub_ip(line, ip):
             new_ip = self._ip2db(ip)
-            logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
+            logger.debug("Obfuscating IPv4 - %s > %s", ip, new_ip)
             return line.replace(ip, new_ip)
 
         def _sub_ip_keep_width(line, ip):
             ip_len = len(ip)
             new_ip = self._ip2db(ip)
             new_ip_len = len(new_ip)
-            logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
+            logger.debug("Obfuscating IPv4 - %s > %s", ip, new_ip)
             # pad or remove spaces to allow for the new length
             if ip_len > new_ip_len:
                 numspaces = ip_len - new_ip_len
@@ -128,7 +128,7 @@ class IPv4(object):
             return line
         except Exception as e:  # pragma: no cover
             logger.warning(e)
-            raise Exception('SubIPError: Unable to Substitute IP Address - %s', ips)
+            raise Exception('SubIPError: Unable to Substitute IPv4 Address - %s', ips)
 
     def mapping(self):
         mapping = []
@@ -139,17 +139,17 @@ class IPv4(object):
     def generate_report(self, report_dir, archive_name):
         try:
             ip_report_file = os.path.join(report_dir, "%s-ip.csv" % archive_name)
-            logger.info('Creating IP Report - %s', ip_report_file)
-            lines = ['Obfuscated IP,Original IP']
+            logger.info('Creating IPv4 Report - %s', ip_report_file)
+            lines = ['Obfuscated IPv4,Original IPv4']
             for k, v in self._ip_db.items():
                 lines.append('{0},{1}'.format(self._int2ip(k), self._int2ip(v)))
         except Exception as e:  # pragma: no cover
             logger.exception(e)
-            raise Exception('CreateReport Error: Error Creating IP Report')
+            raise Exception('CreateReport Error: Error Creating IPv4 Report')
 
         write_report(lines, ip_report_file)
 
-        logger.info('Completed IP Report.')
+        logger.info('Completed IPv4 Report.')
 
 
 class IPv6(object):
