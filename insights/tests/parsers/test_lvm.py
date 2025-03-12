@@ -202,6 +202,30 @@ WARNING: locking_type(0) is deprecated, using - -nolocking.
 }
 """.strip()
 
+LVM_FULLREPORT_WARNING_IN_JSON_MIDDLE = """
+  WARNING: locking_type(0) is deprecated, using - -nolocking.
+  {
+      "report": [
+          {
+          "vg": [{"vg_fmt":"lvm2", "vg_uuid":"zclHZK-pMKd-fSIC-8TRX-xitj-RxY1-vwCRAw", "vg_name":"rhel", "vg_attr":"wz--n-"}],
+          "pv": [{"pv_fmt":"lvm2", "pv_uuid":"LU7am7-ACyz-cPlb-byCA-j4IM-9FK8-iS1WA4", "dev_size":"<9.00g", "pv_name":"/dev/vda2"}],
+          "lv": [{"lv_uuid":"kG4B7g-Ggar-uwtO-EbEX-gBX0-EGO2-Y0VFfU", "lv_name":"root", "lv_full_name":"rhel/root", "lv_path":"/dev/rhel/root"}],
+          "pvseg": [{"pvseg_start":"0", "pvseg_size":"256", "pv_uuid":"LU7am7-ACyz-cPlb-byCA-j4IM-9FK8-iS1WA4", "lv_uuid":"8p6Tu0-OGa9-rbjg-5V22-D1dX-lNw7-Jed3m7"}],
+          "seg": [{"segtype":"linear", "stripes":"1", "data_stripes":"1", "reshape_len":"", "reshape_len_le":"", "data_copies":"1"}]
+          }
+          ,
+  WARNING: PV /dev/sdc in VG oraredo is using an old PV header, modify the VG to update.
+          {
+          "vg": [{"vg_fmt":"lvm2", "vg_uuid":"1rLhOL-Mqkc-gi9I-Yspd-QZ3W-ZWN6-5viZiT", "vg_name":"vg1", "vg_attr":"wz--n-"}],
+          "pv": [{"pv_fmt":"lvm2", "pv_uuid":"WwYITo-ng46-4Ufw-DqKx-0ZQA-LQeh-Vnga1N", "dev_size":"5.00g", "pv_name":"/dev/vdb"}],
+          "lv": [{"lv_uuid":"tZdwGc-xGEg-VMQU-WIgE-k8kP-Udeo-hgLofA", "lv_name":"lvraid1", "lv_full_name":"vg1/lvraid1", "lv_path":"/dev/vg1/lvraid1"}],
+          "pvseg": [{"pvseg_start":"0", "pvseg_size":"1", "pv_uuid":"D39Poc-PupR-sYD5-bUeJ-2aYO-YWdP-XAInA5", "lv_uuid":"3YHTyV-HXoc-wRRH-D1Jw-NNIs-m2g8-cOvgGS"}],
+          "seg": [{"segtype":"linear", "stripes":"1", "data_stripes":"1", "reshape_len":"", "reshape_len_le":"", "data_copies":"1"}]
+          }
+      ]
+  }
+""".strip()
+
 LVM_FULLREPORT_EMPTY = """
 {
     "report": [
@@ -213,7 +237,7 @@ LVM_FULLREPORT_EMPTY = """
 def test_find_warnings():
     data = [l for l in lvm.find_warnings(WARNINGS_CONTENT.splitlines())]
     assert len(data) == len(WARNINGS_FOUND.splitlines())
-    assert data == WARNINGS_FOUND.splitlines()
+    assert data == [0, 2, 4, 5]  # The WARNINGS_FOUND lines index in WARNINGS_CONTENT
 
 
 def compare_partial_dicts(result, expected):
@@ -253,7 +277,10 @@ def test_vgsheading_warnings():
     result = lvm.VgsHeadings(context_wrap(VGSHEADING_CONTENT))
     assert len(result.warnings) == 6
     assert 'Configuration setting "activation/thin_check_executable" unknown.' in result.warnings
-    assert 'WARNING: Locking disabled. Be careful! This could corrupt your metadata.' in result.warnings
+    assert (
+        'WARNING: Locking disabled. Be careful! This could corrupt your metadata.'
+        in result.warnings
+    )
 
 
 def test_vgs_with_extra_tips():
@@ -279,7 +306,7 @@ def test_system_devices_exception():
 
 
 def test_lvm_fullreport():
-    for data in [LVM_FULLREPORT, LVM_FULLREPORT_WARNING]:
+    for data in [LVM_FULLREPORT, LVM_FULLREPORT_WARNING, LVM_FULLREPORT_WARNING_IN_JSON_MIDDLE]:
         report = lvm.LvmFullReport(context_wrap(data))
         assert report is not None
         assert len(report.volume_groups) == 2
@@ -293,12 +320,20 @@ def test_lvm_fullreport():
             "pvseg_start": "0",
             "pvseg_size": "1",
             "pv_uuid": "D39Poc-PupR-sYD5-bUeJ-2aYO-YWdP-XAInA5",
-            "lv_uuid": "3YHTyV-HXoc-wRRH-D1Jw-NNIs-m2g8-cOvgGS"
+            "lv_uuid": "3YHTyV-HXoc-wRRH-D1Jw-NNIs-m2g8-cOvgGS",
         }
         assert vg1['seg'][0]['data_stripes'] == '1'
 
         if data == LVM_FULLREPORT_WARNING:
-            assert report.warnings == [LVM_FULLREPORT_WARNING.splitlines()[0], ]
+            assert report.warnings == [
+                LVM_FULLREPORT_WARNING.splitlines()[0],
+            ]
+
+        if data == LVM_FULLREPORT_WARNING_IN_JSON_MIDDLE:
+            assert report.warnings == [
+                LVM_FULLREPORT_WARNING_IN_JSON_MIDDLE.splitlines()[0],
+                LVM_FULLREPORT_WARNING_IN_JSON_MIDDLE.splitlines()[11],
+            ]
 
 
 def test_lvm_fullreport_empty():
