@@ -34,7 +34,8 @@ runtime = set(
         'defusedxml',
         'lockfile',
         'jinja2<=2.11.3; python_version <= "2.7"',
-        'jinja2; python_version > "2.7"',
+        'jinja2; python_version > "2.7" and python_version <= "3.6"',
+        'jinja2>=3.1.6;  python_version > "3.6"',
         'pyyaml',
         'setuptools; python_version >= "3.12"',
     ]
