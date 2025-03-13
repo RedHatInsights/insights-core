@@ -138,4 +138,3 @@ def test_get_rhsm_and_env(logger):
     with patch.dict(os_environ, {"NO_PROXY": "redhat.com"}, clear=True):
         connection.get_proxies()
     assert connection.proxies == {"https": config.proxy}
-    assert logger.called_with("You have environment variable NO_PROXY set as well as 'proxy' set in your configuration file. NO_PROXY environment variable will be ignored.")
