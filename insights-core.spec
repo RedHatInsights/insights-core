@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.8
+Version:        3.5.9
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,25 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 13 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.9-1
+- fix(test): Ensure tests pass in all testing environments (#4389)
+  (mhorky@redhat.com)
+- fix: set Jinjia version per CVE-2025-27516 (#4384) (lichen@redhat.com)
+- feat: Enhance db2 data format (#4385) (jiazhang@redhat.com)
+- fix: handle unexpected lines in parser LvmFullReport (#4386)
+  (xiaoxwan@redhat.com)
+- fix: use IPv4 in facts and csv report (#4387) (xiangceliu@redhat.com)
+- fix: deprecate outdated parser OpenStackInstanceXML (#4381)
+  (xiaoxwan@redhat.com)
+- fix: SkipComponent for known exception in parser SCSI (#4382)
+  (xiaoxwan@redhat.com)
+- feat: add IPv6 obfuscation to cleaner (#4362) (xiangceliu@redhat.com)
+- chore: update the ausearch command (#4378) (xiangceliu@redhat.com)
+- fix: limit loading content when processing data (#4365)
+  (xiangceliu@redhat.com)
+- fix(client): Always set rhsmCertificate.PATH attribute (#4377)
+  (mhorky@redhat.com)
+
 * Tue Mar 11 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.8-1
 - Fix Compliance inventory data parsing (#4379)
   (33912805+LightOfHeaven1994@users.noreply.github.com)

@@ -2,6 +2,20 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.9](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.9) (2025-03-13)
+
+- fix(test): Ensure tests pass in all testing environments ([PR 4389](https://github.com/RedHatInsights/insights-core/pull/4389))
+- fix: set Jinjia version per CVE-2025-27516 ([PR 4384](https://github.com/RedHatInsights/insights-core/pull/4384))
+- feat: Enhance db2 data format ([PR 4385](https://github.com/RedHatInsights/insights-core/pull/4385))
+- fix: handle unexpected lines in parser LvmFullReport ([PR 4386](https://github.com/RedHatInsights/insights-core/pull/4386))
+- fix: use IPv4 in facts and csv report ([PR 4387](https://github.com/RedHatInsights/insights-core/pull/4387))
+- fix: deprecate outdated parser OpenStackInstanceXML ([PR 4381](https://github.com/RedHatInsights/insights-core/pull/4381))
+- fix: SkipComponent for known exception in parser SCSI ([PR 4382](https://github.com/RedHatInsights/insights-core/pull/4382))
+- feat: add IPv6 obfuscation to cleaner ([PR 4362](https://github.com/RedHatInsights/insights-core/pull/4362))
+- chore: update the ausearch command ([PR 4378](https://github.com/RedHatInsights/insights-core/pull/4378))
+- fix: limit loading content when processing data ([PR 4365](https://github.com/RedHatInsights/insights-core/pull/4365))
+- fix(client): Always set rhsmCertificate.PATH attribute ([PR 4377](https://github.com/RedHatInsights/insights-core/pull/4377))
+
 # [insights-core-3.5.8](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.8) (2025-03-11)
 
 - Fix Compliance inventory data parsing ([PR 4379](https://github.com/RedHatInsights/insights-core/pull/4379))
