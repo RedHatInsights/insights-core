@@ -36,6 +36,7 @@ LvmFullReport - command ``/sbin/lvm fullreport -a --reportformat json``
 -----------------------------------------------------------------------
 
 """
+
 from __future__ import print_function
 
 import json
@@ -102,15 +103,15 @@ def find_warnings(content):
             "Ignoring supplied major",
             "not match metadata",
             "Reading VG",
-            "Error reading device"
+            "Error reading device",
         ]
     ]
-    for l in content:
+    for index, l in enumerate(content):
         lower = l.strip().lower()
         # Avoid hitting keywords inside the data
         if not lower.startswith("lvm2"):
             if any(k in lower for k in keywords):
-                yield l
+                yield index
 
 
 class LvmHeadings(CommandParser):
@@ -132,9 +133,13 @@ class Lvm(CommandParser):
     def parse_content(self, content):
         if "Unrecognised field:" in content[-1]:
             raise ParseException(content[-1])
-        d = {"warnings": set(find_warnings(content))}
-        content = [l for l in content
-                   if l not in d["warnings"] and not l.startswith("File descriptor ")]
+        _warning_indexs = set(find_warnings(content))
+        d = {"warnings": set([content[idx] for idx in _warning_indexs])}
+        content = [
+            l
+            for idx, l in enumerate(content)
+            if idx not in _warning_indexs and not l.startswith("File descriptor ")
+        ]
         d["content"] = list(map_keys(parse_keypair_lines(content), self.KEYS))
         self.data = d if d else None
 
@@ -160,7 +165,7 @@ class Lvm(CommandParser):
     @property
     def warnings(self):
         """list: Returns a list of lines from input data containing
-            warning/error/info strings.
+        warning/error/info strings.
         """
         return self.data["warnings"]
 
@@ -303,19 +308,17 @@ class PvsHeadings(LvmHeadings):
         '0'
 
     """
+
     def __init__(self, *args, **kwargs):
-        deprecated(
-            PvsHeadings,
-            "Please use insights.parsers.lvm.Pvs instead.",
-            "3.6.0"
-        )
+        deprecated(PvsHeadings, "Please use insights.parsers.lvm.Pvs instead.", "3.6.0")
         super(PvsHeadings, self).__init__(*args, **kwargs)
 
     PRIMARY_KEY = Pvs.PRIMARY_KEY
 
     def parse_content(self, content):
-        self.warnings = set(find_warnings(content))
-        content = [l for l in content if l not in self.warnings]
+        _warning_indexs = set(find_warnings(content))
+        self.warnings = set([content[idx] for idx in _warning_indexs])
+        content = [l for idx, l in enumerate(content) if idx not in _warning_indexs]
         self.data = parse_fixed_table(
             content,
             heading_ignore=["PV "],
@@ -449,19 +452,17 @@ class VgsHeadings(LvmHeadings):
         >>> vgs_info.data[0]['VG_UUID']
         'xK6HXk-xl2O-cqW5-2izb-LI9M-4fV0-dAzfcc'
     """
+
     def __init__(self, *args, **kwargs):
-        deprecated(
-            VgsHeadings,
-            "Please use insights.parsers.lvm.Vgs instead.",
-            "3.6.0"
-        )
+        deprecated(VgsHeadings, "Please use insights.parsers.lvm.Vgs instead.", "3.6.0")
         super(VgsHeadings, self).__init__(*args, **kwargs)
 
     PRIMARY_KEY = Vgs.PRIMARY_KEY
 
     def parse_content(self, content):
-        self.warnings = set(find_warnings(content))
-        content = [l for l in content if l not in self.warnings]
+        _warning_indexs = set(find_warnings(content))
+        self.warnings = set([content[idx] for idx in _warning_indexs])
+        content = [l for idx, l in enumerate(content) if idx not in _warning_indexs]
         self.data = parse_fixed_table(
             content,
             heading_ignore=["VG "],
@@ -652,19 +653,17 @@ class LvsHeadings(LvmHeadings):
         >>> lvs_info.data[1]['LSize']
         '2.00g'
     """
+
     def __init__(self, *args, **kwargs):
-        deprecated(
-            LvsHeadings,
-            "Please use insights.parsers.lvm.Lvs instead.",
-            "3.6.0"
-        )
+        deprecated(LvsHeadings, "Please use insights.parsers.lvm.Lvs instead.", "3.6.0")
         super(LvsHeadings, self).__init__(*args, **kwargs)
 
     PRIMARY_KEY = Lvs.PRIMARY_KEY
 
     def parse_content(self, content):
-        self.warnings = set(find_warnings(content))
-        content = [l for l in content if l not in self.warnings]
+        _warning_indexs = set(find_warnings(content))
+        self.warnings = set([content[idx] for idx in _warning_indexs])
+        content = [l for idx, l in enumerate(content) if idx not in _warning_indexs]
         self.data = parse_fixed_table(
             content, heading_ignore=["LV "], header_substitute=[("LV Tags", "LV_Tags")]
         )
@@ -916,19 +915,13 @@ class LvmFullReport(JSONParser):
     Raises:
         SkipComponent: when there is no device info.
     """
+
     def parse_content(self, content):
-        self.warnings = []
-        skip_to_line = len(content)
-        for ndx, line in enumerate(content):
-            if line.strip().startswith('{'):
-                skip_to_line = ndx
-                break
-            self.warnings.append(line)
+        _warning_indexs = set(find_warnings(content))
+        self.warnings = [content[idx] for idx in _warning_indexs]
+        content = [l for idx, l in enumerate(content) if idx not in _warning_indexs]
 
-        if skip_to_line >= len(content):
-            raise SkipComponent("No LVM information in fullreport")
-
-        super(LvmFullReport, self).parse_content(content[skip_to_line:])
+        super(LvmFullReport, self).parse_content(content)
 
         if not self.data['report']:
             raise SkipComponent("No LVM information in fullreport")
@@ -952,8 +945,6 @@ if __name__ == "__main__":
 
     content = sys.stdin.read().splitlines()
     headers = [h.strip().replace(" ", "_") for h in content[0].split("|")]
-    nameprefixes = [
-        v.split("=")[0].strip() for v in content[1].replace("0 ", "0").split("|")
-    ]
+    nameprefixes = [v.split("=")[0].strip() for v in content[1].replace("0 ", "0").split("|")]
     pairs = zip(nameprefixes, headers)
     print(json.dumps(OrderedDict(sorted(pairs))))

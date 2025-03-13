@@ -95,7 +95,15 @@ class Db2DatabaseConfiguration(CommandParser, dict):
         for line in content:
             if "=" in line:
                 key, value = line.split("=")
-                result[key.strip()] = value.strip()
+                strip_key = key.strip()
+                if "(" in strip_key and strip_key[-1] == ")":
+                    key_name = strip_key.rsplit(")", 1)[0].rsplit("(", 1)[-1].strip()
+                    if key_name.isupper():
+                        result[key_name] = value.strip()
+                    else:
+                        result[strip_key] = value.strip()
+                else:
+                    result[strip_key] = value.strip()
 
         if not result:
             raise SkipComponent("The format is incorrect")
@@ -129,7 +137,7 @@ class Db2DatabaseManager(CommandParser, dict):
         Federated Database System Support           (FEDERATED) = NO
 
     Examples:
-        >>> db2databasemanager["Max number of concurrently active databases     (NUMDB)"]
+        >>> db2databasemanager["NUMDB"]
         '32'
         >>> db2databasemanager["user"]
         'dbp'
@@ -144,7 +152,15 @@ class Db2DatabaseManager(CommandParser, dict):
         for line in content:
             if "=" in line:
                 key, value = line.split("=")
-                result[key.strip()] = value.strip()
+                strip_key = key.strip()
+                if "(" in strip_key and strip_key[-1] == ")":
+                    key_name = strip_key.rsplit(")", 1)[0].rsplit("(", 1)[-1].strip()
+                    if key_name.isupper():
+                        result[key_name] = value.strip()
+                    else:
+                        result[strip_key] = value.strip()
+                else:
+                    result[strip_key] = value.strip()
 
         if not result:
             raise SkipComponent("The format is incorrect")
