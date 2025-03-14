@@ -20,6 +20,9 @@ Vgs - command ``/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_a
 VgsHeadings - command ``vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"``
 -------------------------------------------------------------------------------------------------------------------------------------
 
+VgsWithForeignAndShared - command ``/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --nolocking --foreign --shared``
+---------------------------------------------------------------------------------------------------------------------------------------
+
 Lvs - command ``/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config="global{locking_type=0}"``
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -470,6 +473,64 @@ class VgsHeadings(LvmHeadings):
             trailing_ignore=["Reloading", "Wiping"],
         )
         self.data = map_keys(self.data, Vgs.KEYS)
+
+
+@parser(Specs.vgs_with_foreign_and_shared)
+class VgsWithForeignAndShared(Vgs):
+    """
+    Parse the output of the `/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --nolocking --foreign --shared` command.
+
+    Note: this parser contains the foreign and shared volume groups besides local volume groups.
+
+    Sample output of this command is::
+
+        LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='9nEuop-JraN-SMv7-DxpS-J1wC-NZvV-fzPtuk'|LVM2_VG_NAME='cluster_vg'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_SYSID='node1.redhat.com'|LVM2_VG_SYSTEMID='node1.redhat.com'|...
+        LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='SHRR9U-WPAB-m25d-8zz7-If1j-lXoX-GpA0lI'|LVM2_VG_NAME='rhel_rhel9'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCK_TYPE=''|...
+
+    Returns a list like::
+
+        [
+            {
+                'Fmt'    : 'lvm2',
+                'VG_UUID': '9nEuop-JraN-SMv7-DxpS-J1wC-NZvV-fzPtuk',
+                'VG'     : 'cluster_vg',
+                ...
+            },
+            {
+                'Fmt'    : 'lvm2',
+                'VG_UUID': 'SHRR9U-WPAB-m25d-8zz7-If1j-lXoX-GpA0lI',
+                'VG'     : 'rhel_rhel9',
+                ...
+            }
+        ]
+
+    Examples:
+        >>> type(vgs_all_data)
+        <class 'insights.parsers.lvm.VgsWithForeignAndShared'>
+        >>> vg1 = vgs_all_data['cluster_vg']
+        >>> vg1['LVM2_VG_SYSTEMID']
+        'node1.redhat.com'
+    """
+
+    def parse_content(self, content):
+        super(VgsWithForeignAndShared, self).parse_content(content)
+        self._shared_vgs = []
+        self._clustered_vgs = []
+        for item in self.data['content']:
+            if item['Attr'][-1] == 's':
+                self._shared_vgs.append(item)
+            elif item['Attr'][-1] == 'c':
+                self._clustered_vgs.append(item)
+
+    @property
+    def shared_vgs(self):
+        ''' Return the shared volume groups on the host'''
+        return self._shared_vgs
+
+    @property
+    def clustered_vgs(self):
+        ''' Return the clustered volume groups on the host'''
+        return self._clustered_vgs
 
 
 @parser(Specs.lvs_noheadings)
