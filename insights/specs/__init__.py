@@ -439,7 +439,7 @@ class Specs(SpecSet):
     lvs_headings = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     lvs_noheadings = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     lvs_noheadings_all = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
-    mac_addresses = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
+    mac_addresses = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip', 'ipv6'])
     machine_id = RegistryPoint(
         no_obfuscate=['hostname', 'ip', 'ipv6', 'mac', 'password'], no_redact=True
     )
