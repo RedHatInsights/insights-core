@@ -11,23 +11,34 @@ from insights.cleaner import Cleaner
 from insights.cleaner.utilities import write_report
 
 hostname = "report.test.com"
-test_file_data = 'ipv6: abcd::1\nip: 10.0.2.155\ntestword\n{0}'.format(hostname)
+test_file_data = '{0}'.format(hostname)
+test_file_data += 'testword\n'
+test_file_data += 'ip: 10.0.2.155\n'
+test_file_data += 'ipv6: abcd::1\n'
+test_file_data += 'mac: 10:20:02:15:f5:ab'
 
 
 @mark.parametrize(
-    ("obfuscate", "obfuscate_ipv6", "obfuscate_hostname", "keywords"),
+    ("obfuscate", "obfuscate_ipv6", "obfuscate_hostname", "obfuscate_mac", "keywords"),
     [
-        (False, False, False, []),
-        (True, False, False, []),
-        (True, True, False, ['testword']),
-        (True, True, True, ['testword']),
+        (False, False, False, False, []),
+        (True, False, False, False, []),
+        (True, True, False, False, []),
+        (True, True, True, False, []),
+        (True, True, True, True, []),
+        (True, True, True, True, ['testword']),
     ],
 )
 @mark.parametrize("test_umask", [0o000, 0o022])
-def test_rhsm_facts(test_umask, obfuscate, obfuscate_ipv6, obfuscate_hostname, keywords):
+def test_rhsm_facts(
+    test_umask, obfuscate, obfuscate_ipv6, obfuscate_hostname, obfuscate_mac, keywords
+):
     rhsm_facts_file = '/tmp/insights_test_rhsm.facts'
     conf = InsightsConfig(
-        obfuscate=obfuscate, obfuscate_ipv6=obfuscate_ipv6, obfuscate_hostname=obfuscate_hostname
+        obfuscate=obfuscate,
+        obfuscate_ipv6=obfuscate_ipv6,
+        obfuscate_hostname=obfuscate_hostname,
+        obfuscate_mac=obfuscate_mac,
     )
     conf.rhsm_facts_file = rhsm_facts_file
     arch = InsightsArchive(conf)
@@ -78,6 +89,14 @@ def test_rhsm_facts(test_umask, obfuscate, obfuscate_ipv6, obfuscate_hostname, k
             assert len(ips[0]['obfuscated']) == len('abcd::1')
         else:
             assert ips == []
+        # mac
+        assert facts['insights_client.obfuscate_mac_enabled'] == obfuscate_mac
+        macs = json.loads(facts['insights_client.obfuscated_mac'])
+        if obfuscate_mac:
+            assert macs[0]['original'] == '10:20:02:15:f5:ab'
+            assert macs[0]['obfuscated'] == 'b1:91:bc:f1:54:da'
+        else:
+            assert macs == []
         # keyword
         kws = json.loads(facts['insights_client.obfuscated_keyword'])
         if keywords:
@@ -89,20 +108,26 @@ def test_rhsm_facts(test_umask, obfuscate, obfuscate_ipv6, obfuscate_hostname, k
     os.unlink(rhsm_facts_file)
 
 
-@mark.parametrize("rm_conf", [{}, {'keywords': ['testword']}])
 @mark.parametrize(
-    ("obfuscate", "obfuscate_ipv6", "obfuscate_hostname"),
+    ("obfuscate", "obfuscate_ipv6", "obfuscate_hostname", "obfuscate_mac", "keywords"),
     [
-        (False, False, False),
-        (True, False, False),
-        (True, True, False),
-        (True, True, True),
+        (False, False, False, False, []),
+        (True, False, False, False, []),
+        (True, True, False, False, []),
+        (True, True, True, False, []),
+        (True, True, True, True, []),
+        (True, True, True, True, ['testword']),
     ],
 )
 @patch('insights.cleaner.Cleaner.generate_rhsm_facts', return_value=None)
-def test_all_csv_reports(rhsm_facts, obfuscate, obfuscate_ipv6, obfuscate_hostname, rm_conf):
+def test_all_csv_reports(
+    rhsm_facts, obfuscate, obfuscate_ipv6, obfuscate_hostname, obfuscate_mac, keywords
+):
     conf = InsightsConfig(
-        obfuscate=obfuscate, obfuscate_ipv6=obfuscate_ipv6, obfuscate_hostname=obfuscate_hostname
+        obfuscate=obfuscate,
+        obfuscate_ipv6=obfuscate_ipv6,
+        obfuscate_hostname=obfuscate_hostname,
+        obfuscate_mac=obfuscate_mac,
     )
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
@@ -112,11 +137,12 @@ def test_all_csv_reports(rhsm_facts, obfuscate, obfuscate_ipv6, obfuscate_hostna
     with open(test_file, 'w') as t:
         t.write(test_file_data)
 
-    pp = Cleaner(conf, rm_conf, hostname)
+    pp = Cleaner(conf, {'keywords': keywords}, hostname)
     ip_report_file = os.path.join(pp.report_dir, "%s-ip.csv" % arch.archive_name)
     ipv6_report_file = os.path.join(pp.report_dir, "%s-ipv6.csv" % arch.archive_name)
     hn_report_file = os.path.join(pp.report_dir, "%s-hostname.csv" % arch.archive_name)
     kw_report_file = os.path.join(pp.report_dir, "%s-keyword.csv" % arch.archive_name)
+    mac_report_file = os.path.join(pp.report_dir, "%s-mac.csv" % arch.archive_name)
     if os.path.isfile(ip_report_file):
         os.unlink(ip_report_file)
     if os.path.isfile(ipv6_report_file):
@@ -125,6 +151,8 @@ def test_all_csv_reports(rhsm_facts, obfuscate, obfuscate_ipv6, obfuscate_hostna
         os.unlink(hn_report_file)
     if os.path.isfile(kw_report_file):
         os.unlink(kw_report_file)
+    if os.path.isfile(mac_report_file):
+        os.unlink(mac_report_file)
 
     pp.clean_file(test_file, [])
     pp.generate_report(arch.archive_name)
@@ -167,7 +195,19 @@ def test_all_csv_reports(rhsm_facts, obfuscate, obfuscate_ipv6, obfuscate_hostna
     else:
         assert not os.path.isfile(hn_report_file)
 
-    if rm_conf:
+    if obfuscate_mac:
+        assert os.path.isfile(mac_report_file)
+        with open(mac_report_file, 'r') as fp:
+            hns = list(csv.reader(fp.readlines(), skipinitialspace=True))
+            # hn
+            assert len(hns) > 1
+            assert hns[0] == ['Obfuscated MAC', 'Original MAC']
+            assert hns[1] == ['b1:91:bc:f1:54:da', '10:20:02:15:f5:ab']
+        os.unlink(mac_report_file)
+    else:
+        assert not os.path.isfile(hn_report_file)
+
+    if keywords:
         assert os.path.isfile(kw_report_file)
         with open(kw_report_file, 'r') as fp:
             kws = list(csv.reader(fp.readlines(), skipinitialspace=True))

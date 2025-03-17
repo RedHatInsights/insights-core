@@ -38,7 +38,7 @@ from insights.cleaner.hostname import Hostname
 from insights.cleaner.ip import IPv4, IPv6
 from insights.cleaner.keyword import Keyword
 
-# from insights.cleaner.mac import Mac
+from insights.cleaner.mac import Mac
 from insights.cleaner.password import Password
 from insights.cleaner.pattern import Pattern
 from insights.cleaner.utilities import write_report
@@ -100,8 +100,8 @@ class Cleaner(object):
                 if config.obfuscate_hostname
                 else None
             )
-            # # - MAC obfuscation
-            # self.obfuscate.update(mac=Mac()) if config.obfuscate_mac else None
+            # - MAC obfuscation
+            self.obfuscate.update(mac=Mac()) if config.obfuscate_mac else None
 
     def clean_content(self, lines, no_obfuscate=None, no_redact=False, allowlist=None, width=False):
         """
@@ -213,17 +213,20 @@ class Cleaner(object):
         ipv6 = self.obfuscate.get('ipv6')
         ipv6_mapping = ipv6.mapping() if ipv6 else []
 
+        mac = self.obfuscate.get('mac')
+        mac_mapping = mac.mapping() if mac else []
+
         facts = {
             'insights_client.hostname': self.fqdn,
             'insights_client.obfuscate_ipv4_enabled': 'ip' in self.obfuscate,
             'insights_client.obfuscate_ipv6_enabled': 'ipv6' in self.obfuscate,
-            # 'insights_client.obfuscate_mac_enabled': 'mac' in self.obfuscate,
             'insights_client.obfuscate_hostname_enabled': 'hostname' in self.obfuscate,
+            'insights_client.obfuscate_mac_enabled': 'mac' in self.obfuscate,
             'insights_client.obfuscated_ipv4': json.dumps(ipv4_mapping),
             'insights_client.obfuscated_ipv6': json.dumps(ipv6_mapping),
-            # 'insights_client.obfuscated_mac': json.dumps(),
-            'insights_client.obfuscated_keyword': json.dumps(kw_mapping),
+            'insights_client.obfuscated_mac': json.dumps(mac_mapping),
             'insights_client.obfuscated_hostname': json.dumps(hn_mapping),
+            'insights_client.obfuscated_keyword': json.dumps(kw_mapping),
         }
 
         write_report(facts, self.rhsm_facts_file)
