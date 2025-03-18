@@ -46,7 +46,6 @@ class Lsinitrd(CommandParser):
         5
         >>> assert ls.search(name__contains='kernel') == [
         ...    {'group': 'root', 'name': 'kernel/x86', 'links': 3, 'perms': 'rwxr-xr-x',
-        ...     'raw_entry': 'drwxr-xr-x   3 root     root            0 Apr 20 15:58 kernel/x86',
         ...     'owner': 'root', 'date': 'Apr 20 15:58', 'type': 'd', 'dir': '', 'size': 0}
         ... ]
         >>> "udev-rules" in ls.unparsed_lines
@@ -88,7 +87,6 @@ class Lsinitrd(CommandParser):
             >>> dev_console = {
             ...     'type': 'c', 'perms': 'rw-r--r--', 'links': 1, 'owner': 'root', 'group': 'root',
             ...     'major': 5, 'minor': 1, 'date': 'Apr 20 15:57', 'name': 'dev/console', 'dir': '',
-            ...     'raw_entry': 'crw-r--r--   1 root     root       5,   1 Apr 20 15:57 dev/console'
             ... }
             >>> dev_console in lsdev
             True
@@ -139,6 +137,7 @@ class LsinitrdKdumpImage(Lsinitrd):
         >>> result_list[0].get('raw_entry')
         'crw-r--r--   1 root     root       1,   9 Aug  4  2020 dev/urandom'
     """
+
     pass
 
 
@@ -157,4 +156,5 @@ class LsinitrdLvmConf(LvmConf):
         >>> lsinitrd_lvm_conf.get("volume_list")
         [ "vg2", "vg3/lvol3", "@tag2", "@*" ]
     """
+
     pass

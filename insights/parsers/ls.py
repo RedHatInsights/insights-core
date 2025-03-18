@@ -206,10 +206,13 @@ class FileListing(Parser, dict):
 
     def listing_of(self, directory):
         """
-        The listing of this directory, in a dictionary by entry name.  All
-        entries contain the original line as is in the 'raw_entry' key.
+        The listing of this directory, in a dictionary by entry name.
         Entries that can be parsed then have fields as described in the class
         description above.
+
+        .. warning::
+            The 'raw_entry' key in the returned dictionary is deprecated
+            and will be removed from version 3.6.0.
         """
         if directory in self:
             return self[directory]['entries']
@@ -249,6 +252,49 @@ class FileListing(Parser, dict):
             return None
         return self[directory]['entries'][name]
 
+    def raw_entry_of(self, directory, target):
+        """
+        Returns the raw line entry of the ``directory``/``target`` listed in
+        'ls' command output.
+
+        Parameters:
+            directory(string): Full path without trailing slash where to
+                search.
+            target (string): Name of the directory or file to get
+                FilePermissions for.
+
+        Raises:
+            KeyError: When `directory` or `target` cannot be found.
+
+        .. note::
+            As it's re-constructed according to the serialized items, it's not
+            identical with the original line.
+        """
+        if directory in self:
+            de = self[directory]['entries']
+            if target in de:
+                tgt = de[target]
+                raw_line = ' '.join([tgt['type'] + tgt['perms']])
+                if 'links' in tgt:
+                    raw_line += ' ' + str(tgt['links'])
+                raw_line += ' ' + ' '.join([tgt['owner'], tgt['group']])
+                if 'se_user' in tgt:
+                    raw_line += ' ' + ':'.join(
+                        [tgt['se_user'], tgt['se_role'], tgt['se_type'], tgt['se_mls']]
+                    )
+                if 'size' in tgt:
+                    raw_line += ' ' + str(tgt['size'])
+                if 'major' in tgt:
+                    raw_line += ' ' + ', '.join([str(tgt['major']), str(tgt['minor'])])
+                if 'date' in tgt:
+                    raw_line += ' ' + tgt['date']
+                raw_line += ' ' + tgt['name']
+                if tgt['type'] == 'l':
+                    raw_line += ' -> ' + tgt['link']
+                return raw_line
+            raise KeyError("No such '{0}' in '{1}'".format(target, directory))
+        raise KeyError("No such directory: '{0}'".format(directory))
+
     def permissions_of(self, directory, target):
         """
         Returns a FilePermissions object, if found.
@@ -262,10 +308,7 @@ class FileListing(Parser, dict):
         Returns:
             FilePermissions: If found or None if not found.
         """
-        if directory in self:
-            d = self[directory]['entries']
-            if target in d:
-                return FilePermissions(d[target]['raw_entry'])
+        return FilePermissions(self.raw_entry_of(directory, target))
 
 
 @parser(Specs.ls_la)
