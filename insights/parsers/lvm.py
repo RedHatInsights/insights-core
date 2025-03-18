@@ -978,9 +978,26 @@ class LvmFullReport(JSONParser):
     """
 
     def parse_content(self, content):
-        _warning_indexs = set(find_warnings(content))
-        self.warnings = [content[idx] for idx in _warning_indexs]
-        content = [l for idx, l in enumerate(content) if idx not in _warning_indexs]
+
+        # Skip the lines before the json content starts
+        _indexes_of_warning_lines = []
+        skip_to_line = len(content)
+        for ndx, line in enumerate(content):
+            if line.strip().startswith('{'):
+                skip_to_line = ndx
+                break
+            _indexes_of_warning_lines.append(ndx)
+
+        if skip_to_line >= len(content):
+            raise SkipComponent("No LVM information in fullreport")
+
+        # Filter out the warning lines in the middle of json content
+        for idx in range(skip_to_line, len(content)):
+            if content[idx].strip().startswith('WARNING:'):
+                _indexes_of_warning_lines.append(idx)
+
+        self.warnings = [content[idx] for idx in _indexes_of_warning_lines]
+        content = [l for idx, l in enumerate(content) if idx not in set(_indexes_of_warning_lines)]
 
         super(LvmFullReport, self).parse_content(content)
 
