@@ -989,7 +989,7 @@ class LvmFullReport(JSONParser):
             _indexes_of_warning_lines.append(ndx)
 
         if skip_to_line >= len(content):
-            raise SkipComponent("No LVM information in fullreport")
+            raise SkipComponent("No LVM information in fullreport content")
 
         # Filter out the warning lines in the middle of json content
         for idx in range(skip_to_line, len(content)):
@@ -1002,7 +1002,7 @@ class LvmFullReport(JSONParser):
         super(LvmFullReport, self).parse_content(content)
 
         if not self.data['report']:
-            raise SkipComponent("No LVM information in fullreport")
+            raise SkipComponent("No LVM information in fullreport json")
 
         vgs = self.data['report']
         self.volume_groups = dict()
