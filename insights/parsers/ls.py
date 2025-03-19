@@ -263,8 +263,8 @@ class FileListing(Parser, dict):
             target (string): Name of the directory or file to get
                 FilePermissions for.
 
-        Raises:
-            KeyError: When `directory` or `target` cannot be found.
+        Returns:
+            str: The re-constructed rough line if found or None if not found.
 
         .. note::
             As it's re-constructed according to the serialized items, it's not
@@ -292,8 +292,6 @@ class FileListing(Parser, dict):
                 if tgt['type'] == 'l':
                     raw_line += ' -> ' + tgt['link']
                 return raw_line
-            raise KeyError("No such '{0}' in '{1}'".format(target, directory))
-        raise KeyError("No such directory: '{0}'".format(directory))
 
     def permissions_of(self, directory, target):
         """
@@ -308,7 +306,9 @@ class FileListing(Parser, dict):
         Returns:
             FilePermissions: If found or None if not found.
         """
-        return FilePermissions(self.raw_entry_of(directory, target))
+        raw_line = self.raw_entry_of(directory, target)
+        if raw_line:
+            return FilePermissions(raw_line)
 
 
 @parser(Specs.ls_la)
