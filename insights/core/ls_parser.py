@@ -90,7 +90,7 @@ def parse_selinux(parts):
         "se_role": selinux[1] if lsel > 1 else None,
         "se_type": selinux[2] if lsel > 2 else None,
         "se_mls": selinux[3] if lsel > 3 else None,
-        "name": path
+        "name": path,
     }
     if link:
         result["link"] = link
@@ -131,14 +131,16 @@ def parse_rhel8_selinux(parts):
         result['size'] = int(size)
     date = last[:12]
     path, link = parse_path(last[13:])
-    result.update({
-        "se_user": selinux[0],
-        "se_role": selinux[1] if lsel > 1 else None,
-        "se_type": selinux[2] if lsel > 2 else None,
-        "se_mls": selinux[3] if lsel > 3 else None,
-        "name": path,
-        "date": date,
-    })
+    result.update(
+        {
+            "se_user": selinux[0],
+            "se_role": selinux[1] if lsel > 1 else None,
+            "se_type": selinux[2] if lsel > 2 else None,
+            "se_mls": selinux[3] if lsel > 3 else None,
+            "name": path,
+            "date": date,
+        }
+    )
     if link:
         result["link"] = link
     return result
@@ -158,10 +160,7 @@ class Directory(dict):
             parts = line.split(None, 4)
             perms = parts[0]
             typ = perms[0]
-            entry = {
-                "type": typ,
-                "perms": perms[1:]
-            }
+            entry = {"type": typ, "perms": perms[1:]}
             if parts[1][0].isdigit():
                 # We have to split the line again to see if this is a RHEL8
                 # selinux stanza. This assumes that the context section will
@@ -178,6 +177,9 @@ class Directory(dict):
             # Update our entry and put it into the correct buckets
             # based on its type.
             entry.update(rest)
+            # TODO
+            # - The `raw_entry` key is deprecated and will be removed from 3.6.0.
+            #   Please use the `insights.parsers.ls.FileListingParser.raw_entry_of` instead.
             entry["raw_entry"] = line
             entry["dir"] = name
             nm = entry["name"]
@@ -190,14 +192,14 @@ class Directory(dict):
                 specials.append(nm)
 
         super(Directory, self).__init__(
-                {
-                    "dirs": dirs,
-                    "entries": ents,
-                    "files": files,
-                    "name": name,
-                    "specials": specials,
-                    "total": total
-                }
+            {
+                "dirs": dirs,
+                "entries": ents,
+                "files": files,
+                "name": name,
+                "specials": specials,
+                "total": total,
+            }
         )
 
 

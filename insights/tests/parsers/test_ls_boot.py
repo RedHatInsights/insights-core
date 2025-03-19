@@ -96,6 +96,10 @@ def test_ls_boot():
         "raw_entry": "-rwx------. 1 root root system_u:object_r:boot_t:s0     6535 Apr 21  2023 grub.cfg",
         "dir": "/boot/grub2",
     }
+    assert (
+        ls_alzr_boot.raw_entry_of("/boot/grub2", "grub.cfg")
+        == "-rwx------. 1 root root system_u:object_r:boot_t:s0 6535 Apr 21  2023 grub.cfg"
+    )
 
 
 def test_boot_links():
@@ -126,6 +130,10 @@ def test_boot_links():
         "raw_entry": "lrwxrwxrwx.  1 root root system_u:object_r:boot_t:s0              32 Apr 21  2023 dtb -> dtb-5.14.0-162.6.1.el9_1.aarch64",
         "dir": "/boot",
     }
+    assert (
+        ls_alzr_boot.raw_entry_of("/boot", "dtb")
+        == "lrwxrwxrwx. 1 root root system_u:object_r:boot_t:s0 32 Apr 21  2023 dtb -> dtb-5.14.0-162.6.1.el9_1.aarch64"
+    )
 
 
 def test_doc_examples():
