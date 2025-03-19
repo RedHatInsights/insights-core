@@ -878,6 +878,7 @@ class Specs(SpecSet):
     vgs_headings = RegistryPoint()
     vgs_noheadings = RegistryPoint()
     vgs_noheadings_all = RegistryPoint()
+    vgs_with_foreign_and_shared = RegistryPoint()
     vhost_net_zero_copy_tx = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     virsh_list_all = RegistryPoint()
     virt_uuid_facts = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
