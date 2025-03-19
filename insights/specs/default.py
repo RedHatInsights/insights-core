@@ -974,6 +974,9 @@ class DefaultSpecs(Specs):
     vgs_noheadings = simple_command(
         "/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --config=\"global{locking_type=0}\""
     )
+    vgs_with_foreign_and_shared = simple_command(
+        "/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --nolocking --foreign --shared"
+    )
     virsh_list_all = simple_command("/usr/bin/virsh --readonly list --all")
     virt_what = simple_command("/usr/sbin/virt-what")
     vma_ra_enabled = simple_file("/sys/kernel/mm/swap/vma_ra_enabled")
