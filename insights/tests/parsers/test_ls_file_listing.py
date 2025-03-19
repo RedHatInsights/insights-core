@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 import doctest
-import pytest
 
 from insights.parsers import ls as ls_module
 from insights.parsers.ls import FileListing
@@ -293,40 +292,50 @@ def test_multiple_directories():
     assert dirs.path_entry('/etc/sysconfig/notfound') is None
 
 
-def test_raw_entry_of():
+def test_raw_entry_of_permissions_of():
     dirs = FileListing(context_wrap(MULTIPLE_DIRECTORIES, path='ls_-la_.etc'))
 
-    assert dirs.raw_entry_of('/etc/sysconfig', '..') == 'drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..'
-    assert dirs.raw_entry_of('/etc/sysconfig', 'cbq') == 'drwxr-xr-x. 2 0 0 41 Jul  6 23:32 cbq'
-    assert (
-        dirs.raw_entry_of('/etc/sysconfig', 'firewalld')
-        == '-rw-r--r--. 1 0 0 72 Sep 15  2015 firewalld'
-    )
-    assert (
-        dirs.raw_entry_of('/etc/sysconfig', 'grub')
-        == 'lrwxrwxrwx. 1 0 0 17 Jul  6 23:32 grub -> /etc/default/grub'
-    )
+    raw_entry = 'drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..'
+    assert dirs.raw_entry_of('/etc/sysconfig', '..') == raw_entry
+    assert dirs.permissions_of('/etc/sysconfig', '..').line == raw_entry
 
-    with pytest.raises(KeyError):
-        dirs.raw_entry_of('/etc/sysconfig', 'test')
+    raw_entry = 'drwxr-xr-x. 2 0 0 41 Jul  6 23:32 cbq'
+    assert dirs.raw_entry_of('/etc/sysconfig', 'cbq') == raw_entry
+    assert dirs.permissions_of('/etc/sysconfig', 'cbq').line == raw_entry
 
-    with pytest.raises(KeyError):
-        dirs.raw_entry_of('/etc/test', 'grub')
+    raw_entry = '-rw-r--r--. 1 0 0 72 Sep 15  2015 firewalld'
+    assert dirs.raw_entry_of('/etc/sysconfig', 'firewalld') == raw_entry
+    assert dirs.permissions_of('/etc/sysconfig', 'firewalld').line == raw_entry
 
+    raw_entry = 'lrwxrwxrwx. 1 0 0 17 Jul  6 23:32 grub -> /etc/default/grub'
+    assert dirs.raw_entry_of('/etc/sysconfig', 'grub') == raw_entry
+    assert dirs.permissions_of('/etc/sysconfig', 'grub').line == raw_entry
+    # no such target file
+    dirs.raw_entry_of('/etc/sysconfig', 'test') is None
+    dirs.permissions_of('/etc/sysconfig', 'test') is None
+    # no such dir
+    dirs.raw_entry_of('/etc/test', 'grub') is None
+    dirs.permissions_of('/etc/test', 'grub') is None
+
+    # New input
     dirs = FileListing(context_wrap(COMPLICATED_FILES))
-    assert dirs.raw_entry_of('/tmp', 'dm-10') == 'brw-rw----. 1 0 6 253, 10 Aug  4 16:56 dm-10'
 
+    raw_entry = 'brw-rw----. 1 0 6 253, 10 Aug  4 16:56 dm-10'
+    assert dirs.raw_entry_of('/tmp', 'dm-10') == raw_entry
+    assert dirs.permissions_of('/tmp', 'dm-10').line == raw_entry
+
+    # New input
     dirs = FileListing(context_wrap(SELINUX_DIRECTORY))
-    assert (
-        dirs.raw_entry_of('/boot', 'grub2')
-        == 'drwxr-xr-x. root root system_u:object_r:boot_t:s0 grub2'
-    )
 
+    raw_entry = 'drwxr-xr-x. root root system_u:object_r:boot_t:s0 grub2'
+    assert dirs.raw_entry_of('/boot', 'grub2') == raw_entry
+    # no permissions_of test
+
+    # New input
     dirs = FileListing(context_wrap(FILES_CREATED_WITH_SELINUX_DISABLED))
-    assert (
-        dirs.raw_entry_of('/dev/mapper', 'lv_cpwtk001_data01')
-        == 'lrwxrwxrwx 1 0 0 7 Apr 27 05:34 lv_cpwtk001_data01 -> ../dm-7'
-    )
+    raw_entry = 'lrwxrwxrwx 1 0 0 7 Apr 27 05:34 lv_cpwtk001_data01 -> ../dm-7'
+    assert dirs.raw_entry_of('/dev/mapper', 'lv_cpwtk001_data01') == raw_entry
+    assert dirs.permissions_of('/dev/mapper', 'lv_cpwtk001_data01').line == raw_entry
 
 
 def test_complicated_directory():
