@@ -409,11 +409,7 @@ def test_lvm_fullreport():
 def test_lvm_fullreport_empty():
     with pytest.raises(SkipComponent) as e:
         lvm.LvmFullReport(context_wrap(LVM_FULLREPORT_EMPTY))
-    assert "No LVM information in fullreport json" in str(e)
-
-    with pytest.raises(SkipComponent) as e:
-        lvm.LvmFullReport(context_wrap(LVM_FULLREPORT_NO_JSON))
-    assert "No LVM information in fullreport content" in str(e)
+    assert "No LVM information in fullreport" in str(e)
 
 
 def test_vgs_with_foreign_and_share():
@@ -452,7 +448,7 @@ def test_docs():
         'vgs_info': lvm.VgsHeadings(context_wrap(VGSHEADING_CONTENT_DOC)),
         'lvs_info': lvm.LvsHeadings(context_wrap(LVS_HAEADING_OUTUPT)),
         'lvm_fullreport': lvm.LvmFullReport(context_wrap(LVM_FULLREPORT)),
-        'vgs_all_data': lvm.VgsWithForeignAndShared(context_wrap(VGS_WITH_FOREIGN_STRING))
+        'vgs_all_data': lvm.VgsWithForeignAndShared(context_wrap(VGS_WITH_FOREIGN_STRING)),
     }
     failed, total = doctest.testmod(lvm, globs=env)
     assert failed == 0

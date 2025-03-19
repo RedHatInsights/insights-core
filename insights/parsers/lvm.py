@@ -86,7 +86,7 @@ def find_warnings(content):
             "failed.",
             "Invalid metadata",
             "response failed",
-            "duplicate",
+            " duplicate ",
             "not found",
             "Missing device",
             "Internal error",
@@ -524,12 +524,12 @@ class VgsWithForeignAndShared(Vgs):
 
     @property
     def shared_vgs(self):
-        ''' Return the shared volume groups on the host'''
+        '''Return the shared volume groups on the host'''
         return self._shared_vgs
 
     @property
     def clustered_vgs(self):
-        ''' Return the clustered volume groups on the host'''
+        '''Return the clustered volume groups on the host'''
         return self._clustered_vgs
 
 
@@ -978,31 +978,14 @@ class LvmFullReport(JSONParser):
     """
 
     def parse_content(self, content):
-
-        # Skip the lines before the json content starts
-        _indexes_of_warning_lines = []
-        skip_to_line = len(content)
-        for ndx, line in enumerate(content):
-            if line.strip().startswith('{'):
-                skip_to_line = ndx
-                break
-            _indexes_of_warning_lines.append(ndx)
-
-        if skip_to_line >= len(content):
-            raise SkipComponent("No LVM information in fullreport content")
-
-        # Filter out the warning lines in the middle of json content
-        for idx in range(skip_to_line, len(content)):
-            if content[idx].strip().startswith('WARNING:'):
-                _indexes_of_warning_lines.append(idx)
-
-        self.warnings = [content[idx] for idx in _indexes_of_warning_lines]
-        content = [l for idx, l in enumerate(content) if idx not in set(_indexes_of_warning_lines)]
+        _warning_indexs = set(find_warnings(content))
+        self.warnings = [content[idx] for idx in _warning_indexs]
+        content = [l for idx, l in enumerate(content) if idx not in _warning_indexs]
 
         super(LvmFullReport, self).parse_content(content)
 
         if not self.data['report']:
-            raise SkipComponent("No LVM information in fullreport json")
+            raise SkipComponent("No LVM information in fullreport")
 
         vgs = self.data['report']
         self.volume_groups = dict()
