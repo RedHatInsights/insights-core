@@ -233,6 +233,23 @@ LVM_FULLREPORT_EMPTY = """
 }
 """.strip()
 
+VGS_WITH_FOREIGN_STRING = """
+  LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='9nEuop-JraN-SMv7-DxpS-J1wC-NZvV-fzPtuk'|LVM2_VG_NAME='cluster_vg'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_AUTOACTIVATION=''|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SHARED=''|LVM2_VG_SIZE='<20.00g'|LVM2_VG_FREE='0 '|LVM2_VG_SYSID='node1.redhat.com'|LVM2_VG_SYSTEMID='node1.redhat.com'|LVM2_VG_LOCK_TYPE=''|LVM2_VG_LOCK_ARGS=''|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='5119'|LVM2_VG_FREE_COUNT='0'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_VG_MISSING_PV_COUNT='0'|LVM2_LV_COUNT='1'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='5'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='507.50k'|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+  LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='SHRR9U-WPAB-m25d-8zz7-If1j-lXoX-GpA0lI'|LVM2_VG_NAME='rhel_rhel9'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_AUTOACTIVATION='enabled'|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SHARED=''|LVM2_VG_SIZE='<127.00g'|LVM2_VG_FREE='54.96g'|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCK_TYPE=''|LVM2_VG_LOCK_ARGS=''|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='32511'|LVM2_VG_FREE_COUNT='14070'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_VG_MISSING_PV_COUNT='0'|LVM2_LV_COUNT='2'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='7'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='507.50k'|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+"""
+
+VGS_WITH_SHARED_STRING = """
+  WARNING: File locking is disabled.
+  LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='ms3Po2-XPJP-QLk7-Dh29-JNvQ-9bSN-JavZVj'|LVM2_VG_NAME='cluster_vg'|LVM2_VG_ATTR='wz--ns'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_AUTOACTIVATION='enabled'|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SHARED='shared'|LVM2_VG_SIZE='<10.00g'|LVM2_VG_FREE='0 '|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCK_TYPE='dlm'|LVM2_VG_LOCK_ARGS='1.0.0:hh_cluster'|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='2559'|LVM2_VG_FREE_COUNT='0'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_VG_MISSING_PV_COUNT='0'|LVM2_LV_COUNT='1'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='3'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='508.00k'|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+  LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='Y49xze-fTp1-PypT-vIqE-LlSc-tkyH-uhgdZv'|LVM2_VG_NAME='rhel_rhel8'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_AUTOACTIVATION='enabled'|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SHARED=''|LVM2_VG_SIZE='<127.00g'|LVM2_VG_FREE='<54.94g'|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCK_TYPE=''|LVM2_VG_LOCK_ARGS=''|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='32511'|LVM2_VG_FREE_COUNT='14064'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_VG_MISSING_PV_COUNT='0'|LVM2_LV_COUNT='2'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='7'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='507.50k'|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+"""
+
+VGS_WITH_CLUSTERED_STRING = """
+  WARNING: File locking is disabled.
+  LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='ms3Po2-XPJP-QLk7-Dh29-JNvQ-9bSN-JavZVj'|LVM2_VG_NAME='cluster_vg'|LVM2_VG_ATTR='wz--nc'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_AUTOACTIVATION='enabled'|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SHARED='shared'|LVM2_VG_SIZE='<10.00g'|LVM2_VG_FREE='0 '|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCK_TYPE='dlm'|LVM2_VG_LOCK_ARGS='1.0.0:hh_cluster'|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='2559'|LVM2_VG_FREE_COUNT='0'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_VG_MISSING_PV_COUNT='0'|LVM2_LV_COUNT='1'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='3'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='508.00k'|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+  LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='Y49xze-fTp1-PypT-vIqE-LlSc-tkyH-uhgdZv'|LVM2_VG_NAME='rhel_rhel8'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_AUTOACTIVATION='enabled'|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SHARED=''|LVM2_VG_SIZE='<127.00g'|LVM2_VG_FREE='<54.94g'|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCK_TYPE=''|LVM2_VG_LOCK_ARGS=''|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='32511'|LVM2_VG_FREE_COUNT='14064'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_VG_MISSING_PV_COUNT='0'|LVM2_LV_COUNT='2'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='7'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='507.50k'|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+"""
+
 
 def test_find_warnings():
     data = [l for l in lvm.find_warnings(WARNINGS_CONTENT.splitlines())]
@@ -341,6 +358,34 @@ def test_lvm_fullreport_empty():
         lvm.LvmFullReport(context_wrap(LVM_FULLREPORT_EMPTY))
 
 
+def test_vgs_with_foreign_and_share():
+    data = lvm.VgsWithForeignAndShared(context_wrap(VGS_WITH_FOREIGN_STRING))
+    assert len(data) == 2
+    assert not data.shared_vgs
+    assert not data.clustered_vgs
+    assert data[0]['VG_UUID'] == '9nEuop-JraN-SMv7-DxpS-J1wC-NZvV-fzPtuk'
+    assert data[0]['LVM2_VG_SYSTEMID'] == 'node1.redhat.com'
+
+    assert data[1]['VG_UUID'] == 'SHRR9U-WPAB-m25d-8zz7-If1j-lXoX-GpA0lI'
+    assert data[1]['LVM2_VG_SYSTEMID'] == ''
+
+    data2 = lvm.VgsWithForeignAndShared(context_wrap(VGS_WITH_SHARED_STRING))
+    assert len(data2) == 2
+    assert len(data2.shared_vgs) == 1
+    data2.shared_vgs[0]['VG_UUID'] == 'ms3Po2-XPJP-QLk7-Dh29-JNvQ-9bSN-JavZVj'
+    data2.shared_vgs[0]['VG'] == 'cluster_vg'
+    data2.shared_vgs[0]['Attr'] == 'wz--ns'
+    assert not data2.clustered_vgs
+
+    data3 = lvm.VgsWithForeignAndShared(context_wrap(VGS_WITH_CLUSTERED_STRING))
+    assert len(data3) == 2
+    assert not data3.shared_vgs
+    assert len(data3.clustered_vgs) == 1
+    data3.clustered_vgs[0]['VG_UUID'] == 'ms3Po2-XPJP-QLk7-Dh29-JNvQ-9bSN-JavZVj'
+    data3.clustered_vgs[0]['VG'] == 'cluster_vg'
+    data3.clustered_vgs[0]['Attr'] == 'wz--nc'
+
+
 def test_docs():
     env = {
         'devices': lvm.LvmSystemDevices(context_wrap(SYSTEM_DEVICES1)),
@@ -349,6 +394,7 @@ def test_docs():
         'vgs_info': lvm.VgsHeadings(context_wrap(VGSHEADING_CONTENT_DOC)),
         'lvs_info': lvm.LvsHeadings(context_wrap(LVS_HAEADING_OUTUPT)),
         'lvm_fullreport': lvm.LvmFullReport(context_wrap(LVM_FULLREPORT)),
+        'vgs_all_data': lvm.VgsWithForeignAndShared(context_wrap(VGS_WITH_FOREIGN_STRING))
     }
     failed, total = doctest.testmod(lvm, globs=env)
     assert failed == 0
