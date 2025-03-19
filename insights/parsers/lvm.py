@@ -86,7 +86,7 @@ def find_warnings(content):
             "failed.",
             "Invalid metadata",
             "response failed",
-            "duplicate",
+            " duplicate ",
             "not found",
             "Missing device",
             "Internal error",
@@ -524,12 +524,12 @@ class VgsWithForeignAndShared(Vgs):
 
     @property
     def shared_vgs(self):
-        ''' Return the shared volume groups on the host'''
+        '''Return the shared volume groups on the host'''
         return self._shared_vgs
 
     @property
     def clustered_vgs(self):
-        ''' Return the clustered volume groups on the host'''
+        '''Return the clustered volume groups on the host'''
         return self._clustered_vgs
 
 
