@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 import doctest
+import pytest
 
 from insights.parsers import ls as ls_module
 from insights.parsers.ls import FileListing
@@ -180,45 +181,80 @@ def test_multiple_directories():
     # Testing the main features
     listing = dirs.listing_of('/etc/sysconfig')
     assert listing['..'] == {
-        'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 77, 'owner': '0',
-        'group': '0', 'size': 8192, 'date': 'Jul 13 03:55', 'name': '..',
+        'type': 'd',
+        'perms': 'rwxr-xr-x.',
+        'links': 77,
+        'owner': '0',
+        'group': '0',
+        'size': 8192,
+        'date': 'Jul 13 03:55',
+        'name': '..',
         'raw_entry': 'drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..',
-        'dir': '/etc/sysconfig'
+        'dir': '/etc/sysconfig',
     }
     assert listing['cbq'] == {
-        'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0',
-        'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq',
+        'type': 'd',
+        'perms': 'rwxr-xr-x.',
+        'links': 2,
+        'owner': '0',
+        'group': '0',
+        'size': 41,
+        'date': 'Jul  6 23:32',
+        'name': 'cbq',
         'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
-        'dir': '/etc/sysconfig'
+        'dir': '/etc/sysconfig',
     }
     assert listing['firewalld'] == {
-        'type': '-', 'perms': 'rw-r--r--.', 'links': 1, 'owner': '0',
-        'group': '0', 'size': 72, 'date': 'Sep 15  2015',
-        'name': 'firewalld', 'raw_entry':
-        '-rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld',
-        'dir': '/etc/sysconfig'
+        'type': '-',
+        'perms': 'rw-r--r--.',
+        'links': 1,
+        'owner': '0',
+        'group': '0',
+        'size': 72,
+        'date': 'Sep 15  2015',
+        'name': 'firewalld',
+        'raw_entry': '-rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld',
+        'dir': '/etc/sysconfig',
     }
     assert listing['grub'] == {
-        'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
-        'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
-        'link': '/etc/default/grub', 'raw_entry':
-        'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
-        'dir': '/etc/sysconfig'
+        'type': 'l',
+        'perms': 'rwxrwxrwx.',
+        'links': 1,
+        'owner': '0',
+        'group': '0',
+        'size': 17,
+        'date': 'Jul  6 23:32',
+        'name': 'grub',
+        'link': '/etc/default/grub',
+        'raw_entry': 'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
+        'dir': '/etc/sysconfig',
     }
 
     listing = dirs.listing_of('/etc/rc.d/rc3.d')
     assert listing['..'] == {
-        'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 10, 'owner': '0',
-        'group': '0', 'size': 4096, 'date': 'Sep 16  2015', 'name': '..',
+        'type': 'd',
+        'perms': 'rwxr-xr-x.',
+        'links': 10,
+        'owner': '0',
+        'group': '0',
+        'size': 4096,
+        'date': 'Sep 16  2015',
+        'name': '..',
         'raw_entry': 'drwxr-xr-x. 10 0 0 4096 Sep 16  2015 ..',
-        'dir': '/etc/rc.d/rc3.d'
+        'dir': '/etc/rc.d/rc3.d',
     }
     assert listing['K50netconsole'] == {
-        'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
-        'group': '0', 'size': 20, 'date': 'Jul  6 23:32',
-        'name': 'K50netconsole', 'link': '../init.d/netconsole', 'raw_entry':
-        'lrwxrwxrwx.  1 0 0   20 Jul  6 23:32 K50netconsole -> ../init.d/netconsole',
-        'dir': '/etc/rc.d/rc3.d'
+        'type': 'l',
+        'perms': 'rwxrwxrwx.',
+        'links': 1,
+        'owner': '0',
+        'group': '0',
+        'size': 20,
+        'date': 'Jul  6 23:32',
+        'name': 'K50netconsole',
+        'link': '../init.d/netconsole',
+        'raw_entry': 'lrwxrwxrwx.  1 0 0   20 Jul  6 23:32 K50netconsole -> ../init.d/netconsole',
+        'dir': '/etc/rc.d/rc3.d',
     }
 
     assert dirs.total_of('/etc/sysconfig') == 96
@@ -226,23 +262,71 @@ def test_multiple_directories():
 
     assert dirs.dir_contains('/etc/sysconfig', 'firewalld')
     assert dirs.dir_entry('/etc/sysconfig', 'grub') == {
-        'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
-        'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
-        'link': '/etc/default/grub', 'raw_entry':
-        'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
-        'dir': '/etc/sysconfig'
+        'type': 'l',
+        'perms': 'rwxrwxrwx.',
+        'links': 1,
+        'owner': '0',
+        'group': '0',
+        'size': 17,
+        'date': 'Jul  6 23:32',
+        'name': 'grub',
+        'link': '/etc/default/grub',
+        'raw_entry': 'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
+        'dir': '/etc/sysconfig',
     }
 
     assert dirs.path_entry('/etc/sysconfig/cbq') == {
-        'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0',
-        'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq',
+        'type': 'd',
+        'perms': 'rwxr-xr-x.',
+        'links': 2,
+        'owner': '0',
+        'group': '0',
+        'size': 41,
+        'date': 'Jul  6 23:32',
+        'name': 'cbq',
         'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
-        'dir': '/etc/sysconfig'
+        'dir': '/etc/sysconfig',
     }
     assert dirs.path_entry('no_slash') is None
     assert dirs.path_entry('/') is None
     assert dirs.path_entry('/foo') is None
     assert dirs.path_entry('/etc/sysconfig/notfound') is None
+
+
+def test_raw_entry_of():
+    dirs = FileListing(context_wrap(MULTIPLE_DIRECTORIES, path='ls_-la_.etc'))
+
+    assert dirs.raw_entry_of('/etc/sysconfig', '..') == 'drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..'
+    assert dirs.raw_entry_of('/etc/sysconfig', 'cbq') == 'drwxr-xr-x. 2 0 0 41 Jul  6 23:32 cbq'
+    assert (
+        dirs.raw_entry_of('/etc/sysconfig', 'firewalld')
+        == '-rw-r--r--. 1 0 0 72 Sep 15  2015 firewalld'
+    )
+    assert (
+        dirs.raw_entry_of('/etc/sysconfig', 'grub')
+        == 'lrwxrwxrwx. 1 0 0 17 Jul  6 23:32 grub -> /etc/default/grub'
+    )
+
+    with pytest.raises(KeyError):
+        dirs.raw_entry_of('/etc/sysconfig', 'test')
+
+    with pytest.raises(KeyError):
+        dirs.raw_entry_of('/etc/test', 'grub')
+
+    dirs = FileListing(context_wrap(COMPLICATED_FILES))
+    assert dirs.raw_entry_of('/tmp', 'dm-10') == 'brw-rw----. 1 0 6 253, 10 Aug  4 16:56 dm-10'
+
+    dirs = FileListing(context_wrap(SELINUX_DIRECTORY))
+    assert (
+        dirs.raw_entry_of('/boot', 'grub2')
+        == 'drwxr-xr-x. root root system_u:object_r:boot_t:s0 grub2'
+    )
+
+    dirs = FileListing(context_wrap(FILES_CREATED_WITH_SELINUX_DISABLED))
+    assert (
+        dirs.raw_entry_of('/dev/mapper', 'lv_cpwtk001_data01')
+        == 'lrwxrwxrwx 1 0 0 7 Apr 27 05:34 lv_cpwtk001_data01 -> ../dm-7'
+    )
 
 
 def test_complicated_directory():
@@ -254,10 +338,17 @@ def test_complicated_directory():
     assert listing['menu.lst']['type'] == 'l'
     assert listing['menu.lst']['link'] == './grub.conf'
     assert dirs.dir_entry('/tmp', 'dm-10') == {
-        'type': 'b', 'perms': 'rw-rw----.', 'links': 1, 'owner': '0',
-        'group': '6', 'major': 253, 'minor': 10, 'date': 'Aug  4 16:56',
-        'name': 'dm-10', 'dir': '/tmp', 'raw_entry':
-        'brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10'
+        'type': 'b',
+        'perms': 'rw-rw----.',
+        'links': 1,
+        'owner': '0',
+        'group': '6',
+        'major': 253,
+        'minor': 10,
+        'date': 'Aug  4 16:56',
+        'name': 'dm-10',
+        'dir': '/tmp',
+        'raw_entry': 'brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10',
     }
     assert listing['dm-10']['type'] == 'b'
     assert listing['dm-10']['major'] == 253
@@ -298,11 +389,17 @@ def test_selinux_directory():
 
     # Test that one entry is exactly what we expect it to be.
     expected = {
-        'type': 'd', 'perms': 'rwxr-xr-x.', 'owner': 'root', 'group': 'root',
-        'se_user': 'system_u', 'se_role': 'object_r', 'se_type': 'boot_t',
-        'se_mls': 's0', 'name': 'grub2', 'raw_entry':
-        'drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2',
-        'dir': '/boot'
+        'type': 'd',
+        'perms': 'rwxr-xr-x.',
+        'owner': 'root',
+        'group': 'root',
+        'se_user': 'system_u',
+        'se_role': 'object_r',
+        'se_type': 'boot_t',
+        'se_mls': 's0',
+        'name': 'grub2',
+        'raw_entry': 'drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2',
+        'dir': '/boot',
     }
     actual = dirs.dir_entry('/boot', 'grub2')
     assert actual == expected
@@ -313,9 +410,17 @@ def test_files_created_with_selinux_disabled():
 
     # Test that one entry is exactly what we expect it to be.
     assert dirs.dir_entry('/dev/mapper', 'lv_cpwtk001_data01') == {
-        'group': '0', 'name': 'lv_cpwtk001_data01', 'links': 1, 'perms': 'rwxrwxrwx',
-        'raw_entry': 'lrwxrwxrwx 1 0 0 7 Apr 27 05:34 lv_cpwtk001_data01 -> ../dm-7', 'owner': '0',
-        'link': '../dm-7', 'date': 'Apr 27 05:34', 'type': 'l', 'dir': '/dev/mapper', 'size': 7
+        'group': '0',
+        'name': 'lv_cpwtk001_data01',
+        'links': 1,
+        'perms': 'rwxrwxrwx',
+        'raw_entry': 'lrwxrwxrwx 1 0 0 7 Apr 27 05:34 lv_cpwtk001_data01 -> ../dm-7',
+        'owner': '0',
+        'link': '../dm-7',
+        'date': 'Apr 27 05:34',
+        'type': 'l',
+        'dir': '/dev/mapper',
+        'size': 7,
     }
 
 

@@ -156,6 +156,10 @@ def test_ls_dev():
         "raw_entry": "lrwxrwxrwx.  1 root root system_u:object_r:device_t:s0    7 Sep 30 16:58 root -> ../dm-0",
         "dir": "/dev/rhel",
     }
+    assert (
+        ls_alzr_dev.raw_entry_of("/dev/rhel", "root")
+        == "lrwxrwxrwx. 1 root root system_u:object_r:device_t:s0 7 Sep 30 16:58 root -> ../dm-0"
+    )
 
 
 def test_doc_examples():
