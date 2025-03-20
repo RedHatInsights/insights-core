@@ -1,6 +1,7 @@
 """
 Custom datasource to get the duplicate machine info.
 """
+
 import json
 
 from insights.core.plugins import datasource
@@ -48,7 +49,11 @@ def dup_machine_id_info(broker):
             except Exception:
                 raise SkipComponent
             if res_json['total'] > 1:
-                duplicate_hostnames = [item.get('fqdn') for item in res_json['results'] if item.get('fqdn')]
+                duplicate_hostnames = [
+                    item.get('fqdn') for item in res_json['results'] if item.get('fqdn')
+                ]
                 content = '%s %s' % (machine_id, ','.join(duplicate_hostnames))
-                return DatasourceProvider(content=[content], relative_path='insights_commands/duplicate_machine_id_info')
+                return DatasourceProvider(
+                    content=[content], relative_path='insights_datasources/duplicate_machine_id'
+                )
     raise SkipComponent

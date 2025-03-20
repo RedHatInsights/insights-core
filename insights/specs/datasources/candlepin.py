@@ -1,6 +1,7 @@
 """
 Custom datasources for candlepin broker.xml
 """
+
 from insights.components.satellite import IsSatellite
 from insights.core import ET
 from insights.core.context import HostContext
@@ -11,7 +12,7 @@ from insights.specs import Specs
 
 
 class LocalSpecs(Specs):
-    """ Local specs used only by candlepin_broker datasources """
+    """Local specs used only by candlepin_broker datasources"""
 
     candlepin_broker_input = simple_file("/etc/candlepin/broker.xml")
     """ Returns the contents of the file ``/etc/candlepin/broker.xml`` """
@@ -50,7 +51,6 @@ def candlepin_broker(broker):
         SkipComponent: When the path does not exist or any exception occurs.
     """
 
-    relative_path = '/etc/candlepin/broker.xml'
     try:
         content = broker[LocalSpecs.candlepin_broker_input].content
         if content:
@@ -69,8 +69,10 @@ def candlepin_broker(broker):
             if acc_ele is not None and len(acc_ele):
                 core_ele.remove(acc_ele)
             return DatasourceProvider(
-                content=[line for line in ET.tostring(root).decode('utf-8').splitlines() if line.strip()],
-                relative_path=relative_path
+                content=[
+                    line for line in ET.tostring(root).decode('utf-8').splitlines() if line.strip()
+                ],
+                relative_path='insights_datasources/candlepin_broker.xml',
             )
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))

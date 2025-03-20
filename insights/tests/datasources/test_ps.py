@@ -49,10 +49,12 @@ PS_JBOSS_VERSION = """
     3     2    1 [rcu_gp]
  8686   525    1 java -D[Standalone] -server -verbose:gc -Xloggc:/opt/jboss-datagrid-7.3.0-server/standalone/log/gc.log -XX:+PrintGCDetails -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M -XX:-TraceClassUnloading -Xms64m -Xmx512m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true -Dorg.jboss.boot.log.file=/opt/jboss-datagrid-7.3.0-server/standalone/log/server.log -Dlogging.configuration=file:/opt/jboss-datagrid-7.3.0-server/standalone/configuration/logging.properties -jar /opt/jboss-datagrid-7.3.0-server/jboss-modules.jar -mp /opt/jboss-datagrid-7.3.0-server/modules org.jboss.as.standalone -Djboss.home.dir={0} -Djboss.server.base.dir=/opt/jboss-datagrid-7.3.0-server/standalone
  8880   525    1 /usr/lib/jvm/java-1.8.0-oracle/bin/java -D[Process Controller] -server -Xms64m -Xmx512m -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true -Dorg.jboss.boot.log.file=/home/jboss/jboss-eap-7.1/domain/log/process-controller.log -Dlogging.configuration=file:/home/jboss/jboss-eap-7.1/domain/configuration/logging.properties -jar /home/jboss/jboss-eap-7.1/jboss-modules.jar -mp /home/jboss/jboss-eap-7.1/modules org.jboss.as.process-controller -jboss-home {1} -jvm /usr/lib/jvm/java-1.8.0-oracle/bin/java -mp /home/jboss/jboss-eap-7.1/modules -- -Dorg.jboss.boot.log.file=/home/jboss/jboss-eap-7.1/domain/log/host-controller.log -Dlogging.configuration=file:/home/jboss/jboss-eap-7.1/domain/configuration/logging.properties -server
-""".format(jboss_home_1, jboss_home_2)
+""".format(
+    jboss_home_1, jboss_home_2
+)
 
-RELATIVE_PATH = 'insights_commands/ps_eo_cmd'
-JBOSS_VERSION_PATH = 'insights_commands/jboss_versions'
+RELATIVE_PATH = 'insights_datasources/ps_eo_cmd'
+JBOSS_VERSION_PATH = 'insights_datasources/jboss_runtime_versions'
 
 
 def test_ps_eo_cmd():
@@ -97,9 +99,13 @@ def test_jboss_versions():
     result = jboss_runtime_versions(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
-    expected_content = {jboss_home_1: 'Red Hat JBoss Enterprise Application Platform - Version 7.4.0.GA',
-                        jboss_home_2: 'Red Hat Data Grid - Version 8.3.1.GA'}
-    expected = DatasourceProvider(content=json.dumps(expected_content), relative_path=JBOSS_VERSION_PATH)
+    expected_content = {
+        jboss_home_1: 'Red Hat JBoss Enterprise Application Platform - Version 7.4.0.GA',
+        jboss_home_2: 'Red Hat Data Grid - Version 8.3.1.GA',
+    }
+    expected = DatasourceProvider(
+        content=json.dumps(expected_content), relative_path=JBOSS_VERSION_PATH
+    )
     result_dict = json.loads(result.content[0])
     assert result_dict == expected_content
     assert result.relative_path == expected.relative_path

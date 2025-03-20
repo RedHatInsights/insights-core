@@ -21,7 +21,11 @@ ENV_CONFIG = {
     "/etc/environment": {"content": ENV_FILE_1, "isfile": True, "isdir": False},
     "/etc/env.d": {"content": "# export LD_LIBRARY_PATH", "isfile": False, "isdir": True},
     "/etc/env.d/test.conf": {"content": ENV_FILE_2, "isfile": True, "isdir": False},
-    "/etc/profile": {"content": "export TEST=/test\n unset LD_LIBRARY_PATH", "isfile": True, "isdir": False},
+    "/etc/profile": {
+        "content": "export TEST=/test\n unset LD_LIBRARY_PATH",
+        "isfile": True,
+        "isdir": False,
+    },
     "/etc/profile.d": {"content": "export TEST # LD_LIBRARY_PATH", "isfile": False, "isdir": True},
     "/etc/profile.d/test.conf": {"content": "", "isfile": True, "isdir": False},
     "/etc/bashrc": {"content": "", "isfile": True, "isdir": False},
@@ -31,10 +35,10 @@ ENV_CONFIG = {
     "/root/.profile": {"content": "LD_LIBRARY_PATH=/path/to/test", "isfile": True, "isdir": False},
     "/root/.cshrc": {"content": "", "isfile": True, "isdir": False},
     "/root/.zshrc": {"content": "", "isfile": True, "isdir": False},
-    "/root/.tcshrc": {"content": "", "isfile": True, "isdir": False}
+    "/root/.tcshrc": {"content": "", "isfile": True, "isdir": False},
 }
 
-RELATIVE_PATH = 'insights_commands/ld_library_path_global_conf'
+RELATIVE_PATH = 'insights_datasources/ld_library_path_global_conf'
 
 EXPECTED_RESULT = """
 {"export_files": ["/etc/environment", "/etc/env.d/test.conf", "/root/.bash_profile"], "unset_files": ["/etc/profile"]}
@@ -58,7 +62,9 @@ def _isdir_return_value(name):
 @patch('os.path.isfile', side_effect=_isfile_side_effect)
 @patch('os.path.isdir', return_value=_isdir_return_value)
 @patch('os.listdir')
-def test_ld_library_path_global_conf(mock_listdir, mock_isdir, mock_isfile, mock_exists, mock_ds_open):
+def test_ld_library_path_global_conf(
+    mock_listdir, mock_isdir, mock_isfile, mock_exists, mock_ds_open
+):
     mock_listdir.return_value = ["test.conf"]
 
     broker = {}
@@ -83,8 +89,9 @@ def test_ld_library_path_global_conf_without_env_files(mock_exists):
 @patch('os.path.isfile', side_effect=_isfile_side_effect)
 @patch('os.path.isdir', return_value=_isdir_return_value)
 @patch('os.listdir')
-def test_ld_library_path_global_conf_all_env_files_are_empty(mock_listdir,
-        mock_isdir, mock_isfile, mock_exists, mock_ds_open):
+def test_ld_library_path_global_conf_all_env_files_are_empty(
+    mock_listdir, mock_isdir, mock_isfile, mock_exists, mock_ds_open
+):
     mock_listdir.return_value = ["test.conf"]
 
     broker = {}
