@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.10](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.10) (2025-03-20)
+
+- fix: path of datasource files_dirs_number ([PR 4396](https://github.com/RedHatInsights/insights-core/pull/4396))
+- fix: drop issue option of Specs.nvidia_smi_query_gpu ([PR 4395](https://github.com/RedHatInsights/insights-core/pull/4395))
+- fix: no exception for ls.permissions_of ([PR 4394](https://github.com/RedHatInsights/insights-core/pull/4394))
+- fix: warnings keywords over-matching in LvmFullReport ([PR 4391](https://github.com/RedHatInsights/insights-core/pull/4391))
+- fix: replace 'raw_entry' key with raw_entry_of method ([PR 4392](https://github.com/RedHatInsights/insights-core/pull/4392))
+- feat: new spec "vgs --foreign --shared" and its parser ([PR 4390](https://github.com/RedHatInsights/insights-core/pull/4390))
+- feat: add MAC address obfuscation in cleaner ([PR 4373](https://github.com/RedHatInsights/insights-core/pull/4373))
+
 # [insights-core-3.5.9](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.9) (2025-03-13)
 
 - fix(test): Ensure tests pass in all testing environments ([PR 4389](https://github.com/RedHatInsights/insights-core/pull/4389))

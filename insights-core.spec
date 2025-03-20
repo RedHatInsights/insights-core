@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.9
+Version:        3.5.10
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,19 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 20 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.10-1
+- fix: path of datasource files_dirs_number (#4396) (xiaoxwan@redhat.com)
+- fix: drop issue option of Specs.nvidia_smi_query_gpu (#4395)
+  (xiaoxwan@redhat.com)
+- fix: no exception for ls.permissions_of (#4394) (xiangceliu@redhat.com)
+- fix: warnings keywords over-matching in LvmFullReport (#4391)
+  (xiaoxwan@redhat.com)
+- fix: replace 'raw_entry' key with raw_entry_of method (#4392)
+  (xiangceliu@redhat.com)
+- feat: new spec "vgs --foreign --shared" and its parser (#4390)
+  (44796653+huali027@users.noreply.github.com)
+- feat: add MAC address obfuscation in cleaner (#4373) (xiangceliu@redhat.com)
+
 * Thu Mar 13 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.9-1
 - fix(test): Ensure tests pass in all testing environments (#4389)
   (mhorky@redhat.com)
