@@ -5,7 +5,7 @@ from mock.mock import Mock
 from insights.core import ET
 from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources import candlepin_broker
+from insights.specs.datasources import candlepin
 
 
 CANDLEPIN_BROKER = """
@@ -140,7 +140,7 @@ CANDLE_BROKER_NO_SENTISVE_INFO = """
 </configuration>
 """.strip()
 
-RELATIVE_PATH = '/etc/candlepin/broker.xml'
+RELATIVE_PATH = 'insights_datasources/candlepin_broker.xml'
 
 
 def xml_check_removed(result):
@@ -170,13 +170,17 @@ def xml_compare(result, expected):
         if ex_found is not None:
             re_found = re_core_ele.find(tag)
             assert re_found is not None, 'Tag {} is in expected but not in result'.format(tag)
-            assert re_found.text == ex_found.text, 'Tag {} text is different in expected and result'.format(tag)
+            assert (
+                re_found.text == ex_found.text
+            ), 'Tag {} text is different in expected and result'.format(tag)
 
     ex_settings = ex_core_ele.find('security-settings')
     if ex_settings is not None:
         re_settings = re_core_ele.find('security-settings')
         assert re_found is not None, 'Tag security-settings is in expected but not in result'
-        assert re_found.text == ex_found.text, 'Tag {} text is different in expected and result'.format(tag)
+        assert (
+            re_found.text == ex_found.text
+        ), 'Tag {} text is different in expected and result'.format(tag)
         ex_settings_dict = {}
         re_settings_dict = {}
         for setting in ex_settings.findall('security-setting'):
@@ -193,11 +197,13 @@ def xml_compare(result, expected):
 def test_candlepin_broker():
     candlepin_broker_file = Mock()
     candlepin_broker_file.content = CANDLEPIN_BROKER.splitlines()
-    broker = {candlepin_broker.LocalSpecs.candlepin_broker_input: candlepin_broker_file}
-    result = candlepin_broker.candlepin_broker(broker)
+    broker = {candlepin.LocalSpecs.candlepin_broker_input: candlepin_broker_file}
+    result = candlepin.candlepin_broker(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
-    expected = DatasourceProvider(content=CANDLEPIN_BROKER_XML.splitlines(), relative_path=RELATIVE_PATH)
+    expected = DatasourceProvider(
+        content=CANDLEPIN_BROKER_XML.splitlines(), relative_path=RELATIVE_PATH
+    )
     xml_check_removed(result.content)
     xml_compare(result.content, expected.content)
     assert result.relative_path == expected.relative_path
@@ -206,20 +212,22 @@ def test_candlepin_broker():
 def test_candlepin_broker_bad():
     candlepin_broker_file = Mock()
     candlepin_broker_file.content = CANDLEPIN_BROKER_BAD.splitlines()
-    broker = {candlepin_broker.LocalSpecs.candlepin_broker_input: candlepin_broker_file}
+    broker = {candlepin.LocalSpecs.candlepin_broker_input: candlepin_broker_file}
     with pytest.raises(SkipComponent) as e:
-        candlepin_broker.candlepin_broker(broker)
+        candlepin.candlepin_broker(broker)
     assert 'Unexpected exception' in str(e)
 
 
 def test_candlpin_broker_no_sensitive_info():
     candlepin_broker_file = Mock()
     candlepin_broker_file.content = CANDLEPIN_BROKER_NO_SENSITIVE_INFO.splitlines()
-    broker = {candlepin_broker.LocalSpecs.candlepin_broker_input: candlepin_broker_file}
-    result = candlepin_broker.candlepin_broker(broker)
+    broker = {candlepin.LocalSpecs.candlepin_broker_input: candlepin_broker_file}
+    result = candlepin.candlepin_broker(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
-    expected = DatasourceProvider(content=CANDLE_BROKER_NO_SENTISVE_INFO.splitlines(), relative_path=RELATIVE_PATH)
+    expected = DatasourceProvider(
+        content=CANDLE_BROKER_NO_SENTISVE_INFO.splitlines(), relative_path=RELATIVE_PATH
+    )
     xml_check_removed(result.content)
     xml_compare(result.content, expected.content)
     assert result.relative_path == expected.relative_path

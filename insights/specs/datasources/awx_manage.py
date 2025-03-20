@@ -1,6 +1,7 @@
 """
-Custom datasources for awx_manage information
+Custom datasources for awx-manage information
 """
+
 import collections
 import json
 
@@ -13,14 +14,14 @@ from insights.specs import Specs
 
 
 class LocalSpecs(Specs):
-    """ Local specs used only by awx_manage datasources """
+    """Local specs used only by awx_manage datasources"""
 
     awx_manage_check_license_data_raw = simple_command("/usr/bin/awx-manage check_license --data")
     """ Returns the output of command ``/usr/bin/awx-manage check_license --data`` """
 
 
 @datasource(LocalSpecs.awx_manage_check_license_data_raw, HostContext)
-def awx_manage_check_license_data_datasource(broker):
+def check_license_data(broker):
     """
     This datasource provides the not-sensitive information collected
     from ``/usr/bin/awx-manage check_license --data``.
@@ -44,7 +45,10 @@ def awx_manage_check_license_data_datasource(broker):
             for item in filters:
                 filter_result[item] = json_data.get(item)
             if filter_result:
-                return DatasourceProvider(content=json.dumps(collections.OrderedDict(sorted(filter_result.items()))), relative_path='insights_commands/awx-manage_check_license_--data')
+                return DatasourceProvider(
+                    content=json.dumps(collections.OrderedDict(sorted(filter_result.items()))),
+                    relative_path='insights_datasources/awx_manage_check_license_data',
+                )
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
     raise SkipComponent

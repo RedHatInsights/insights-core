@@ -1,6 +1,7 @@
 """
 Custom datasources related to ``httpd``
 """
+
 import glob
 import json
 import os
@@ -23,7 +24,13 @@ def httpd_cmds(broker):
     Returns:
         list: List of the binary paths to each running process
     """
-    cmds = get_running_commands(broker[Ps], broker[HostContext], ['httpd', ])
+    cmds = get_running_commands(
+        broker[Ps],
+        broker[HostContext],
+        [
+            'httpd',
+        ],
+    )
     if cmds:
         return cmds
     raise SkipComponent
@@ -40,7 +47,11 @@ def httpd_on_nfs(broker):
     mnt = broker[ProcMounts]
     mps = mnt.search(mount_type='nfs4')
     # get nfs 4.0 mount points
-    nfs_mounts = [m.mount_point for m in mps if 'vers' in m.mount_options and m.mount_options.vers.startswith("4")]
+    nfs_mounts = [
+        m.mount_point
+        for m in mps
+        if 'vers' in m.mount_options and m.mount_options.vers.startswith("4")
+    ]
     if nfs_mounts:
         # get all httpd ps
         httpd_pids = broker[HostContext].shell_out("pgrep httpd")
@@ -53,8 +64,12 @@ def httpd_on_nfs(broker):
                     items = line.split()
                     if len(items) > 8 and items[8].startswith(tuple(nfs_mounts)):
                         open_nfs_files += 1
-            result_dict = {"http_ids": httpd_pids, "nfs_mounts": nfs_mounts, "open_nfs_files": open_nfs_files}
-            relative_path = 'insights_commands/httpd_open_nfsV4_files'
+            result_dict = {
+                "http_ids": httpd_pids,
+                "nfs_mounts": nfs_mounts,
+                "open_nfs_files": open_nfs_files,
+            }
+            relative_path = 'insights_datasources/httpd_on_nfs'
             return DatasourceProvider(content=json.dumps(result_dict), relative_path=relative_path)
     raise SkipComponent
 
@@ -78,7 +93,9 @@ def _get_all_include_conf(root, glob_path):
                             section_number = section_number - 1
                         elif line.startswith("<"):
                             section_number = section_number + 1
-                        elif section_number == 0 and line.lower().startswith(("include ", "includeoptional ")):
+                        elif section_number == 0 and line.lower().startswith(
+                            ("include ", "includeoptional ")
+                        ):
                             _includes = line.split()[-1].strip('"\'')
                             _paths.update(_get_all_include_conf(root, _includes))
             if os.path.isdir(conf):
@@ -107,7 +124,9 @@ def get_httpd_configuration_files(httpd_root):
                     section_number = section_number + 1
                 elif line.lower().startswith("serverroot "):
                     server_root = line.strip().split()[-1].strip().strip('"\'')
-                elif section_number == 0 and line.lower().startswith(("include ", "includeoptional ")):
+                elif section_number == 0 and line.lower().startswith(
+                    ("include ", "includeoptional ")
+                ):
                     includes = line.split()[-1].strip('"\'')
                     # For multiple "Include" directives, all of them will be included
                     all_paths.update(_get_all_include_conf(server_root, includes))

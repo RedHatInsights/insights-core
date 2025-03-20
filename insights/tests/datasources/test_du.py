@@ -5,7 +5,7 @@ from collections import defaultdict
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.specs import Specs
-from insights.specs.datasources.dir_list import du_dir_list
+from insights.specs.datasources.du import du_dir_list
 
 
 def setup_function(func):

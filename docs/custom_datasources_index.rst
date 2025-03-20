@@ -23,14 +23,14 @@ insights.specs.datasources.awx_manage
 -------------------------------------
 
 .. automodule:: insights.specs.datasources.awx_manage
-    :members: awx_manage_check_license_data_datasource, LocalSpecs
+    :members: check_license_data, LocalSpecs
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.candlepin_broker
--------------------------------------------
+insights.specs.datasources.candlepin
+------------------------------------
 
-.. automodule:: insights.specs.datasources.candlepin_broker
+.. automodule:: insights.specs.datasources.candlepin
     :members: candlepin_broker, LocalSpecs
     :show-inheritance:
     :undoc-members:
@@ -39,7 +39,7 @@ insights.specs.datasources.client_metadata
 ------------------------------------------
 
 .. automodule:: insights.specs.datasources.client_metadata
-    :members: ansible_host, blacklist_report, blacklisted_specs, branch_info, display_name, egg_release, tags, version_info
+    :members: ansible_host, basic_auth_insights_client, blacklist_report, blacklisted_specs, branch_info, display_name, egg_release, tags, version_info,
     :show-inheritance:
     :undoc-members:
 
@@ -51,19 +51,19 @@ insights.specs.datasources.cloud_init
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.container.containers_inspect
--------------------------------------------------------
-
-.. automodule:: insights.specs.datasources.container.containers_inspect
-    :members: running_rhel_containers_id, containers_inspect_data_datasource
-    :show-inheritance:
-    :undoc-members:
-
 insights.specs.datasources.container
 ------------------------------------
 
 .. automodule:: insights.specs.datasources.container
     :members: running_rhel_containers
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.container.containers_inspect
+-------------------------------------------------------
+
+.. automodule:: insights.specs.datasources.container.containers_inspect
+    :members: running_rhel_containers_id, containers_inspect_data_datasource
     :show-inheritance:
     :undoc-members:
 
@@ -83,10 +83,10 @@ insights.specs.datasources.corosync
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.dir_list
------------------------------------
+insights.specs.datasources.du
+-----------------------------
 
-.. automodule:: insights.specs.datasources.dir_list
+.. automodule:: insights.specs.datasources.du
     :members: du_dir_list
     :show-inheritance:
     :undoc-members:
@@ -135,15 +135,10 @@ insights.specs.datasources.kernel
 ---------------------------------
 
 .. automodule:: insights.specs.datasources.kernel
-    :members:  current_version, default_version
+    :members:  current_version, default_version, kernel_module_filters
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.kernel_module_list
----------------------------------------------
-
-.. automodule:: insights.specs.datasources.kernel_module_list
-    :members: kernel_module_filters
     :show-inheritance:
     :undoc-members:
 
@@ -160,7 +155,7 @@ insights.specs.datasources.ls
 -----------------------------
 
 .. automodule:: insights.specs.datasources.ls
-    :members: list_with_la, list_with_la_filtered, list_with_lan, list_with_lan_filtered, list_with_lanL, list_with_lanR, list_with_lanRL, list_with_laRZ, list_with_laZ
+    :members: list_with_la, list_with_la_filtered, list_with_lan, list_with_lan_filtered, list_with_lanL, list_with_lanR, list_with_lanRL, list_with_laRZ, list_with_laZ, files_dirs_number
     :show-inheritance:
     :undoc-members:
 
@@ -183,18 +178,18 @@ insights.specs.datasources.lpstat
     :undoc-members:
 
 
-insights.specs.datasources.luks_devices
----------------------------------------
+insights.specs.datasources.luks
+-------------------------------
 
-.. automodule:: insights.specs.datasources.luks_devices
+.. automodule:: insights.specs.datasources.luks
     :members: luks_block_devices, luks_data_sources, LocalSpecs
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.machine_ids
---------------------------------------
+insights.specs.datasources.machine_id
+-------------------------------------
 
-.. automodule:: insights.specs.datasources.machine_ids
+.. automodule:: insights.specs.datasources.machine_id
     :members: dup_machine_id_info
     :show-inheritance:
     :undoc-members:
@@ -204,13 +199,6 @@ insights.specs.datasources.malware_detection
 
 .. automodule:: insights.specs.datasources.malware_detection.malware_detection_ds
     :members: malware_detection
-    :show-inheritance:
-    :undoc-members:
-
-insights.specs.datasources.manifests
-------------------------------------
-
-.. automodule:: insights.specs.datasources.manifests
     :show-inheritance:
     :undoc-members:
 
@@ -254,18 +242,18 @@ insights.specs.datasources.ps
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.rpm_pkgs
------------------------------------
+insights.specs.datasources.rpm
+------------------------------
 
-.. automodule:: insights.specs.datasources.rpm_pkgs
+.. automodule:: insights.specs.datasources.rpm
     :members: pkgs_with_writable_dirs, rpm_v_pkg_list
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.rsyslog_confs
-----------------------------------------
+insights.specs.datasources.rsyslog
+----------------------------------
 
-.. automodule:: insights.specs.datasources.rsyslog_confs
+.. automodule:: insights.specs.datasources.rsyslog
     :members: rsyslog_errorfile
     :show-inheritance:
     :undoc-members:
@@ -278,10 +266,10 @@ insights.specs.datasources.sap
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.satellite_missed_queues
---------------------------------------------------
+insights.specs.datasources.satellite
+------------------------------------
 
-.. automodule:: insights.specs.datasources.satellite_missed_queues
+.. automodule:: insights.specs.datasources.satellite
     :members: satellite_missed_pulp_agent_queues, LocalSpecs
     :show-inheritance:
     :undoc-members:
@@ -306,18 +294,9 @@ insights.specs.datasources.sys_fs_cgroup_memory
 -----------------------------------------------
 
 .. automodule:: insights.specs.datasources.sys_fs_cgroup_memory
-    :members: sys_fs_cgroup_uniq_memory_swappiness
+    :members: uniq_memory_swappiness, tasks_number, LocalSpecs
     :show-inheritance:
     :undoc-members:
-
-insights.specs.datasources.sys_fs_cgroup_memory_tasks_number
-------------------------------------------------------------
-
-.. automodule:: insights.specs.datasources.sys_fs_cgroup_memory_tasks_number
-    :members: sys_fs_cgroup_memory_tasks_number_data_datasource, LocalSpecs
-    :show-inheritance:
-    :undoc-members:
-
 
 insights.specs.datasources.user_group
 -------------------------------------

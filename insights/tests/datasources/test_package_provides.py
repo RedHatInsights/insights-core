@@ -151,7 +151,7 @@ EXPECTED = DatasourceProvider(
             "{0} {1}".format(JAVA_PATH_2, JAVA_PKG_2),
         ]
     ),
-    relative_path='insights_commands/package_provides_command',
+    relative_path='insights_datasources/package_provides_command',
 )
 
 

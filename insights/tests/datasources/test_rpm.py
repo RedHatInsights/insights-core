@@ -7,7 +7,7 @@ from collections import defaultdict
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.rpm_pkgs import LocalSpecs, pkgs_with_writable_dirs, rpm_v_pkg_list
+from insights.specs.datasources.rpm import LocalSpecs, pkgs_with_writable_dirs, rpm_v_pkg_list
 from insights.specs import Specs
 
 RPM_CMD = """
@@ -24,7 +24,7 @@ RPM_BAD_CMD = "bash: rpm: command not found..."
 
 RPM_EMPTY_CMD = ""
 
-RELATIVE_PATH = "insights_commands/rpm_pkgs"
+RELATIVE_PATH = "insights_datasources/rpm_pkgs"
 
 
 def setup_function(func):
@@ -58,8 +58,8 @@ def get_groups(users):
     return ["apache", "postgres"]
 
 
-@mock.patch("insights.specs.datasources.rpm_pkgs.get_users", get_users)
-@mock.patch("insights.specs.datasources.rpm_pkgs.get_groups", get_groups)
+@mock.patch("insights.specs.datasources.rpm.get_users", get_users)
+@mock.patch("insights.specs.datasources.rpm.get_groups", get_groups)
 def test_rpm():
     rpm_args = Mock()
     rpm_args.content = RPM_CMD.splitlines()

@@ -1,6 +1,7 @@
 """
 Custom datasource for package_provides
 """
+
 import logging
 import signal
 
@@ -30,16 +31,14 @@ def get_package(ctx, file_path):
         or None if file is not associated with an RPM.
     """
     rc, resolved = ctx.shell_out(
-        "/usr/bin/readlink -e {0}".format(file_path),
-        timeout=DEFAULT_SHELL_TIMEOUT,
-        keep_rc=True
+        "/usr/bin/readlink -e {0}".format(file_path), timeout=DEFAULT_SHELL_TIMEOUT, keep_rc=True
     )
     if rc == 0 and resolved:
         rc, pkg = ctx.shell_out(
             "/usr/bin/rpm -qf {0}".format(resolved[0]),
             timeout=DEFAULT_SHELL_TIMEOUT,
             keep_rc=True,
-            signum=signal.SIGTERM
+            signum=signal.SIGTERM,
         )
         if rc == 0 and pkg:
             return pkg[0]
@@ -76,5 +75,7 @@ def cmd_and_pkg(broker):
             if pkg is not None:
                 pkg_cmd.append("{0} {1}".format(cmd, pkg))
         if pkg_cmd:
-            return DatasourceProvider('\n'.join(pkg_cmd), relative_path='insights_commands/package_provides_command')
+            return DatasourceProvider(
+                '\n'.join(pkg_cmd), relative_path='insights_datasources/package_provides_command'
+            )
     raise SkipComponent

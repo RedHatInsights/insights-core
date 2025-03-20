@@ -4,7 +4,11 @@ from mock.mock import Mock
 
 from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.lpstat import LocalSpecs, lpstat_protocol_printers_info, lpstat_queued_jobs_count
+from insights.specs.datasources.lpstat import (
+    LocalSpecs,
+    lpstat_protocol_printers_info,
+    lpstat_queued_jobs_count,
+)
 
 
 LPSTAT_V = """
@@ -27,7 +31,7 @@ device for test_printer4: usb
 device for test_printer5: ///dev/null
 """.strip()
 
-RELATIVE_PATH = 'insights_commands/lpstat_-v'
+RELATIVE_PATH = 'insights_datasources/lpstat_protocol_printers'
 
 LPSTAT_O = """
 Cups-PDF-1802           root          265443328   Tue 05 Sep 2023 02:21:19 PM CST
@@ -50,7 +54,7 @@ LPSTAT_O_EMPTY_RESULT = """
 0
 """.strip()
 
-LPSTAT_O_PATH = 'insights_commands/lpstat_-o_jobs_count'
+LPSTAT_O_PATH = 'insights_datasources/lpstat_queued_jobs_count'
 
 
 def test_lpstat_datasource():

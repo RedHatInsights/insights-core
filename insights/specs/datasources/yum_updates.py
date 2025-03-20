@@ -2,6 +2,7 @@
 Custom datasource for collecting yum updates
 ============================================
 """
+
 import json
 import logging
 import time
@@ -19,7 +20,8 @@ def sorted_cmp(it, cmp):
 
 
 class DnfManager:
-    """ Performs package resolution on dnf based systems """
+    """Performs package resolution on dnf based systems"""
+
     def __init__(self, build_pkgcache=False):
         self.base = dnf.base.Base()
         self.base.conf.cacheonly = not build_pkgcache
@@ -120,7 +122,8 @@ class DnfManager:
 
 
 class YumManager(DnfManager):
-    """ Performs package resolution on yum based systems """
+    """Performs package resolution on yum based systems"""
+
     def __init__(self, build_pkgcache=False):
         self.base = yum.YumBase()
         self.base.doGenericSetup(cache=0 if build_pkgcache else 1)
@@ -138,7 +141,18 @@ class YumManager(DnfManager):
 
         if a_n != b_n:
             return -1 if a_n < b_n else 1
-        vercmp = rpmUtils.miscutils.compareEVR((a_e, a_v, a_r,), (b_e, b_v, b_r,))
+        vercmp = rpmUtils.miscutils.compareEVR(
+            (
+                a_e,
+                a_v,
+                a_r,
+            ),
+            (
+                b_e,
+                b_v,
+                b_r,
+            ),
+        )
         if vercmp != 0:
             return vercmp
         if a_repoid != b_repoid:
@@ -164,7 +178,13 @@ class YumManager(DnfManager):
         try:
             pkgs = self.base.pkgSack.returnPackages()
             for pkg in pkgs:
-                naevr = (pkg.name, pkg.arch, pkg.epoch, pkg.version, pkg.release,)
+                naevr = (
+                    pkg.name,
+                    pkg.arch,
+                    pkg.epoch,
+                    pkg.version,
+                    pkg.release,
+                )
                 self.naevr_to_repo.setdefault(naevr, set()).add(pkg.repoid)
         except yum.Errors.RepoError:
             # RepoError is raised when cache is empty
@@ -174,13 +194,24 @@ class YumManager(DnfManager):
         return self.base.rpmdb.returnPackages()
 
     def updates(self, pkg):
-        updates = self.base.upinfo.get_applicable_notices((pkg.name, pkg.arch, pkg.epoch, pkg.version, pkg.release,))
+        updates = self.base.upinfo.get_applicable_notices(
+            (
+                pkg.name,
+                pkg.arch,
+                pkg.epoch,
+                pkg.version,
+                pkg.release,
+            )
+        )
         updates_list = set()
         # updates are returnes in format [((name, arch, epoch, version, release), UpdateNotice)]
         for naevr, update_notice in updates:
             for repoid in self.naevr_to_repo[naevr]:
                 # pkg_tup is composed from ((n,a,e,v,r), repoid)
-                pkg_tup = (naevr, repoid,)
+                pkg_tup = (
+                    naevr,
+                    repoid,
+                )
                 update_id = update_notice.get_metadata().get("update_id")
                 if update_id:
                     self.pkg_tup_to_advisories.setdefault(pkg_tup, set()).add(update_id)
@@ -212,11 +243,13 @@ try:
     import dnf.cli
     import hawkey
     import rpm
+
     UpdatesManager = DnfManager
 except ImportError:
     try:
         import yum
         import rpmUtils.miscutils
+
         UpdatesManager = YumManager
     except ImportError:
         UpdatesManager = None
@@ -300,4 +333,6 @@ def yum_updates(broker):
         if ts:
             response["metadata_time"] = time.strftime("%FT%TZ", time.gmtime(ts))
 
-    return DatasourceProvider(content=json.dumps(response), relative_path='insights_commands/yum_updates_list')
+    return DatasourceProvider(
+        content=json.dumps(response), relative_path='insights_datasources/yum_updates'
+    )
