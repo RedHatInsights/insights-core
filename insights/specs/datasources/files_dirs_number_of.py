@@ -1,6 +1,7 @@
 """
 Custom datasources to get dict of file or dir numbers
 """
+
 import json
 import os
 from insights.core.context import HostContext
@@ -13,7 +14,7 @@ from insights.specs import Specs
 
 @datasource(HostContext)
 def files_dirs_number(broker):
-    """ Return a dict of file numbers from the spec filter """
+    """Return a dict of file numbers from the spec filter"""
     filters = sorted(get_filters(Specs.files_dirs_number_filter))
     result = {}
     if filters:
@@ -32,5 +33,8 @@ def files_dirs_number(broker):
                 result[item]["files_number"] = files_number
                 result[item]["dirs_number"] = dirs_number
         if result:
-            return DatasourceProvider(content=json.dumps(result, sort_keys=True), relative_path='files_dirs_number')
+            relative_path = 'insights_commands/files_dirs_number'
+            return DatasourceProvider(
+                content=json.dumps(result, sort_keys=True), relative_path=relative_path
+            )
     raise SkipComponent
