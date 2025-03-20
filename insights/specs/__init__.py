@@ -295,6 +295,7 @@ class Specs(SpecSet):
     ibm_lparcfg = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     ifcfg = RegistryPoint(multi_output=True)
     ifcfg_static_route = RegistryPoint(filterable=True, multi_output=True)
+    ilab_config_show = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     ilab_model_list = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     imagemagick_policy = RegistryPoint(
         multi_output=True, filterable=True, no_obfuscate=['ip', 'ipv6', 'mac']
