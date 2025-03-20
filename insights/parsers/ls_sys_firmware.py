@@ -9,13 +9,13 @@ See :class:`insights.parsers.ls.FileListing` for more information.
 
 """
 
-from insights import CommandParser, parser
+from insights import parser
 from insights.parsers.ls import FileListing
 from insights.specs import Specs
 
 
 @parser(Specs.ls_sys_firmware)
-class LsSysFirmware(CommandParser, FileListing):
+class LsSysFirmware(FileListing):
     """
     Parses output of ``ls -lanR /sys/firmware`` or ``ls -alZR`` command.
 

@@ -30,20 +30,24 @@ LSlaRZ - command ``ls -lanRZ <dirs>``
 
 LSlaZ - command ``ls -lanZ <dirs>``
 -----------------------------------
+
+LsFilePermissions - spec ``ls_file_perms`` -  command ``ls -lH  <files>``
+-------------------------------------------------------------------------
 """
 
-from insights.core import ls_parser, Parser
+from insights.core import ls_parser, CommandParser
+from insights.core.exceptions import SkipComponent
 from insights.core.filters import add_filter
+from insights.core.ls_parser import FilePermissions
 from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.util.file_permissions import FilePermissions
 
 # Required basic filters for `LS` specs that the content needs to be filtered
 add_filter(Specs.ls_la_filtered, ['total '])
 add_filter(Specs.ls_lan_filtered, ['total '])
 
 
-class FileListing(Parser, dict):
+class FileListingParser(CommandParser, dict):
     """
     Reads a series of concatenated directory listings and turns them into
     a dictionary of entities by name.  Stores all the information for
@@ -77,7 +81,7 @@ class FileListing(Parser, dict):
         - the name, and link destination if it's a symlink
 
     .. note::
-        The :class:`FileListing` Parser parses the content collected by
+        The :class:`FileListingParser` parses the content collected by
         diffirent ``ls_*`` specs. The ``ls_*`` specs collect the corresponding
         ``ls`` command output according to the filters defined by the relevant
         ``ls_*_dirs`` specs.  For the ``ls_*_dirs`` specs, only absolute
@@ -107,7 +111,7 @@ class FileListing(Parser, dict):
         >>> from insights.specs import Specs
         >>> add_filter(Specs.ls_lan_dirs, ['/boot', '/etc/sysconfig'])
         >>> type(ls_lan)
-        <class 'insights.parsers.ls.FileListing'>
+        <class 'insights.parsers.ls.LSlan'>
         >>> "/etc" in ls_lan
         False
         >>> "/etc/sysconfig" in ls_lan
@@ -311,91 +315,131 @@ class FileListing(Parser, dict):
             return FilePermissions(raw_line)
 
 
+FileListing = FileListingParser
+
+
 @parser(Specs.ls_la)
-class LSla(FileListing):
+class LSla(FileListingParser):
     """
     Parses output of ``ls -la <dirs>`` command.
-    See :py:class:`FileListing` for more information.
+    See :py:class:`FileListingParser` for more information.
     """
 
     pass
 
 
 @parser(Specs.ls_la_filtered)
-class LSlaFiltered(FileListing):
+class LSlaFiltered(FileListingParser):
     """
     Parses output of ``ls -la <dirs> | grep -F <keywords>`` command.
-    See :py:class:`FileListing` for more information.
+    See :py:class:`FileListingParser` for more information.
     """
 
     pass
 
 
 @parser(Specs.ls_lan)
-class LSlan(FileListing):
+class LSlan(FileListingParser):
     """
     Parses output of ``ls -lan <dirs>`` command.
-    See :py:class:`FileListing` for more information.
+    See :py:class:`FileListingParser` for more information.
     """
 
     pass
 
 
 @parser(Specs.ls_lan_filtered)
-class LSlanFiltered(FileListing):
+class LSlanFiltered(FileListingParser):
     """
     Parses output of ``ls -lan <dirs> | grep -F <keywords>`` command.
-    See :py:class:`FileListing` for more information.
+    See :py:class:`FileListingParser` for more information.
     """
 
     pass
 
 
 @parser(Specs.ls_lanL)
-class LSlanL(FileListing):
+class LSlanL(FileListingParser):
     """
     Parses output of ``ls -lanR <dirs>`` command.
-    See :py:class:`FileListing` for more information.
+    See :py:class:`FileListingParser` for more information.
     """
 
     pass
 
 
 @parser(Specs.ls_lanR)
-class LSlanR(FileListing):
+class LSlanR(FileListingParser):
     """
     Parses output of ``ls -lanR <dirs>`` command.
-    See :py:class:`FileListing` for more information.
+    See :py:class:`FileListingParser` for more information.
     """
 
     pass
 
 
 @parser(Specs.ls_lanRL)
-class LSlanRL(FileListing):
+class LSlanRL(FileListingParser):
     """
     Parses output of ``ls -lanRL <dirs>`` command.
-    See :py:class:`FileListing` for more information.
+    See :py:class:`FileListingParser` for more information.
     """
 
     pass
 
 
 @parser(Specs.ls_laRZ)
-class LSlaRZ(FileListing):
+class LSlaRZ(FileListingParser):
     """
     Parses output of ``ls -laRZ <dirs>`` command.
-    See :py:class:`FileListing` for more information.
+    See :py:class:`FileListingParser` for more information.
     """
 
     pass
 
 
 @parser(Specs.ls_laZ)
-class LSlaZ(FileListing):
+class LSlaZ(FileListingParser):
     """
     Parses output of ``ls -laZ <dirs>`` command.
-    See :py:class:`FileListing` for more information.
+    See :py:class:`FileListingParser` for more information.
     """
 
     pass
+
+
+@parser(Specs.ls_file_perms)
+class LsFilePermissions(CommandParser, dict):
+    """
+    Parses file permissions for specs based on ``ls -lH`` command.
+
+    .. note::
+        The :class:`LsFilePermissions` parses the content collected by
+        ``ls_file_perms`` spec. This spec collect ``ls`` result according to
+        the filters added to the ``ls_file_perms_files`` spec.
+        For the ``ls_file_perms_files`` spec, only absolute file path is
+        acceptable, path to directory is not acceptable.
+        For details, see the following example.
+
+
+    Examples:
+        >>> from insights.core.filters import add_filter
+        >>> from insights.specs import Specs
+        >>> add_filter(Specs.ls_file_perms_files, ['/etc/redhat-release', '/var/log/messages'])
+        >>> type(ls_perms)
+        <class 'insights.parsers.ls.LsFilePermissions'>
+        >>> "/etc/redhat-release" in ls_perms
+        True
+        >>> ls_perms["/etc/redhat-release"].all_zero()
+        False
+    """
+
+    def parse_content(self, content):
+        for line in content:
+            try:
+                line = line.strip()
+                self[line.rsplit(None, 1)[-1]] = FilePermissions(line)
+            except Exception:
+                pass
+        if not self:
+            raise SkipComponent
