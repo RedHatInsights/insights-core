@@ -10,6 +10,7 @@ simple_file = partial(simple_file, context=SosArchiveContext)
 
 class SosSpecs(Specs):
     alternatives_display_python = simple_file("sos_commands/alternatives/alternatives_--display_python")
+    api_server_log = glob_file("/var/log/pods/openshift-kube-apiserver*/*/*.log")
     auditctl_rules = simple_file("sos_commands/auditd/auditctl_-l")
     auditctl_status = simple_file("sos_commands/auditd/auditctl_-s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
@@ -51,6 +52,7 @@ class SosSpecs(Specs):
     cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
     cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
     containers_policy = simple_file("/etc/containers/policy.json")
+    controller_manager_log = glob_file("/var/log/pods/openshift-kube-controller-manager*/*/*.log")
     corosync_cmapctl = glob_file("sos_commands/corosync/corosync-cmapctl*")
     cpe = simple_file("/etc/system-release-cpe")
     cpu_smt_control = simple_file("sys/devices/system/cpu/smt/control")
