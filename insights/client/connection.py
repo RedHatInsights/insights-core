@@ -9,7 +9,6 @@ import six
 import json
 import logging
 import platform
-import xml.etree.ElementTree as ET
 import warnings
 import errno
 # import io
@@ -492,27 +491,6 @@ class InsightsConnection(object):
             return True
         return False
 
-    def get_satellite5_info(self, branch_info):
-        """
-        Get remote_leaf for Satellite 5 Managed box
-        """
-        logger.debug(
-            "Remote branch not -1 but remote leaf is -1, must be Satellite 5")
-        if os.path.isfile('/etc/sysconfig/rhn/systemid'):
-            logger.debug("Found systemid file")
-            sat5_conf = ET.parse('/etc/sysconfig/rhn/systemid').getroot()
-            leaf_id = None
-            for member in sat5_conf.getiterator('member'):
-                if member.find('name').text == 'system_id':
-                    logger.debug("Found member 'system_id'")
-                    leaf_id = member.find('value').find(
-                        'string').text.split('ID-')[1]
-                    logger.debug("Found leaf id: %s", leaf_id)
-                    branch_info['remote_leaf'] = leaf_id
-            if leaf_id is None:
-                logger.error("Could not determine leaf_id!  Exiting!")
-                return False
-
     def get_branch_info(self):
         """
         Retrieve branch_info from Satellite Server
@@ -542,11 +520,6 @@ class InsightsConnection(object):
 
         branch_info = response.json()
         logger.debug(u'Branch information: %s', json.dumps(branch_info))
-
-        # Determine if we are connected to Satellite 5
-        if ((branch_info[u'remote_branch'] != -1 and
-             branch_info[u'remote_leaf'] == -1)):
-            self.get_satellite5_info(branch_info)
 
         # logger.debug(u'Saving branch info to file.')
         # with io.open(constants.cached_branch_info, encoding='utf8', mode='w') as f:
