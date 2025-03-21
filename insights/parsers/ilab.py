@@ -6,7 +6,10 @@ Parsers provided by this module include:
 
 IlabModuleList - command ``/usr/bin/ilab model list``
 -----------------------------------------------------
+IlabConfigShow - command ``/usr/bin/ilab config show``
+------------------------------------------------------
 """
+from insights import YAMLParser
 from insights.core import CommandParser
 from insights.core.plugins import parser
 from insights.core.exceptions import SkipComponent, ParseException
@@ -58,3 +61,42 @@ class IlabModuleList(CommandParser, list):
                 else:
                     raise ParseException("Unexpected format: %s" % line)
         self.models = [m['model_name'] for m in self]
+
+
+@parser(Specs.ilab_config_show)
+class IlabConfigShow(CommandParser, YAMLParser):
+    """
+    This parser will parse the output of "/usr/bin/ilab config show".
+
+    Sample output from ``/usr/bin/ilab config show``::
+
+        chat:
+          context: default
+          logs_dir: /root/.local/share/instructlab/chatlogs
+          max_tokens:
+          model: /root/.cache/instructlab/models/granite-8b-lab-v1
+        evaluate:
+          base_branch:
+          base_model: /root/.cache/instructlab/models/granite-8b-starter-v1
+          mmlu:
+            batch_size: auto
+            few_shots: 5
+        serve:
+          backend: vllm
+          vllm:
+            gpus:
+            llm_family: ''
+            vllm_args:
+            - --tensor-parallel-size
+            - '1'
+
+    Examples:
+        >>> type(ilab_config_show_info)
+        <class 'insights.parsers.ilab.IlabConfigShow'>
+        >>> ilab_config_show_info['chat']['logs_dir']
+        '/root/.local/share/instructlab/chatlogs'
+
+    Attributes:
+        data(dict): The ilab config information
+    """
+    pass
