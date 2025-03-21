@@ -230,12 +230,7 @@ def post_update(client, config):
         return
 
     # check registration status before anything else
-    if isfile(constants.machine_id_file):
-        reg_check = client.get_registration_status()
-        if reg_check is None:
-            sys.exit(constants.sig_kill_bad)
-    else:
-        reg_check = False
+    reg_check = isfile(constants.registered_files[0])
 
     # --status
     if config.status:
