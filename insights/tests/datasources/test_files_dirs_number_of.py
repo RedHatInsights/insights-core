@@ -6,7 +6,7 @@ from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.core import dr
 from insights.specs import Specs
-from insights.specs.datasources.files_dirs_number_of import files_dirs_number
+from insights.specs.datasources.ls import files_dirs_number
 
 
 TEST_DIR1 = "/tmp/test_files_number1/"
@@ -39,7 +39,9 @@ def test_module_filters():
     os.system(CREATE_TEST_FILES)
     result = files_dirs_number(broker)
     os.system(REMOVE_DIR)
-    assert result.content == ['{"/tmp/test_files_number1/": {"dirs_number": 1, "files_number": 2}, "/tmp/test_files_number2/": {"dirs_number": 0, "files_number": 0}}']
+    assert result.content == [
+        '{"/tmp/test_files_number1/": {"dirs_number": 1, "files_number": 2}, "/tmp/test_files_number2/": {"dirs_number": 0, "files_number": 0}}'
+    ]
 
 
 def test_module_filters_empty():

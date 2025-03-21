@@ -9,7 +9,7 @@ from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs import Specs
-from insights.specs.datasources.machine_ids import dup_machine_id_info
+from insights.specs.datasources.machine_id import dup_machine_id_info
 from insights.tests import context_wrap
 
 
@@ -94,7 +94,7 @@ def teardown_function(func):
 
 
 @patch(
-    'insights.specs.datasources.machine_ids.get_connection', return_value=MockInsightsConnection()
+    'insights.specs.datasources.machine_id.get_connection', return_value=MockInsightsConnection()
 )
 def test_duplicate(conn):
     broker = {
@@ -106,7 +106,7 @@ def test_duplicate(conn):
         content=[
             "dc194312-8cdd-4e75-8cf1-2094bfsfsdeff hostname1.compute.internal,hostname2.compute.internal"
         ],
-        relative_path='insights_commands/duplicate_machine_id_info',
+        relative_path='insights_datasources/duplicate_machine_id',
     )
     assert expected.content == result.content
     assert expected.relative_path == result.relative_path
@@ -120,14 +120,14 @@ def test_duplicate(conn):
         content=[
             "dc194312-8cdd-4e75-8cf1-2094bfsfsdeff hostname1.compute.internal,hostname2.compute.internal"
         ],
-        relative_path='insights_commands/duplicate_machine_id_info',
+        relative_path='insights_datasources/duplicate_machine_id',
     )
     assert expected.content == result.content
     assert expected.relative_path == result.relative_path
 
 
 @patch(
-    'insights.specs.datasources.machine_ids.get_connection', return_value=MockInsightsConnection()
+    'insights.specs.datasources.machine_id.get_connection', return_value=MockInsightsConnection()
 )
 def test_non_duplicate(conn):
     broker = {
@@ -139,7 +139,7 @@ def test_non_duplicate(conn):
 
 
 @patch(
-    'insights.specs.datasources.machine_ids.get_connection', return_value=MockInsightsConnection()
+    'insights.specs.datasources.machine_id.get_connection', return_value=MockInsightsConnection()
 )
 def test_module_filters_empty(conn):
     broker = {
@@ -151,7 +151,7 @@ def test_module_filters_empty(conn):
 
 
 @patch(
-    'insights.specs.datasources.machine_ids.get_connection', return_value=MockInsightsConnection()
+    'insights.specs.datasources.machine_id.get_connection', return_value=MockInsightsConnection()
 )
 def test_wrong_machine_id_content(conn):
     broker = {
@@ -165,7 +165,7 @@ def test_wrong_machine_id_content(conn):
 
 
 @patch(
-    'insights.specs.datasources.machine_ids.get_connection', return_value=MockInsightsConnection()
+    'insights.specs.datasources.machine_id.get_connection', return_value=MockInsightsConnection()
 )
 def test_machine_id_not_in_filters(conn):
     broker = {
@@ -177,7 +177,7 @@ def test_machine_id_not_in_filters(conn):
 
 
 @patch(
-    'insights.specs.datasources.machine_ids.get_connection',
+    'insights.specs.datasources.machine_id.get_connection',
     return_value=MockInsightsConnection("wrong"),
 )
 def test_api_result_not_in_json_format(conn):
