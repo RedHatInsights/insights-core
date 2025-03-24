@@ -4,6 +4,7 @@ Number of files or dirs from dirs
 
 Parses the output of files or dirs number from dirs.
 """
+
 from insights.core import JSONParser
 from insights.core.plugins import parser
 from insights.specs import Specs
@@ -30,14 +31,12 @@ class FilesDirsNumberOfDir(JSONParser):
         1
     """
 
-    def dirs_number_of(self, dir):
-        """Return the number of dirs under specified `dir`"""
-        if dir in self.data:
-            return self.data[dir]["dirs_number"]
-        raise KeyError("No such %s dir collected", dir)
+    def dirs_number_of(self, _dir):
+        """Return the number of dirs under specified `_dir`, None when no such `_dir`"""
+        if _dir in self.data:
+            return self.data[_dir]["dirs_number"]
 
-    def files_number_of(self, dir):
-        """Return the number of files under specified `dir`"""
-        if dir in self.data:
-            return self.data[dir]["files_number"]
-        raise KeyError("No such %s dir collected", dir)
+    def files_number_of(self, _dir):
+        """Return the number of files under specified `_dir`, None when no such `_dir`"""
+        if _dir in self.data:
+            return self.data[_dir]["files_number"]
