@@ -21,12 +21,10 @@ def test_inventory_url_from_base_url(get_proxies, init_session):
 @mark.parametrize(("config_kwargs",), (({"check_results": True},), ({"checkin": True},)))
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-@patch("insights.client.auto_config._try_satellite5_configuration")
 @patch("insights.client.auto_config._try_satellite6_configuration")
 @patch('insights.client.config.sys.argv', [argv[0]])
 def test_inventory_url_from_phase(
     try_satellite6_configuration,
-    try_satellite5_configuration,
     get_proxies,
     init_session,
     config_kwargs
