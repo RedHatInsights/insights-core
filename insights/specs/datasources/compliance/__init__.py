@@ -192,7 +192,7 @@ class ComplianceClient:
             exit(constants.sig_kill_bad)
 
     def assignable_policies(self):
-        url = "https://{0}/compliance/v2/policies?filter=(os_major_version={1} and os_minor_version={2})"
+        url = "https://{0}/compliance/v2/policies?filter=(os_major_version={1} and os_minor_version={2})&limit=100"
         full_url = url.format(self.config.base_url, self.os_major, self.os_minor)
         logger.debug("Fetching policies with: {0}".format(full_url))
         response = self.conn.session.get(full_url)
