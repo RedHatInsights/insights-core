@@ -3,14 +3,8 @@ Auto Configuration Helper
 """
 from __future__ import absolute_import
 import logging
-import os
 import requests
 import re
-
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
 
 from .constants import InsightsConstants as constants
 from .cert_auth import rhsmCertificate
@@ -184,75 +178,12 @@ def _try_satellite6_configuration(config):
         return False
 
 
-def _read_systemid_file(path):
-    with open(path, "r") as systemid:
-        data = systemid.read().replace('\n', '')
-    return data
-
-
-def _try_satellite5_configuration(config):
-    """
-    Attempt to determine Satellite 5 Configuration
-    """
-    logger.debug("Trying Satellite 5 auto_config")
-    rhn_config = '/etc/sysconfig/rhn/up2date'
-    systemid = '/etc/sysconfig/rhn/systemid'
-    if os.path.isfile(rhn_config):
-        if os.path.isfile(systemid):
-            config.systemid = _read_systemid_file(systemid)
-        else:
-            logger.debug("Could not find Satellite 5 systemid file.")
-            return False
-
-        logger.debug("Found Satellite 5 Config")
-        rhn_conf_file = open(rhn_config, 'r')
-        hostname = None
-        for line in rhn_conf_file:
-            if line.startswith('serverURL='):
-                url = urlparse(line.split('=')[1])
-                hostname = url.netloc + '/redhat_access'
-                logger.debug("Found hostname %s", hostname)
-            if line.startswith('sslCACert='):
-                rhn_ca = line.strip().split('=')[1]
-
-            # Auto discover proxy stuff
-            if line.startswith('enableProxy='):
-                proxy_enabled = line.strip().split('=')[1]
-            if line.startswith('httpProxy='):
-                proxy_host_port = line.strip().split('=')[1]
-            if line.startswith('proxyUser='):
-                proxy_user = line.strip().split('=')[1]
-            if line.startswith('proxyPassword='):
-                proxy_password = line.strip().split('=')[1]
-
-        if hostname:
-            proxy = None
-            if proxy_enabled == "1":
-                proxy = "http://"
-                if proxy_user != "" and proxy_password != "":
-                    logger.debug("Found user and password for rhn_proxy")
-                    proxy = proxy + proxy_user + ':' + proxy_password
-                    proxy = proxy + "@" + proxy_host_port
-                else:
-                    proxy = proxy + proxy_host_port
-                    logger.debug("RHN Proxy: %s", proxy)
-            set_auto_configuration(config, hostname, rhn_ca, proxy, True, False)
-        else:
-            logger.debug("Could not find hostname")
-            return False
-        return True
-    else:
-        logger.debug("Could not find rhn config")
-        return False
-
-
 def try_auto_configuration(config):
     """
-    Try to auto-configure if we are attached to a sat5/6
+    Try to auto-configure if we are attached to a sat6
     """
     if config.auto_config and not config.offline:
-        if not _try_satellite6_configuration(config):
-            _try_satellite5_configuration(config)
+        _try_satellite6_configuration(config)
     if not config.legacy_upload and re.match(r'(.+)?\/r\/insights', config.base_url):
         # When to append /platform
         #   base url ~= console.redhat.com/r/insights
