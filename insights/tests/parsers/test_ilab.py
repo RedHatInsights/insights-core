@@ -3,7 +3,7 @@ import pytest
 
 from insights.core.exceptions import SkipComponent, ParseException
 from insights.parsers import ilab
-from insights.parsers.ilab import IlabModuleList
+from insights.parsers.ilab import IlabModuleList, IlabConfigShow
 from insights.tests import context_wrap
 
 ILAB_MODULE_LIST = """
@@ -37,6 +37,30 @@ Please run `ilab config init` or point to a valid configuration file using `--co
 
 ILAB_MODULE_LIST_EMPTY = ""
 
+ILAB_CONFIG_SHOW = """
+chat:
+  context: default
+  logs_dir: /root/.local/share/instructlab/chatlogs
+  max_tokens:
+  model: /root/.cache/instructlab/models/granite-8b-lab-v1
+evaluate:
+  base_branch:
+  base_model: /root/.cache/instructlab/models/granite-8b-starter-v1
+  mmlu:
+    batch_size: auto
+    few_shots: 5
+serve:
+  backend: vllm
+  vllm:
+    gpus:
+    llm_family: ''
+    vllm_args:
+    - --tensor-parallel-size
+    - '1'
+""".strip()
+
+ILAB_CONFIG_SHOW_ERROR = ILAB_MODULE_LIST_ERROR
+
 
 def test_ilab_model_list():
     ilab_module_list_info = IlabModuleList(context_wrap(ILAB_MODULE_LIST))
@@ -56,9 +80,19 @@ def test_ilab_model_list():
         IlabModuleList(context_wrap(ILAB_MODULE_LIST_ISSUE_FORMAT))
 
 
+def test_ilab_config_show():
+    ilab_config_show_info = IlabConfigShow(context_wrap(ILAB_CONFIG_SHOW))
+    assert ilab_config_show_info['chat']['logs_dir'] == '/root/.local/share/instructlab/chatlogs'
+    assert ilab_config_show_info['serve']['vllm']['vllm_args'] == ['--tensor-parallel-size', '1']
+
+    with pytest.raises(ParseException):
+        IlabConfigShow(context_wrap(ILAB_CONFIG_SHOW_ERROR))
+
+
 def test_ilab_doc_examples():
     env = {
-        'ilab_model_list_info': IlabModuleList(context_wrap(ILAB_MODULE_LIST))
+        'ilab_model_list_info': IlabModuleList(context_wrap(ILAB_MODULE_LIST)),
+        'ilab_config_show_info': IlabConfigShow(context_wrap(ILAB_CONFIG_SHOW))
     }
     failed, total = doctest.testmod(ilab, globs=env)
     assert failed == 0
