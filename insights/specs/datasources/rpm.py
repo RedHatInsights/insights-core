@@ -1,6 +1,7 @@
 """
 Custom datasource for RPM command
 """
+
 import grp
 import pwd
 import signal
@@ -15,13 +16,36 @@ from insights.core.spec_factory import DatasourceProvider, simple_command
 from insights.specs import Specs
 
 
+def _make_rpm_formatter(fmt=None):
+    """function: Returns function that will format output of rpm query command"""
+    if fmt is None:
+        fmt = [
+            '"name":"%{NAME}"',
+            '"epoch":"%{EPOCH}"',
+            '"version":"%{VERSION}"',
+            '"release":"%{RELEASE}"',
+            '"arch":"%{ARCH}"',
+            '"installtime":"%{INSTALLTIME:date}"',
+            '"buildtime":"%{BUILDTIME}"',
+            '"vendor":"%{VENDOR}"',
+            '"buildhost":"%{BUILDHOST}"',
+            '"sigpgp":"%{SIGPGP:pgpsig}"',
+        ]
+    return r"\{" + ",".join(fmt) + r"\}\n"
+
+
+_rpm_format = _make_rpm_formatter()
+"""Query format for specs `installed_rpms` and `container_installed_rpms`"""
+
+
 class LocalSpecs(Specs):
     """
     Local spec used only by the rpm_pkgs datasource.
     """
+
     rpm_args = simple_command(
         'rpm -qa --nosignature --qf="[%{=NAME}; %{=NEVRA}; %{FILENAMES}; %{FILEMODES:perms}; %{FILEUSERNAME}; %{FILEGROUPNAME}; %{=VENDOR}\n]"',
-        signum=signal.SIGTERM
+        signum=signal.SIGTERM,
     )
 
 
@@ -124,7 +148,7 @@ def pkgs_with_writable_dirs(broker):
 
     if packages:
         return DatasourceProvider(
-            content=sorted(packages), relative_path="insights_commands/rpm_pkgs"
+            content=sorted(packages), relative_path="insights_datasources/rpm_pkgs"
         )
 
 

@@ -5,7 +5,7 @@ from mock.mock import Mock
 from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs import Specs
-from insights.specs.datasources.satellite_missed_queues import LocalSpecs, satellite_missed_pulp_agent_queues
+from insights.specs.datasources.satellite import LocalSpecs, satellite_missed_pulp_agent_queues
 
 
 MESSAGE_WITH_ERRORS = """
@@ -160,7 +160,7 @@ pulp.agent.076a1c3f-3dde-4523-b26c-fcfffbd93bfe:2018-01-16 00:06:36
 1
 """.strip()
 
-RELATIVE_PATH = "insights_commands/satellite_missed_qpid_queues"
+RELATIVE_PATH = "insights_datasources/satellite_missed_pulp_agent_queues"
 
 LS_AL_SINCE_SATELLITE_611 = """
 ls: cannot access '/nonexists': No such file or directory
@@ -234,12 +234,14 @@ def test_satellite_missed_queues():
         Specs.messages: messages,
         LocalSpecs.content_host_uuids: host_uuids,
         LocalSpecs.qpid_queues: qpid_queues,
-        Specs.ls_la: ls_la
+        Specs.ls_la: ls_la,
     }
     result = satellite_missed_pulp_agent_queues(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
-    expected = DatasourceProvider(content=MISSED_QUEUES_OUTPUT.splitlines(), relative_path=RELATIVE_PATH)
+    expected = DatasourceProvider(
+        content=MISSED_QUEUES_OUTPUT.splitlines(), relative_path=RELATIVE_PATH
+    )
     assert sorted(result.content) == sorted(expected.content)
     assert result.relative_path == expected.relative_path
 
@@ -257,12 +259,14 @@ def test_satellite_missed_queues_with_more_data():
         Specs.messages: messages,
         LocalSpecs.content_host_uuids: host_uuids,
         LocalSpecs.qpid_queues: qpid_queues,
-        Specs.ls_la: ls_la
+        Specs.ls_la: ls_la,
     }
     result = satellite_missed_pulp_agent_queues(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
-    expected = DatasourceProvider(content=MISSED_QUEUES_OUTPUT_2.splitlines(), relative_path=RELATIVE_PATH)
+    expected = DatasourceProvider(
+        content=MISSED_QUEUES_OUTPUT_2.splitlines(), relative_path=RELATIVE_PATH
+    )
     assert sorted(result.content) == sorted(expected.content)
     assert result.relative_path == expected.relative_path
 
@@ -280,12 +284,14 @@ def test_satellite_after_611():
         Specs.messages: messages,
         LocalSpecs.content_host_uuids: host_uuids,
         LocalSpecs.qpid_queues: qpid_queues,
-        Specs.ls_la: ls_la
+        Specs.ls_la: ls_la,
     }
     result = satellite_missed_pulp_agent_queues(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
-    expected = DatasourceProvider(content=MISSED_QUEUES_OUTPUT.splitlines(), relative_path=RELATIVE_PATH)
+    expected = DatasourceProvider(
+        content=MISSED_QUEUES_OUTPUT.splitlines(), relative_path=RELATIVE_PATH
+    )
     assert sorted(result.content) == sorted(expected.content)
     assert result.relative_path == expected.relative_path
 
@@ -303,7 +309,7 @@ def test_exception():
         Specs.messages: messages,
         LocalSpecs.content_host_uuids: host_uuids,
         LocalSpecs.qpid_queues: qpid_queues,
-        Specs.ls_la: ls_la
+        Specs.ls_la: ls_la,
     }
     with pytest.raises(SkipComponent):
         satellite_missed_pulp_agent_queues(broker)
@@ -333,7 +339,7 @@ def test_exception():
         Specs.messages: messages,
         LocalSpecs.content_host_uuids: host_uuids,
         LocalSpecs.qpid_queues: no_qpid_queues,
-        Specs.ls_la: ls_la
+        Specs.ls_la: ls_la,
     }
     with pytest.raises(SkipComponent):
         satellite_missed_pulp_agent_queues(broker)
