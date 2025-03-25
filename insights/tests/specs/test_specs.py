@@ -30,7 +30,7 @@ from insights.core.spec_factory import (
     first_file,
     first_of,
 )
-from insights.specs.default import _make_rpm_formatter
+from insights.specs.datasources.rpm import _make_rpm_formatter
 
 here = os.path.abspath(os.path.dirname(__file__))
 

@@ -49,33 +49,30 @@ from insights.specs.datasources import (
     cloud_init,
     corosync as corosync_ds,
     db2,
-    dir_list,
+    du,
     eap_reports,
     env,
     ethernet,
-    files_dirs_number_of,
     httpd,
     intersystems,
     ipcs,
     kernel,
-    kernel_module_list,
     leapp,
     lpstat,
     ls,
     lsattr,
-    luks_devices,
-    machine_ids,
+    luks,
+    machine_id,
     md5chk,
     mdadm,
     mount as mount_ds,
     package_provides,
-    ps as ps_datasource,
-    rpm_pkgs,
+    ps,
+    rpm,
     sap,
-    satellite_missed_queues,
+    satellite,
     ssl_certificate,
     sys_fs_cgroup_memory,
-    sys_fs_cgroup_memory_tasks_number,
     user_group,
     yum_updates,
 )
@@ -89,31 +86,10 @@ from insights.specs.datasources.pcp import (
     pmlog_summary_args,
     pmlog_summary_args_pcp_zeroconf,
 )
+from insights.specs.datasources.rpm import _rpm_format
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 
 logger = logging.getLogger(__name__)
-
-
-def _make_rpm_formatter(fmt=None):
-    """function: Returns function that will format output of rpm query command"""
-    if fmt is None:
-        fmt = [
-            '"name":"%{NAME}"',
-            '"epoch":"%{EPOCH}"',
-            '"version":"%{VERSION}"',
-            '"release":"%{RELEASE}"',
-            '"arch":"%{ARCH}"',
-            '"installtime":"%{INSTALLTIME:date}"',
-            '"buildtime":"%{BUILDTIME}"',
-            '"vendor":"%{VENDOR}"',
-            '"buildhost":"%{BUILDHOST}"',
-            '"sigpgp":"%{SIGPGP:pgpsig}"',
-        ]
-    return r"\{" + ",".join(fmt) + r"\}\n"
-
-
-_rpm_format = _make_rpm_formatter()
-""" Query format for specs `installed_rpms` and `container_installed_rpms` """
 
 
 class DefaultSpecs(Specs):
@@ -176,7 +152,7 @@ class DefaultSpecs(Specs):
         deps=[aws.aws_imdsv2_token],
     )
     awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
-    awx_manage_check_license_data = awx_manage.awx_manage_check_license_data_datasource
+    awx_manage_check_license_data = awx_manage.check_license_data
     awx_manage_print_settings = simple_command(
         "/usr/bin/awx-manage print_settings INSIGHTS_TRACKING_STATE SYSTEM_UUID INSTALL_UUID TOWER_URL_BASE AWX_CLEANUP_PATHS AWX_PROOT_BASE_PATH LOG_AGGREGATOR_ENABLED LOG_AGGREGATOR_LEVEL --format json"
     )
@@ -258,7 +234,7 @@ class DefaultSpecs(Specs):
         "/etc/crypto-policies/back-ends/opensshserver.config"
     )
     crypto_policies_state_current = simple_file("/etc/crypto-policies/state/current")
-    cryptsetup_luksDump = luks_devices.luks_data_sources
+    cryptsetup_luksDump = luks.luks_data_sources
     cupsd_conf = simple_file("/etc/cups/cupsd.conf")
     cups_browsed_conf = simple_file("/etc/cups/cups-browsed.conf")
     cups_files_conf = simple_file("/etc/cups/cups-files.conf")
@@ -305,8 +281,8 @@ class DefaultSpecs(Specs):
     )
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
     dumpe2fs_h = foreach_execute(mount_ds.dumpdev_list, "/sbin/dumpe2fs -h %s")
-    du_dirs = foreach_execute(dir_list.du_dir_list, "/bin/du -s -k %s")  # empty filter
-    duplicate_machine_id = machine_ids.dup_machine_id_info
+    du_dirs = foreach_execute(du.du_dir_list, "/bin/du -s -k %s")  # empty filter
+    duplicate_machine_id = machine_id.dup_machine_id_info
     eap_json_reports = foreach_collect(eap_reports.eap_report_files, "%s")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
@@ -335,7 +311,7 @@ class DefaultSpecs(Specs):
     falconctl_version = simple_command("/opt/CrowdStrike/falconctl -g --version")
     fapolicyd_rules = glob_file(r"/etc/fapolicyd/rules.d/*.rules")
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
-    files_dirs_number = files_dirs_number_of.files_dirs_number
+    files_dirs_number = ls.files_dirs_number
     filefrag = simple_command("/sbin/filefrag /boot/grub2/grubenv", keep_rc=True)
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
@@ -432,7 +408,7 @@ class DefaultSpecs(Specs):
     initctl_lst = simple_command("/sbin/initctl --system list")
     insights_client_conf = simple_file('/etc/insights-client/insights-client.conf')
     installed_rpms = simple_command(
-        "/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM
+        "/bin/rpm -qa --qf '{0}'".format(_rpm_format), context=HostContext, signum=signal.SIGTERM
     )
     interrupts = simple_file("/proc/interrupts")
     ip6tables = simple_command("/sbin/ip6tables-save")
@@ -463,7 +439,7 @@ class DefaultSpecs(Specs):
     )
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
-    jboss_runtime_versions = ps_datasource.jboss_runtime_versions
+    jboss_runtime_versions = ps.jboss_runtime_versions
     journal_header = simple_command("/usr/bin/journalctl --no-pager --header")
     kdump_conf = simple_file("/etc/kdump.conf")
     kernel_config = glob_file("/boot/config-*")
@@ -554,9 +530,7 @@ class DefaultSpecs(Specs):
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
-    modinfo_filtered_modules = command_with_args(
-        'modinfo %s', kernel_module_list.kernel_module_filters
-    )
+    modinfo_filtered_modules = command_with_args('modinfo %s', kernel.kernel_module_filters)
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
     mount = simple_command("/bin/mount")
@@ -715,7 +689,7 @@ class DefaultSpecs(Specs):
     ps_auxww = simple_command("/bin/ps auxww")
     ps_ef = simple_command("/bin/ps -ef")
     ps_eo = simple_command("/usr/bin/ps -eo pid,ppid,comm,nlwp")
-    ps_eo_cmd = ps_datasource.ps_eo_cmd
+    ps_eo_cmd = ps.ps_eo_cmd
     puppet_ca_cert_expire_date = simple_command(
         "/usr/bin/openssl x509 -in /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem -enddate -noout"
     )
@@ -753,10 +727,10 @@ class DefaultSpecs(Specs):
     rndc_status = simple_command("/usr/sbin/rndc status")
     ros_config = simple_file("/var/lib/pcp/config/pmlogger/config.ros")
     rpm_V_package = foreach_execute(
-        rpm_pkgs.rpm_v_pkg_list, "/bin/rpm -V %s", keep_rc=True, signum=signal.SIGTERM
+        rpm.rpm_v_pkg_list, "/bin/rpm -V %s", keep_rc=True, signum=signal.SIGTERM
     )
     rpm_ostree_status = simple_command("/usr/bin/rpm-ostree status --json", signum=signal.SIGTERM)
-    rpm_pkgs = rpm_pkgs.pkgs_with_writable_dirs
+    rpm_pkgs = rpm.pkgs_with_writable_dirs
     rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
     rsyslog_tls_ca_cert_enddate = command_with_args(
         "/usr/bin/openssl x509 -in %s -enddate -noout", ssl_certificate.rsyslog_tls_ca_cert_file
@@ -803,7 +777,7 @@ class DefaultSpecs(Specs):
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select pg_total_relation_size('logs') as logs_size\" --csv",
         deps=[IsSatellite],
     )
-    satellite_missed_pulp_agent_queues = satellite_missed_queues.satellite_missed_pulp_agent_queues
+    satellite_missed_pulp_agent_queues = satellite.satellite_missed_pulp_agent_queues
     satellite_provision_param_settings = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value from parameters where name='package_upgrade' and reference_id in (select id from operatingsystems where name='RedHat' and major='9')\" --csv",
         deps=[IsSatellite611],
@@ -893,10 +867,8 @@ class DefaultSpecs(Specs):
         ]
     )
     sys_block_queue_stable_writes = glob_file("/sys/block/*/queue/stable_writes")
-    sys_fs_cgroup_memory_tasks_number = (
-        sys_fs_cgroup_memory_tasks_number.sys_fs_cgroup_memory_tasks_number_data_datasource
-    )
-    sys_fs_cgroup_uniq_memory_swappiness = sys_fs_cgroup_memory.sys_fs_cgroup_uniq_memory_swappiness
+    sys_fs_cgroup_memory_tasks_number = sys_fs_cgroup_memory.tasks_number
+    sys_fs_cgroup_uniq_memory_swappiness = sys_fs_cgroup_memory.uniq_memory_swappiness
     sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
     sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
     sysconfig_grub = simple_file(
@@ -1016,7 +988,7 @@ class DefaultSpecs(Specs):
     )
     container_installed_rpms = container_execute(
         running_rhel_containers,
-        "/usr/bin/rpm -qa --qf '%s'" % _rpm_format,
+        "/usr/bin/rpm -qa --qf '{0}'".format(_rpm_format),
         context=HostContext,
         signum=signal.SIGTERM,
     )

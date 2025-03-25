@@ -1,15 +1,18 @@
 """
-Custom datasources for ``ls`` commands
+Custom datasources relate to directory list
 """
+
+import json
+import os
 
 from insights.core.context import HostContext
 from insights.core.dr import get_name
 from insights.core.exceptions import SkipComponent
 from insights.core.filters import get_filters
 from insights.core.plugins import datasource
+from insights.core.spec_factory import DatasourceProvider
 from insights.parsers.fstab import FSTab
 from insights.specs import Specs
-import os
 
 
 def _list_items(spec):
@@ -92,3 +95,23 @@ def list_with_laRZ(broker):
 @datasource(HostContext)
 def list_with_laZ(broker):
     return ' '.join(_list_items(Specs.ls_laZ_dirs))
+
+
+@datasource(HostContext)
+def files_dirs_number(broker):
+    """Return a dict of file numbers from the spec filter"""
+    result = {}
+    for item in sorted(get_filters(Specs.files_dirs_number_filter)):
+        item = os.path.join(item, '')  # ensure endswith "/", --> directory
+        if os.path.exists(item):
+            result[item] = dict(files_number=0, dirs_number=0)
+            for name in os.listdir(item):
+                path = os.path.join(item, name)
+                result[item]['files_number'] += 1 if os.path.isfile(path) else 0
+                result[item]['dirs_number'] += 1 if os.path.isdir(path) else 0
+    if result:
+        return DatasourceProvider(
+            content=json.dumps(result, sort_keys=True),
+            relative_path='insights_datasources/files_dirs_number',
+        )
+    raise SkipComponent

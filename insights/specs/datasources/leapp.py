@@ -1,6 +1,7 @@
 """
 Custom datasources for leapp
 """
+
 import json
 import os
 
@@ -26,9 +27,7 @@ def leapp_report(broker):
         SkipComponent: When the file does not exist or nothing need to collect
         ContentException: When any exception occurs.
     """
-    valid_keys = {
-        'inhibitor': ['title', 'summary', 'detail']
-    }
+    valid_keys = {'inhibitor': ['title', 'summary', 'detail']}
     leapp_report_path = "/var/log/leapp/leapp-report.json"
     if not os.path.isfile(leapp_report_path):
         raise SkipComponent("No such file")
@@ -44,11 +43,19 @@ def leapp_report(broker):
                             ret = dict(groups=groups)
                             for key in keys:
                                 detail = entry.get(key)
-                                ret.update(detail if isinstance(detail, dict) else {key: detail}) if detail else None
+                                (
+                                    ret.update(
+                                        detail if isinstance(detail, dict) else {key: detail}
+                                    )
+                                    if detail
+                                    else None
+                                )
                             results.append(ret)
                 if results:
-                    relative_path = 'insights_commands/leapp_report'
-                    return DatasourceProvider(content=json.dumps(results), relative_path=relative_path)
+                    relative_path = 'insights_datasources/leapp_report'
+                    return DatasourceProvider(
+                        content=json.dumps(results), relative_path=relative_path
+                    )
                 raise SkipComponent("Nothing")
     except Exception as e:
         raise ContentException(e)
@@ -107,8 +114,10 @@ def migration_results(broker):
                                 ret[key] = sub_ret
                     results.append(ret) if ret else None
                 if results:
-                    relative_path = 'insights_commands/leapp_migration_results'
-                    return DatasourceProvider(content=json.dumps(results), relative_path=relative_path)
+                    relative_path = 'insights_datasources/leapp_migration_results'
+                    return DatasourceProvider(
+                        content=json.dumps(results), relative_path=relative_path
+                    )
                 raise SkipComponent("Nothing")
     except Exception as e:
         raise ContentException(e)

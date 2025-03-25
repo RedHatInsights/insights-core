@@ -1,6 +1,7 @@
 """
 Custom datasources for lpstat information
 """
+
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
@@ -9,7 +10,7 @@ from insights.specs import Specs
 
 
 class LocalSpecs(Specs):
-    """ Local specs used only by lpstat datasources """
+    """Local specs used only by lpstat datasources"""
 
     lpstat_v = simple_command("/usr/bin/lpstat -v")
     """ Returns the output of command ``/usr/bin/lpstat -v`` """
@@ -41,7 +42,10 @@ def lpstat_protocol_printers_info(broker):
                 "Remove printer address information"
                 result.append(line.split("://", 1)[0] if '://' in line else line)
         if result:
-            return DatasourceProvider(content="\n".join(result), relative_path='insights_commands/lpstat_-v')
+            return DatasourceProvider(
+                content="\n".join(result),
+                relative_path='insights_datasources/lpstat_protocol_printers',
+            )
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
     raise SkipComponent
@@ -72,16 +76,21 @@ def lpstat_queued_jobs_count(broker):
     content = broker[LocalSpecs.lpstat_o].content
     if content:
         cnt = 0
-        bad_lines = ["no such file or directory",
-                     "not a directory",
-                     "command not found",
-                     "no module named",
-                     "no files found for",
-                     "missing dependencies:",
-                     "Bad file descriptor"]
+        bad_lines = [
+            "no such file or directory",
+            "not a directory",
+            "command not found",
+            "no module named",
+            "no files found for",
+            "missing dependencies:",
+            "Bad file descriptor",
+        ]
         for line in content:
             if not any(key in line for key in bad_lines):
                 cnt += 1
         if cnt:
-            return DatasourceProvider(content="{0}".format(cnt), relative_path='insights_commands/lpstat_-o_jobs_count')
+            return DatasourceProvider(
+                content="{0}".format(cnt),
+                relative_path='insights_datasources/lpstat_queued_jobs_count',
+            )
     raise SkipComponent

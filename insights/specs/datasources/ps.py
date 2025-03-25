@@ -1,6 +1,7 @@
 """
 Custom datasources for ps information
 """
+
 import json
 import os.path
 
@@ -12,7 +13,7 @@ from insights.specs import Specs
 
 
 class LocalSpecs(Specs):
-    """ Local specs used only by ps datasources """
+    """Local specs used only by ps datasources"""
 
     ps_eo_args = simple_command("/bin/ps -ewwo pid,ppid,nlwp,args")
     """ Returns ps output including pid, ppid, nlwp and full args """
@@ -76,7 +77,7 @@ def ps_eo_cmd(broker):
         data.append('{0} {1} {2} {3}'.format(pid, ppid, nlwp, cmd))
 
     if len(data) > 1:
-        return DatasourceProvider('\n'.join(data), relative_path='insights_commands/ps_eo_cmd')
+        return DatasourceProvider('\n'.join(data), relative_path='insights_datasources/ps_eo_cmd')
 
     raise SkipComponent()
 
@@ -84,36 +85,40 @@ def ps_eo_cmd(broker):
 @datasource(LocalSpecs.ps_eo_args, HostContext)
 def jboss_runtime_versions(broker):
     """
-     Custom datasource to collect the <JBOSS_HOME>/version.txt.
+    Custom datasource to collect the <JBOSS_HOME>/version.txt.
 
-     Sample output from the ``ps -ewwo pid,ppid,nlwp,args`` command::
+    Sample output from the ``ps -ewwo pid,ppid,nlwp,args`` command::
 
-         PID  PPID NLWP COMMAND
-           1     0    1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
-           2     0    1 [kthreadd]
-           3     2    1 [rcu_gp]
-           4     2    1 [rcu_par_gp]
-           6     2    1 [kworker/0:0H-events_highpri]
-        8686   525    1 java -D[Standalone] -server -verbose:gc -Xms64m -Xmx512m -Djboss.home.dir=/opt/jboss-datagrid-7.3.0-server -Djboss.server.base.dir=/opt/jboss-datagrid-7.3.0-server/standalone
+        PID  PPID NLWP COMMAND
+          1     0    1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
+          2     0    1 [kthreadd]
+          3     2    1 [rcu_gp]
+          4     2    1 [rcu_par_gp]
+          6     2    1 [kworker/0:0H-events_highpri]
+       8686   525    1 java -D[Standalone] -server -verbose:gc -Xms64m -Xmx512m -Djboss.home.dir=/opt/jboss-datagrid-7.3.0-server -Djboss.server.base.dir=/opt/jboss-datagrid-7.3.0-server/standalone
 
-     Get the Jboss home directory and read the version.txt::
+    Get the Jboss home directory and read the version.txt::
 
-         -Djboss.home.dir=/opt/jboss-datagrid-7.3.0-server
-         /opt/jboss-datagrid-7.3.0-server/version.txt
+        -Djboss.home.dir=/opt/jboss-datagrid-7.3.0-server
+        /opt/jboss-datagrid-7.3.0-server/version.txt
 
-     Returns:
-         str: string of dict {<jboss_home>: <content of version.txt>}
+    Returns:
+        str: string of dict {<jboss_home>: <content of version.txt>}
 
-     Raises:
-         SkipComponent: Raised if no data is available
-     """
+    Raises:
+        SkipComponent: Raised if no data is available
+    """
     content = broker[LocalSpecs.ps_eo_args].content
     jboss_home_dirs = set()
     data = {}
     for l in content:
         if 'java ' in l:
-            jboss_home_labels = ['-jboss-home ', '-Djboss.home.dir=', '-Dcatalina.home=',
-                                 '-Dinfinispan.server.home.path=']
+            jboss_home_labels = [
+                '-jboss-home ',
+                '-Djboss.home.dir=',
+                '-Dcatalina.home=',
+                '-Dinfinispan.server.home.path=',
+            ]
             for jhl in jboss_home_labels:
                 if jhl in l:
                     jboss_home_str = l.split(jhl)[1]
@@ -126,5 +131,7 @@ def jboss_runtime_versions(broker):
                 with open(jboss_v_file, 'r') as version_file:
                     data[one_jboss_home_dir] = version_file.read()
     if len(data) > 0:
-        return DatasourceProvider(json.dumps(data), relative_path='insights_commands/jboss_versions')
+        return DatasourceProvider(
+            json.dumps(data), relative_path='insights_datasources/jboss_runtime_versions'
+        )
     raise SkipComponent()
