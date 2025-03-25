@@ -310,7 +310,7 @@ def test_assignable_policies(config, log):
         )
     )
     assert compliance_client.assignable_policies() == 0
-    url = "https://localhost/app/compliance/v2/policies?filter=(os_major_version=9 and os_minor_version=3)"
+    url = "https://localhost/app/compliance/v2/policies?filter=(os_major_version=9 and os_minor_version=3)&limit=100"
     compliance_client.conn.session.get.assert_called_with(url)
     log.warning.assert_not_called()
     log.error.assert_not_called()
@@ -333,7 +333,7 @@ def test_assignable_policies_failed_code(config, log):
         )
     )
     assert compliance_client.assignable_policies() == constants.sig_kill_bad
-    url = "https://localhost/app/compliance/v2/policies?filter=(os_major_version=9 and os_minor_version=3)"
+    url = "https://localhost/app/compliance/v2/policies?filter=(os_major_version=9 and os_minor_version=3)&limit=100"
     compliance_client.conn.session.get.assert_called_with(url)
     log.error.assert_called_with("An error has occurred while communicating with the API.\n")
 
@@ -355,7 +355,7 @@ def test_assignable_policies_failed_empty(config, log):
         )
     )
     assert compliance_client.assignable_policies() == constants.sig_kill_bad
-    url = "https://localhost/app/compliance/v2/policies?filter=(os_major_version=9 and os_minor_version=3)"
+    url = "https://localhost/app/compliance/v2/policies?filter=(os_major_version=9 and os_minor_version=3)&limit=100"
     compliance_client.conn.session.get.assert_called_with(url)
     log.warning.assert_called_with("System is not assignable to any policy. Create supported policy using the Compliance web UI.\n")
     log.error.assert_not_called()
