@@ -7,10 +7,18 @@ from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 from insights.parsers.hostname import Hostname as HostnameParser
 from insights.parsers.saphostctrl import SAPHostCtrlInstances
-from insights.specs.datasources.sap import (LocalSpecs, ld_library_path_of_user, sap_hana_sid,
-                                            sap_hana_sid_SID_nr, sap_sid)
-from insights.tests.combiners.test_sap import (HOSTNAME1, SAPHOSTCTRL_HOSTINSTANCES_GOOD,
-                                               SAPHOSTCTRL_HOSTINSTANCES_R_CASE)
+from insights.specs.datasources.sap import (
+    LocalSpecs,
+    ld_library_path_of_user,
+    sap_hana_sid,
+    sap_hana_sid_SID_nr,
+    sap_sid,
+)
+from insights.tests.combiners.test_sap import (
+    HOSTNAME1,
+    SAPHOSTCTRL_HOSTINSTANCES_GOOD,
+    SAPHOSTCTRL_HOSTINSTANCES_R_CASE,
+)
 from insights.tests import context_wrap
 
 SAPHOSTCTRL_HOSTINSTANCES = '''
@@ -210,7 +218,7 @@ def test_ld_library_path_of_user():
         'rh1adm /usr/sap/RH1/SYS/exe/run:/usr/sap/RH1/SYS/exe/uc/linuxx86_64:/sapdb/clients/RH1/lib',
         'rh2adm /usr/sap/RH2/SYS/exe/run:/usr/sap/RH2/SYS/exe/uc/linuxx86_64:/sapdb/clients/RH2/lib',
     ]
-    assert result.relative_path == 'insights_commands/echo_user_LD_LIBRARY_PATH'
+    assert result.relative_path == 'insights_datasources/ld_library_path_of_user'
 
     # Bad
     inst = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_GOOD))

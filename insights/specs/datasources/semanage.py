@@ -1,6 +1,7 @@
 """
 Custom datasource to get the linux users count who map to a selinux user.
 """
+
 import json
 
 from insights.core.context import HostContext
@@ -13,7 +14,7 @@ from insights.specs import Specs
 
 
 class LocalSpecs(Specs):
-    """ Local specs used only by users_count_map_selinux_user datasource """
+    """Local specs used only by users_count_map_selinux_user datasource"""
 
     selinux_user_mapping = simple_command("/sbin/semanage login -l")
 
@@ -36,12 +37,15 @@ def users_count_map_selinux_user(broker):
             ('SELinux User', 'selinux_user'),
             ('MLS/MCS Range', 'mls_mcs_range'),
             ('Service', 'service'),
-        ]
+        ],
     )
     filters = sorted((get_filters(Specs.selinux_users)))
     users_info = {}
     for filter in filters:
         users_info[filter] = len([obj for obj in data if obj['selinux_user'] == filter])
     if users_info:
-        return DatasourceProvider(json.dumps(users_info), relative_path='insights_commands/linux_users_count_map_selinux_user')
+        return DatasourceProvider(
+            json.dumps(users_info),
+            relative_path='insights_datasources/linux_users_count_map_selinux_user',
+        )
     raise SkipComponent

@@ -29,7 +29,7 @@ systemu              systemu              s0-s0:c0.c1023       *
 root                 unconfined_u         s0-s0:c0.c1023       *
 """
 
-RELATIVE_PATH = 'insights_commands/linux_users_count_map_selinux_user'
+RELATIVE_PATH = 'insights_datasources/linux_users_count_map_selinux_user'
 
 
 def setup_function(func):

@@ -1,7 +1,7 @@
 from insights.combiners.rsyslog_confs import RsyslogAllConf
 from insights.core.exceptions import SkipComponent
 from insights.parsers.rsyslog_conf import RsyslogConf
-from insights.specs.datasources.rsyslog_confs import rsyslog_errorfile
+from insights.specs.datasources.rsyslog import rsyslog_errorfile
 from insights.tests import context_wrap
 import pytest
 
@@ -82,21 +82,20 @@ def test_rsyslog_errorfiles_1():
     rsyslog1 = RsyslogConf(context_wrap(RSYSLOG_ALL_CONF_1, path="/etc/rsyslog.conf"))
     rsyslog2 = RsyslogConf(context_wrap(RSYSLOG_ALL_CONF_2, path="/etc/rsyslog.d/test.conf"))
     result = RsyslogAllConf([rsyslog1, rsyslog2])
-    broker = {
-        RsyslogAllConf: result
-    }
+    broker = {RsyslogAllConf: result}
     result = rsyslog_errorfile(broker)
     assert result is not None
-    assert result == '/var/log/rsyslog/es-errors1.log /var/log/rsyslog/es-errors2.log /var/log/rsyslog/es-errors3.log'
+    assert (
+        result
+        == '/var/log/rsyslog/es-errors1.log /var/log/rsyslog/es-errors2.log /var/log/rsyslog/es-errors3.log'
+    )
 
 
 def test_rsyslog_errorfiles_2():
     rsyslog = RsyslogConf(context_wrap(RSYSLOG_ALL_CONF_2, path="/etc/rsyslog.d/test.conf"))
     result = RsyslogAllConf([rsyslog])
 
-    broker = {
-        RsyslogAllConf: result
-    }
+    broker = {RsyslogAllConf: result}
     with pytest.raises(SkipComponent):
         rsyslog_errorfile(broker)
 
@@ -105,8 +104,6 @@ def test_rsyslog_errorfiles_3():
     rsyslog = RsyslogConf(context_wrap(RSYSLOG_ALL_CONF_3, path="/etc/rsyslog.d/test.conf"))
     result = RsyslogAllConf([rsyslog])
 
-    broker = {
-        RsyslogAllConf: result
-    }
+    broker = {RsyslogAllConf: result}
     with pytest.raises(SkipComponent):
         rsyslog_errorfile(broker)
