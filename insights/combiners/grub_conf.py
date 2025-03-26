@@ -15,21 +15,45 @@ It determines which parser was used by checking one of the following
 parsers/combiners:
 :class:`insights.parsers.installed_rpms.InstalledRpms`,
 :class:`insights.parsers.cmdline.CmdLine`,
-:class:`insights.parsers.ls_sys_firmware.LsSysFirmware`, and
+:class:`insights.parsers.ls_sys_firmware.LsSysFirmware` or
+:class:`insights.parsers.ls.LSlanFiltered`
 """
+
 import re
 
 from insights import SkipComponent
+from insights.core.filters import add_filter
 from insights.core.plugins import combiner
 from insights.parsers.cmdline import CmdLine
-from insights.parsers.grub_conf import (get_kernel_initrds, BootEntry, Grub1Config, Grub1EFIConfig, Grub2Config,
-                                        Grub2EFIConfig, BootLoaderEntries as BLE)
+from insights.parsers.grub_conf import (
+    get_kernel_initrds,
+    BootEntry,
+    Grub1Config,
+    Grub1EFIConfig,
+    Grub2Config,
+    Grub2EFIConfig,
+    BootLoaderEntries as BLE,
+)
 from insights.parsers.grubenv import GrubEnv
 from insights.parsers.installed_rpms import InstalledRpms
+from insights.parsers.ls import LSlanFiltered
 from insights.parsers.ls_sys_firmware import LsSysFirmware
+from insights.specs import Specs
+
+add_filter(Specs.ls_lan_filtered_dirs, '/sys/firmware')
+add_filter(Specs.ls_lan_filtered, ['/sys/firmware', 'efi'])
 
 
-@combiner(BLE, optional=[GrubEnv, LsSysFirmware])
+def is_uefi_boot(ls_lan, ls_sf):
+    ls = ls_lan or ls_sf
+    if ls:
+        sf_dir = '/sys/firmware'
+        sf_efi_dir = '/sys/firmware/efi'
+        return sf_efi_dir in ls or (sf_dir in ls and ls.dir_contains(sf_dir, 'efi'))
+    return False
+
+
+@combiner(BLE, optional=[GrubEnv, LSlanFiltered, LsSysFirmware])
 class BootLoaderEntries(object):
     """
     Combine all :class:`insights.parsers.grub_conf.BootLoaderEntries`
@@ -48,9 +72,10 @@ class BootLoaderEntries(object):
     Raises:
         SkipComponent: when no any BootLoaderEntries Parsers.
     """
-    def __init__(self, grub_bles, grubenv, sys_firmware):
+
+    def __init__(self, grub_bles, grubenv, ls_lan, ls_sf):
         self.version = self._version = 2
-        self.is_efi = self._efi = '/sys/firmware/efi' in sys_firmware if sys_firmware else False
+        self.is_efi = self._efi = is_uefi_boot(ls_lan, ls_sf)
         self.entries = []
         self.boot_entries = []
         self.is_kdump_iommu_enabled = False
@@ -59,8 +84,11 @@ class BootLoaderEntries(object):
             # Make a copy of the ble entry, so that no write
             # backs occur below when expanding variables.
             self.entries.append(ble.entry.copy())
-            self.boot_entries.append(BootEntry({'name': ble.title, 'cmdline': ble.cmdline,
-                                                'version': ble.entry.get('version')}))
+            self.boot_entries.append(
+                BootEntry(
+                    {'name': ble.title, 'cmdline': ble.cmdline, 'version': ble.entry.get('version')}
+                )
+            )
             self.is_kdump_iommu_enabled = self.is_kdump_iommu_enabled or ble.is_kdump_iommu_enabled
 
         # If grub_bles and grubenv expand the $kernelopts,
@@ -69,20 +97,27 @@ class BootLoaderEntries(object):
             for entry in self.entries:
                 entry_options = entry.get('options', "")
                 if "$kernelopts" in entry_options or "$tuned_params" in entry_options:
-                    entry['options'] = re.sub("\\$kernelopts", grubenv.kernelopts,
-                                              entry['options']).strip()
-                    entry['options'] = re.sub("\\$tuned_params", grubenv.tuned_params,
-                                              entry['options']).strip()
+                    entry['options'] = re.sub(
+                        "\\$kernelopts", grubenv.kernelopts, entry['options']
+                    ).strip()
+                    entry['options'] = re.sub(
+                        "\\$tuned_params", grubenv.tuned_params, entry['options']
+                    ).strip()
 
                 if "$tuned_initrd" in entry.get('initrd', "") and grubenv.get('tuned_initrd'):
-                    entry['initrd'] = re.sub("\\$tuned_initrd", grubenv.get('tuned_initrd', ""),
-                                             entry['initrd']).strip()
+                    entry['initrd'] = re.sub(
+                        "\\$tuned_initrd", grubenv.get('tuned_initrd', ""), entry['initrd']
+                    ).strip()
 
             for entry in self.boot_entries:
                 entry_options = entry.get('cmdline', "")
                 if "$kernelopts" in entry_options or "$tuned_params" in entry_options:
-                    entry['cmdline'] = re.sub("\\$kernelopts", grubenv.kernelopts, entry['cmdline']).strip()
-                    entry['cmdline'] = re.sub("\\$tuned_params", grubenv.tuned_params, entry['cmdline']).strip()
+                    entry['cmdline'] = re.sub(
+                        "\\$kernelopts", grubenv.kernelopts, entry['cmdline']
+                    ).strip()
+                    entry['cmdline'] = re.sub(
+                        "\\$tuned_params", grubenv.tuned_params, entry['cmdline']
+                    ).strip()
 
         self.kernel_initrds = get_kernel_initrds(self.entries)
 
@@ -90,8 +125,10 @@ class BootLoaderEntries(object):
             raise SkipComponent()
 
 
-@combiner([Grub1Config, Grub2Config, Grub1EFIConfig, Grub2EFIConfig, BootLoaderEntries],
-          optional=[InstalledRpms, CmdLine, LsSysFirmware])
+@combiner(
+    [Grub1Config, Grub2Config, Grub1EFIConfig, Grub2EFIConfig, BootLoaderEntries],
+    optional=[InstalledRpms, CmdLine, LSlanFiltered, LsSysFirmware],
+)
 class GrubConf(object):
     """
     Process Grub configuration v1, v2, and BLS based on which type is passed in.
@@ -122,16 +159,16 @@ class GrubConf(object):
         >>> grub_conf.get_grub_cmdlines('')
         []
     """
-    def __init__(self, grub1, grub2, grub1_efi, grub2_efi, grub_bles,
-                 rpms, cmdline, sys_firmware):
+
+    def __init__(self, grub1, grub2, grub1_efi, grub2_efi, grub_bles, rpms, cmdline, ls_lan, ls_sf):
         self.version = self.is_kdump_iommu_enabled = None
         self.grub = self.kernel_initrds = None
-        self.is_efi = '/sys/firmware/efi' in sys_firmware if sys_firmware else False
+        self.is_efi = is_uefi_boot(ls_lan, ls_sf)
         _grubs = list(filter(None, [grub1, grub2, grub1_efi, grub2_efi, grub_bles]))
 
         if len(_grubs) == 1:
             self.grub = _grubs[0]
-            self.is_efi = self.is_efi if sys_firmware else self.grub._efi
+            self.is_efi = self.is_efi if ls_lan or ls_sf else self.grub._efi
         else:
             _grub1, _grub2 = (grub1_efi, grub2_efi) if self.is_efi else (grub1, grub2)
             if grub_bles and _grub2 and 'blscfg' in _grub2.get('configs', ''):
