@@ -785,32 +785,18 @@ class InsightsConnection(object):
 
     def unregister(self):
         """
-        Unregister this system from the insights service
+        Unregister this host
         """
         if self.config.legacy_upload:
             return self._legacy_unregister()
 
-        results = self._fetch_system_by_machine_id()
-        if not results:
-            if machine_id_exists() or os.path.exists(constants.registered_files[0]):
-                write_unregistered_file()
-                write_to_disk(constants.machine_id_file, delete=True)
-                logger.info("Successfully unregistered from the Red Hat Insights Service")
-                return True
-            logger.info('This host could not be found.')
-            return False
-        try:
-            logger.debug("Unregistering host...")
-            url = self.inventory_url + "/hosts/" + results['id']
-            response = self.delete(url)
-            response.raise_for_status()
-            logger.info(
-                "Successfully unregistered from the Red Hat Insights Service")
+        if machine_id_exists() or os.path.exists(constants.registered_files[0]):
+            write_unregistered_file()
+            write_to_disk(constants.machine_id_file, delete=True)
+            logger.info("Successfully unregistered this host.")
             return True
-        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as e:
-            logger.debug(e)
-            logger.error("Could not unregister this system")
-            return False
+        logger.info('This host is not registered, unregistration is not applicable.')
+        return False
 
     # -LEGACY-
     def register(self):
