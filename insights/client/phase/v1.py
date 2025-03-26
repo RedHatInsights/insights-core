@@ -248,15 +248,10 @@ def post_update(client, config):
 
     # put this first to avoid conflicts with register
     if config.unregister:
-        if reg_check:
-            logger.info('Unregistering this host from Insights.')
-            if client.unregister():
-                get_scheduler(config).remove_scheduling()
-                sys.exit(constants.sig_kill_ok)
-            else:
-                sys.exit(constants.sig_kill_bad)
+        if client.unregister():
+            get_scheduler(config).remove_scheduling()
+            sys.exit(constants.sig_kill_ok)
         else:
-            logger.info('This host is not registered, unregistration is not applicable.')
             sys.exit(constants.sig_kill_bad)
 
     # halt here if unregistered
