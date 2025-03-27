@@ -224,10 +224,12 @@ def test_post_update_unregister_registered(insights_config, insights_client, get
     """
     insights_config.return_value.load_all.return_value.unregister = True
     insights_client.return_value.get_registration_status = MagicMock(return_value=True)
+    insights_client.return_value.unregister = MagicMock(return_value=True)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 100
     insights_client.return_value.get_registration_status.assert_called_once()
+    insights_client.return_value.unregister.assert_called_once()
     insights_client.return_value.clear_local_registration.assert_not_called()
     insights_client.return_value.set_display_name.assert_not_called()
     get_scheduler.return_value.remove_scheduling.assert_called_once()
@@ -244,9 +246,11 @@ def test_post_update_unregister_unregistered(insights_config, insights_client, g
     """
     insights_config.return_value.load_all.return_value.unregister = True
     insights_client.return_value.get_registration_status = MagicMock(return_value=False)
+    insights_client.return_value.unregister = MagicMock(return_value=False)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 101
+    insights_client.return_value.unregister.assert_called_once()
     insights_client.return_value.clear_local_registration.assert_not_called()
     insights_client.return_value.set_display_name.assert_not_called()
     get_scheduler.return_value.remove_scheduling.assert_not_called()

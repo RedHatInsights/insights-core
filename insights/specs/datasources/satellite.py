@@ -1,3 +1,7 @@
+"""
+Custom datasources relate to Satellite Server
+"""
+
 import re
 
 from insights.combiners.satellite_version import SatelliteVersion
@@ -11,19 +15,25 @@ NODE_NOT_FOUND_ERROR = 'error Error on attach: Node not found'
 
 
 class LocalSpecs(Specs):
-    """ Local specs used only by get_satellite_missed_pulp_agent_queues datasources """
+    """Local specs used only by get_satellite_missed_pulp_agent_queues datasources"""
 
     content_host_uuids = simple_command(
         '/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c "select uuid from katello_content_facets where uuid is not null;"',
-        deps=[SatelliteVersion]
+        deps=[SatelliteVersion],
     )
     qpid_queues = simple_command(
         '/usr/bin/qpid-stat -q --ssl-certificate=/etc/pki/pulp/qpid/client.crt -b amqps://localhost:5671',
-        deps=[SatelliteVersion]
+        deps=[SatelliteVersion],
     )
 
 
-@datasource(LocalSpecs.content_host_uuids, Specs.messages, [LocalSpecs.qpid_queues, Specs.ls_la], HostContext, SatelliteVersion)
+@datasource(
+    LocalSpecs.content_host_uuids,
+    Specs.messages,
+    [LocalSpecs.qpid_queues, Specs.ls_la],
+    HostContext,
+    SatelliteVersion,
+)
 def satellite_missed_pulp_agent_queues(broker):
     """
     This datasource provides the missed pulp agent queues information on satellite server.
@@ -50,6 +60,7 @@ def satellite_missed_pulp_agent_queues(broker):
         SkipComponent: When the error doen't happen or the missed queues have been recreated.
 
     """
+
     def _parse_non_existing_queues_in_msg():
         agentq_date_re = re.compile(
             r'^(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \[Protocol\] error Error on attach: Node not found: (?P<agentq>pulp.agent.[0-9a-f-]+)$'
@@ -82,7 +93,11 @@ def satellite_missed_pulp_agent_queues(broker):
             try:
                 output = broker[LocalSpecs.qpid_queues].content
                 if len(output) > 3:
-                    current_queues = [line.split()[0].strip() for line in output[3:] if line.split()[0].startswith('pulp.agent')]
+                    current_queues = [
+                        line.split()[0].strip()
+                        for line in output[3:]
+                        if line.split()[0].startswith('pulp.agent')
+                    ]
             except Exception:
                 pass
         return current_queues
@@ -93,7 +108,11 @@ def satellite_missed_pulp_agent_queues(broker):
             try:
                 output = broker[Specs.ls_la].content
                 if any('/var/lib/qpidd/qls/jrnl2' in line for line in output):
-                    current_queues = [line.split()[-1].strip() for line in output if line.split()[-1].startswith('pulp.agent')]
+                    current_queues = [
+                        line.split()[-1].strip()
+                        for line in output
+                        if line.split()[-1].startswith('pulp.agent')
+                    ]
             except Exception:
                 pass
         return current_queues
@@ -117,5 +136,8 @@ def satellite_missed_pulp_agent_queues(broker):
                             break
                 if missed_queues:
                     missed_queues.append(str(too_more_data))
-                    return DatasourceProvider(missed_queues, relative_path='insights_commands/satellite_missed_qpid_queues')
+                    return DatasourceProvider(
+                        missed_queues,
+                        relative_path='insights_datasources/satellite_missed_pulp_agent_queues',
+                    )
     raise SkipComponent

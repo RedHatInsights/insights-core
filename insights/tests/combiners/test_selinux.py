@@ -101,10 +101,13 @@ SELINUXTYPE=targeted
 """
 
 SESTATUS_TEMPLATE = {
-    'loaded_policy_name': 'targeted', 'selinux_root_directory': '/etc/selinux',
-    'selinuxfs_mount': '/sys/fs/selinux', 'mode_from_config_file': 'enforcing',
+    'loaded_policy_name': 'targeted',
+    'selinux_root_directory': '/etc/selinux',
+    'selinuxfs_mount': '/sys/fs/selinux',
+    'mode_from_config_file': 'enforcing',
     'policy_mls_status': 'enabled',
-    'policy_deny_unknown_status': 'allowed', 'max_kernel_policy_version': '30'
+    'policy_deny_unknown_status': 'allowed',
+    'max_kernel_policy_version': '30',
 }
 
 
@@ -140,15 +143,19 @@ GRUB1_OUTPUTS = [
     # Problematic.
     (
         {'kernel_boot_options': 'selinux=0'},
-        {GRUB_DISABLED: [
-            '/vmlinuz-2.6.32-642.el6.x86_64 selinux=0 ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet',
-        ]},
+        {
+            GRUB_DISABLED: [
+                '/vmlinuz-2.6.32-642.el6.x86_64 selinux=0 ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet',
+            ]
+        },
     ),
     (
         {'kernel_boot_options': 'enforcing=0'},
-        {GRUB_NOT_ENFORCING: [
-            '/vmlinuz-2.6.32-642.el6.x86_64 enforcing=0 ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet',
-        ]},
+        {
+            GRUB_NOT_ENFORCING: [
+                '/vmlinuz-2.6.32-642.el6.x86_64 enforcing=0 ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet',
+            ]
+        },
     ),
     (
         {'kernel_boot_options': 'selinux=0 enforcing=0'},
@@ -158,7 +165,7 @@ GRUB1_OUTPUTS = [
             ],
             GRUB_NOT_ENFORCING: [
                 '/vmlinuz-2.6.32-642.el6.x86_64 selinux=0 enforcing=0 ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet',
-            ]
+            ],
         },
     ),
 ]
@@ -316,17 +323,21 @@ GRUB2_OUTPUTS = [
     # Problematic.
     (
         {'kernel_boot_options': 'selinux=0'},
-        {GRUB_DISABLED: [
-            '/vmlinuz-3.10.0-327.el7.x86_64 selinux=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet LANG=en_US.UTF-8',
-            '/vmlinuz-0-rescue-9f20b35c9faa49aebe171f62a11b236f selinux=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet',
-        ]},
+        {
+            GRUB_DISABLED: [
+                '/vmlinuz-3.10.0-327.el7.x86_64 selinux=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet LANG=en_US.UTF-8',
+                '/vmlinuz-0-rescue-9f20b35c9faa49aebe171f62a11b236f selinux=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet',
+            ]
+        },
     ),
     (
         {'kernel_boot_options': 'enforcing=0'},
-        {GRUB_NOT_ENFORCING: [
-            '/vmlinuz-3.10.0-327.el7.x86_64 enforcing=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet LANG=en_US.UTF-8',
-            '/vmlinuz-0-rescue-9f20b35c9faa49aebe171f62a11b236f enforcing=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet',
-        ]},
+        {
+            GRUB_NOT_ENFORCING: [
+                '/vmlinuz-3.10.0-327.el7.x86_64 enforcing=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet LANG=en_US.UTF-8',
+                '/vmlinuz-0-rescue-9f20b35c9faa49aebe171f62a11b236f enforcing=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet',
+            ]
+        },
     ),
     (
         {'kernel_boot_options': 'selinux=0 enforcing=0'},
@@ -338,51 +349,98 @@ GRUB2_OUTPUTS = [
             GRUB_NOT_ENFORCING: [
                 '/vmlinuz-3.10.0-327.el7.x86_64 selinux=0 enforcing=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet LANG=en_US.UTF-8',
                 '/vmlinuz-0-rescue-9f20b35c9faa49aebe171f62a11b236f selinux=0 enforcing=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet',
-            ]
+            ],
         },
     ),
 ]
 
 TEST_CASES_1 = [
-    ((SESTATUS_OUT, SELINUX_CONF, GRUB1_TEMPLATE),
-     (True, {})),
-    ((SESTATUS_OUT, SELINUX_CONF, GRUB1_TEMPLATE.format(kernel_boot_options='selinux=0')),
-     (False, {GRUB_DISABLED: ['/vmlinuz-2.6.32-642.el6.x86_64 selinux=0 ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet']})),
-    ((SESTATUS_OUT, SELINUX_CONF, GRUB1_TEMPLATE.format(kernel_boot_options='enforcing=0')),
-     (False, {GRUB_NOT_ENFORCING: ['/vmlinuz-2.6.32-642.el6.x86_64 enforcing=0 ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet']})),
-    ((SESTATUS_OUT, SELINUX_CONF_DISABLED, GRUB1_TEMPLATE),
-     (False, {BOOT_DISABLED: 'disabled'})),
-    ((SESTATUS_OUT, SELINUX_CONF_NOT_ENFORCING, GRUB1_TEMPLATE),
-     (False, {BOOT_NOT_ENFORCING: 'permissive'})),
-    ((SESTATUS_OUT, SELINUX_CONF_COMMENTED, GRUB1_TEMPLATE),
-     (False, {BOOT_NOT_ENFORCING: 'Missing in config (Permissive by default)'})),
-    ((SESTATUS_OUT_DISABLED, SELINUX_CONF_NOT_ENFORCING, GRUB1_TEMPLATE),
-     (False, {RUNTIME_DISABLED: 'disabled', BOOT_NOT_ENFORCING: 'permissive'})),
-    ((SESTATUS_OUT_NOT_ENFORCING, SELINUX_CONF_DISABLED, GRUB1_TEMPLATE.format(kernel_boot_options='selinux=0')),
-     (False, {GRUB_DISABLED: ['/vmlinuz-2.6.32-642.el6.x86_64 selinux=0 ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet'],
-              RUNTIME_NOT_ENFORCING: 'permissive',
-              BOOT_DISABLED: 'disabled'
-              })),
+    ((SESTATUS_OUT, SELINUX_CONF, GRUB1_TEMPLATE), (True, {})),
+    (
+        (SESTATUS_OUT, SELINUX_CONF, GRUB1_TEMPLATE.format(kernel_boot_options='selinux=0')),
+        (
+            False,
+            {
+                GRUB_DISABLED: [
+                    '/vmlinuz-2.6.32-642.el6.x86_64 selinux=0 ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet'
+                ]
+            },
+        ),
+    ),
+    (
+        (SESTATUS_OUT, SELINUX_CONF, GRUB1_TEMPLATE.format(kernel_boot_options='enforcing=0')),
+        (
+            False,
+            {
+                GRUB_NOT_ENFORCING: [
+                    '/vmlinuz-2.6.32-642.el6.x86_64 enforcing=0 ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet'
+                ]
+            },
+        ),
+    ),
+    ((SESTATUS_OUT, SELINUX_CONF_DISABLED, GRUB1_TEMPLATE), (False, {BOOT_DISABLED: 'disabled'})),
+    (
+        (SESTATUS_OUT, SELINUX_CONF_NOT_ENFORCING, GRUB1_TEMPLATE),
+        (False, {BOOT_NOT_ENFORCING: 'permissive'}),
+    ),
+    (
+        (SESTATUS_OUT, SELINUX_CONF_COMMENTED, GRUB1_TEMPLATE),
+        (False, {BOOT_NOT_ENFORCING: 'Missing in config (Permissive by default)'}),
+    ),
+    (
+        (SESTATUS_OUT_DISABLED, SELINUX_CONF_NOT_ENFORCING, GRUB1_TEMPLATE),
+        (False, {RUNTIME_DISABLED: 'disabled', BOOT_NOT_ENFORCING: 'permissive'}),
+    ),
+    (
+        (
+            SESTATUS_OUT_NOT_ENFORCING,
+            SELINUX_CONF_DISABLED,
+            GRUB1_TEMPLATE.format(kernel_boot_options='selinux=0'),
+        ),
+        (
+            False,
+            {
+                GRUB_DISABLED: [
+                    '/vmlinuz-2.6.32-642.el6.x86_64 selinux=0 ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet'
+                ],
+                RUNTIME_NOT_ENFORCING: 'permissive',
+                BOOT_DISABLED: 'disabled',
+            },
+        ),
+    ),
 ]
 TEST_CASES_2 = [
-    ((SESTATUS_OUT, SELINUX_CONF, GRUB2_TEMPLATE % ('selinux=0', 'selinux=0')),
-     (False, {GRUB_DISABLED: ['/vmlinuz-3.10.0-327.el7.x86_64 selinux=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet LANG=en_US.UTF-8',
-                              '/vmlinuz-0-rescue-9f20b35c9faa49aebe171f62a11b236f selinux=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet',
-                              ]})),
-    ((SESTATUS_OUT_DISABLED, SELINUX_CONF, GRUB2_TEMPLATE),
-     (False, {RUNTIME_DISABLED: 'disabled'})),
-    ((SESTATUS_OUT_NOT_ENFORCING, SELINUX_CONF, GRUB2_TEMPLATE),
-     (False, {RUNTIME_NOT_ENFORCING: 'permissive'})),
+    (
+        (SESTATUS_OUT, SELINUX_CONF, GRUB2_TEMPLATE % ('selinux=0', 'selinux=0')),
+        (
+            False,
+            {
+                GRUB_DISABLED: [
+                    '/vmlinuz-3.10.0-327.el7.x86_64 selinux=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet LANG=en_US.UTF-8',
+                    '/vmlinuz-0-rescue-9f20b35c9faa49aebe171f62a11b236f selinux=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet',
+                ]
+            },
+        ),
+    ),
+    (
+        (SESTATUS_OUT_DISABLED, SELINUX_CONF, GRUB2_TEMPLATE),
+        (False, {RUNTIME_DISABLED: 'disabled'}),
+    ),
+    (
+        (SESTATUS_OUT_NOT_ENFORCING, SELINUX_CONF, GRUB2_TEMPLATE),
+        (False, {RUNTIME_NOT_ENFORCING: 'permissive'}),
+    ),
 ]
 
 
 def test_integration():
     import pprint
+
     for inputs, outputs in TEST_CASES_1:
         sestatus = SEStatus(context_wrap(inputs[0]))
         selinux_config = SelinuxConfig(context_wrap(inputs[1]))
         grub_config = Grub1Config(context_wrap(inputs[2]))
-        grub_conf = GrubConf(grub_config, None, None, None, None, None, None, None)
+        grub_conf = GrubConf(grub_config, None, None, None, None, None, None, None, None)
         selinux = SELinux(sestatus, selinux_config, grub_conf)
         assert selinux.ok() == outputs[0]
         assert selinux.problems == outputs[1]
@@ -392,7 +450,7 @@ def test_integration():
         sestatus = SEStatus(context_wrap(inputs[0]))
         selinux_config = SelinuxConfig(context_wrap(inputs[1]))
         grub_config = Grub2Config(context_wrap(inputs[2]))
-        grub_conf = GrubConf(None, grub_config, None, None, None, None, None, None)
+        grub_conf = GrubConf(None, grub_config, None, None, None, None, None, None, None)
         selinux = SELinux(sestatus, selinux_config, grub_conf)
         assert selinux.ok() == outputs[0]
         assert selinux.problems == outputs[1]

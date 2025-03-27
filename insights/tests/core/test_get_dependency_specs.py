@@ -12,7 +12,6 @@ from insights.parsers.lsof import Lsof
 from insights.parsers.lscpu import LsCPU
 from insights.parsers.lsblk import LSBlock
 from insights.parsers.ls_boot import LsBoot
-from insights.parsers.ls_sys_firmware import LsSysFirmware
 from insights.parsers.dmidecode import DMIDecode
 from insights.parsers.os_release import OsRelease
 from insights.parsers.mount import Mount
@@ -39,7 +38,7 @@ def condition_03(*args):
     return True
 
 
-@condition(PsEf, [LsSysFirmware, DMIDecode], optional=[PsEo])
+@condition(PsEf, [DMIDecode], optional=[PsEo])
 def condition_04(*args):
     return True
 

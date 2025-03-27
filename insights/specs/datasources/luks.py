@@ -1,6 +1,7 @@
 """
 Custom datasource for gathering a list of encrypted LUKS block devices and their properties.
 """
+
 import re
 
 from insights.components.cryptsetup import HasCryptsetupWithTokens, HasCryptsetupWithoutTokens
@@ -39,9 +40,18 @@ def luks_block_devices(broker):
 
 
 class LocalSpecs(Specs):
-    """ Local specs used only by LUKS_data_sources datasource. """
-    cryptsetup_luks_dump_token_commands = foreach_execute(luks_block_devices, "/usr/sbin/cryptsetup luksDump --disable-external-tokens %s", deps=[luks_block_devices, HasCryptsetupWithTokens])
-    cryptsetup_luks_dump_commands = foreach_execute(luks_block_devices, "/usr/sbin/cryptsetup luksDump %s", deps=[luks_block_devices, HasCryptsetupWithoutTokens])
+    """Local specs used only by LUKS_data_sources datasource."""
+
+    cryptsetup_luks_dump_token_commands = foreach_execute(
+        luks_block_devices,
+        "/usr/sbin/cryptsetup luksDump --disable-external-tokens %s",
+        deps=[luks_block_devices, HasCryptsetupWithTokens],
+    )
+    cryptsetup_luks_dump_commands = foreach_execute(
+        luks_block_devices,
+        "/usr/sbin/cryptsetup luksDump %s",
+        deps=[luks_block_devices, HasCryptsetupWithoutTokens],
+    )
 
 
 def line_indentation(line):
@@ -87,7 +97,10 @@ def filter_token_lines(lines):
     return [i for j, i in enumerate(lines) if j not in remove_indices]
 
 
-@datasource(HostContext, [LocalSpecs.cryptsetup_luks_dump_token_commands, LocalSpecs.cryptsetup_luks_dump_commands])
+@datasource(
+    HostContext,
+    [LocalSpecs.cryptsetup_luks_dump_token_commands, LocalSpecs.cryptsetup_luks_dump_commands],
+)
 def luks_data_sources(broker):
     """
     This datasource provides the output of 'cryptsetup luksDump' command for
@@ -112,11 +125,18 @@ def luks_data_sources(broker):
     for command in commands:
         lines_without_tokens = filter_token_lines(command.content)
 
-        regex = re.compile(r'[\t ]*(MK digest:|MK salt:|Salt:|Digest:)(\s*([a-z0-9][a-z0-9] ){16}\n)*(\s*([a-z0-9][a-z0-9] )+\n)?', flags=re.IGNORECASE)
+        regex = re.compile(
+            r'[\t ]*(MK digest:|MK salt:|Salt:|Digest:)(\s*([a-z0-9][a-z0-9] ){16}\n)*(\s*([a-z0-9][a-z0-9] )+\n)?',
+            flags=re.IGNORECASE,
+        )
         filtered_content = regex.sub("", "\n".join(lines_without_tokens) + "\n")
 
+        relative_path = "insights_datasources/" + command.cmd.replace("/", ".").replace(" ", "_")
         datasources.append(
-            DatasourceProvider(content=filtered_content, relative_path="insights_commands/" + command.cmd.replace("/", ".").replace(" ", "_"))
+            DatasourceProvider(
+                content=filtered_content,
+                relative_path=relative_path,
+            )
         )
 
     if datasources:

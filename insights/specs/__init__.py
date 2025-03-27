@@ -24,6 +24,7 @@ class Specs(SpecSet):
     abrt_status_bare = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     alternatives_display_python = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     amq_broker = RegistryPoint(multi_output=True)
+    api_server_log = RegistryPoint(multi_output=True)
     audit_log = RegistryPoint(filterable=True)
     auditctl_rules = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     auditctl_status = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
@@ -107,6 +108,7 @@ class Specs(SpecSet):
     cobbler_modules_conf = RegistryPoint()
     cobbler_settings = RegistryPoint()
     containers_policy = RegistryPoint()
+    controller_manager_log = RegistryPoint(multi_output=True)
     convert2rhel_facts = RegistryPoint()
     corosync = RegistryPoint(filterable=True)
     corosync_cmapctl = RegistryPoint(multi_output=True)
@@ -295,6 +297,7 @@ class Specs(SpecSet):
     ibm_lparcfg = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     ifcfg = RegistryPoint(multi_output=True)
     ifcfg_static_route = RegistryPoint(filterable=True, multi_output=True)
+    ilab_config_show = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     ilab_model_list = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     imagemagick_policy = RegistryPoint(
         multi_output=True, filterable=True, no_obfuscate=['ip', 'ipv6', 'mac']

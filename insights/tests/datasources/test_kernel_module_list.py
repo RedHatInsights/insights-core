@@ -6,7 +6,7 @@ from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.parsers.lsmod import LsMod
 from insights.specs import Specs
-from insights.specs.datasources.kernel_module_list import kernel_module_filters
+from insights.specs.datasources.kernel import kernel_module_filters
 from insights.tests import context_wrap
 
 LSMOD = """

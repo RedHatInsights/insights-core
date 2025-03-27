@@ -3,7 +3,7 @@ from mock.mock import Mock
 
 from insights import SkipComponent
 from insights.parsers.blkid import BlockIDInfo
-from insights.specs.datasources.luks_devices import LocalSpecs, luks_data_sources, luks_block_devices
+from insights.specs.datasources.luks import LocalSpecs, luks_data_sources, luks_block_devices
 from insights.tests import context_wrap
 
 
