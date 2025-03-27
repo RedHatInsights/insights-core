@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.10
+Version:        3.5.11
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,27 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 27 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.11-1
+- fix(test): no filter required for ls_lan_filtered when using GrubConf
+  combiner (#4407) (xiangceliu@redhat.com)
+- fix: ls_lan_filters as another input for uefi_boot checking (#4404)
+  (xiangceliu@redhat.com)
+- feat(client): --unregister should not delete inventory host (#4393)
+  (pkoprda@redhat.com)
+- fix(test): revert test_malware_detection which was removed by mistake (#4405)
+  (xiangceliu@redhat.com)
+- chore: mark AnsibleTowerLicenseType as deprecated (#4398)
+  (xiangceliu@redhat.com)
+- chore: new 'data/insights_datasources' for datasource specs (#4400)
+  (xiangceliu@redhat.com)
+- Add spec and parser for ilab_config_show (#4399) (jiazhang@redhat.com)
+- feat: add new parser openshift-kube logs (#4402)
+  (87797511+mohitkumarrh@users.noreply.github.com)
+- fix(RHINENG-15343): Limit compliance policies to 100 (#4403)
+  (33912805+LightOfHeaven1994@users.noreply.github.com)
+- chore(client): Drop support for RHN/Satellite 5 (#4374) (mhorky@redhat.com)
+- fix: no exception for FilesDirsNumberOfDir (#4401) (xiangceliu@redhat.com)
+
 * Thu Mar 20 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.10-1
 - fix: path of datasource files_dirs_number (#4396) (xiaoxwan@redhat.com)
 - fix: drop issue option of Specs.nvidia_smi_query_gpu (#4395)

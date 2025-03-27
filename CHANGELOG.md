@@ -2,6 +2,20 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.11](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.11) (2025-03-27)
+
+- fix(test): no filter required for ls_lan_filtered when using GrubConf combiner ([PR 4407](https://github.com/RedHatInsights/insights-core/pull/4407))
+- fix: ls_lan_filters as another input for uefi_boot checking ([PR 4404](https://github.com/RedHatInsights/insights-core/pull/4404))
+- feat(client): --unregister should not delete inventory host ([PR 4393](https://github.com/RedHatInsights/insights-core/pull/4393))
+- fix(test): revert test_malware_detection which was removed by mistake ([PR 4405](https://github.com/RedHatInsights/insights-core/pull/4405))
+- chore: mark AnsibleTowerLicenseType as deprecated ([PR 4398](https://github.com/RedHatInsights/insights-core/pull/4398))
+- chore: new 'data/insights_datasources' for datasource specs ([PR 4400](https://github.com/RedHatInsights/insights-core/pull/4400))
+- Add spec and parser for ilab_config_show ([PR 4399](https://github.com/RedHatInsights/insights-core/pull/4399))
+- feat: add new parser openshift-kube logs ([PR 4402](https://github.com/RedHatInsights/insights-core/pull/4402))
+- fix(RHINENG-15343): Limit compliance policies to 100 ([PR 4403](https://github.com/RedHatInsights/insights-core/pull/4403))
+- chore(client): Drop support for RHN/Satellite 5 ([PR 4374](https://github.com/RedHatInsights/insights-core/pull/4374))
+- fix: no exception for FilesDirsNumberOfDir ([PR 4401](https://github.com/RedHatInsights/insights-core/pull/4401))
+
 # [insights-core-3.5.10](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.10) (2025-03-20)
 
 - fix: path of datasource files_dirs_number ([PR 4396](https://github.com/RedHatInsights/insights-core/pull/4396))
