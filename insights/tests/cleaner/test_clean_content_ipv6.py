@@ -35,9 +35,9 @@ dev enp3s0 lladdr router fe80:0:0:0:2204:fff:fe76:224b
 """.strip().splitlines()
 
 
-@mark.parametrize("obfuscate", [True, False])
-def test_obfuscate_ipv6(obfuscate):
-    c = InsightsConfig(obfuscate=obfuscate, obfuscate_ipv6=obfuscate)
+@mark.parametrize("obfuscation_list", [[], ['ipv6']])
+def test_obfuscate_ipv6(obfuscation_list):
+    c = InsightsConfig(obfuscation_list=obfuscation_list)
     pp = Cleaner(c, {})
     ip_changed = 0
     len_changed = 0
@@ -48,7 +48,7 @@ def test_obfuscate_ipv6(obfuscate):
             ip_changed += 1
         if len(line) != len(org_line):
             len_changed += 1
-    if obfuscate:
+    if obfuscation_list:
         assert ip_changed == len(IPv6_cases) - 5  # empty and 4 lines of "::" are not obfuscated
         assert len_changed == 0  # length of obfuscated IPv6 is not changed
     else:
@@ -59,9 +59,9 @@ def test_obfuscate_ipv6(obfuscate):
     assert ret1 == ret0
 
 
-@mark.parametrize("obfuscate", [True, False])
-def test_obfuscate_the_same(obfuscate):
-    c = InsightsConfig(obfuscate=obfuscate, obfuscate_ipv6=obfuscate)
+@mark.parametrize("obfuscation_list", [[], ['ipv6']])
+def test_obfuscate_ipv6_the_same(obfuscation_list):
+    c = InsightsConfig(obfuscation_list=obfuscation_list)
     pp = Cleaner(c, {})
     ip_changed = 0
     len_changed = 0
@@ -72,7 +72,7 @@ def test_obfuscate_the_same(obfuscate):
             ip_changed += 1
         if len(line) != len(org_line):
             len_changed += 1
-    if obfuscate:
+    if obfuscation_list:
         assert len_changed == 0  # length of obfuscated IPv6 is not changed
         assert ip_changed == len(IPv6_cases_keep_same)
         # Four IPs are obfuscated
@@ -108,12 +108,12 @@ def test_obfuscate_the_same(obfuscate):
 
 
 def test_obfuscate_ipv6_no_obfuscate():
-    c = InsightsConfig(obfuscate=True, obfuscate_ipv6=True)
+    c = InsightsConfig(obfuscation_list=['ipv6'])
     pp = Cleaner(c, {})
     # no_obfuscate=['ipv6'] will not obfuscate any IPv6 address
     ret = pp.clean_content(IPv6_cases, no_obfuscate=['ipv6', 'mac'])
     assert ret == IPv6_cases
-    # no_obfuscate=['ip'] will only obfuscate IPv4 address but not IPv6 address
+    # no_obfuscate=['ipv4'] will only obfuscate IPv4 address but not IPv6 address
     pp = Cleaner(c, {})  # Must initialize a new instance
-    ret = pp.clean_content(IPv6_cases, no_obfuscate=['ip', 'mac'])
+    ret = pp.clean_content(IPv6_cases, no_obfuscate=['ipv4', 'mac'])
     assert ret != IPv6_cases
