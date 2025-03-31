@@ -1,11 +1,16 @@
 from __future__ import absolute_import
-import os
-import logging
+
 import argparse
 import copy
+import logging
+import os
 import six
 import sys
+
 from six.moves import configparser as ConfigParser
+
+from insights.cleaner import DEFAULT_OBFUSCATIONS
+from insights.client.utilities import get_rhel_version, get_version_info
 from insights.specs.datasources.manifests import manifests, content_types
 
 try:
@@ -276,20 +281,16 @@ DEFAULT_OPTS = {
         'action': 'store',
     },
     'obfuscate': {
-        # non-CLI
-        'default': False
-    },
-    'obfuscate_ipv6': {
-        # non-CLI
-        'default': False
+        # non-CLI, deprecated
+        'default': None  # None is good for distinguishing explicit setting
     },
     'obfuscate_hostname': {
-        # non-CLI
-        'default': False
+        # non-CLI, deprecated
+        'default': None  # None is good for distinguishing explicit setting
     },
-    'obfuscate_mac': {
+    'obfuscation_list': {
         # non-CLI
-        'default': False
+        'default': None  # None is good for distinguishing explicit setting
     },
     'offline': {
         'default': False,
@@ -681,6 +682,44 @@ class InsightsConfig(object):
         '''
         Make sure there are no conflicting or invalid options
         '''
+
+        def _validate_obfuscation_options():
+            # When old switches are set explicitly, even set as False
+            if self.obfuscate is not None or self.obfuscate_hostname is not None:
+                # Warning deprecation only on RHEL 8+ and from egg v 3.6.0 (planned)
+                if self._print_errors and get_rhel_version() > 7:
+                    egg_ver = get_version_info()['core_version'].split('-')[0]
+                    if [int(i) for i in egg_ver.split('.')] >= [3, 6, 0]:
+                        sys.stdout.write(
+                            'WARNING: `obfuscate` and `obfuscate_hostname` are deprecated, please use `obfuscation_list` instead.\n'
+                        )
+                # When BOTH new and old switches are set explicitly
+                if self.obfuscation_list is not None:
+                    raise ValueError('Conflicting options: `obfuscation_list` and `obfuscate`')
+                if self.obfuscate_hostname and not self.obfuscate:
+                    raise ValueError('Option `obfuscate_hostname` requires `obfuscate`')
+                # Turn old options to new switch obfuscation_list
+                self.obfuscation_list = list()
+                self.obfuscation_list.append('ipv4') if self.obfuscate else None
+                self.obfuscation_list.append('hostname') if self.obfuscate_hostname else None
+            else:
+                obf_opt = self.obfuscation_list or []
+                if isinstance(obf_opt, six.string_types):
+                    obf_opt = set(ow.strip() for ow in obf_opt.strip('\'"').split(','))
+                invalid_opt = set(ow for ow in obf_opt if ow not in DEFAULT_OBFUSCATIONS)
+                self.obfuscation_list = sorted(set(obf_opt) - invalid_opt)
+                if invalid_opt and self._print_errors:
+                    sys.stdout.write(
+                        'WARNING: ignoring invalid obfuscate options: `{0}`, using: "obfuscation_list={1}"\n'.format(
+                            '`, `'.join(invalid_opt), ','.join(self.obfuscation_list)
+                        )
+                    )
+            # deprecate old options
+            self.obfuscate = self.obfuscate_hostname = None
+
+        # validate obfuscation options
+        _validate_obfuscation_options()
+
         if self.analyze_image_id:
             raise ValueError('--analyze-image-id is no longer supported.')
         if self.analyze_file:
@@ -693,8 +732,6 @@ class InsightsConfig(object):
             raise ValueError('--use-atomic is no longer supported.')
         if self.use_docker:
             raise ValueError('--use-docker is no longer supported.')
-        if self.obfuscate_hostname and not self.obfuscate:
-            raise ValueError('Option `obfuscate_hostname` requires `obfuscate`')
         if self.enable_schedule and self.disable_schedule:
             raise ValueError('Conflicting options: --enable-schedule and --disable-schedule')
         if self.payload and not self.content_type:
@@ -740,7 +777,7 @@ class InsightsConfig(object):
                 raise ValueError(
                     'Cannot write to %s. %s is not a directory.' % (self.output_dir, parent_dir)
                 )
-            if self.obfuscate:
+            if self.obfuscation_list:
                 if self._print_errors:
                     sys.stdout.write(
                         'WARNING: Obfuscation reports will be created alongside the output directory.\n'
@@ -763,7 +800,7 @@ class InsightsConfig(object):
                 raise ValueError(
                     'Cannot write to %s. %s is not a directory.' % (self.output_file, parent_dir)
                 )
-            if self.obfuscate:
+            if self.obfuscation_list:
                 if self._print_errors:
                     sys.stdout.write(
                         'WARNING: Obfuscation reports will be created alongside the output archive.\n'
