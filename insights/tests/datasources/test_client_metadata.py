@@ -4,9 +4,11 @@ import pytest
 
 try:
     from unittest.mock import patch, mock_open
+
     builtin_open = "builtins.open"
 except Exception:
     from mock import patch, mock_open
+
     builtin_open = "__builtin__.open"
 
 from insights import package_info
@@ -14,9 +16,16 @@ from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.core.exceptions import SkipComponent, ContentException
 from insights.specs.datasources.client_metadata import (
-    ansible_host, basic_auth_insights_client, blacklist_report,
-    blacklisted_specs, branch_info, display_name, egg_release,
-    version_info, tags)
+    ansible_host,
+    basic_auth_insights_client,
+    blacklist_report,
+    blacklisted_specs,
+    branch_info,
+    display_name,
+    egg_release,
+    version_info,
+    tags,
+)
 
 
 TAGS_YAML = """
@@ -50,23 +59,55 @@ def test_blacklist_report():
     rm = {'patterns': {'regex': ['test', 'pwd', '12.*4', '^abcd']}}
     result = blacklist_report({'client_config': ic, 'redact_config': rm})
     assert json.loads(result.content[0]) == {
-            "obfuscate": True, "obfuscate_hostname": False, "commands": 0,
-            "files": 0, "components": 0, "patterns": 4, "keywords": 0,
-            "using_new_format": True, "using_patterns_regex": True}
+        "obfuscation_list": ['ipv4'],
+        "commands": 0,
+        "files": 0,
+        "components": 0,
+        "patterns": 4,
+        "keywords": 0,
+        "using_new_format": True,
+        "using_patterns_regex": True,
+    }
 
     ic = InsightsConfig(obfuscate=True, obfuscate_hostname=True)
     rm = {'patterns': ['test', 'pwd', '', '']}
     result = blacklist_report({'client_config': ic, 'redact_config': rm})
     assert json.loads(result.content[0]) == {
-            "obfuscate": True, "obfuscate_hostname": True, "commands": 0,
-            "files": 0, "components": 0, "patterns": 2, "keywords": 0,
-            "using_new_format": True, "using_patterns_regex": False}
+        "obfuscation_list": ['ipv4', 'hostname'],
+        "commands": 0,
+        "files": 0,
+        "components": 0,
+        "patterns": 2,
+        "keywords": 0,
+        "using_new_format": True,
+        "using_patterns_regex": False,
+    }
 
     result = blacklist_report({})
     assert json.loads(result.content[0]) == {
-            "obfuscate": False, "obfuscate_hostname": False, "commands": 0,
-            "files": 0, "components": 0, "patterns": 0, "keywords": 0,
-            "using_new_format": True, "using_patterns_regex": False}
+        "obfuscation_list": [],
+        "commands": 0,
+        "files": 0,
+        "components": 0,
+        "patterns": 0,
+        "keywords": 0,
+        "using_new_format": True,
+        "using_patterns_regex": False,
+    }
+
+    ic = InsightsConfig(obfuscation_list='ipv6, hostname, mac')
+    rm = {'patterns': {'regex': ['test', 'pwd', '12.*4', '^abcd']}}
+    result = blacklist_report({'client_config': ic, 'redact_config': rm})
+    assert json.loads(result.content[0]) == {
+        "obfuscation_list": ['hostname', 'ipv6', 'mac'],
+        "commands": 0,
+        "files": 0,
+        "components": 0,
+        "patterns": 4,
+        "keywords": 0,
+        "using_new_format": True,
+        "using_patterns_regex": True,
+    }
 
 
 @patch("insights.specs.datasources.client_metadata.BLACKLISTED_SPECS", [])
@@ -130,7 +171,11 @@ def test_egg_release_empty():
 def test_tags_ok(m_open, m_isfile, m_load):
     result = tags({})
     result_json = json.loads(''.join(result.content).strip())
-    expected_item_1 = {'key': 'group', 'value': '_group-name-value_', 'namespace': 'insights-client'}
+    expected_item_1 = {
+        'key': 'group',
+        'value': '_group-name-value_',
+        'namespace': 'insights-client',
+    }
     expected_item_2 = {'key': 'description:RHEL', 'value': 8, 'namespace': 'insights-client'}
     expected_item_3 = {'key': 'key 4', 'value': 'value', 'namespace': 'insights-client'}
     assert expected_item_1 in result_json
@@ -164,8 +209,7 @@ def test_tags_no_file(isfile):
 
 def test_version_info():
     v_info = {}
-    v_info['core_version'] = '{0}-{1}'.format(package_info['VERSION'],
-                                              package_info['RELEASE'])
+    v_info['core_version'] = '{0}-{1}'.format(package_info['VERSION'], package_info['RELEASE'])
     v_info['client_version'] = None
 
     result = version_info({})

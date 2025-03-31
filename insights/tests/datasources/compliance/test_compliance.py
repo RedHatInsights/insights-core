@@ -22,7 +22,7 @@ def setup_function(func):
 
 
 def teardown_function(func):
-    global ENV_TZ
+    global ENV_TZ  # noqa: F824
     env = os.environ
     if "TZ" in env:
         if ENV_TZ is None:

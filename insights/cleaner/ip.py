@@ -138,7 +138,7 @@ class IPv4(object):
 
     def generate_report(self, report_dir, archive_name):
         try:
-            ip_report_file = os.path.join(report_dir, "%s-ip.csv" % archive_name)
+            ip_report_file = os.path.join(report_dir, "%s-ipv4.csv" % archive_name)
             logger.info('Creating IPv4 Report - %s', ip_report_file)
             lines = ['Obfuscated IPv4,Original IPv4']
             for k, v in self._ip_db.items():
