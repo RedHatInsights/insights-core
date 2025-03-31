@@ -35,18 +35,17 @@ dev enp3s0 lladdr router fe:ab:04:FF:76:4b
 """.strip().splitlines()
 
 
-@mark.parametrize("obfuscate", [True, False])
-def test_obfuscate_mac(obfuscate):
-    c = InsightsConfig(obfuscate=obfuscate, obfuscate_mac=obfuscate)
+@mark.parametrize("obfuscation_list", [[], ['mac']])
+def test_obfuscate_mac(obfuscation_list):
+    c = InsightsConfig(obfuscation_list=obfuscation_list)
     pp = Cleaner(c, {})
     mac_changed = 0
     ret0 = pp.clean_content(MAC_cases)
     for idx, line in enumerate(ret0):
         org_line = MAC_cases[idx]
         if line != org_line:
-            print(line, "|", org_line)
             mac_changed += 1
-    if obfuscate:
+    if obfuscation_list:
         assert mac_changed == len([l for l in MAC_cases if 'GOOD' in l])
     else:
         assert mac_changed == 0
@@ -55,9 +54,9 @@ def test_obfuscate_mac(obfuscate):
     assert ret1 == ret0
 
 
-@mark.parametrize("obfuscate", [True, False])
-def test_obfuscate_mac_the_same(obfuscate):
-    c = InsightsConfig(obfuscate=obfuscate, obfuscate_mac=obfuscate)
+@mark.parametrize("obfuscation_list", [[], ['mac']])
+def test_obfuscate_mac_the_same(obfuscation_list):
+    c = InsightsConfig(obfuscation_list=obfuscation_list)
     pp = Cleaner(c, {})
     mac_changed = 0
     ret0 = pp.clean_content(MAC_cases_keep_same)
@@ -65,7 +64,7 @@ def test_obfuscate_mac_the_same(obfuscate):
         org_line = MAC_cases_keep_same[idx]
         if line != org_line:
             mac_changed += 1
-    if obfuscate:
+    if obfuscation_list:
         assert mac_changed == len(MAC_cases_keep_same)
         # Three MACs are obfuscated
         obf_macs = pp.obfuscate.get('mac').mapping()
@@ -83,7 +82,7 @@ def test_obfuscate_mac_the_same(obfuscate):
 
 
 def test_obfuscate_mac_no_obfuscate():
-    c = InsightsConfig(obfuscate=True, obfuscate_mac=True)
+    c = InsightsConfig(obfuscation_list=['mac'])
     pp = Cleaner(c, {})
     # no_obfuscate=['mac'] will not obfuscate any MAC address
     ret = pp.clean_content(MAC_cases, no_obfuscate=['mac'])
