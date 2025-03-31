@@ -4,6 +4,16 @@ output when selinux is enabled or disabled and also skip "bad" lines.
 """
 
 
+def trim_fname(fname):
+    """
+    Remove enclosing quotes or double quotes in file name.
+    """
+    # Fastest way seems to be compare to set first, then compare first and last
+    if fname[0] in {'"', "'"} and fname[0] == fname[-1]:
+        return fname[1:-1]
+    return fname
+
+
 def set_name_link(entry, is_softlink, path):
     """
     Get the name, and possibly the link, from the rest of the path.
@@ -17,9 +27,11 @@ def set_name_link(entry, is_softlink, path):
         Does not return, entry keys for name and link added
     """
     if is_softlink:
-        entry['name'], _, entry['link'] = path.partition(" -> ")
+        name, _, link = path.partition(" -> ")
+        entry['name'] = trim_fname(name)
+        entry['link'] = trim_fname(link)
     else:
-        entry['name'] = path
+        entry['name'] = trim_fname(path)
 
 
 def parse_major_minor_date(last, result):
@@ -42,7 +54,7 @@ def parse_major_minor_date(last, result):
         result["minor"] = int(minor)
     else:
         size, rest = last.split(None, 1)
-        result["size"] = size if size == '?'else int(size)
+        result["size"] = size if size == '?' else int(size)
     # The date part is always 12 characters regardless of content.
     result['date'] = rest[:12]
     return rest[13:]
@@ -53,7 +65,12 @@ def parse_non_selinux(entry, is_softlink, links, owner, group, last):
     Parse part of an ls output line that isn't selinux.
 
     Args:
-        link count, owner, group, and everything else.
+        entry (dict): the dict to put this data into
+        is_softlink (bool): is this actually a softlink?
+        links (str): the number of links on this dirent
+        owner (str): the owner (name or id) of this dirent
+        group (str): the group (name or id) of this dirent
+        last (str): the rest of the line
 
     Returns:
         A dict containing links, owner, group, date, and name. If the line
@@ -90,11 +107,17 @@ def parse_old_selinux(entry, is_softlink, owner, group, selinux_str, name_part):
     Parse part of an ls output line that is selinux.
 
     Args:
-        owner, group, selinux info, and the path.
+        entry (dict): the dict to put this data into
+        is_softlink (bool): is this actually a softlink?
+        links (str): the number of links on this dirent
+        owner (str): the owner (name or id) of this dirent
+        group (str): the group (name or id) of this dirent
+        selinux_str (str): the SELinux context of this dirent
+        name_part (str): the name (and possibly link))
 
     Returns:
-        A dict containing owner, group, se_user, se_role, se_type, se_mls, and
-        name. If the raw name was a symbolic link, link is also included.
+        No return; the ownership, SELinux context information and name part
+        are put directly into the entry dict.
 
     """
 
@@ -109,12 +132,16 @@ def parse_rhel8_selinux(entry, is_softlink, links, owner, group, last):
     Parse part of an ls output line that is selinux on RHEL8.
 
     Args:
-        link count, owner, group, and everything else.
+        entry (dict): the dict to put this data into
+        is_softlink (bool): is this actually a softlink?
+        links (str): the number of links on this dirent
+        owner (str): the owner (name or id) of this dirent
+        group (str): the group (name or id) of this dirent
+        last (str): the rest of the line
 
     Returns:
-        A dict containing links, owner, group, se_user, se_role, se_type,
-        se_mls, size, date, and name. If the raw name was a symbolic link,
-        link is also included.
+        No return; the ownership, SELinux context information and name part
+        are put directly into the entry dict.
 
     """
     entry["links"] = int(links) if links.isdigit() else links
@@ -196,7 +223,7 @@ class Directory(dict):
                 "dirs": dirs,
                 "entries": ents,
                 "files": files,
-                "name": name,
+                "name": dirname,
                 "specials": specials,
                 "total": total,
             }
