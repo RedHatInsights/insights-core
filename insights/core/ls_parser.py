@@ -184,18 +184,12 @@ class Directory(dict):
             nm = entry["name"]
             ents[nm] = entry
             # Files are most common, dirs next, so we handle this in frequency order
-            if typ == "-":
+            if typ in "-l":
                 files.append(nm)
             elif typ == "d":
                 dirs.append(nm)
             else:
                 specials.append(nm)
-            # if typ == "d":
-                # dirs.append(nm)
-            # elif typ in "bc":
-                # specials.append(nm)
-            # else:
-                # files.append(nm)
 
         super(Directory, self).__init__(
             {
