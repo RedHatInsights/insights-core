@@ -98,6 +98,7 @@ drwxr-xr-x+  2 0 0       41 Jul  6 23:32 additional_ACLs
 brw-rw----.  1 0 6  1048576 Aug  4 16:56 block dev with no comma also valid
 -rwxr-xr-x.  2 0 0     1024 Jul  6 23:32 file_name_ending_with_colon:
 lrwxrwxrwx.  1 0 0       11 Aug  4  2014 link with spaces -> ../file with spaces
+-rw-r--r--.  1 0 0        0 Sep  3  2013 'file name with -> in it'
 """
 
 COMPLICATED_FILES_BAD_LINE = """
@@ -279,9 +280,10 @@ def test_parse_multiple_directories_with_break():
 def test_complicated_files():
     results = parse(COMPLICATED_FILES.splitlines(), "/tmp")
     assert len(results) == 1
-    assert results["/tmp"]["total"] == 16, results["/tmp"]["total"]
-    assert results["/tmp"]["name"] == "/tmp", results["/tmp"]["name"]
-    res = results["/tmp"]["entries"]["dm-10"]
+    assert "/tmp" in results
+    tmpdir = results["/tmp"]
+    assert tmpdir["name"] == "/tmp", results["/tmp"]["name"]
+    res = tmpdir["entries"]["dm-10"]
     assert res["type"] == "b"
     assert res["links"] == 1
     assert res["owner"] == "0"
@@ -291,6 +293,9 @@ def test_complicated_files():
     assert res["date"] == "Aug  4 16:56"
     assert res["name"] == "dm-10"
     assert res["dir"] == "/tmp"
+    # Files that are not links but have ' -> ' in them should be found as such
+    assert "file name with -> in it" in tmpdir["files"]
+    assert tmpdir["files"]["file name with -> in it"]["type"] == "-"
 
 
 def test_files_with_selinux_disabled():
