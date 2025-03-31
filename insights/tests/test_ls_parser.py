@@ -97,7 +97,7 @@ srw-------.  1 26214 17738 0 Oct 19 08:48 geany_socket.c46453c2
 drwxr-xr-x+  2 0 0       41 Jul  6 23:32 additional_ACLs
 brw-rw----.  1 0 6  1048576 Aug  4 16:56 block dev with no comma also valid
 -rwxr-xr-x.  2 0 0     1024 Jul  6 23:32 file_name_ending_with_colon:
-lrwxrwxrwx.  1 0 0       11 Aug  4  2014 link with spaces -> ../file with spaces
+lrwxrwxrwx.  1 0 0       11 Aug  4  2014 'link with spaces' -> '../file with spaces'
 -rw-r--r--.  1 0 0        0 Sep  3  2013 'file name with -> in it'
 """
 
@@ -117,7 +117,7 @@ srw-------.  1 26214 17738 0 Oct 19 08:48 geany_socket.c46453c2
 drwxr-xr-x+  2 0 0       41 Jul  6 23:32 additional_ACLs
 brw-rw----.  1 0 6  1048576 Aug  4 16:56 block dev with no comma also valid
 -rwxr-xr-x.  2 0 0     1024 Jul  6 23:32 file_name_ending_with_colon:
-lrwxrwxrwx.  1 0 0       11 Aug  4  2014 link with spaces -> ../file with spaces
+lrwxrwxrwx.  1 0 0       11 Aug  4  2014 'link with spaces' -> '../file with spaces'
 """
 
 SELINUX_DIRECTORY = """
@@ -294,8 +294,8 @@ def test_complicated_files():
     assert res["name"] == "dm-10"
     assert res["dir"] == "/tmp"
     # Files that are not links but have ' -> ' in them should be found as such
-    assert "file name with -> in it" in tmpdir["files"]
-    assert tmpdir["files"]["file name with -> in it"]["type"] == "-"
+    assert "file name with -> in it" in tmpdir["entries"]
+    assert tmpdir["entries"]["file name with -> in it"]["type"] == "-"
 
 
 def test_files_with_selinux_disabled():

@@ -188,7 +188,6 @@ def test_multiple_directories():
         'size': 8192,
         'date': 'Jul 13 03:55',
         'name': '..',
-        'raw_entry': 'drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..',
         'dir': '/etc/sysconfig',
     }
     assert listing['cbq'] == {
@@ -200,7 +199,6 @@ def test_multiple_directories():
         'size': 41,
         'date': 'Jul  6 23:32',
         'name': 'cbq',
-        'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
         'dir': '/etc/sysconfig',
     }
     assert listing['firewalld'] == {
@@ -212,7 +210,6 @@ def test_multiple_directories():
         'size': 72,
         'date': 'Sep 15  2015',
         'name': 'firewalld',
-        'raw_entry': '-rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld',
         'dir': '/etc/sysconfig',
     }
     assert listing['grub'] == {
@@ -225,7 +222,6 @@ def test_multiple_directories():
         'date': 'Jul  6 23:32',
         'name': 'grub',
         'link': '/etc/default/grub',
-        'raw_entry': 'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
         'dir': '/etc/sysconfig',
     }
 
@@ -239,7 +235,6 @@ def test_multiple_directories():
         'size': 4096,
         'date': 'Sep 16  2015',
         'name': '..',
-        'raw_entry': 'drwxr-xr-x. 10 0 0 4096 Sep 16  2015 ..',
         'dir': '/etc/rc.d/rc3.d',
     }
     assert listing['K50netconsole'] == {
@@ -252,7 +247,6 @@ def test_multiple_directories():
         'date': 'Jul  6 23:32',
         'name': 'K50netconsole',
         'link': '../init.d/netconsole',
-        'raw_entry': 'lrwxrwxrwx.  1 0 0   20 Jul  6 23:32 K50netconsole -> ../init.d/netconsole',
         'dir': '/etc/rc.d/rc3.d',
     }
 
@@ -270,7 +264,6 @@ def test_multiple_directories():
         'date': 'Jul  6 23:32',
         'name': 'grub',
         'link': '/etc/default/grub',
-        'raw_entry': 'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
         'dir': '/etc/sysconfig',
     }
 
@@ -283,7 +276,6 @@ def test_multiple_directories():
         'size': 41,
         'date': 'Jul  6 23:32',
         'name': 'cbq',
-        'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
         'dir': '/etc/sysconfig',
     }
     assert dirs.path_entry('no_slash') is None
@@ -357,7 +349,6 @@ def test_complicated_directory():
         'date': 'Aug  4 16:56',
         'name': 'dm-10',
         'dir': '/tmp',
-        'raw_entry': 'brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10',
     }
     assert listing['dm-10']['type'] == 'b'
     assert listing['dm-10']['major'] == 253
@@ -407,7 +398,6 @@ def test_selinux_directory():
         'se_type': 'boot_t',
         'se_mls': 's0',
         'name': 'grub2',
-        'raw_entry': 'drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2',
         'dir': '/boot',
     }
     actual = dirs.dir_entry('/boot', 'grub2')
@@ -423,7 +413,6 @@ def test_files_created_with_selinux_disabled():
         'name': 'lv_cpwtk001_data01',
         'links': 1,
         'perms': 'rwxrwxrwx',
-        'raw_entry': 'lrwxrwxrwx 1 0 0 7 Apr 27 05:34 lv_cpwtk001_data01 -> ../dm-7',
         'owner': '0',
         'link': '../dm-7',
         'date': 'Apr 27 05:34',
