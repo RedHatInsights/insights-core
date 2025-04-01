@@ -190,15 +190,14 @@ class Directory(dict):
                     # selinux stanza. This assumes that the context section will
                     # always have at least two pieces separated by ':'.
                     # '?' as the whole RHEL8 security context is also acceptable.
-                    # partition faster than substring to index of space faster than split
-                    rhel8_selinux_ctx, _, _ = rest.partition(" ")
-                    if ":" in rhel8_selinux_ctx or '?' == rhel8_selinux_ctx:
-                        # -rwxrwxr-x. 1 user group unconfined_u:object_r:var_lib_t:s0 54 Apr  8 16:41 abcd-efgh-ijkl-mnop
-                        parser = parse_mode['rhel8_selinux']
-                    else:
+                    # Handle normal case first...
+                    if rest[0].isdigit():
                         # crw-------.  1 0 0 10,  236 Jul 25 10:00 control
                         # lrwxrwxrwx.  1 0 0       11 Aug  4  2014 menu.lst -> ./grub.conf
                         parser = parse_mode['normal']
+                    else:
+                        # -rwxrwxr-x. 1 user group unconfined_u:object_r:var_lib_t:s0 54 Apr  8 16:41 abcd-efgh-ijkl-mnop
+                        parser = parse_mode['rhel8_selinux']
                 else:
                     # -rw-r--r--. root root system_u:object_r:boot_t:s0      config-3.10.0-267
                     parser = parse_mode['selinux']
