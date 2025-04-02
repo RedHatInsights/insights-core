@@ -919,6 +919,7 @@ class DefaultSpecs(Specs):
     tmpfilesd = glob_file(
         ["/etc/tmpfiles.d/*.conf", "/usr/lib/tmpfiles.d/*.conf", "/run/tmpfiles.d/*.conf"]
     )
+    tomcat_web_xml = first_of([glob_file("/etc/tomcat*/web.xml"), glob_file("/conf/tomcat/tomcat*/web.xml")])
     tomcat_vdc_fallback = simple_command(
         "/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +"
     )
