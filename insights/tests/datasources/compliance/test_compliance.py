@@ -22,7 +22,7 @@ def setup_function(func):
 
 
 def teardown_function(func):
-    global ENV_TZ
+    global ENV_TZ  # noqa: F824
     env = os.environ
     if "TZ" in env:
         if ENV_TZ is None:
@@ -350,14 +350,14 @@ def test_assignable_policies_failed_empty(config, log):
     compliance_client.os_major = 9
     compliance_client.os_minor = 3
     compliance_client.conn.session.get = Mock(
-        return_value=Mock(
-            status_code=200, json=Mock(return_value={'data': []})
-        )
+        return_value=Mock(status_code=200, json=Mock(return_value={'data': []}))
     )
     assert compliance_client.assignable_policies() == constants.sig_kill_bad
     url = "https://localhost/app/compliance/v2/policies?filter=(os_major_version=9 and os_minor_version=3)&limit=100"
     compliance_client.conn.session.get.assert_called_with(url)
-    log.warning.assert_called_with("System is not assignable to any policy. Create supported policy using the Compliance web UI.\n")
+    log.warning.assert_called_with(
+        "System is not assignable to any policy. Create supported policy using the Compliance web UI.\n"
+    )
     log.error.assert_not_called()
 
 
