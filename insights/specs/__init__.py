@@ -858,7 +858,7 @@ class Specs(SpecSet):
     tomcat_server_xml = RegistryPoint(multi_output=True)
     tomcat_vdc_fallback = RegistryPoint()
     tomcat_vdc_targeted = RegistryPoint(multi_output=True)
-    tomcat_web_xml = RegistryPoint(multi_output=True)
+    tomcat_web_xml = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     tty_console_active = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     tuned_adm = RegistryPoint()
     tuned_conf = RegistryPoint()
