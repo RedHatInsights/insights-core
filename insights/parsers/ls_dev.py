@@ -8,6 +8,7 @@ The ``ls -lanR /dev`` or ``ls -alZR /dev`` command provides information for the 
 See :class:`insights.parsers.ls.FileListing` for more information.
 
 """
+
 from insights import CommandParser, parser
 from insights.parsers.ls import FileListing
 from insights.specs import Specs
@@ -21,8 +22,8 @@ class LsDev(CommandParser, FileListing):
     .. warning::
 
         For Insights Advisor Rules, it's recommended to use the
-        :class:`insights.parsers.ls.LSlanR` and add the ``"/dev"`` to
-        the filter list of `Specs.ls_lanR_dirs` instead.
+        :class:`insights.parsers.ls.LSlanFiltered` and add the ``"/dev"`` to
+        the filter list of `Specs.ls_lan_filtered_dirs` instead.
 
     Sample directory listing::
         /dev:

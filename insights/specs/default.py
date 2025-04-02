@@ -470,7 +470,6 @@ class DefaultSpecs(Specs):
     lpstat_p = simple_command("/usr/bin/lpstat -p")
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
     lpstat_queued_jobs_count = lpstat.lpstat_queued_jobs_count
-    # New `ls` Specs
     ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, keep_rc=True)
     ls_la_filtered = command_with_args(
         '/bin/ls -la %s', ls.list_with_la_filtered, keep_rc=True
@@ -484,10 +483,7 @@ class DefaultSpecs(Specs):
     ls_lanRL = command_with_args('/bin/ls -lanRL %s', ls.list_with_lanRL, keep_rc=True)
     ls_laRZ = command_with_args('/bin/ls -laRZ %s', ls.list_with_laRZ, keep_rc=True)
     ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, keep_rc=True)
-    # Useful individual `ls` Specs
-    ls_boot = simple_command("/bin/ls -lanR /boot")
-    ls_dev = simple_command("/bin/ls -lanR /dev")
-    ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
+    ls_dev = simple_command("/bin/ls -lanR /dev")  # T.B.D
     lsattr = command_with_args("/bin/lsattr %s", lsattr.paths_to_lsattr)
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command(
@@ -923,6 +919,7 @@ class DefaultSpecs(Specs):
     tmpfilesd = glob_file(
         ["/etc/tmpfiles.d/*.conf", "/usr/lib/tmpfiles.d/*.conf", "/run/tmpfiles.d/*.conf"]
     )
+    tomcat_web_xml = first_of([glob_file("/etc/tomcat*/web.xml"), glob_file("/conf/tomcat/tomcat*/web.xml")])
     tomcat_vdc_fallback = simple_command(
         "/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +"
     )
