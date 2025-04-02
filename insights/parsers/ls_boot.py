@@ -22,8 +22,8 @@ class LsBoot(CommandParser, FileListing):
     .. warning::
 
         For Insights Advisor Rules, it's recommended to use the
-        :class:`insights.parsers.ls.LSlanR` and add the ``"/boot"`` to
-        the filter list of `Specs.ls_lanR_dirs` instead.
+        :class:`insights.parsers.ls.LSlanFiltered` and add the ``"/boot"`` to
+        the filter list of `Specs.ls_lan_filtered_dirs` instead.
 
     Sample directory listing::
 
