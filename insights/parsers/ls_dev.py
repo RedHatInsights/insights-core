@@ -9,13 +9,13 @@ See :class:`insights.parsers.ls.FileListing` for more information.
 
 """
 
-from insights import CommandParser, parser
+from insights import parser
 from insights.parsers.ls import FileListing
 from insights.specs import Specs
 
 
 @parser(Specs.ls_dev)
-class LsDev(CommandParser, FileListing):
+class LsDev(FileListing):
     """
     Parse the /dev directory listing using a standard FileListing parser.
 
