@@ -227,7 +227,7 @@ class ComplianceClient:
             logger.info("Operation completed successfully.\n")
             return 0
         else:
-            logger.error("Policy ID {0} does not exist.".format(policy_id))
+            logger.error("Policy ID {0} can not be assigned.".format(policy_id))
             return constants.sig_kill_bad
 
     def get_system_policies(self):
