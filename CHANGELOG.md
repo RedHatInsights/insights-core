@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.12](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.12) (2025-04-03)
+
+- chore: FileListing should be a CommandParser ([PR 4413](https://github.com/RedHatInsights/insights-core/pull/4413))
+- fix: duplicate stream entries in parser DnfModuleList ([PR 4412](https://github.com/RedHatInsights/insights-core/pull/4412))
+- Add spec tomcat_web_xml ([PR 4410](https://github.com/RedHatInsights/insights-core/pull/4410))
+- chore: stop collecting ls_boot/ls_sys_firmware ([PR 4406](https://github.com/RedHatInsights/insights-core/pull/4406))
+- fix(flake8): avoid a false positive F824 in test ([PR 4411](https://github.com/RedHatInsights/insights-core/pull/4411))
+
 # [insights-core-3.5.11](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.11) (2025-03-27)
 
 - fix(test): no filter required for ls_lan_filtered when using GrubConf combiner ([PR 4407](https://github.com/RedHatInsights/insights-core/pull/4407))

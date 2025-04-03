@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.11
+Version:        3.5.12
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,16 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Apr 03 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.12-1
+- chore: FileListing should be a CommandParser (#4413) (xiangceliu@redhat.com)
+- fix: duplicate stream entries in parser DnfModuleList (#4412)
+  (xiaoxwan@redhat.com)
+- Add spec tomcat_web_xml (#4410) (jiazhang@redhat.com)
+- chore: stop collecting ls_boot/ls_sys_firmware (#4406)
+  (xiangceliu@redhat.com)
+- fix(flake8): avoid a false positive F824 in test (#4411)
+  (xiangceliu@redhat.com)
+
 * Thu Mar 27 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.11-1
 - fix(test): no filter required for ls_lan_filtered when using GrubConf
   combiner (#4407) (xiangceliu@redhat.com)
