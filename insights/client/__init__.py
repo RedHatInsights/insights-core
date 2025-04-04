@@ -13,7 +13,7 @@ from . import client
 from . import crypto
 from .constants import InsightsConstants as constants
 from .config import InsightsConfig
-from .auto_config import try_auto_configuration
+from .auto_config import autoconfigure_network
 from .utilities import (write_data_to_file,
                         write_to_disk,
                         get_tags,
@@ -59,7 +59,7 @@ class InsightsClient(object):
                     arguments=" ".join(sys.argv[1:]),
                 )
             )
-            try_auto_configuration(self.config)
+            autoconfigure_network(self.config)
             self.initialize_tags()
         else:  # from wrapper
             _write_pid_files()
