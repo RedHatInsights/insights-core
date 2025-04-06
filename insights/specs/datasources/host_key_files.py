@@ -7,10 +7,11 @@ import os
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
-from insights.core.spec_factory import DatasourceProvider 
+from insights.core.spec_factory import DatasourceProvider
 
 ERROR_KEY = "error: Could not load host key:"
 VAR_LOG_MSG = '/var/log/messages'
+
 
 @datasource(HostContext)
 def host_key_files(broker):
@@ -28,11 +29,11 @@ def host_key_files(broker):
     Raises:
         SkipComponent: When any exception occurs.
     """
-    error_loadings = []
+    error_loadings = set()
     with open(VAR_LOG_MSG, 'r', encoding='utf-8') as file:
         for line in file:
             if ERROR_KEY in line:
-                error_loadings.append(line.split(ERROR_KEY)[-1])
+                error_loadings.add(line.split(ERROR_KEY)[-1].strip())
 
     if not error_loadings:
         raise SkipComponent()
