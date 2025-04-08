@@ -1,5 +1,5 @@
 """
-Custom datasources relate to `/etc/*dsa*_key`
+Custom datasources relate to `/etc/*host*_key`
 """
 
 import os
