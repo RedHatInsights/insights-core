@@ -41,7 +41,7 @@ def host_key_files(broker):
         raise SkipComponent()
 
     data_list = []
-    for key_file in error_loadings:
+    for key_file in [file for file in error_loadings if file.startswith('/etc/')]:
         count = 0
         if os.path.exists(key_file):
             count = 1
