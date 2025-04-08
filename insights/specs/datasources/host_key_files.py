@@ -4,16 +4,18 @@ Custom datasources relate to `/etc/*dsa*_key`
 
 import os
 
+from insights.specs import Specs
 from insights.core.context import HostContext
-from insights.core.exceptions import SkipComponent
+from insights.core.filters import add_filter
 from insights.core.plugins import datasource
+from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 
-ERROR_KEY = "error: Could not load host key:"
-VAR_LOG_MSG = '/var/log/messages'
+ERROR_MSG = "error: Could not load host key:"
+add_filter(Specs.messages, ERROR_MSG)
 
 
-@datasource(HostContext)
+@datasource(Specs.messages, HostContext)
 def host_key_files(broker):
     """
     This datasource reads '/var/log/messages' to check the host key path, and check
@@ -30,10 +32,10 @@ def host_key_files(broker):
         SkipComponent: When any exception occurs.
     """
     error_loadings = set()
-    with open(VAR_LOG_MSG, 'r', encoding='utf-8') as file:
-        for line in file:
-            if ERROR_KEY in line:
-                error_loadings.add(line.split(ERROR_KEY)[-1].strip())
+    messages = broker[Specs.messages].content
+    for line in messages:
+        if ERROR_MSG in line:
+            error_loadings.add(line.split(ERROR_MSG)[-1].strip())
 
     if not error_loadings:
         raise SkipComponent()
