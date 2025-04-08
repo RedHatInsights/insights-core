@@ -398,8 +398,8 @@ class DefaultSpecs(Specs):
     ibm_lparcfg = simple_file("/proc/powerpc/lparcfg")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
     ifcfg_static_route = glob_file("/etc/sysconfig/network-scripts/route-*")
-    ilab_config_show = simple_command("/usr/bin/ilab config show")
-    ilab_model_list = simple_command("/usr/bin/ilab model list")
+    ilab_config_show = simple_command("/usr/bin/ilab config show", inherit_env=['HOME'])
+    ilab_model_list = simple_command("/usr/bin/ilab model list", inherit_env=['HOME'])
     imagemagick_policy = glob_file(
         ["/etc/ImageMagick/policy.xml", "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"]
     )
@@ -919,7 +919,9 @@ class DefaultSpecs(Specs):
     tmpfilesd = glob_file(
         ["/etc/tmpfiles.d/*.conf", "/usr/lib/tmpfiles.d/*.conf", "/run/tmpfiles.d/*.conf"]
     )
-    tomcat_web_xml = first_of([glob_file("/etc/tomcat*/web.xml"), glob_file("/conf/tomcat/tomcat*/web.xml")])
+    tomcat_web_xml = first_of(
+        [glob_file("/etc/tomcat*/web.xml"), glob_file("/conf/tomcat/tomcat*/web.xml")]
+    )
     tomcat_vdc_fallback = simple_command(
         "/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +"
     )
