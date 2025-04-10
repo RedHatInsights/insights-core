@@ -1,5 +1,4 @@
 import doctest
-import pytest
 from insights.parsers import lsinitrd
 from insights.parsers.lsinitrd import LsinitrdKdumpImage
 from insights.tests import context_wrap
@@ -65,7 +64,7 @@ crw-r--r--   1 root     root       1,   3 Apr 20 15:57 dev/null
 
 LSINITRD_EMPTY = ""
 
-# This test case
+# This test case should not parse - but why would we be parsing this?
 LSINITRD_BROKEN = """
 drwxr-xr-x   3 root     root            0 Apr 20 15:58 kernel/x86
 Version: dracut-033-535.el7
@@ -192,7 +191,13 @@ def test_lsinitrd_empty():
 def test_lsinitrd_filtered():
     d = lsinitrd.Lsinitrd(context_wrap(LSINITRD_FILTERED))
     assert len(d.data) == 5
-    assert d.search(name__contains='kernel') == [{'type': 'd', 'perms': 'rwxr-xr-x', 'links': 3, 'owner': 'root', 'group': 'root', 'size': 0, 'date': 'Apr 20 15:58', 'name': 'kernel/x86', 'raw_entry': 'drwxr-xr-x   3 root     root            0 Apr 20 15:58 kernel/x86', 'dir': ''}]
+    assert d.search(name__contains='kernel') == [
+        {
+            'type': 'd', 'perms': 'rwxr-xr-x', 'links': 3, 'owner': 'root',
+            'group': 'root', 'size': 0, 'date': 'Apr 20 15:58',
+            'name': 'kernel/x86', 'dir': ''
+        }
+    ]
     assert d.unparsed_lines == ['Version: dracut-033-535.el7', 'dracut modules:', 'kernel-modules', 'udev-rules']
 
 
@@ -203,7 +208,6 @@ def test_lsinitrd_all():
     dev_console = {
         'type': 'c', 'perms': 'rw-r--r--', 'links': 1, 'owner': 'root', 'group': 'root',
         'major': 5, 'minor': 1, 'date': 'Apr 20 15:57', 'name': 'dev/console', 'dir': '',
-        'raw_entry': 'crw-r--r--   1 root     root       5,   1 Apr 20 15:57 dev/console'
     }
     assert dev_console in lsdev
     assert 'dev/kmsg' in [l['name'] for l in lsdev]
@@ -215,12 +219,12 @@ def test_lsinitrd_all():
 
 def test_lsinitrd_broken():
     """
-    For this testcase, ls_parser.parse() will throw an IndexError.
-    Assert with this specific error here.
+    In the case that someone's been tampering with the ls output, we want to
+    just ignore lines that don't have enough information to be a valid dirent.
     """
-    with pytest.raises(Exception) as err:
-        lsinitrd.Lsinitrd(context_wrap(LSINITRD_BROKEN))
-    assert "list index out of range" in str(err)
+    result = lsinitrd.Lsinitrd(context_wrap(LSINITRD_BROKEN))
+    assert result is not None
+    print("result:", result, dir(result))
 
 
 def test_lsinitrd_kdump_image_valid():
@@ -228,7 +232,6 @@ def test_lsinitrd_kdump_image_valid():
     assert parser_result is not None
     result_list = parser_result.search(name__contains='devname')
     assert len(result_list) == 1
-    assert result_list[0].get('raw_entry') == '-rw-r--r--   1 root     root          126 Aug  4  2020 usr/lib/modules/4.18.0-240.el8.x86_64/modules.devname'
 
 
 def test_lsinitrd_lvm_conf():

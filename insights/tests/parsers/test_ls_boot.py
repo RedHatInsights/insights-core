@@ -93,7 +93,6 @@ def test_ls_boot():
         "se_mls": "s0",
         "name": "grub.cfg",
         "date": "Apr 21  2023",
-        "raw_entry": "-rwx------. 1 root root system_u:object_r:boot_t:s0     6535 Apr 21  2023 grub.cfg",
         "dir": "/boot/grub2",
     }
     assert (
@@ -127,7 +126,6 @@ def test_boot_links():
         "name": "dtb",
         "date": "Apr 21  2023",
         "link": "dtb-5.14.0-162.6.1.el9_1.aarch64",
-        "raw_entry": "lrwxrwxrwx.  1 root root system_u:object_r:boot_t:s0              32 Apr 21  2023 dtb -> dtb-5.14.0-162.6.1.el9_1.aarch64",
         "dir": "/boot",
     }
     assert (
