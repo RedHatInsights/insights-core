@@ -14,225 +14,21 @@ import logging
 import os
 import sys
 import tempfile
-from datetime import datetime
-
 import yaml
 
-from insights import apply_configs
-from insights import apply_default_enabled
-from insights import get_pool
+from datetime import datetime
+
+from insights import apply_configs, apply_default_enabled, get_pool
 from insights.cleaner import Cleaner
-from insights.core import blacklist
-from insights.core import dr
-from insights.core import filters
+from insights.core import blacklist, dr, filters
 from insights.core.serde import Hydration
 from insights.core.spec_factory import SAFE_ENV
-from insights.util import fs
-from insights.util import utc
+from insights.specs.manifests import manifests
+from insights.util import fs, utc
 from insights.util.hostname import determine_hostname
 from insights.util.subproc import call
 
 log = logging.getLogger(__name__)
-
-default_manifest = """
----
-# version is for the format of this file, not its contents.
-version: 0
-
-client:
-  context:
-    class: insights.core.context.HostContext
-    args:
-      timeout: 10 # timeout in seconds for commands. Doesn't apply to files.
-
-  # commands and files to ignore
-  blacklist:
-    files: []
-    commands: []
-    patterns: []
-    keywords: []
-
-  # Can be a list of dictionaries with name/enabled fields or a list of strings
-  # where the string is the name and enabled is assumed to be true. Matching is
-  # by prefix, and later entries override previous ones. Persistence for a
-  # component is disabled by default.
-  persist:
-    - name: insights.specs.Specs
-      enabled: true
-
-  run_strategy:
-    name: serial
-    args:
-      max_workers: null
-
-plugins:
-  # disable everything by default
-  # defaults to false if not specified.
-  default_component_enabled: false
-
-  # packages and modules to load
-  packages:
-    - insights.specs.default
-    - insights.specs.datasources
-
-  # configuration of loaded components. names are prefixes, so any component with
-  # a fully qualified name that starts with a key will get the associated
-  # configuration applied. Can specify timeout, which will apply to command
-  # datasources. Can specify metadata, which must be a dictionary and will be
-  # merged with the components' default metadata.
-  configs:
-    - name: insights.specs.Specs
-      enabled: true
-    - name: insights.specs.default.DefaultSpecs
-      enabled: true
-    - name: insights.specs.datasources
-      enabled: true
-    # needed for specs that aren't given names before used in DefaultSpecs
-    - name: insights.core.spec_factory
-      enabled: true
-
-    # needed by multiple datasource specs/components
-    - name: insights.parsers.hostname.Hostname
-      enabled: true
-    - name: insights.parsers.hostname.HostnameDefault
-      enabled: true
-    - name: insights.combiners.hostname.Hostname
-      enabled: true
-    - name: insights.parsers.uname.Uname
-      enabled: true
-    - name: insights.parsers.redhat_release.RedhatRelease
-      enabled: true
-    - name: insights.combiners.redhat_release.RedHatRelease
-      enabled: true
-    - name: insights.parsers.ps.PsAuxcww
-      enabled: true
-    - name: insights.parsers.ps.PsAuxww
-      enabled: true
-    - name: insights.combiners.ps.Ps
-      enabled: true
-    - name: insights.parsers.dmidecode.DMIDecode
-      enabled: true
-    - name: insights.parsers.installed_rpms.InstalledRpms
-      enabled: true
-    - name: insights.parsers.mount.ProcMounts
-      enabled: true
-
-    # needed for identifying RHEL major version
-    - name: insights.components.rhel_version.IsRhel6
-      enabled: true
-    - name: insights.components.rhel_version.IsRhel7
-      enabled: true
-    - name: insights.components.rhel_version.IsRhel8
-      enabled: true
-    - name: insights.components.rhel_version.IsRhel9
-      enabled: true
-
-    # needed for cloud specs
-    - name: insights.parsers.yum.YumRepoList
-      enabled: true
-    - name: insights.parsers.rhsm_conf.RHSMConf
-      enabled: true
-    - name: insights.combiners.cloud_provider.CloudProvider
-      enabled: true
-    - name: insights.components.cloud_provider.IsAWS
-      enabled: true
-    - name: insights.components.cloud_provider.IsAzure
-      enabled: true
-    - name: insights.components.cloud_provider.IsGCP
-      enabled: true
-
-    # needed for ceph specs
-    - name: insights.components.ceph.IsCephMonitor
-      enabled: true
-
-    # needed for pcp specs
-    - name: insights.parsers.systemd.unitfiles.UnitFiles
-      enabled: true
-    - name: insights.parsers.ros_config.RosConfig
-      enabled: true
-
-    # needed for 'teamdctl_config/state_dump' spec and nmcli_conn_show_uuids spec
-    - name: insights.parsers.nmcli.NmcliConnShow
-      enabled: true
-
-    # needed for mssql_tls_cert_enddate
-    - name: insights.parsers.mssql_conf.MsSQLConf
-      enabled: true
-
-    # needed for rsyslog_tls_cert_file
-    - name: insights.parsers.rsyslog_conf.RsyslogConf
-      enabled: true
-    - name: insights.combiners.rsyslog_confs.RsyslogAllConf
-      enabled: true
-
-    # needed for sap specs
-    - name: insights.parsers.saphostctrl.SAPHostCtrlInstances
-      enabled: true
-    - name: insights.combiners.sap.Sap
-      enabled: true
-
-    # needed for fw_security specs
-    - name: insights.parsers.virt_what.VirtWhat
-      enabled: true
-    - name: insights.combiners.virt_what.VirtWhat
-      enabled: true
-    - name: insights.components.virtualization.IsBareMetal
-      enabled: true
-
-    # needed for 'modinfo_filtered_modules' spec
-    - name: insights.parsers.lsmod.LsMod
-      enabled: true
-
-    # needed for satellite server specs
-    - name: insights.combiners.satellite_version.SatelliteVersion
-      enabled: true
-    - name: insights.combiners.satellite_version.CapsuleVersion
-      enabled: true
-    - name: insights.components.satellite.IsSatellite
-      enabled: true
-    - name: insights.components.satellite.IsSatellite614AndLater
-      enabled: true
-    - name: insights.components.satellite.IsSatelliteLessThan614
-      enabled: true
-    - name: insights.components.satellite.IsSatellite611
-      enabled: true
-    - name: insights.components.satellite.IsCapsule
-      enabled: true
-
-    # needed for container specs
-    - name: insights.parsers.podman_list.PodmanListContainers
-      enabled: true
-    - name: insights.parsers.docker_list.DockerListContainers
-      enabled: true
-
-    # needed for 'luks_data_sources' spec
-    - name: insights.parsers.blkid.BlockIDInfo
-      enabled: true
-    - name: insights.components.cryptsetup.HasCryptsetupWithTokens
-      enabled: true
-    - name: insights.components.cryptsetup.HasCryptsetupWithoutTokens
-      enabled: true
-
-    # needed for 'iris' specs
-    - name: insights.parsers.iris.IrisList
-      enabled: true
-    - name: insights.parsers.iris.IrisCpf
-      enabled: true
-
-    # needed for ausearch_insights
-    - name: insights.components.rhel_version.IsGtOrRhel86
-      enabled: true
-
-    # needed for sealert spec
-    - name: insights.parsers.selinux_config.SelinuxConfig
-      enabled: true
-    - name: insights.components.selinux.SELinuxEnabled
-      enabled: true
-
-    # needed for the 'fstab_mounted.dirs' to the 'ls_lan' spec
-    - name: insights.parsers.fstab.FSTab
-      enabled: true
-""".strip()
 
 EXCEPTIONS_TO_REPORT = set([OSError])
 """Exception types that should be reported on after core collection."""
@@ -410,8 +206,8 @@ def collect(
     # Get the manifest per the following order:
     # 1. "client_config.manifest"
     # 2. "manifest" passed to the `insights.collect()`
-    # 3. "default_manifest" defined in this module
-    manifest = default_manifest if manifest is None else manifest
+    # 3. "default_manifest" defined in `insights.specs.manifests`
+    manifest = manifests['default'] if manifest is None else manifest
     if client_config and hasattr(client_config, 'manifest') and client_config.manifest:
         manifest = client_config.manifest
     manifest = load_manifest(manifest)
