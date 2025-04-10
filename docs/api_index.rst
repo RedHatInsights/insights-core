@@ -184,6 +184,14 @@ insights.specs
     :show-inheritance:
     :undoc-members:
 
+insights.specs.manifests
+------------------------
+.. automodule:: insights.specs.manifests
+    :members: manifests, content_types
+    :show-inheritance:
+    :undoc-members:
+
+
 
 insights.specs.default
 ----------------------
@@ -270,6 +278,6 @@ insights
 --------
 
 .. automodule:: insights.collect
-    :members: default_manifest, collect
+    :members: collect
     :show-inheritance:
     :undoc-members:
