@@ -46,6 +46,32 @@ default_disabled    1.0 [d][x]                                            Defaul
 Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled
 """.strip()
 
+DNF_MODULE_LIST_MULTI_SECTIONS = """
+Last metadata expiration check: 1:37:02 ago on Wed Mar 26 09:50:23 2025.
+RHEL-9.x-optional-latest
+Name       Stream   Profiles                              Summary
+mariadb    10.11    client, galera, server [d]            MariaDB Module
+maven      3.8      common [d]                            Java project management and project comprehension tool
+nginx      1.22 [e] common [d]                            nginx webserver
+nginx      1.24     common [d]                            nginx webserver
+redis      7        common [d]                            Redis persistent key-value database
+ruby       3.1      common [d]                            An interpreter of object-oriented scripting language
+ruby       3.3      common [d]                            An interpreter of object-oriented scripting language
+
+Red Hat Enterprise Linux 9 for x86_64 - AppStream (RPMs)
+Name       Stream   Profiles                              Summary
+mariadb    10.11    client, galera, server [d]            MariaDB Module
+maven      3.8      common [d]                            Java project management and project comprehension tool
+nginx      1.22 [e] common [d]                            nginx webserver
+nginx      1.24     common [d]                            nginx webserver
+redis      7        common [d]                            Redis persistent key-value database
+ruby       3.1      common [d]                            An interpreter of object-oriented scripting language
+ruby       3.3      common [d]                            An interpreter of object-oriented scripting language
+ruby       3.5      common [d]                            An interpreter of object-oriented scripting language
+
+Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled
+""".strip()
+
 DNF_MODULE_LIST_DOC = """
 Updating Subscription Management repositories.
 Name                Stream      Profiles                                  Summary
@@ -218,6 +244,12 @@ def test_dnf_module_list():
     assert not module_list['default_disabled'].streams[0].enabled
     assert not module_list['default_disabled'].streams[0].active
 
+    module_list = DnfModuleList(context_wrap(DNF_MODULE_LIST_MULTI_SECTIONS))
+    assert 'nginx' in module_list
+    assert [s.stream for s in module_list["nginx"].streams if s.active] == ['1.22']
+    assert len(module_list["nginx"].streams) == 2
+    assert len(module_list["ruby"].streams) == 3
+
 
 def test_dnf_module_list_exp():
     with pytest.raises(ValueError):
@@ -238,7 +270,9 @@ def test_dnf_module_info():
     assert module_infos['httpd'][0].default_profiles == 'common'
     assert module_infos['httpd'][1].streams[0].summary == 'Apache HTTP Server'
     assert module_infos['httpd'][1].context == '9edba152'
-    assert 'mod_http2-0:1.11.3-1.module+el8+2443+605475b7.x86_64' in module_infos['httpd'][1].artifacts
+    assert (
+        'mod_http2-0:1.11.3-1.module+el8+2443+605475b7.x86_64' in module_infos['httpd'][1].artifacts
+    )
 
 
 def test_dnf_module_info_exp():
@@ -249,7 +283,7 @@ def test_dnf_module_info_exp():
 def test_dnf_module_doc_examples():
     env = {
         'dnf_module_list': DnfModuleList(context_wrap(DNF_MODULE_LIST_DOC)),
-        'dnf_module_info': DnfModuleInfo(context_wrap(DNF_MODULE_INFO))
+        'dnf_module_info': DnfModuleInfo(context_wrap(DNF_MODULE_INFO)),
     }
     failed, total = doctest.testmod(dnf_module, globs=env)
     assert failed == 0

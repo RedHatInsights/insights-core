@@ -6,7 +6,7 @@ import copy
 import six
 import sys
 from six.moves import configparser as ConfigParser
-from insights.specs.datasources.manifests import manifests, content_types
+from insights.specs.manifests import manifests, content_types
 
 try:
     from .constants import InsightsConstants as constants
