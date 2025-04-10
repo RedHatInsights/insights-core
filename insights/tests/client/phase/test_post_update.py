@@ -38,12 +38,10 @@ def test_post_update_no_options_registered(insights_config, insights_client, _is
     Client run with no options.
         If registered, exit with 0 exit code (don't kill parent)
     """
-    insights_client.return_value.get_registration_status = MagicMock(return_value=True)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 0
     insights_client.return_value.get_machine_id.assert_called_once()
-    insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.clear_local_registration.assert_not_called()
     insights_client.return_value.set_display_name.assert_not_called()
 
@@ -56,7 +54,6 @@ def test_post_update_no_options_unregistered(insights_config, insights_client, _
     Client run with no options.
         If unregistered, exit with 101 exit code (kill parent)
     """
-    insights_client.return_value.get_registration_status = MagicMock(return_value=False)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 101
@@ -64,7 +61,7 @@ def test_post_update_no_options_unregistered(insights_config, insights_client, _
     insights_client.return_value.set_display_name.assert_not_called()
 
 
-@patch("insights.client.phase.v1.isfile", side_effect=[True])
+@patch("insights.client.phase.v1.isfile", side_effect=[False])
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
 def test_post_update_no_options_err_reg_check(insights_config, insights_client, _isfile):
@@ -72,11 +69,9 @@ def test_post_update_no_options_err_reg_check(insights_config, insights_client, 
     Client run with no options.
         If registration check fails, exit with 101 exit code
     """
-    insights_client.return_value.get_registration_status = MagicMock(return_value=None)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 101
-    insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.clear_local_registration.assert_not_called()
     insights_client.return_value.set_display_name.assert_not_called()
 
@@ -90,11 +85,9 @@ def test_post_update_check_status_registered(insights_config, insights_client, _
         If registered, exit with 100 exit code (kill parent)
     """
     insights_config.return_value.load_all.return_value.status = True
-    insights_client.return_value.get_registration_status = MagicMock(return_value=True)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 100
-    insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.clear_local_registration.assert_not_called()
     insights_client.return_value.set_display_name.assert_not_called()
 
@@ -108,7 +101,6 @@ def test_post_update_check_status_unregistered(insights_config, insights_client,
         If unregistered, exit with 101 exit code (kill parent)
     """
     insights_config.return_value.load_all.return_value.status = True
-    insights_client.return_value.get_registration_status = MagicMock(return_value=False)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 101
@@ -126,12 +118,10 @@ def test_post_update_register_registered(insights_config, insights_client, get_s
         If registered, exit with 0 exit code
     """
     insights_config.return_value.load_all.return_value.register = True
-    insights_client.return_value.get_registration_status = MagicMock(return_value=True)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 0
     insights_client.return_value.get_machine_id.assert_called_once()
-    insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.clear_local_registration.assert_not_called()
     insights_client.return_value.set_display_name.assert_not_called()
     get_scheduler.return_value.schedule.assert_called_once()
@@ -166,15 +156,13 @@ def test_post_update_register_machineid(insights_config, insights_client, get_sc
         Also enable scheduling.
     """
     insights_config.return_value.load_all.return_value.register = True
-    insights_client.return_value.get_registration_status = MagicMock(return_value=False)
     with _mock_no_register_files_machineid_present():
         with raises(SystemExit) as exc_info:
             post_update()
-    assert exc_info.value.code == 101
-    insights_client.return_value.get_registration_status.assert_called_once()
+    assert exc_info.value.code == 0
     insights_client.return_value.clear_local_registration.assert_not_called()
     insights_client.return_value.set_display_name.assert_not_called()
-    get_scheduler.return_value.schedule.assert_not_called()
+    get_scheduler.return_value.schedule.assert_called_once()
 
 
 @contextmanager
@@ -200,13 +188,11 @@ def test_post_update_register_unregistered(insights_config, insights_client, get
         Also enable scheduling.
     """
     insights_config.return_value.load_all.return_value.register = True
-    insights_client.return_value.get_registration_status = MagicMock(return_value=False)
     with _mock_no_machineid_present():
         with raises(SystemExit) as exc_info:
             post_update()
     assert exc_info.value.code == 0
     insights_client.return_value.get_machine_id.assert_called_once()
-    insights_client.return_value.get_registration_status.assert_not_called()
     insights_client.return_value.clear_local_registration.assert_not_called()
     insights_client.return_value.set_display_name.assert_not_called()
     get_scheduler.return_value.schedule.assert_called_once()
@@ -223,12 +209,10 @@ def test_post_update_unregister_registered(insights_config, insights_client, get
         Also disable scheduling.
     """
     insights_config.return_value.load_all.return_value.unregister = True
-    insights_client.return_value.get_registration_status = MagicMock(return_value=True)
     insights_client.return_value.unregister = MagicMock(return_value=True)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 100
-    insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.unregister.assert_called_once()
     insights_client.return_value.clear_local_registration.assert_not_called()
     insights_client.return_value.set_display_name.assert_not_called()
@@ -245,7 +229,6 @@ def test_post_update_unregister_unregistered(insights_config, insights_client, g
         If unregistered, exit with 101 exit code
     """
     insights_config.return_value.load_all.return_value.unregister = True
-    insights_client.return_value.get_registration_status = MagicMock(return_value=False)
     insights_client.return_value.unregister = MagicMock(return_value=False)
     with raises(SystemExit) as exc_info:
         post_update()
@@ -267,7 +250,6 @@ def test_post_update_set_display_name_cli_no_register_unreg(insights_config, ins
     """
     insights_config.return_value.load_all.return_value.display_name = True
     insights_config.return_value.load_all.return_value._cli_opts = ['display_name']
-    insights_client.return_value.get_registration_status = MagicMock(return_value=False)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 101
@@ -286,11 +268,9 @@ def test_post_update_set_display_name_cli_no_register_reg(insights_config, insig
     """
     insights_config.return_value.load_all.return_value.display_name = True
     insights_config.return_value.load_all.return_value._cli_opts = ['display_name']
-    insights_client.return_value.get_registration_status = MagicMock(return_value=True)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 100
-    insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.set_display_name.assert_called_once()
     get_scheduler.return_value.schedule.assert_not_called()
 
@@ -306,7 +286,6 @@ def test_post_update_set_display_name_cli_register(insights_config, insights_cli
         Display name is not explicitly set here
     """
     insights_config.return_value.load_all.return_value.register = True
-    insights_client.return_value.get_registration_status = MagicMock(return_value=True)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 0
@@ -327,7 +306,6 @@ def test_post_update_offline(insights_config, insights_client):
     except SystemExit:
         pass
     insights_client.return_value.get_machine_id.assert_called_once()
-    insights_client.return_value.get_registration_status.assert_not_called()
     insights_client.return_value.clear_local_registration.assert_not_called()
     insights_client.return_value.set_display_name.assert_not_called()
 
@@ -344,7 +322,6 @@ def test_post_update_no_upload(insights_config, insights_client):
     except SystemExit:
         pass
     insights_client.return_value.get_machine_id.assert_called_once()
-    insights_client.return_value.get_registration_status.assert_not_called()
     insights_client.return_value.clear_local_registration.assert_not_called()
     insights_client.return_value.set_display_name.assert_not_called()
 
