@@ -9,6 +9,7 @@ import six
 import json
 import logging
 import platform
+import sys
 import warnings
 import errno
 # import io
@@ -30,7 +31,8 @@ from .utilities import (determine_hostname,
                         write_registered_file,
                         os_release_info,
                         largest_spec_in_archive,
-                        size_in_mb)
+                        size_in_mb,
+                        _get_rhsm_identity)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
 from insights import cleaner, package_info
@@ -64,7 +66,9 @@ if os.environ.get('INSIGHTS_DEBUG_HTTP'):
 
 
 def _host_not_found():
-    raise Exception("Error: failed to find host with matching machine-id. Run insights-client --status to check registration status")
+    raise Exception("Error: failed to find host with matching machine-id. "
+                    "Check the registration status:\n"
+                    "# insights-client --status")
 
 
 def _api_request_failed(exception, message='The Insights API could not be reached.'):
@@ -445,10 +449,20 @@ class InsightsConnection(object):
                         req.status_code)
             logger.debug("HTTP Status Text: %s", req.reason)
             if req.status_code == 401:
-                logger.error("Please ensure that the system is registered "
-                             "with RHSM for CERT auth, or that correct "
-                             "credentials are set in %s for BASIC auth.", self.config.conf)
-                logger.log(NETWORK, "HTTP Response Text: %s", req.text)
+                # check if the host is registered with subscription-manager
+                if not _get_rhsm_identity():
+                    logger.error(
+                        "This host is unregistered, please ensure that "
+                        "the system is registered with subscription-manager "
+                        "and then with insights-client.\n"
+                        "\n1. Register with subscription-manager"
+                        "\n# subscription-manager register\n"
+                        "\n2. Register with insights-client"
+                        "\n# insights-client --register"
+                    )
+                    sys.exit(constants.sig_kill_bad)
+                else:
+                    logger.log(NETWORK, "HTTP Response Text: %s", req.text)
             if req.status_code == 402:
                 # failed registration because of entitlement limit hit
                 logger.debug('Registration failed by 402 error.')
@@ -1092,7 +1106,12 @@ class InsightsConnection(object):
         if host_details["total"] < 1:
             _host_not_found()
         if host_details["total"] > 1:
-            raise Exception("Error: multiple hosts detected (insights_id = %s). To fix this error, run command: insights-client --unregister && insights-client --register" % generate_machine_id())
+            raise Exception("Error: multiple hosts detected (insights_id = %s). "
+                            "To fix this error, unregister this host first and then register again.\n"
+                            "\n1. Unregister with insights-client"
+                            "\n# insights-client --unregister\n"
+                            "\n2. Register with insights-client"
+                            "\n# insights-client --register" % generate_machine_id())
 
         if not os.path.exists("/var/lib/insights"):
             os.makedirs("/var/lib/insights", mode=0o755)
@@ -1120,7 +1139,9 @@ class InsightsConnection(object):
         logger.info("Checking in...")
 
         if not self._fetch_system_by_machine_id():
-            logger.error("This host is not registered. To register, run 'insights-client --register'.")
+            logger.error("This host is not registered. "
+                         "Use --register to register this host:\n"
+                         "# insights-client --register")
             return False
 
         try:

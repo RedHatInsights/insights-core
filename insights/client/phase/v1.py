@@ -11,7 +11,7 @@ from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.client.support import InsightsSupport
-from insights.client.utilities import validate_remove_file, print_egg_versions
+from insights.client.utilities import validate_remove_file, print_egg_versions, _get_rhsm_identity
 from insights.client.schedule import get_scheduler
 
 logger = logging.getLogger(__name__)
@@ -55,10 +55,6 @@ def get_phases():
 
 @phase
 def pre_update(client, config):
-
-    # Check if BASIC auth is used to print a WARNING message
-    if config.authmethod == 'BASIC':
-        logger.warning('WARN: BASIC authentication method is being deprecated. Please consider using CERT authentication method.')
 
     if config.version:
         logger.info(constants.version)
@@ -165,6 +161,30 @@ def post_update(client, config):
 
     # -------delete everything below this line-------
     if config.legacy_upload:
+        if config.offline or config.no_upload or config.module:
+            # create a machine id first thing. we'll need it for all uploads
+            logger.debug('Machine ID: %s', client.get_machine_id())
+            logger.debug("CONFIG: %s", config)
+            if config.offline:
+                logger.debug('Running client in offline mode. Bypassing registration.')
+            elif config.no_upload:
+                logger.debug("Running client without uploading. Bypassing registration.")
+            else:
+                logger.debug('Running a specified module. Bypassing registration.')
+            return
+
+        if not _get_rhsm_identity():
+            logger.error(
+                "This host is unregistered, please ensure that "
+                "the system is registered with subscription-manager "
+                "and then with insights-client.\n"
+                "\n1. Register with subscription-manager"
+                "\n# subscription-manager register\n"
+                "\n2. Register with insights-client"
+                "\n# insights-client --register"
+            )
+            sys.exit(constants.sig_kill_bad)
+
         if config.status:
             reg_check = client.get_registration_status()
             for msg in reg_check['messages']:
@@ -181,16 +201,6 @@ def post_update(client, config):
                 sys.exit(constants.sig_kill_ok)
             else:
                 sys.exit(constants.sig_kill_bad)
-
-        if config.offline or config.no_upload:
-            # create a machine id first thing. we'll need it for all uploads
-            logger.debug('Machine ID: %s', client.get_machine_id())
-            logger.debug("CONFIG: %s", config)
-            if config.offline:
-                logger.debug('Running client in offline mode. Bypassing registration.')
-            else:
-                logger.debug("Running client without uploading. Bypassing registration.")
-            return
 
         if config.display_name and not config.register:
             # setting display name independent of registration
@@ -217,7 +227,7 @@ def post_update(client, config):
         return
     # -------delete everything above this line-------
 
-    if config.offline or config.no_upload or config.payload:
+    if config.offline or config.no_upload or config.payload or config.module:
         # create a machine id first thing. we'll need it for all uploads
         logger.debug('Machine ID: %s', client.get_machine_id())
         logger.debug("CONFIG: %s", config)
@@ -225,8 +235,10 @@ def post_update(client, config):
             logger.debug('Running client in offline mode. Bypassing registration.')
         elif config.no_upload:
             logger.debug("Running client without uploading. Bypassing registration.")
-        else:
+        elif config.payload:
             logger.debug('Uploading a specified archive. Bypassing registration.')
+        else:
+            logger.debug('Running a specified module. Bypassing registration.')
         return
 
     # check registration status before anything else
@@ -251,8 +263,9 @@ def post_update(client, config):
 
     # halt here if unregistered
     if not reg_check and not config.register:
-        logger.info('This host has not been registered. '
-                    'Use --register to register this host.')
+        logger.error("This host is unregistered. "
+                     "Use --register to register this host.\n"
+                     "# insights-client --register")
         sys.exit(constants.sig_kill_bad)
 
     # --register was called
