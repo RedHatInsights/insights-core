@@ -40,12 +40,15 @@ Examples:
 
 from insights.core.filters import add_filter
 from insights.core.plugins import combiner
-from insights.parsers.installed_rpms import InstalledRpms
+from insights.parsers.cloud_init import CloudInitQuery
 from insights.parsers.dmidecode import DMIDecode
-from insights.parsers.yum import YumRepoList
+from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.rhsm_conf import RHSMConf
+from insights.parsers.subscription_manager import SubscriptionManagerFacts
+from insights.parsers.yum import YumRepoList
 
 add_filter(RHSMConf, ['server', 'hostname'])
+add_filter(SubscriptionManagerFacts, 'instance_id')
 
 
 class CloudProviderInstance(object):
@@ -57,7 +60,6 @@ class CloudProviderInstance(object):
     particular cloud provider.
 
     Attributes:
-
         rpm (str): RPM string in lowercase to use when searching for this cloud provider.
         yum (str): Yum repo name string in lowercase to use when searching for this cloud provider.
         bios_vendor_version (str): BIOS vendor version string in lowercase to use when searching
@@ -68,6 +70,8 @@ class CloudProviderInstance(object):
         uuid (str): UUID string in lowercase to use when searchinf for this cloud provider.
         rhsm_hostname (str): Hostname string in lowercase to use when searching for this
             cloud provider in ``rhsm.conf``.
+        cp_subman_facts (str): Cloud name found in searching SubscriptionManagerFacts for this cloud provider.
+        cp_cloud_query (str): Cloud name found in searching CloudInitQuery for this cloud provider.
         cp_bios_vendor (str): BIOS vendor string value found in search for this cloud provider.
         cp_bios_version (str): BIOS version string value found in search for this cloud provider.
         cp_rpms (list): List of RPM string values found in search for this cloud provider.
@@ -77,14 +81,23 @@ class CloudProviderInstance(object):
         cp_manufacturer (str): Manufacturer string value found in search for this cloud provider.
         cp_rhsm_server_hostname (str): RHSM server hostname string value found in search for
             this cloud provider.
-
     """
 
-    def __init__(self, rpms=None, dmidcd=None, yum_repos=None, rhsm_cfg=None):
+    def __init__(
+        self,
+        rpms=None,
+        dmidcd=None,
+        yum_repos=None,
+        rhsm_cfg=None,
+        cloud_query=None,
+        subman_facts=None,
+    ):
         self._rpms = rpms
         self._dmidcd = dmidcd
         self._yum_repos = yum_repos
         self._rhsm_cfg = rhsm_cfg
+        self._cloud_query = cloud_query
+        self._subman_facts = subman_facts
         self.rpm = ''
         self.yum = ''
         self.bios_vendor_version = ''
@@ -100,6 +113,8 @@ class CloudProviderInstance(object):
         self.cp_uuid = ''
         self.cp_manufacturer = ''
         self.cp_rhsm_server_hostname = ''
+        self.cp_cloud_query = ''
+        self.cp_subman_facts = ''
 
     def _get_cp_bios_vendor(self, vendor_version):
         """str: Returns BIOS vendor string if it matches ``vendor_version``"""
@@ -126,10 +141,10 @@ class CloudProviderInstance(object):
     def _get_rpm_cp_info(self, rpm):
         """list: Returns list of RPMs matching ``rpm``"""
         found_rpms = []
-        if self._rpms:
+        if rpm and self._rpms:
             for key, val in self._rpms.packages.items():
                 for v in val:
-                    if rpm and rpm in v.package.lower():
+                    if rpm in v.package.lower():
                         found_rpms.append(v.package)
         return found_rpms
 
@@ -189,6 +204,26 @@ class CloudProviderInstance(object):
             )
         return found_uuid
 
+    def _get_cp_from_cloud_init_query(self, name):
+        """
+        str: Returns cloud_query name if CloudInitQuery is available and
+        ``name`` match its cloud_name.
+        """
+        if self._cloud_query:
+            if name in self._cloud_query.cloud_name:
+                return self._cloud_query.cloud_name
+        return ''
+
+    def _get_cp_from_subman_facts(self, name):
+        """
+        str: Returns cloud_query name if SubscriptionManagerFacts is available and
+        ``name`` match its '_instance_id' key.
+        """
+        if self._subman_facts:
+            if "{0}_instance_id".format(name) in self._subman_facts:
+                return name
+        return ''
+
     @property
     def name(self):
         """str: Short cloud provider class name or ID"""
@@ -212,11 +247,14 @@ class GoogleCloudProvider(CloudProviderInstance):
 
     def __init__(self, *args, **kwargs):
         super(GoogleCloudProvider, self).__init__(*args, **kwargs)
-        self.rpm = 'google-rhui-client'
         self.bios_vendor_version = 'google'
+        self.rpm = 'google-rhui-client'
         self.cp_bios_vendor = self._get_cp_bios_vendor(self.bios_vendor_version)
         self.cp_bios_version = self._get_cp_bios_version(self.bios_vendor_version)
         self.cp_rpms = self._get_rpm_cp_info(self.rpm)
+        # https://github.com/canonical/cloud-init/blob/main/tests/integration_tests/modules/test_combined.py#L528
+        self.cp_cloud_query = self._get_cp_from_cloud_init_query('gce')
+        self.cp_subman_facts = self._get_cp_from_subman_facts(self.name)
 
 
 class AlibabaCloudProvider(CloudProviderInstance):
@@ -233,6 +271,8 @@ class AlibabaCloudProvider(CloudProviderInstance):
         super(AlibabaCloudProvider, self).__init__(*args, **kwargs)
         self.manuf = 'alibaba cloud'
         self.cp_manufacturer = self._get_cp_from_manuf(self.manuf)
+        # https://github.com/canonical/cloud-init/blob/main/tests/unittests/sources/test_aliyun.py#L253
+        self.cp_cloud_query = self._get_cp_from_cloud_init_query('aliyun')
 
 
 class AmazonCloudProvider(CloudProviderInstance):
@@ -248,8 +288,8 @@ class AmazonCloudProvider(CloudProviderInstance):
 
     def __init__(self, *args, **kwargs):
         super(AmazonCloudProvider, self).__init__(*args, **kwargs)
-        self.rpm = 'rh-amazon-rhui-client'
         self.bios_vendor_version = 'amazon'
+        self.rpm = 'rh-amazon-rhui-client'
         self.uuid = 'ec2'
         self.asset_tag = 'Amazon EC2'
         self.cp_bios_vendor = self._get_cp_bios_vendor(self.bios_vendor_version)
@@ -257,6 +297,8 @@ class AmazonCloudProvider(CloudProviderInstance):
         self.cp_rpms = self._get_rpm_cp_info(self.rpm)
         self.cp_uuid = self._get_cp_from_uuid(self.uuid)
         self.cp_asset_tag = self._get_cp_from_asset_tag(self.asset_tag)
+        self.cp_cloud_query = self._get_cp_from_cloud_init_query(self._NAME)
+        self.cp_subman_facts = self._get_cp_from_subman_facts(self._NAME)
 
 
 class AzureCloudProvider(CloudProviderInstance):
@@ -271,12 +313,15 @@ class AzureCloudProvider(CloudProviderInstance):
 
     def __init__(self, *args, **kwargs):
         super(AzureCloudProvider, self).__init__(*args, **kwargs)
-        self.rpm = 'walinuxagent'
         self.yum = 'rhui-microsoft-azure'
         self.asset_tag = '7783-7084-3265-9085-8269-3286-77'
-        self.cp_asset_tag = self._get_cp_from_asset_tag(self.asset_tag)
-        self.cp_rpms = self._get_rpm_cp_info(self.rpm)
         self.cp_yum = self._get_cp_from_yum(self.yum)
+        self.cp_asset_tag = self._get_cp_from_asset_tag(self.asset_tag)
+        self.cp_cloud_query = self._get_cp_from_cloud_init_query(self._NAME)
+        self.cp_subman_facts = self._get_cp_from_subman_facts(self._NAME)
+        # Do NOT check RPM for Azure anymore
+        # self.rpm = 'walinuxagent'
+        # self.cp_rpms = self._get_rpm_cp_info(self.rpm)
 
 
 class IBMCloudProvider(CloudProviderInstance):
@@ -292,9 +337,9 @@ class IBMCloudProvider(CloudProviderInstance):
     def __init__(self, *args, **kwargs):
         super(IBMCloudProvider, self).__init__(*args, **kwargs)
         self.rhsm_server_hostname = 'networklayer.com'
-        self.cp_rpms = self._get_rpm_cp_info(self.rpm)
-        self.cp_yum = self._get_cp_from_yum(self.yum)
         self.cp_rhsm_server_hostname = self._get_cp_from_rhsm_conf(self.rhsm_server_hostname)
+        # https://github.com/canonical/cloud-init/blob/main/tests/unittests/sources/test_ibmcloud.py#L426
+        self.cp_cloud_query = self._get_cp_from_cloud_init_query('ibmcloud')
 
 
 class OracleCloudProvider(CloudProviderInstance):
@@ -311,14 +356,27 @@ class OracleCloudProvider(CloudProviderInstance):
         super(OracleCloudProvider, self).__init__(*args, **kwargs)
         self.rpm = 'oracle-cloud-agent'
         self.cp_rpms = self._get_rpm_cp_info(self.rpm)
+        # https://github.com/canonical/cloud-init/blob/main/tests/unittests/sources/test_oracle.py#L332
+        self.cp_cloud_query = self._get_cp_from_cloud_init_query('oracle')
 
 
-@combiner([InstalledRpms, DMIDecode, YumRepoList, RHSMConf])
+@combiner(
+    [InstalledRpms, DMIDecode, YumRepoList, RHSMConf, CloudInitQuery, SubscriptionManagerFacts]
+)
 class CloudProvider(object):
     """
     Combiner class to provide cloud vendor facts
 
     Attributes:
+        cloud_provider (str): String representing the cloud provider that was detected.
+            If none are detected then it will have the default value `None`.
+        long_name (str): String representing the full name of the cloud provider that
+            was detected.  If none are detected then it will have the default value `None`.
+        cp_subman_facts(dict): Dictionary containing a value, for each provider,
+            of cloud name gets per the key '_instance_id' of
+            `SubscriptionManagerFacts`.  Value will be empty if no matches are found.
+        cp_cloud_query(dict): Dictionary containing a value, for each provider,
+            of `CloudInitQuery.cloud_name`.  Value will be empty if no matches are found.
         cp_bios_vendor (dict): Dictionary containing a value , for each provider,
             of Bios vendor used to determine cloud provider. Each providers value will be
             empty if none found
@@ -342,8 +400,6 @@ class CloudProvider(object):
             matches are found.
         cp_rhsm_server_hostname (dict): Dictionary containing a value, for each provider,
             of rhsm.conf server hostnames.  Value will be empty if no matches are found.
-        cloud_provider (str): String representing the cloud provider that was detected.
-            If none are detected then it will have the default value `None`.
     """
 
     ALIBABA = AlibabaCloudProvider._NAME
@@ -366,38 +422,45 @@ class CloudProvider(object):
 
     # Add any new cloud provider classes to this list
     _CLOUD_PROVIDER_CLASSES = [
-        GoogleCloudProvider,
-        AlibabaCloudProvider,
         AmazonCloudProvider,
         AzureCloudProvider,
+        GoogleCloudProvider,
         IBMCloudProvider,
         OracleCloudProvider,
+        AlibabaCloudProvider,
     ]
 
-    def __init__(self, rpms, dmidcd, yrl, rhsm_cfg):
-        self._cp_objects = dict(
-            [
-                (cls._NAME, cls(rpms=rpms, dmidcd=dmidcd, yum_repos=yrl, rhsm_cfg=rhsm_cfg))
-                for cls in self._CLOUD_PROVIDER_CLASSES
-            ]
-        )
-        self.cp_bios_vendor = dict(
-            [(name, cp.cp_bios_vendor) for name, cp in self._cp_objects.items()]
-        )
-        self.cp_bios_version = dict(
-            [(name, cp.cp_bios_version) for name, cp in self._cp_objects.items()]
-        )
-        self.cp_rpms = dict([(name, cp.cp_rpms) for name, cp in self._cp_objects.items()])
-        self.cp_yum = dict([(name, cp.cp_yum) for name, cp in self._cp_objects.items()])
-        self.cp_asset_tag = dict([(name, cp.cp_asset_tag) for name, cp in self._cp_objects.items()])
-        self.cp_uuid = dict([(name, cp.cp_uuid) for name, cp in self._cp_objects.items()])
-        self.cp_manufacturer = dict(
-            [(name, cp.cp_manufacturer) for name, cp in self._cp_objects.items()]
-        )
+    def __init__(self, rpms, dmidcd, yrl, rhsm_cfg, cloud_query, subman_facts):
+        cp_objs = [
+            cls(
+                rpms=rpms,
+                dmidcd=dmidcd,
+                yum_repos=yrl,
+                rhsm_cfg=rhsm_cfg,
+                cloud_query=cloud_query,
+                subman_facts=subman_facts,
+            )
+            for cls in self._CLOUD_PROVIDER_CLASSES
+        ]
+        self.cp_bios_vendor = dict((cp._NAME, cp.cp_bios_vendor) for cp in cp_objs)
+        self.cp_bios_version = dict((cp._NAME, cp.cp_bios_version) for cp in cp_objs)
+        self.cp_rpms = dict((cp._NAME, cp.cp_rpms) for cp in cp_objs)
+        self.cp_yum = dict((cp._NAME, cp.cp_yum) for cp in cp_objs)
+        self.cp_asset_tag = dict((cp._NAME, cp.cp_asset_tag) for cp in cp_objs)
+        self.cp_uuid = dict((cp._NAME, cp.cp_uuid) for cp in cp_objs)
+        self.cp_manufacturer = dict((cp._NAME, cp.cp_manufacturer) for cp in cp_objs)
         self.cp_rhsm_server_hostname = dict(
-            [(name, cp.cp_rhsm_server_hostname) for name, cp in self._cp_objects.items()]
+            (cp._NAME, cp.cp_rhsm_server_hostname) for cp in cp_objs
         )
+        self.cp_cloud_query = dict((cp._NAME, cp.cp_cloud_query) for cp in cp_objs)
+        self.cp_subman_facts = dict((cp._NAME, cp.cp_subman_facts) for cp in cp_objs)
+        # Identify it
         self.cloud_provider = self._select_provider()
+        self.long_name = None
+        if self.cloud_provider:
+            for CP in cp_objs:
+                if self.cloud_provider == CP._NAME:
+                    self.long_name = CP.long_name
 
     def _select_provider(self):
         """
@@ -408,54 +471,40 @@ class CloudProvider(object):
 
         Returns:
             str: Returns the name of the cloud provider, corresponds to ``name`` property
-                in cloud provider classes.  If no cloud provider is identified, ``None`` is returned
+                 in cloud provider classes.  If no cloud provider is identified,
+                 ``None`` is returned
         """
-        # Check bios vendor first
-        if self._cp_objects[self.AWS].cp_bios_vendor:
-            return self.AWS
-        elif self._cp_objects[self.GOOGLE].cp_bios_vendor:
-            return self.GOOGLE
-        elif self._cp_objects[self.AZURE].cp_bios_vendor:
+        # 1. Check SubscriptionManagerFacts first
+        for name, result in self.cp_subman_facts.items():
+            if result:
+                return name
+        # 2. Check BIOS vendor
+        for name, result in self.cp_bios_vendor.items():
+            if result:
+                return name
+        # 3. Specific vendor not detected, so check BIOS version
+        for name, result in self.cp_bios_version.items():
+            if result:
+                return name
+        # 4. asset_tag / yum
+        if self.cp_yum[self.AZURE] or self.cp_asset_tag[self.AZURE]:
             return self.AZURE
-
-        # Specific vendor not detected, so check bios version
-        if self._cp_objects[self.AWS].cp_bios_version:
+        # 5. asset_tag & uuid
+        if self.cp_uuid[self.AWS] and self.cp_asset_tag[self.AWS]:
             return self.AWS
-        elif self._cp_objects[self.GOOGLE].cp_bios_version:
-            return self.GOOGLE
-        elif self._cp_objects[self.AZURE].cp_bios_version:
-            return self.AZURE
-
-        # BIOS vendor and version not detected check for RPMs
-        if self._cp_objects[self.AWS].cp_rpms:
-            return self.AWS
-        elif self._cp_objects[self.GOOGLE].cp_rpms:
-            return self.GOOGLE
-        elif self._cp_objects[self.AZURE].cp_rpms:
-            return self.AZURE
-        elif self._cp_objects[self.ORACLE].cp_rpms:
-            return self.ORACLE
-
-        # No luck, check for other attributes
-        if self._cp_objects[self.AZURE].cp_yum or self._cp_objects[self.AZURE].cp_asset_tag:
-            return self.AZURE
-
-        if self._cp_objects[self.AWS].cp_uuid and self._cp_objects[self.AWS].cp_asset_tag:
-            return self.AWS
-
-        if self._cp_objects[self.ALIBABA].cp_manufacturer:
-            return self.ALIBABA
-
-        if self._cp_objects[self.IBM].cp_rhsm_server_hostname:
-            return self.IBM
-
-        return None
-
-    @property
-    def long_name(self):
-        """str: Return long name for the specific cloud provider, or ``None`` if no cloud provider"""
-        return (
-            self._cp_objects[self.cloud_provider].long_name
-            if self.cloud_provider is not None
-            else None
-        )
+        # 6. manufacturer
+        for name, result in self.cp_manufacturer.items():
+            if result:
+                return name
+        # 7. Check CloudInitQuery then, it works for all supported Classes
+        for name, result in self.cp_cloud_query.items():
+            if result:
+                return name
+        # 8. Check for RPMs
+        for name, result in self.cp_rpms.items():
+            if result:
+                return name
+        # 9. rhsm server hostname
+        for name, result in self.cp_rhsm_server_hostname.items():
+            if result:
+                return name

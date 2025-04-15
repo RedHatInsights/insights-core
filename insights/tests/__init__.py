@@ -156,7 +156,10 @@ def run_input_data(component, input_data, store_skips=False):
 COMPONENT_FILTERED_PARSERS = {
     'BootLoaderEntries': ['insights.specs.Specs.ls_lan_filtered'],
     'CloudInstance': ['insights.parsers.subscription_manager.SubscriptionManagerFacts'],
-    'CloudProvider': ['insights.parsers.rhsm_conf.RHSMConf'],
+    'CloudProvider': [
+        'insights.parsers.rhsm_conf.RHSMConf',
+        'insights.parsers.subscription_manager.SubscriptionManagerFacts',
+    ],
     'GrubConf': ['insights.specs.Specs.ls_lan_filtered'],
     'OSRelease': ['insights.parsers.dmesg.DmesgLineList'],
     'Sap': ['insights.parsers.saphostctrl.SAPHostCtrlInstances'],
