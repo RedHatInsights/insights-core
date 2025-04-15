@@ -825,7 +825,7 @@ class DefaultSpecs(Specs):
     sendmail_mc = simple_file("/etc/mail/sendmail.mc")
     sestatus = simple_command("/usr/sbin/sestatus -b")
     setup_named_chroot = simple_file("/usr/libexec/setup-named-chroot.sh")
-    smartctl_health = foreach_execute(dev.physical_devices, "/usr/sbin/smartctl -H -d scsi %s")
+    smartctl_health = foreach_execute(dev.physical_devices, "/usr/sbin/smartctl -H %s -j")
     smbstatus_p = simple_command("/usr/bin/smbstatus -p")
     sockstat = simple_file("/proc/net/sockstat")
     softnet_stat = simple_file("proc/net/softnet_stat")
