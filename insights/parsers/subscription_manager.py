@@ -12,21 +12,26 @@ SubscriptionManagerFacts - command ``subscription-manager facts``
 
 SubscriptionManagerStatus - command ``subscription-manager status``
 -------------------------------------------------------------------
+
+SubscriptionManagerSyspurpose - command ``subscription-manager syspurpose``
+---------------------------------------------------------------------------
 """
+
 import uuid
 
-from insights.core import CommandParser
+from insights.core import CommandParser, JSONParser
 from insights.core.exceptions import SkipComponent
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.specs import Specs
 
 add_filter(
-    Specs.subscription_manager_facts, [
+    Specs.subscription_manager_facts,
+    [
         'conversions.activity',
         'image-builder.osbuild-composer.api-type',
         'instance_id',
-    ]
+    ],
 )
 
 
@@ -63,6 +68,7 @@ class SubscriptionManagerID(CommandParser, dict):
         >>> subman_id.uuid == '6655c27c-f561-4c99-a23f-f53e5a1ef311'
         True
     """
+
     def parse_content(self, content):
         self.update(_local_kv_split(content))
 
@@ -98,6 +104,7 @@ class SubscriptionManagerFacts(CommandParser, dict):
         >>> rhsm_facts['aws_instance_id']
         '567890567890'
     """
+
     def parse_content(self, content):
         self.update(_local_kv_split(content))
 
@@ -127,6 +134,7 @@ class SubscriptionManagerStatus(CommandParser, dict):
         >>> subman_status['System Purpose Status'] == 'Disabled'
         True
     """
+
     def parse_content(self, content):
         self.unparsed_lines = []
         for line in content:
@@ -139,7 +147,9 @@ class SubscriptionManagerStatus(CommandParser, dict):
                 key, val = [_l.strip() for _l in line.split(': ', 1)]
                 self[key] = val
             elif line.startswith('Content Access Mode is set to'):
-                self['Content Access Mode'] = line.split('.', 1)[0].split('Content Access Mode is set to')[1].strip()
+                self['Content Access Mode'] = (
+                    line.split('.', 1)[0].split('Content Access Mode is set to')[1].strip()
+                )
             elif line.startswith("Red Hat Enterprise Linux for Virtual Datacenters"):
                 subscription_type = line.split(',')[1].strip(':').strip() if ',' in line else ''
                 self['Red Hat Enterprise Linux for Virtual Datacenters'] = subscription_type
@@ -148,3 +158,31 @@ class SubscriptionManagerStatus(CommandParser, dict):
 
         if not self:
             raise SkipComponent
+
+
+@parser(Specs.subscription_manager_syspurpose)
+class SubscriptionManagerSyspurpose(CommandParser, JSONParser):
+    """
+    Reads the output of subscription-manager syspurpose
+
+    Example output::
+
+        {
+          "addons": [],
+          "role": "Red Hat Enterprise Linux Server",
+          "service_level_agreement": "Standard",
+          "usage": "Development/Test"
+        }
+
+    Examples::
+        >>> type(subman_syspurpose)
+        <class 'insights.parsers.subscription_manager.SubscriptionManagerSyspurpose'>
+        >>> subman_syspurpose.get('role')
+        'Red Hat Enterprise Linux Server'
+        >>> subman_syspurpose['service_level_agreement']
+        'Standard'
+        >>> subman_syspurpose['usage']
+        'Development/Test'
+    """
+
+    pass

@@ -855,6 +855,9 @@ class DefaultSpecs(Specs):
     subscription_manager_status = simple_command(
         "/usr/sbin/subscription-manager status", override_env={"LC_ALL": "C.UTF-8"}
     )
+    subscription_manager_syspurpose = simple_command(
+        "/usr/sbin/subscription-manager syspurpose --show", override_env={"LC_ALL": "C.UTF-8"}
+    )
     sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
     swift_proxy_server_conf = first_file(
         [
