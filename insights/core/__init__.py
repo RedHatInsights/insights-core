@@ -765,9 +765,19 @@ class YAMLParser(Parser, LegacyItemAccess):
     A parser class that reads YAML files.  Base your own parser on this.
     """
 
+    ignore_lines = tuple()
+    """
+    tuple: The first keyword of the lines that need to be ignored in the
+    YAML parsing process.
+
+    Note: All keywords added to this tuple must be in lowercase.
+    """
+
     def parse_content(self, content):
         try:
             if type(content) is list:
+                ignore_lines = tuple(self.ignore_lines)
+                content = [l for l in content if not l.lstrip().lower().startswith(ignore_lines)]
                 self.data = yaml.load('\n'.join(content), Loader=SafeLoader)
             else:
                 self.data = yaml.load(content, Loader=SafeLoader)
