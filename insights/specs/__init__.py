@@ -788,6 +788,7 @@ class Specs(SpecSet):
         no_obfuscate=['hostname', 'ip', 'ipv6', 'mac']
     )
     subscription_manager_status = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
+    subscription_manager_syspurpose = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     sudoers = RegistryPoint(multi_output=True, filterable=True)
     swift_conf = RegistryPoint()
     swift_log = RegistryPoint(filterable=True)
@@ -858,7 +859,9 @@ class Specs(SpecSet):
     tomcat_server_xml = RegistryPoint(multi_output=True)
     tomcat_vdc_fallback = RegistryPoint()
     tomcat_vdc_targeted = RegistryPoint(multi_output=True)
-    tomcat_web_xml = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
+    tomcat_web_xml = RegistryPoint(
+        multi_output=True, no_obfuscate=['hostname', 'ip', 'ipv6', 'mac']
+    )
     tty_console_active = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     tuned_adm = RegistryPoint()
     tuned_conf = RegistryPoint()
