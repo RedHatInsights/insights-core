@@ -46,11 +46,6 @@ class ComplianceClient:
                 policy['ref_id']
             )
         )
-        tailoring_file_path = tempfile.mkstemp(
-            prefix='oscap_tailoring_file-{0}.'.format(policy['ref_id']),
-            suffix='.xml',
-            dir='/var/tmp',
-        )[1]
         response = self.conn.session.get(
             "https://{0}/compliance/v2/policies/{1}/tailorings/{2}/tailoring_file".format(
                 self.config.base_url, policy['id'], self.os_minor
@@ -83,6 +78,22 @@ class ComplianceClient:
                 )
             )
             return None
+
+        # Check if the content is empty, and if so, don't create the file at all
+        if not response.content.strip():
+            logger.debug(
+                "The tailoring file for policy {0} is empty. Skipping file creation.".format(
+                    policy['ref_id']
+                )
+            )
+            return None
+
+        # Create a temporary file if content is valid (not empty)
+        tailoring_file_path = tempfile.mkstemp(
+            prefix='oscap_tailoring_file-{0}.'.format(policy['ref_id']),
+            suffix='.xml',
+            dir='/var/tmp',
+        )[1]
 
         with open(tailoring_file_path, mode="w+b") as f:
             f.write(response.content)

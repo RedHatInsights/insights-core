@@ -260,6 +260,21 @@ def test_tailored_file_fails_to_download(config, call):
     assert compliance_client.download_tailoring_file({'id': 'foo', 'ref_id': 'aaaaa'}) is None
 
 
+@patch("insights.specs.datasources.compliance.open", new_callable=mock_open)
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
+def test_tailored_file_is_not_downloaded_when_empty_content(config, call):
+    compliance_client = ComplianceClient(config=config)
+    compliance_client.conn.session.get = Mock(
+        return_value=Mock(
+            status_code=200,
+            content=b'',
+            headers={"Content-Type": "application/xml"},
+            json=Mock(return_value={'data': []}),
+        )
+    )
+    assert compliance_client.download_tailoring_file({'id': 'foo', 'ref_id': 'aaaaa'}) is None
+
+
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_build_oscap_command_does_not_append_tailoring_path(config):
     compliance_client = ComplianceClient(config=config)
