@@ -177,12 +177,12 @@ class SubscriptionManagerSyspurpose(CommandParser, JSONParser):
     Examples::
         >>> type(subman_syspurpose)
         <class 'insights.parsers.subscription_manager.SubscriptionManagerSyspurpose'>
-        >>> subman_syspurpose.get('role')
-        'Red Hat Enterprise Linux Server'
-        >>> subman_syspurpose['service_level_agreement']
-        'Standard'
-        >>> subman_syspurpose['usage']
-        'Development/Test'
+        >>> subman_syspurpose.get('role') == 'Red Hat Enterprise Linux Server'
+        True
+        >>> subman_syspurpose['service_level_agreement'] == 'Standard'
+        True
+        >>> subman_syspurpose['usage'] == 'Development/Test'
+        True
     """
 
     pass
