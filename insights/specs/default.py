@@ -208,7 +208,7 @@ class DefaultSpecs(Specs):
         ]
     )
     cloud_cfg_filtered = cloud_init.cloud_cfg
-    cloud_init_query = simple_file("/usr/bin/cloud-init query -f '{{ cloud_name, platform }}'")
+    cloud_init_query = simple_command("/usr/bin/cloud-init query -f '{{ cloud_name, platform }}'")
     cloud_init_custom_network = simple_file("/etc/cloud/cloud.cfg.d/99-custom-networking.cfg")
     cloud_init_log = simple_file("/var/log/cloud-init.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
@@ -854,6 +854,9 @@ class DefaultSpecs(Specs):
     )
     subscription_manager_status = simple_command(
         "/usr/sbin/subscription-manager status", override_env={"LC_ALL": "C.UTF-8"}
+    )
+    subscription_manager_syspurpose = simple_command(
+        "/usr/sbin/subscription-manager syspurpose --show", override_env={"LC_ALL": "C.UTF-8"}
     )
     sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
     swift_proxy_server_conf = first_file(

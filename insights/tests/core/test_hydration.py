@@ -24,7 +24,9 @@ def test_get_all_files():
     rmtree(tmp_dir, ignore_errors=True)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 6), reason="This issue only occurs on python3+.")
+# here we also skip testing it in Python 3.6, as `root` might be used in the
+# test image, "Error 13" won't be occurred
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="This issue only occurs on python3+.")
 def test_get_all_files_oserror(caplog):
     tmp_dir = tempfile.mkdtemp()
 
