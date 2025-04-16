@@ -38,7 +38,12 @@ Please run `ilab config init` or point to a valid configuration file using `--co
 ILAB_MODULE_LIST_EMPTY = ""
 
 ILAB_CONFIG_SHOW = """
+time="2025-04-15T08:23:44Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
+# Chat configuration section.
 chat:
+  # Predefined setting or environment that influences the behavior and responses of
+  # the chat assistant. Each context is associated with a specific prompt that
+  # guides the assistant on how to respond to user inputs. Available contexts:
   context: default
   logs_dir: /root/.local/share/instructlab/chatlogs
   max_tokens:
@@ -60,6 +65,7 @@ serve:
 """.strip()
 
 ILAB_CONFIG_SHOW_ERROR = ILAB_MODULE_LIST_ERROR
+ILAB_CONFIG_SHOW_EMPTY = ILAB_MODULE_LIST_EMPTY
 
 
 def test_ilab_model_list():
@@ -87,6 +93,9 @@ def test_ilab_config_show():
 
     with pytest.raises(ParseException):
         IlabConfigShow(context_wrap(ILAB_CONFIG_SHOW_ERROR))
+
+    with pytest.raises(SkipComponent):
+        IlabModuleList(context_wrap(ILAB_CONFIG_SHOW_EMPTY))
 
 
 def test_ilab_doc_examples():

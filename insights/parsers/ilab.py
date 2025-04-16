@@ -9,11 +9,17 @@ IlabModuleList - command ``/usr/bin/ilab model list``
 IlabConfigShow - command ``/usr/bin/ilab config show``
 ------------------------------------------------------
 """
-from insights import YAMLParser
-from insights.core import CommandParser
+import yaml
+
+from insights.core import CommandParser, LegacyItemAccess
 from insights.core.plugins import parser
 from insights.core.exceptions import SkipComponent, ParseException
 from insights.specs import Specs
+
+try:
+    from yaml import CSafeLoader as SafeLoader
+except ImportError:  # pragma: no cover
+    from yaml import SafeLoader
 
 
 @parser(Specs.ilab_model_list)
@@ -64,7 +70,7 @@ class IlabModuleList(CommandParser, list):
 
 
 @parser(Specs.ilab_config_show)
-class IlabConfigShow(CommandParser, YAMLParser):
+class IlabConfigShow(CommandParser, LegacyItemAccess):
     """
     This parser will parse the output of "/usr/bin/ilab config show".
 
@@ -99,4 +105,12 @@ class IlabConfigShow(CommandParser, YAMLParser):
     Attributes:
         data(dict): The ilab config information
     """
-    pass
+    def parse_content(self, content):
+        if not content:
+            raise SkipComponent("Empty")
+        try:
+            if len(content) > 1:
+                new_content = [x for x in content if not x.strip().startswith("#") and not x.strip().startswith("time=")]
+                self.data = yaml.load('\n'.join(new_content), Loader=SafeLoader)
+        except Exception:
+            raise ParseException("There was an exception when parsing outputs of 'ilab config show' command")
