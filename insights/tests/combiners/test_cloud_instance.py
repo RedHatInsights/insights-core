@@ -7,6 +7,7 @@ from insights.combiners.cloud_instance import CloudInstance
 from insights.core.exceptions import ContentException, SkipComponent
 from insights.parsers.aws_instance_id import AWSInstanceIdDoc
 from insights.parsers.azure_instance import AzureInstanceID, AzureInstanceType
+from insights.parsers.dmidecode import DMIDecode
 from insights.parsers.gcp_instance_type import GCPInstanceType
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.subscription_manager import SubscriptionManagerFacts
@@ -21,6 +22,41 @@ GOOGLE_RHSM_FACTS = """
 gcp_instance_id: 567890567890
 network.ipv6_address: ::1
 uname.sysname: Linux
+""".strip()
+
+AWS_RHSM_FACTS = """
+aws_instance_id: i-01234567890abcdef
+aws_instance_type: m5.large
+""".strip()
+
+AWS_RHSM_FACTS_NO_TYPE = """
+aws_instance_id: i-01234567890abcdef
+""".strip()
+
+AWS_DMIDECODE = """
+# dmidecode 3.3
+Getting SMBIOS data from sysfs.
+SMBIOS 2.7 present.
+13 structures occupying 568 bytes.
+Table at 0xBFFF0000.
+
+Handle 0x0000, DMI type 0, 24 bytes
+BIOS Information
+    Vendor: Amazon EC2
+    Version: 1.0
+    Release Date: 10/16/2017
+    Address: 0xF0000
+    Runtime Size: 64 kB
+    ROM Size: 64 kB
+    Characteristics:
+        PCI is supported
+        EDD is supported
+        ACPI is supported
+        System is a virtual machine
+    BIOS Revision: 1.0
+
+Handle 0x000C, DMI type 127, 4 bytes
+End Of Table
 """.strip()
 
 
@@ -57,6 +93,30 @@ def test_cloud_instance_azure():
     assert ret.id == "f904ece8-c6c1-4b5c-881f-309b50f25e50"
     assert ret.type == "Standard_NV48s_v3"
     assert ret.size == "Standard_NV48s_v3"
+
+
+def test_cloud_instance_aws_from_submanfacts():
+    rpms = InstalledRpms(context_wrap(RPMS_AWS))
+    bios = DMIDecode(context_wrap(AWS_DMIDECODE))
+    facts = SubscriptionManagerFacts(context_wrap(AWS_RHSM_FACTS))
+    cp = CloudProvider(rpms, bios, None, None)
+    ret = CloudInstance(cp, None, None, None, None, facts)
+    assert ret.provider == CloudProvider.AWS
+    assert ret.id == "i-01234567890abcdef"
+    assert ret.type == "m5.large"
+    assert ret.size == "m5.large"
+
+
+def test_cloud_instance_aws_from_submanfacts_no_type():
+    rpms = InstalledRpms(context_wrap(RPMS_AWS))
+    bios = DMIDecode(context_wrap(AWS_DMIDECODE))
+    facts = SubscriptionManagerFacts(context_wrap(AWS_RHSM_FACTS_NO_TYPE))
+    cp = CloudProvider(rpms, bios, None, None)
+    ret = CloudInstance(cp, None, None, None, None, facts)
+    assert ret.provider == CloudProvider.AWS
+    assert ret.id == "i-01234567890abcdef"
+    assert ret.type == ""
+    assert ret.size == ""
 
 
 def test_cloud_instance_ex():
