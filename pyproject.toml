@@ -1,0 +1,95 @@
+[project]
+name = "insights-core"
+description = "Insights Core is a data collection and analysis framework"
+readme = "README.rst"
+authors = [
+    {name = "Red Hat, Inc.", email = "insights@redhat.com"},
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: 3.3",
+    "Programming Language :: Python :: 3.4",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.11",
+]
+license = {text = "Apache 2.0"}
+dynamic = ["version"]
+requires-python = ">=2.7"
+dependencies = [
+    "cachecontrol",
+    "cachecontrol[filecache]",
+    "cachecontrol[redis]",
+    "defusedxml",
+    "jinja2; python_version > '2.7' and python_version <= '3.6'",
+    "jinja2<=2.11.3; python_version <= '2.7'",
+    "jinja2>=3.1.6;  python_version > '3.6'",
+    "lockfile",
+    "pyyaml",
+    "redis",
+    "requests",
+    "setuptools; python_version >= '3.12'",  # FIXME: remove after removed distutils
+    "six",
+]
+
+[project.urls]
+repository = "https://github.com/RedHatInsights/insights-core"
+documentation = "https://insights-core.readthedocs.io/en/latest/intro.html"
+
+[project.optional-dependencies]
+client = ["oyaml", "python-gnupg==0.4.6"]
+client-develop = ["pre-commit", "wheel", "oyaml", "python-gnupg==0.4.6"]
+cluster = ["ansible", "pandas"]
+develop = ["pre-commit", "wheel"]
+docs = [
+    "MarkupSafe",
+    "Pygments",
+    "Sphinx",
+    "colorama",
+    "docutils",
+    "ipython",
+    "jedi",
+    "nbsphinx",
+    "sphinx_rtd_theme",
+]
+linting = ["flake8"]
+openshift = ["openshift"]
+optional = [
+    "colorama",
+    "python-cjson",
+    "python-logstash",
+    "python-statsd",
+    "watchdog",
+]
+testing = [
+    "coverage",
+    "mock==2.0.0",  # FIXME: remove for python 3.6 and newer
+    "pytest-cov",
+    "pytest; python_version >= '3'",
+    "pytest~=4.6.0; python_version == '2.7'",
+]
+
+[project.scripts]
+insights = "insights.command_parser:main"
+insights-cat = "insights.tools.cat:main"
+insights-collect = "insights.collect:main"
+insights-dupkeycheck = "insights.tools.dupkeycheck:main"
+insights-info = "insights.tools.query:main"
+insights-inspect = "insights.tools.insights_inspect:main"
+insights-ocpshell = "insights.ocpshell:main"
+insights-run = "insights:main"
+mangle = "insights.util.mangle:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "insights.version._VERSION_"}
+
+[tool.pytest.ini_options]
+addopts = "-rsxXfE --ignore=./build/"
+testpaths = ["insights"]
