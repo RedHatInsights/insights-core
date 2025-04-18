@@ -14,6 +14,7 @@ components from triggering.
 In particular, the component can be added as a dependency of another
 components, e.g. Specs or Parsers parser to limit it to a given version.
 """
+
 from insights.combiners.redhat_release import RedHatRelease
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import component
@@ -31,6 +32,7 @@ class IsRhel(object):
     Raises:
         SkipComponent: When RHEL major version does not match version.
     """
+
     def __init__(self, rhel, major=None):
         if rhel.major != major:
             raise SkipComponent("Not RHEL {0}".format(major))
@@ -53,6 +55,7 @@ class IsGtRhel(object):
     Raises:
         SkipComponent: When RHEL version does not match the specified version.
     """
+
     def __init__(self, rhel, major, minor, equal=False):
         if rhel.major < major:
             raise SkipComponent("Not RHEL newer than {0}.{1}".format(major, minor))
@@ -77,6 +80,7 @@ class IsRhel6(IsRhel):
     Raises:
         SkipComponent: When RHEL version is not RHEL 6.
     """
+
     def __init__(self, rhel):
         super(IsRhel6, self).__init__(rhel, 6)
 
@@ -92,6 +96,7 @@ class IsRhel7(IsRhel):
     Raises:
         SkipComponent: When RHEL version is not RHEL 7.
     """
+
     def __init__(self, rhel):
         super(IsRhel7, self).__init__(rhel, 7)
 
@@ -107,6 +112,7 @@ class IsRhel8(IsRhel):
     Raises:
         SkipComponent: When RHEL version is not RHEL 8.
     """
+
     def __init__(self, rhel):
         super(IsRhel8, self).__init__(rhel, 8)
 
@@ -122,8 +128,26 @@ class IsRhel9(IsRhel):
     Raises:
         SkipComponent: When RHEL version is not RHEL 9.
     """
+
     def __init__(self, rhel):
         super(IsRhel9, self).__init__(rhel, 9)
+
+
+@component(RedHatRelease)
+class IsGtOrRhel84(IsGtRhel):
+    """
+    This component checks if the RHEL version is 8.4 or grater than 8.4.
+
+    Attributes:
+        major (int): The major version of RHEL.
+        minor (int): The minor version of RHEL.
+
+    Raises:
+        SkipComponent: When RHEL version is not 8.4 and less than 8.4
+    """
+
+    def __init__(self, rhel):
+        super(IsGtOrRhel84, self).__init__(rhel, 8, 4, equal=True)
 
 
 @component(RedHatRelease)
@@ -138,6 +162,7 @@ class IsGtOrRhel86(IsGtRhel):
     Raises:
         SkipComponent: When RHEL version is not 8.6 and less than 8.6
     """
+
     def __init__(self, rhel):
         super(IsGtOrRhel86, self).__init__(rhel, 8, 6, equal=True)
 
@@ -154,5 +179,6 @@ class IsGtRhel86(IsGtRhel):
     Raises:
         SkipComponent: When RHEL version is 8.6 or less than 8.6
     """
+
     def __init__(self, rhel):
         super(IsGtRhel86, self).__init__(rhel, 8, 6, equal=False)
