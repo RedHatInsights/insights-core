@@ -13,6 +13,7 @@ results of the following combiners and parsers:
 * :py:class:`insights.parsers.subscription_manager.SubscriptionManagerFacts`
 
 """
+
 from insights.combiners.cloud_provider import CloudProvider
 from insights.core.exceptions import ContentException, SkipComponent
 from insights.core.filters import add_filter
@@ -22,7 +23,7 @@ from insights.parsers.azure_instance import AzureInstanceID, AzureInstanceType
 from insights.parsers.gcp_instance_type import GCPInstanceType
 from insights.parsers.subscription_manager import SubscriptionManagerFacts
 
-add_filter(SubscriptionManagerFacts, 'instance_id')
+add_filter(SubscriptionManagerFacts, ['instance_id', 'instance_type'])
 
 
 @combiner(
@@ -33,7 +34,7 @@ add_filter(SubscriptionManagerFacts, 'instance_id')
         AzureInstanceType,
         GCPInstanceType,
         SubscriptionManagerFacts,
-    ]
+    ],
 )
 class CloudInstance(object):
     """
@@ -65,10 +66,11 @@ class CloudInstance(object):
         >>> ci.size == 't2.micro'
         True
     """
-    def __init__(self, cp, aws=None, azure_id=None, azure_type=None,
-                 gcp=None, facts=None):
+
+    def __init__(self, cp, aws=None, azure_id=None, azure_type=None, gcp=None, facts=None):
         self.provider = cp.cloud_provider
         self.id = None
+        self.type = None
         # 1. Get from the Cloud REST API at first
         if aws:
             self.id = aws.get('instanceId')
@@ -84,6 +86,8 @@ class CloudInstance(object):
             if key not in facts:
                 raise ContentException("Unmatched/unsupported types!")
             self.id = facts[key]
+            if self.type is None:
+                self.type = facts.get("{0}_instance_type".format(self.provider))
         # The instance id is the key attribute of this Combiner
         if self.id is None:
             raise SkipComponent
