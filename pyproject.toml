@@ -1,27 +1,23 @@
 [project]
 name = "insights-core"
 description = "Insights Core is a data collection and analysis framework"
-readme = "README.rst"
 authors = [
     {name = "Red Hat, Inc.", email = "insights@redhat.com"},
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "Natural Language :: English",
     "Programming Language :: Python",
     "Programming Language :: Python :: 2.7",
-    "Programming Language :: Python :: 3.3",
-    "Programming Language :: Python :: 3.4",
-    "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
-license = {text = "Apache 2.0"}
-dynamic = ["version"]
+license-files = ["LICENSE", "NOTICE"]
+dynamic = ["version", "readme"]
 requires-python = ">=2.7"
 dependencies = [
     "cachecontrol",
@@ -89,6 +85,7 @@ mangle = "insights.util.mangle:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "insights.version._VERSION_"}
+readme = {file = ["README.rst", "CONTRIBUTING.md"]}
 
 [tool.pytest.ini_options]
 addopts = "-rsxXfE --ignore=./build/"
