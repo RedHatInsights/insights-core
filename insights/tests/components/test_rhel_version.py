@@ -2,8 +2,14 @@ import pytest
 
 from insights.combiners.redhat_release import RedHatRelease as RR
 from insights.components.rhel_version import (
-    IsRhel6, IsRhel7, IsRhel8, IsRhel9,
-    IsGtRhel86, IsGtOrRhel86)
+    IsRhel6,
+    IsRhel7,
+    IsRhel8,
+    IsRhel9,
+    IsGtOrRhel84,
+    IsGtRhel86,
+    IsGtOrRhel86,
+)
 from insights.core.exceptions import SkipComponent
 from insights.parsers.redhat_release import RedhatRelease
 from insights.parsers.uname import Uname
@@ -26,6 +32,10 @@ Red Hat Enterprise Linux release 7.5-0.14
 
 REDHAT_RELEASE_80 = """
 Red Hat Enterprise Linux release 8.0 (Ootpa)
+""".strip()
+
+REDHAT_RELEASE_84 = """
+Red Hat Enterprise Linux release 8.4 (Ootpa)
 """.strip()
 
 REDHAT_RELEASE_86 = """
@@ -110,7 +120,28 @@ def test_is_rhel9():
     assert "Not RHEL 9" in str(e)
 
 
-# Great Than or Equal
+# Great Than or Equal to RHEL 8.4
+def test_gt_or_eq_rhel84():
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE_80))
+    rel = RR(None, rr)
+    with pytest.raises(SkipComponent) as e:
+        IsGtOrRhel84(rel)
+    assert "Not RHEL newer than or equal 8.4" in str(e)
+
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE_84))
+    rel = RR(None, rr)
+    ret = IsGtOrRhel84(rel)
+    assert ret.major == 8
+    assert ret.minor == 4
+
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE_90))
+    rel = RR(None, rr)
+    ret = IsGtOrRhel84(rel)
+    assert ret.major == 9
+    assert ret.minor == 0
+
+
+# Great Than or Equal to RHEL 8.6
 def test_gt_or_eq_rhel86():
     rr = RedhatRelease(context_wrap(REDHAT_RELEASE_80))
     rel = RR(None, rr)
@@ -131,7 +162,7 @@ def test_gt_or_eq_rhel86():
     assert ret.minor == 0
 
 
-# Great Than
+# Great Than RHEL 8.6
 def test_gt_rhel86():
     rr = RedhatRelease(context_wrap(REDHAT_RELEASE_80))
     rel = RR(None, rr)
