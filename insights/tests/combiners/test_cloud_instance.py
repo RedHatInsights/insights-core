@@ -115,8 +115,8 @@ def test_cloud_instance_aws_from_submanfacts_no_type():
     ret = CloudInstance(cp, None, None, None, None, facts)
     assert ret.provider == CloudProvider.AWS
     assert ret.id == "i-01234567890abcdef"
-    assert ret.type == ""
-    assert ret.size == ""
+    assert ret.type is None
+    assert ret.size is None
 
 
 def test_cloud_instance_ex():

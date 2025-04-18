@@ -87,7 +87,7 @@ class CloudInstance(object):
                 raise ContentException("Unmatched/unsupported types!")
             self.id = facts[key]
             if self.type is None:
-                self.type = facts.get("{0}_instance_type".format(self.provider), '')
+                self.type = facts.get("{0}_instance_type".format(self.provider))
         # The instance id is the key attribute of this Combiner
         if self.id is None:
             raise SkipComponent
