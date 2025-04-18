@@ -16,7 +16,7 @@ import signal
 # - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
-from insights.components.rhel_version import IsGtOrRhel86
+from insights.components.rhel_version import IsGtOrRhel84, IsGtOrRhel86
 from insights.components.satellite import (
     IsSatellite,
     IsSatellite611,
@@ -856,7 +856,9 @@ class DefaultSpecs(Specs):
         "/usr/sbin/subscription-manager status", override_env={"LC_ALL": "C.UTF-8"}
     )
     subscription_manager_syspurpose = simple_command(
-        "/usr/sbin/subscription-manager syspurpose --show", override_env={"LC_ALL": "C.UTF-8"}
+        "/usr/sbin/subscription-manager syspurpose --show",
+        deps=[IsGtOrRhel84],
+        override_env={"LC_ALL": "C.UTF-8"},
     )
     sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
     swift_proxy_server_conf = first_file(
