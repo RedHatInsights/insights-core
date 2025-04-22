@@ -753,6 +753,7 @@ class Specs(SpecSet):
     smartpdc_settings = RegistryPoint(filterable=True)
     smbstatus_S = RegistryPoint()
     smbstatus_p = RegistryPoint()
+    snmpd_conf = RegistryPoint(filterable=True)
     sockstat = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     softnet_stat = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     software_collections_list = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
