@@ -16,7 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-license-files = ["LICENSE", "NOTICE"]
+license = {file = "LICENSE"}
 dynamic = ["version", "readme"]
 requires-python = ">=2.7"
 dependencies = [
