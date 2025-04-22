@@ -9,8 +9,7 @@ IlabModuleList - command ``/usr/bin/ilab model list``
 IlabConfigShow - command ``/usr/bin/ilab config show``
 ------------------------------------------------------
 """
-from insights import YAMLParser
-from insights.core import CommandParser
+from insights.core import CommandParser, YAMLParser
 from insights.core.plugins import parser
 from insights.core.exceptions import SkipComponent, ParseException
 from insights.specs import Specs
@@ -70,6 +69,8 @@ class IlabConfigShow(CommandParser, YAMLParser):
 
     Sample output from ``/usr/bin/ilab config show``::
 
+        time="2025-04-15T08:23:44Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
+        # Chat configuration section.
         chat:
           context: default
           logs_dir: /root/.local/share/instructlab/chatlogs
@@ -99,4 +100,4 @@ class IlabConfigShow(CommandParser, YAMLParser):
     Attributes:
         data(dict): The ilab config information
     """
-    pass
+    ignore_lines = ['time=']
