@@ -9,17 +9,10 @@ IlabModuleList - command ``/usr/bin/ilab model list``
 IlabConfigShow - command ``/usr/bin/ilab config show``
 ------------------------------------------------------
 """
-import yaml
-
-from insights.core import CommandParser, LegacyItemAccess
+from insights.core import CommandParser, YAMLParser
 from insights.core.plugins import parser
 from insights.core.exceptions import SkipComponent, ParseException
 from insights.specs import Specs
-
-try:
-    from yaml import CSafeLoader as SafeLoader
-except ImportError:  # pragma: no cover
-    from yaml import SafeLoader
 
 
 @parser(Specs.ilab_model_list)
@@ -70,12 +63,14 @@ class IlabModuleList(CommandParser, list):
 
 
 @parser(Specs.ilab_config_show)
-class IlabConfigShow(CommandParser, LegacyItemAccess):
+class IlabConfigShow(CommandParser, YAMLParser):
     """
     This parser will parse the output of "/usr/bin/ilab config show".
 
     Sample output from ``/usr/bin/ilab config show``::
 
+        time="2025-04-15T08:23:44Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
+        # Chat configuration section.
         chat:
           context: default
           logs_dir: /root/.local/share/instructlab/chatlogs
@@ -105,12 +100,4 @@ class IlabConfigShow(CommandParser, LegacyItemAccess):
     Attributes:
         data(dict): The ilab config information
     """
-    def parse_content(self, content):
-        if not content:
-            raise SkipComponent("Empty")
-        try:
-            if len(content) > 1:
-                new_content = [x for x in content if not x.strip().startswith("#") and not x.strip().startswith("time=")]
-                self.data = yaml.load('\n'.join(new_content), Loader=SafeLoader)
-        except Exception:
-            raise ParseException("There was an exception when parsing outputs of 'ilab config show' command")
+    ignore_lines = ['time=']
