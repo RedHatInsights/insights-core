@@ -10,7 +10,7 @@ SmartctlHealth - /usr/sbin/smartctl -H {devices} -j
 import json
 import re
 
-from insights.core import CommandParser
+from insights.core import CommandParser, JSONParser
 from insights.core.exceptions import ParseException
 from insights.core.plugins import parser
 from insights.specs import Specs
@@ -204,7 +204,7 @@ class SMARTctl(CommandParser):
 
 
 @parser(Specs.smartctl_health)
-class SmartctlHealth(CommandParser):
+class SmartctlHealth(JSONParser):
     """
     Parse the output of command "smartctl -H -d scsi {devices}".
 
@@ -251,5 +251,4 @@ class SmartctlHealth(CommandParser):
         True
 
     """
-    def parse_content(self, content):
-        self.data = json.loads(' '.join(content))
+    pass
