@@ -275,7 +275,7 @@ class TextFileProvider(FileProvider):
             # Pre-filtering ONLY when collecting data
             log.debug("Pre-filtering %s", self.relative_path)
             args.append(
-                ["grep", "-F", "\n".join(sorted(self._filters.keys(), reverse=True)), self.path]
+                ["grep", "-F", "--", "\n".join(self._filters.keys()), self.path]
             )
 
         return args
@@ -409,7 +409,7 @@ class CommandOutputProvider(ContentProvider):
 
         if self.split and self._filters:
             log.debug("Pre-filtering  %s", self.relative_path)
-            command.append(["grep", "-F", "\n".join(sorted(self._filters.keys(), reverse=True))])
+            command.append(["grep", "-F", "--", "\n".join(self._filters.keys())])
 
         return command
 
