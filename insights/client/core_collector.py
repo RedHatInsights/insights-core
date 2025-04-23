@@ -1,6 +1,7 @@
 """
 Collect all the interesting data for analysis - Core version
 """
+
 from __future__ import absolute_import
 
 import logging
@@ -18,11 +19,12 @@ class CoreCollector(object):
     """
     Collector for core collection
     """
+
     def __init__(self, config):
         self.config = config
         self.archive = InsightsArchive(config)
 
-    def run_collection(self, rm_conf, branch_info, blacklist_report):
+    def run_collection(self, rm_conf):
         '''
         Initialize core collection here and generate the
         output directory with collected data.

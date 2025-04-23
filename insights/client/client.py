@@ -10,13 +10,15 @@ import time
 import six
 from distutils.version import LooseVersion
 
-from .utilities import (generate_machine_id,
-                        write_to_disk,
-                        write_registered_file,
-                        write_unregistered_file,
-                        delete_cache_files,
-                        determine_hostname,
-                        get_version_info)
+from .utilities import (
+    generate_machine_id,
+    write_to_disk,
+    write_registered_file,
+    write_unregistered_file,
+    delete_cache_files,
+    determine_hostname,
+    get_version_info,
+)
 from .collection_rules import InsightsUploadConf
 from .core_collector import CoreCollector
 from .connection import InsightsConnection
@@ -24,14 +26,15 @@ from .support import registration_check
 from .constants import InsightsConstants as constants
 
 NETWORK = constants.custom_network_log_level
-LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s:%(lineno)s %(message)s")
+LOG_FORMAT = "%(asctime)s %(levelname)8s %(name)s:%(lineno)s %(message)s"
 logger = logging.getLogger(__name__)
 
 
 class RotatingFileHandlerWithUMask(logging.handlers.RotatingFileHandler, object):
-    """ logging.handlers.RotatingFileHandler subclass with a modified
-        file permission mask.
+    """logging.handlers.RotatingFileHandler subclass with a modified
+    file permission mask.
     """
+
     def __init__(self, umask, *args, **kwargs):
         self._umask = umask
         super(RotatingFileHandlerWithUMask, self).__init__(*args, **kwargs)
@@ -49,9 +52,10 @@ class RotatingFileHandlerWithUMask(logging.handlers.RotatingFileHandler, object)
 
 
 class FileHandlerWithUMask(logging.FileHandler, object):
-    """ logging.FileHandler subclass with a modified
-        file permission mask.
+    """logging.FileHandler subclass with a modified
+    file permission mask.
     """
+
     def __init__(self, umask, *args, **kwargs):
         self._umask = umask
         super(FileHandlerWithUMask, self).__init__(*args, **kwargs)
@@ -89,7 +93,9 @@ def get_file_handler(config):
     # ensure the legacy rotating file handler is only used in older client versions
     # or if there is a problem retrieving the rpm version.
     rpm_version = get_version_info()['client_version']
-    if not rpm_version or (LooseVersion(rpm_version) < LooseVersion(constants.rpm_version_before_logrotate)):
+    if not rpm_version or (
+        LooseVersion(rpm_version) < LooseVersion(constants.rpm_version_before_logrotate)
+    ):
         file_handler = RotatingFileHandlerWithUMask(0o077, log_file, backupCount=3)
     else:
         file_handler = FileHandlerWithUMask(0o077, log_file)
@@ -153,7 +159,9 @@ def register(config, pconn):
     authmethod = config.authmethod
     auto_config = config.auto_config
     if not username and not password and not auto_config and authmethod == 'BASIC':
-        logger.debug('Username and password must be defined in configuration file with BASIC authentication method.')
+        logger.debug(
+            'Username and password must be defined in configuration file with BASIC authentication method.'
+        )
         return False
     return pconn.register()
 
@@ -174,8 +182,10 @@ def _legacy_handle_registration(config, pconn):
     machine_id_present = isfile(constants.machine_id_file)
 
     if machine_id_present and check['status'] is False:
-        logger.info("Machine-id found, insights-client can not be registered."
-                    " Please, unregister insights-client first: `insights-client --unregister`")
+        logger.info(
+            "Machine-id found, insights-client can not be registered."
+            " Please, unregister insights-client first: `insights-client --unregister`"
+        )
         return False
 
     logger.debug('Machine-id: %s', generate_machine_id())
@@ -204,11 +214,11 @@ def _legacy_handle_registration(config, pconn):
         if config.display_name is None and config.group is None:
             logger.info('Successfully registered host %s', hostname)
         elif config.display_name is None:
-            logger.info('Successfully registered host %s in group %s',
-                        hostname, group)
+            logger.info('Successfully registered host %s in group %s', hostname, group)
         else:
-            logger.info('Successfully registered host %s as %s in group %s',
-                        hostname, display_name, group)
+            logger.info(
+                'Successfully registered host %s as %s in group %s', hostname, display_name, group
+            )
         if message:
             logger.info(message)
         write_registered_file()
@@ -219,13 +229,17 @@ def _legacy_handle_registration(config, pconn):
         # print messaging and exit
         if check['unreg_date']:
             # registered and then unregistered
-            logger.info('This machine has been unregistered. '
-                        'Use --register if you would like to '
-                        're-register this machine.')
+            logger.info(
+                'This machine has been unregistered. '
+                'Use --register if you would like to '
+                're-register this machine.'
+            )
         else:
             # not yet registered
-            logger.info('This machine has not yet been registered. '
-                        'Use --register to register this machine.')
+            logger.info(
+                'This machine has not yet been registered. '
+                'Use --register to register this machine.'
+            )
         return False
 
 
@@ -239,11 +253,11 @@ def handle_registration(config, pconn):
 
 def get_registration_status(config, pconn):
     '''
-        Handle the registration process
-        Returns:
-            True - machine is registered
-            False - machine is unregistered
-            None - could not reach the API
+    Handle the registration process
+    Returns:
+        True - machine is registered
+        False - machine is unregistered
+        None - could not reach the API
     '''
     return registration_check(pconn)
 
@@ -258,7 +272,7 @@ def __cleanup_local_files():
 # -LEGACY-
 def _legacy_handle_unregistration(config, pconn):
     """
-        returns (bool): True success, False failure
+    returns (bool): True success, False failure
     """
 
     check = get_registration_status(config, pconn)
@@ -334,7 +348,7 @@ def collect(config):
             'Starting to collect Insights data for %s' % determine_hostname(config.display_name)
         )
 
-    dc.run_collection(rm_conf, get_branch_info(config), pc.create_report())
+    dc.run_collection(rm_conf)
 
     return dc.done()
 
@@ -370,20 +384,25 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
             msg_name = determine_hostname(config.display_name)
             account_number = config.account_number
             if account_number:
-                logger.info("Successfully uploaded report from %s to account %s.",
-                            msg_name, account_number)
+                logger.info(
+                    "Successfully uploaded report from %s to account %s.", msg_name, account_number
+                )
             else:
                 logger.info("Successfully uploaded report for %s.", msg_name)
             if config.register:
                 # direct to console after register + upload
-                logger.info('View the Red Hat Insights console at https://console.redhat.com/insights/')
+                logger.info(
+                    'View the Red Hat Insights console at https://console.redhat.com/insights/'
+                )
             break
 
         elif upload.status_code in (412, 413):
             pconn.handle_fail_rcs(upload)
             raise RuntimeError('Upload failed.')
         else:
-            display_upload_error_and_retry(config, tries, "%s: %s" % (upload.status_code, upload.reason))
+            display_upload_error_and_retry(
+                config, tries, "%s: %s" % (upload.status_code, upload.reason)
+            )
     return api_response
 
 
@@ -422,11 +441,11 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
 
 
 def display_upload_error_and_retry(config, tries, error_message):
-    logger.error("Upload attempt %d of %d failed! Reason: %s",
-                 tries + 1, config.retries, error_message)
+    logger.error(
+        "Upload attempt %d of %d failed! Reason: %s", tries + 1, config.retries, error_message
+    )
     if tries + 1 < config.retries:
-        logger.info("Waiting %d seconds then retrying",
-                    constants.sleep_time)
+        logger.info("Waiting %d seconds then retrying", constants.sleep_time)
         time.sleep(constants.sleep_time)
     else:
         logger.error("All attempts to upload have failed!")

@@ -11,7 +11,7 @@ from insights.client.core_collector import CoreCollector
 def test_run_collection(collect, create_archive_dir, systemd_notify_init_thread, logger):
     conf = InsightsConfig()
     cc = CoreCollector(conf)
-    cc.run_collection({}, {}, {})
+    cc.run_collection({})
     systemd_notify_init_thread.assert_called_once()
     create_archive_dir.assert_called_once()
     collect.collect.assert_called_once()
