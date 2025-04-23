@@ -4,10 +4,12 @@ smartctl - parser for smartctl commands
 
 Classes to parse the output of smartctl commands:
 
+
+SMARTctl - /usr/sbin/smartctl -a {devices}
+------------------------------------------
 SmartctlHealth - /usr/sbin/smartctl -H {devices} -j
 ---------------------------------------------------
 """
-import json
 import re
 
 from insights.core import CommandParser, JSONParser
