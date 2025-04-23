@@ -9,18 +9,6 @@ from insights.client.config import InsightsConfig
 from insights.client.utilities import determine_hostname
 
 
-def patch_get_branch_info():
-    """
-    Sets a static response to get_branch_info method.
-    """
-
-    def decorator(old_function):
-        patcher = patch("insights.client.client.get_branch_info")
-        return patcher(old_function)
-
-    return decorator
-
-
 def patch_get_rm_conf():
     """
     Mocks InsightsUploadConf.get_rm_conf so it returns a fixed configuration.
@@ -47,12 +35,10 @@ def patch_core_collector():
 
 @patch_core_collector()
 @patch_get_rm_conf()
-@patch_get_branch_info()
 @patch('insights.client.client.logger')
-def test_log_msgs_general(log, get_branch_info, get_rm_conf, core_collector):
+def test_log_msgs_general(log, get_rm_conf, core_collector):
     config = InsightsConfig()
     collect(config)
-    get_branch_info.assert_called_once_with(config)
     get_rm_conf.assert_called_once_with()
     log.info.assert_called_once_with(
         'Starting to collect Insights data for %s' % determine_hostname(config.display_name)
@@ -61,12 +47,10 @@ def test_log_msgs_general(log, get_branch_info, get_rm_conf, core_collector):
 
 @patch_core_collector()
 @patch_get_rm_conf()
-@patch_get_branch_info()
 @patch('insights.client.client.logger')
-def test_log_msgs_compliance(log, get_branch_info, get_rm_conf, core_collector):
+def test_log_msgs_compliance(log, get_rm_conf, core_collector):
     config = InsightsConfig(compliance=True)
     collect(config)
-    get_branch_info.assert_called_once_with(config)
     get_rm_conf.assert_called_once_with()
     log.info.assert_called_once_with(
         'Starting to collect Insights data for %s' % determine_hostname(config.display_name)
@@ -75,35 +59,29 @@ def test_log_msgs_compliance(log, get_branch_info, get_rm_conf, core_collector):
 
 @patch_core_collector()
 @patch_get_rm_conf()
-@patch_get_branch_info()
 @patch('insights.client.client.logger')
-def test_log_msgs_compliance_policies(log, get_branch_info, get_rm_conf, core_collector):
+def test_log_msgs_compliance_policies(log, get_rm_conf, core_collector):
     config = InsightsConfig(compliance_policies=True)
     collect(config)
-    get_branch_info.assert_called_once_with(config)
     get_rm_conf.assert_not_called()
     log.info.assert_not_called()
 
 
 @patch_core_collector()
 @patch_get_rm_conf()
-@patch_get_branch_info()
 @patch('insights.client.client.logger')
-def test_log_msgs_compliance_assign(log, get_branch_info, get_rm_conf, core_collector):
+def test_log_msgs_compliance_assign(log, get_rm_conf, core_collector):
     config = InsightsConfig(compliance_assign=['abc'])
     collect(config)
-    get_branch_info.assert_called_once_with(config)
     get_rm_conf.assert_not_called()
     log.info.assert_not_called()
 
 
 @patch_core_collector()
 @patch_get_rm_conf()
-@patch_get_branch_info()
 @patch('insights.client.client.logger')
-def test_log_msgs_compliance_unassign(log, get_branch_info, get_rm_conf, core_collector):
+def test_log_msgs_compliance_unassign(log, get_rm_conf, core_collector):
     config = InsightsConfig(compliance_unassign=['abc'])
     collect(config)
-    get_branch_info.assert_called_once_with(config)
     get_rm_conf.assert_not_called()
     log.info.assert_not_called()
