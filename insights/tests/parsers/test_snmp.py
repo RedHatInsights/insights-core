@@ -251,7 +251,7 @@ def test_snmpd_conf_empty():
 
 def test_snmpd_conf_empty2():
     with pytest.raises(ParseException) as exc:
-        SnmpdConf(context_wrap(SNMPD_CONF_EMPTY))
+        SnmpdConf(context_wrap(SNMPD_CONF_NO_HIT))
     assert str(exc.value) == "Empty Content"
 
 
