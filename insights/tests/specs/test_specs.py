@@ -366,6 +366,21 @@ def test_exp_no_filters():
     assert exception_cnt == 11111111
 
 
+def test_filter_starts_with_minus_sign():
+    # if interpreted as a grep command line option,
+    # broker[self_spec].content would raise ContentException
+    # because grep output would be empty
+    filter_message = "--quiet"
+
+    broker = dr.Broker()
+    broker[HostContext] = HostContext()
+    self_spec = simple_file(this_file, filterable=True)
+    add_filter(self_spec, filter_message)
+    broker = dr.run(dr.get_dependency_graph(self_spec), broker)
+
+    assert '    filter_message = "{}"'.format(filter_message) in broker[self_spec].content
+
+
 @pytest.mark.parametrize("obfuscate", [True, False])
 @patch('insights.cleaner.Cleaner.generate_report', return_value=None)
 def test_specs_collect(gen, obfuscate):
