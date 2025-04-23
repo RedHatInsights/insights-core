@@ -24,6 +24,7 @@ import re
 from insights import SkipComponent
 from insights.core.filters import add_filter
 from insights.core.plugins import combiner
+from insights.combiners.grubby import Grubby
 from insights.parsers.cmdline import CmdLine
 from insights.parsers.grub_conf import (
     get_kernel_initrds,
@@ -127,7 +128,7 @@ class BootLoaderEntries(object):
 
 @combiner(
     [Grub1Config, Grub2Config, Grub1EFIConfig, Grub2EFIConfig, BootLoaderEntries],
-    optional=[InstalledRpms, CmdLine, LSlanFiltered, LsSysFirmware],
+    optional=[Grubby, InstalledRpms, CmdLine, LSlanFiltered, LsSysFirmware],
 )
 class GrubConf(object):
     """
@@ -160,7 +161,8 @@ class GrubConf(object):
         []
     """
 
-    def __init__(self, grub1, grub2, grub1_efi, grub2_efi, grub_bles, rpms, cmdline, ls_lan, ls_sf):
+    def __init__(self, grub1, grub2, grub1_efi, grub2_efi, grub_bles, grubby, rpms, cmdline, ls_lan, ls_sf):
+
         self.version = self.is_kdump_iommu_enabled = None
         self.grub = self.kernel_initrds = None
         self.is_efi = is_uefi_boot(ls_lan, ls_sf)
@@ -171,8 +173,15 @@ class GrubConf(object):
             self.is_efi = self.is_efi if ls_lan or ls_sf else self.grub._efi
         else:
             _grub1, _grub2 = (grub1_efi, grub2_efi) if self.is_efi else (grub1, grub2)
-            if grub_bles and _grub2 and 'blscfg' in _grub2.get('configs', ''):
-                self.grub = grub_bles
+
+            # if grubby:
+            #     self.grub = grubby
+            if grub_bles:
+                if _grub2 and 'blscfg' in _grub2.get('configs', ''):   # typically not UEFI case
+                    self.grub = grub_bles
+                elif self.is_efi:  # UEFI case, if grub_bles found, use it directly
+                    self.grub = grub_bles
+
             # Check grub version via installed-rpms
             else:
                 if rpms:
