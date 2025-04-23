@@ -156,7 +156,7 @@ plugins:
     - name: insights.combiners.sap.Sap
       enabled: true
 
-    # needed for fw_security specs
+    # needed for specs: fw_security, smartctl_health
     - name: insights.parsers.virt_what.VirtWhat
       enabled: true
     - name: insights.combiners.virt_what.VirtWhat
@@ -190,7 +190,7 @@ plugins:
     - name: insights.parsers.docker_list.DockerListContainers
       enabled: true
 
-    # needed for 'luks_data_sources' spec
+    # needed for specs: luks_data_sources, smartctl_health spec
     - name: insights.parsers.blkid.BlockIDInfo
       enabled: true
     - name: insights.components.cryptsetup.HasCryptsetupWithTokens

@@ -750,6 +750,7 @@ class Specs(SpecSet):
         filterable=True, no_obfuscate=['hostname', 'ip', 'ipv6', 'mac']
     )
     smartctl = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
+    smartctl_health = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     smartpdc_settings = RegistryPoint(filterable=True)
     smbstatus_S = RegistryPoint()
     smbstatus_p = RegistryPoint()
