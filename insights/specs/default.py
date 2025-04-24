@@ -827,6 +827,7 @@ class DefaultSpecs(Specs):
     setup_named_chroot = simple_file("/usr/libexec/setup-named-chroot.sh")
     smartctl_health = foreach_execute(dev.physical_devices, "/usr/sbin/smartctl -H %s -j")
     smbstatus_p = simple_command("/usr/bin/smbstatus -p")
+    snmpd_conf = simple_file("/etc/snmp/snmpd.conf")
     sockstat = simple_file("/proc/net/sockstat")
     softnet_stat = simple_file("proc/net/softnet_stat")
     software_collections_list = simple_command('/usr/bin/scl --list')
