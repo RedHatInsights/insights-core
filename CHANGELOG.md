@@ -2,6 +2,30 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.13](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.13) (2025-04-24)
+
+- Add new Parser SnmpdConf ([PR 4434](https://github.com/RedHatInsights/insights-core/pull/4434))
+- fix: remove useless code from client collection ([PR 4438](https://github.com/RedHatInsights/insights-core/pull/4438))
+- feat: Add spec smartctl_health ([PR 4422](https://github.com/RedHatInsights/insights-core/pull/4422))
+- fix: support filters that start with minus sign ([PR 4436](https://github.com/RedHatInsights/insights-core/pull/4436))
+- fix(ci/cd): revert to use 'license' in pyproject.toml ([PR 4435](https://github.com/RedHatInsights/insights-core/pull/4435))
+- fix: no attribute 'type' error in CloudInstance combiner ([PR 4432](https://github.com/RedHatInsights/insights-core/pull/4432))
+- fix: Enhance parser IlabConfigShow ([PR 4426](https://github.com/RedHatInsights/insights-core/pull/4426))
+- fix(pyproject.toml): fix errors reported from '-m build' ([PR 4431](https://github.com/RedHatInsights/insights-core/pull/4431))
+- fix: rhsm syspurpose sepc deps on IsGtOrRhel84 ([PR 4433](https://github.com/RedHatInsights/insights-core/pull/4433))
+- enhance: YAMLParser can skip specified lines ([PR 4429](https://github.com/RedHatInsights/insights-core/pull/4429))
+- chore: change to build with pyproject.toml ([PR 4420](https://github.com/RedHatInsights/insights-core/pull/4420))
+- feat: add spec subscription_manager_syspurpose ([PR 4427](https://github.com/RedHatInsights/insights-core/pull/4427))
+- chore: update notebooks based on python3 ([PR 4430](https://github.com/RedHatInsights/insights-core/pull/4430))
+- fix(spec): cloud_init_query should be a simple_command ([PR 4423](https://github.com/RedHatInsights/insights-core/pull/4423))
+- fix: Ensure tailoring file is not created when content is empty ([PR 4424](https://github.com/RedHatInsights/insights-core/pull/4424))
+- fix(ci/cd): update to use Ubuntu 22.04 for code-test ([PR 4425](https://github.com/RedHatInsights/insights-core/pull/4425))
+- chore: use a new manifest module ([PR 4418](https://github.com/RedHatInsights/insights-core/pull/4418))
+- feat(client): Disable API registration check ([PR 4388](https://github.com/RedHatInsights/insights-core/pull/4388))
+- fix(setup): change to license_files ([PR 4419](https://github.com/RedHatInsights/insights-core/pull/4419))
+- fix(spec): inherit HOME env when collecting ilab commands ([PR 4416](https://github.com/RedHatInsights/insights-core/pull/4416))
+- chore: reomve the duplicated definion of SAFE_ENV in collect ([PR 4417](https://github.com/RedHatInsights/insights-core/pull/4417))
+
 # [insights-core-3.5.12](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.12) (2025-04-03)
 
 - chore: FileListing should be a CommandParser ([PR 4413](https://github.com/RedHatInsights/insights-core/pull/4413))

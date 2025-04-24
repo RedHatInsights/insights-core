@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.12
+Version:        3.5.13
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,39 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Apr 24 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.13-1
+- Add new Parser SnmpdConf (#4434) (986222045@qq.com)
+- fix: remove useless code from client collection (#4438)
+  (xiangceliu@redhat.com)
+- feat: Add spec smartctl_health (#4422) (jiazhang@redhat.com)
+- fix: support filters that start with minus sign (#4436) (71874510+jholecek-
+  rh@users.noreply.github.com)
+- fix(ci/cd): revert to use 'license' in pyproject.toml (#4435)
+  (xiangceliu@redhat.com)
+- fix: no attribute 'type' error in CloudInstance combiner (#4432)
+  (xiaoxwan@redhat.com)
+- fix: Enhance parser IlabConfigShow (#4426) (jiazhang@redhat.com)
+- fix(pyproject.toml): fix errors reported from '-m build' (#4431)
+  (xiangceliu@redhat.com)
+- fix: rhsm syspurpose sepc deps on IsGtOrRhel84 (#4433) (xiaoxwan@redhat.com)
+- enhance: YAMLParser can skip specified lines (#4429) (xiangceliu@redhat.com)
+- chore: change to build with pyproject.toml (#4420) (xiangceliu@redhat.com)
+- feat: add spec subscription_manager_syspurpose (#4427) (xiaoxwan@redhat.com)
+- chore: update notebooks based on python3 (#4430) (xiangceliu@redhat.com)
+- fix(spec): cloud_init_query should be a simple_command (#4423)
+  (xiangceliu@redhat.com)
+- fix: Ensure tailoring file is not created when content is empty (#4424)
+  (32950636+Mishrasubha@users.noreply.github.com)
+- fix(ci/cd): update to use Ubuntu 22.04 for code-test (#4425)
+  (xiangceliu@redhat.com)
+- chore: use a new manifest module (#4418) (xiangceliu@redhat.com)
+- feat(client): Disable API registration check (#4388) (pkoprda@redhat.com)
+- fix(setup): change to license_files (#4419) (xiangceliu@redhat.com)
+- fix(spec): inherit HOME env when collecting ilab commands (#4416)
+  (xiangceliu@redhat.com)
+- chore: reomve the duplicated definion of SAFE_ENV in collect (#4417)
+  (xiangceliu@redhat.com)
+
 * Thu Apr 03 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.12-1
 - chore: FileListing should be a CommandParser (#4413) (xiangceliu@redhat.com)
 - fix: duplicate stream entries in parser DnfModuleList (#4412)
