@@ -62,6 +62,7 @@ from insights.specs.datasources import (
     lpstat,
     ls,
     lsattr,
+    ls_files,
     luks,
     machine_id,
     md5chk,
@@ -485,6 +486,7 @@ class DefaultSpecs(Specs):
     ls_laRZ = command_with_args('/bin/ls -laRZ %s', ls.list_with_laRZ, keep_rc=True)
     ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, keep_rc=True)
     ls_dev = simple_command("/bin/ls -lanR /dev")  # T.B.D
+    ls_target_files = ls_files.check_ls_files
     lsattr = command_with_args("/bin/lsattr %s", lsattr.paths_to_lsattr)
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command(

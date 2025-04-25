@@ -414,6 +414,7 @@ class Specs(SpecSet):
     ls_dev = RegistryPoint()
     ls_rsyslog_errorfile = RegistryPoint()
     ls_sys_firmware = RegistryPoint()
+    ls_target_files = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     # ^ End of ls
     lsattr = RegistryPoint(no_obfuscate=['hostname', 'ip', 'ipv6', 'mac'])
     lsattr_files_or_dirs = RegistryPoint(filterable=True)
