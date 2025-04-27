@@ -1,10 +1,13 @@
 import os
 import shutil
 import tempfile
+from collections import defaultdict
 
+import pytest
 from mock.mock import patch
 
 from insights.core import dr
+from insights.core import filters
 from insights.core.context import HostArchiveContext
 from insights.core.filters import add_filter
 from insights.core.hydration import initialize_broker
@@ -38,9 +41,20 @@ def dostuff(broker):
     assert Stuff.large_file_wf in broker
 
 
+@pytest.fixture()
+def reset_filters():
+    original_cache = filters._CACHE
+    original_filters = filters.FILTERS
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(dict)
+    yield
+    filters._CACHE = original_cache
+    filters.FILTERS = original_filters
+
+
 @patch('insights.core.spec_factory.MAX_CONTENT_SIZE', 1024)
 @patch('insights.core.spec_factory.log')
-def test_load(log):
+def test_load(log, reset_filters):
     add_filter(Stuff.large_file_wf, filter_kw)
     temp_dir = tempfile.mkdtemp(prefix='insights_test', suffix='.dir')
     os.mkdir(os.path.join(temp_dir, 'data'))
@@ -55,9 +69,6 @@ def test_load(log):
     with open(file_path, 'w') as fd:
         for i in range(CONTENT_LINES):
             fd.write('- ' + str(i) + FILTER_DATA + '\n')
-
-    # Rules
-    dr.load_components('insights.tests.core.spec_factory', continue_on_error=False, exclude=None)
 
     _, broker = initialize_broker(temp_dir, context=HostArchiveContext, broker=dr.Broker())
     broker = dr.run(dr.get_dependency_graph(dostuff), broker=broker)
