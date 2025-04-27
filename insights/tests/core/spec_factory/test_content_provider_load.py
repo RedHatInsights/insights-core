@@ -1,6 +1,4 @@
 import os
-import shutil
-import tempfile
 from collections import defaultdict
 
 import pytest
@@ -13,8 +11,7 @@ from insights.core.filters import add_filter
 from insights.core.hydration import initialize_broker
 from insights.core.spec_factory import RegistryPoint, SpecSet, simple_file
 
-test_large_file = "large_file"
-test_large_file_wf = "large_file_with_filter"
+SAMPLE_FILE = "sample_file.log"
 FILTER_DATA = "Some test data"
 filter_kw = '9Some'
 CONTENT_LINES = 1000
@@ -26,8 +23,8 @@ class Specs(SpecSet):
 
 
 class Stuff(Specs):
-    large_file = simple_file(test_large_file, context=HostArchiveContext)
-    large_file_wf = simple_file(test_large_file_wf, context=HostArchiveContext)
+    large_file = simple_file(SAMPLE_FILE, context=HostArchiveContext)
+    large_file_wf = simple_file(SAMPLE_FILE, context=HostArchiveContext)
 
 
 class stage(dr.ComponentType):
@@ -52,42 +49,36 @@ def reset_filters():
     filters.FILTERS = original_filters
 
 
+@pytest.fixture(scope="module")
+def sample_file(tmpdir_factory):
+    root = str(tmpdir_factory.mktemp("test_content_provider_load"))
+    relpath = SAMPLE_FILE
+    file_path = os.path.join(root, relpath)
+    with open(file_path, 'w') as fd:
+        for i in range(CONTENT_LINES):
+            fd.write('- ' + str(i) + FILTER_DATA + '\n')
+    return root, relpath
+
+
 @patch('insights.core.spec_factory.MAX_CONTENT_SIZE', 1024)
 @patch('insights.core.spec_factory.log')
-def test_load(log, reset_filters):
-    add_filter(Stuff.large_file_wf, filter_kw)
-    temp_dir = tempfile.mkdtemp(prefix='insights_test', suffix='.dir')
-    os.mkdir(os.path.join(temp_dir, 'data'))
+@pytest.mark.parametrize(
+    "spec, filters, expected_first_line, expected_lines",
+    [
+        (Stuff.large_file, [], "- 949Some test data", 51),
+        (Stuff.large_file_wf, ["9Some"], "- 949Some test data", 6),
+    ]
+)
+def test_load(log, reset_filters, sample_file, spec, filters, expected_first_line, expected_lines):
+    root, relpath = sample_file
 
-    # Create files with more lines than MAX_CONTENT_LINES in archive/data
-    file_path = os.path.join(temp_dir, 'data', test_large_file)
-    with open(file_path, 'w') as fd:
-        for i in range(CONTENT_LINES):
-            fd.write('- ' + str(i) + FILTER_DATA + '\n')
+    for filter_kw in filters:
+        add_filter(spec, filter_kw)
 
-    file_path = os.path.join(temp_dir, 'data', test_large_file_wf)
-    with open(file_path, 'w') as fd:
-        for i in range(CONTENT_LINES):
-            fd.write('- ' + str(i) + FILTER_DATA + '\n')
-
-    _, broker = initialize_broker(temp_dir, context=HostArchiveContext, broker=dr.Broker())
+    _, broker = initialize_broker(root, context=HostArchiveContext, broker=dr.Broker())
     broker = dr.run(dr.get_dependency_graph(dostuff), broker=broker)
 
-    assert Stuff.large_file in broker
-    # Less lines are load
-    assert len(broker[Stuff.large_file].content) < CONTENT_LINES
-    log.debug.assert_called_with("Extra-huge file is truncated %s", test_large_file)
-    # skip the beginning of a large file, start with a complete line
-    assert broker[Stuff.large_file].content[0] == '- 949Some test data'
-    assert len(broker[Stuff.large_file].content) < len(
-        [
-            '{0}{1}'.format(i, FILTER_DATA)
-            for i in range(CONTENT_LINES + 10)
-            if filter_kw in '{0}Some'.format(i)
-        ]
-    )
-    # call content on large_file_wf to produce the log message
-    broker[Stuff.large_file_wf].content
-    log.debug.assert_called_with("Extra-huge file is truncated %s", test_large_file_wf)
-    # Clean up
-    shutil.rmtree(temp_dir)
+    assert spec in broker
+    assert broker[spec].content[0] == expected_first_line
+    assert len(broker[spec].content) == expected_lines
+    log.debug.assert_called_with("Extra-huge file is truncated %s", SAMPLE_FILE)
