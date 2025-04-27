@@ -13,7 +13,7 @@ from insights.core.plugins import parser
 from insights.specs import Specs
 
 
-@parser(Specs.smartctl_health)
+@parser(Specs.ls_target_files)
 class LsTargetFiles(JSONParser):
     """
     Parse the output of command "/usr/bin/ls <file path>".

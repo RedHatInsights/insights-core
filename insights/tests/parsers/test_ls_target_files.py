@@ -17,13 +17,13 @@ LS_TARGET_FILES_DATA = """
 """.strip()
 
 
-def test_smartctl_health():
+def test_ls_target_files():
     ls_target_files_info = LsTargetFiles(context_wrap(LS_TARGET_FILES_DATA))
     assert ls_target_files_info.data["/dev/sdb2"] == "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/sdb2"
     assert len(ls_target_files_info.data) == 6
 
 
-def test_smartctl():
+def test_ls_target_files_doc():
     env = {
         'ls_target_files_info': LsTargetFiles(context_wrap(LS_TARGET_FILES_DATA))
     }
