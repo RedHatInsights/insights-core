@@ -77,7 +77,8 @@ def test_load(log, reset_filters):
     # Less lines are load
     assert len(broker[Stuff.large_file].content) < CONTENT_LINES
     log.debug.assert_called_with("Extra-huge file is truncated %s", test_large_file)
-    assert broker[Stuff.large_file].content[0][0] == '-'  # the first line is complete (non-broken)
+    # skip the beginning of a large file, start with a complete line
+    assert broker[Stuff.large_file].content[0] == '- 949Some test data'
     assert len(broker[Stuff.large_file_wf].content) < len(
         [
             '{0}{1}'.format(i, FILTER_DATA)
