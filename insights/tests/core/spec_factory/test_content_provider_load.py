@@ -79,13 +79,15 @@ def test_load(log, reset_filters):
     log.debug.assert_called_with("Extra-huge file is truncated %s", test_large_file)
     # skip the beginning of a large file, start with a complete line
     assert broker[Stuff.large_file].content[0] == '- 949Some test data'
-    assert len(broker[Stuff.large_file_wf].content) < len(
+    assert len(broker[Stuff.large_file].content) < len(
         [
             '{0}{1}'.format(i, FILTER_DATA)
             for i in range(CONTENT_LINES + 10)
             if filter_kw in '{0}Some'.format(i)
         ]
     )
+    # call content on large_file_wf to produce the log message
+    broker[Stuff.large_file_wf].content
     log.debug.assert_called_with("Extra-huge file is truncated %s", test_large_file_wf)
     # Clean up
     shutil.rmtree(temp_dir)
