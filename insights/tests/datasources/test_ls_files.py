@@ -1,14 +1,8 @@
-import json
 import pytest
 
 from mock.mock import patch
-from collections import defaultdict
-
-from insights.client.config import InsightsConfig
-from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs import Specs
 from insights.parsers.fstab import FSTab
 from insights.parsers.lvm import Pvs
 from insights.parsers.blkid import BlockIDInfo
@@ -31,7 +25,7 @@ BLKID_DATA = """
 /dev/mapper/rhel-var: LABEL="new-label" UUID="9c4f1e8e-60c8-46ef-b70b-5a7ae1fa3b7f" TYPE="xfs"
 """.strip()
 
-PVS_DATA= """
+PVS_DATA = """
   WARNING: locking_type (0) is deprecated, using --nolocking.
   WARNING: File locking is disabled.
   LVM2_PV_FMT=''|LVM2_PV_UUID=''|LVM2_DEV_SIZE='1.00g'|LVM2_PV_NAME='/dev/vda1'|LVM2_PV_MAJOR='252'|LVM2_PV_MINOR='1'|LVM2_PV_MDA_FREE='0 '|LVM2_PV_MDA_SIZE='0 '|LVM2_PV_EXT_VSN=''|LVM2_PE_START='0 '|LVM2_PV_SIZE='0 '|LVM2_PV_FREE='0 '|LVM2_PV_USED='0 '|LVM2_PV_ATTR='---'|LVM2_PV_ALLOCATABLE=''|LVM2_PV_EXPORTED=''|LVM2_PV_MISSING=''|LVM2_PV_PE_COUNT='0'|LVM2_PV_PE_ALLOC_COUNT='0'|LVM2_PV_TAGS=''|LVM2_PV_MDA_COUNT='0'|LVM2_PV_MDA_USED_COUNT='0'|LVM2_PV_BA_START='0 '|LVM2_PV_BA_SIZE='0 '|LVM2_PV_IN_USE=''|LVM2_PV_DUPLICATE=''|LVM2_PV_DEVICE_ID=''|LVM2_PV_DEVICE_ID_TYPE=''|LVM2_VG_NAME=''

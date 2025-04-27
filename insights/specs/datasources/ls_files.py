@@ -1,5 +1,5 @@
 """
-Custom datasources for mdadm information
+Custom datasources for "ls -lan target_file" information
 """
 import json
 import os
@@ -11,6 +11,7 @@ from insights.parsers.fstab import FSTab
 from insights.parsers.lvm import Pvs
 from insights.parsers.blkid import BlockIDInfo
 from insights.core.spec_factory import DatasourceProvider
+
 
 @datasource([FSTab, Pvs, BlockIDInfo], HostContext)
 def check_ls_files(broker):
@@ -33,7 +34,6 @@ def check_ls_files(broker):
             uuid = blk.get("UUID", None)
             label = blk.get("LABEL", None)
             name = blk.get("NAME")
-            _type = blk.get("TYPE")
             if uuid:
                 blk_uuid_name_map[uuid] = name
             if label:
@@ -77,8 +77,3 @@ def check_ls_files(broker):
         relative_path = 'insights_datasources/ls_files'
         return DatasourceProvider(content=json.dumps(result), relative_path=relative_path)
     raise SkipComponent("The targets are not existing")
-
-
-
-
-
