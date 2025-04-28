@@ -16,15 +16,18 @@ from insights.core.spec_factory import DatasourceProvider
 @datasource([FSTab, Pvs, BlockIDInfo], HostContext)
 def check_ls_files(broker):
     result = {}
-    fstab_mounts = ""
-    pvs_info = ""
-    blkid_infos = ""
-    if FSTab:
+    try:
         fstab_mounts = broker[FSTab]
-    if Pvs:
-        pvs_info = broker[Pvs]
-    if BlockIDInfo:
+    except:
+        fstab_mounts = ""
+    try:
         blkid_infos = broker[BlockIDInfo]
+    except:
+        blkid_infos = ""
+    try:
+        pvs_info = broker[Pvs]
+    except:
+        pvs_info = ""
 
     if fstab_mounts and blkid_infos:
         blk_uuid_name_map = {}

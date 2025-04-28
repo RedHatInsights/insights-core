@@ -15,6 +15,7 @@ FSTAB_DATA = """
 /dev/mapper/rhel-root                     /                          ext4    defaults        1 1
 UUID=9c4f1e8e-60c8-46ef-b70b-111111111111 /home                      xfs     defaults        0 0
 LABEL=new-label         /var                    ext3    defaults        1 2
+/dev/archive_data           /data/ac/archive none    bind                    0 0
 """.strip()
 
 BLKID_DATA = """
@@ -36,10 +37,14 @@ RELATIVE_PATH = 'insights_datasources/ls_files'
 
 EXPECTED_RESULT = ['{"/dev/sdb2": "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test", "/dev/mapper/rhel-root": "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test", "/dev/mapper/rhel-home": "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test", "/dev/mapper/rhel-var": "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test", "/dev/vda1": "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test", "/dev/vda2": "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test"}']
 
+EXPECTED_RESULT_ONLY_PVS = ['{"/dev/vda1": "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test", "/dev/vda2": "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test"}']
+
+EXPECTED_RESULT_ONLY_FSTAB = ['{"/dev/sdb2": "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test", "/dev/mapper/rhel-root": "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test", "/dev/mapper/rhel-home": "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test", "/dev/mapper/rhel-var": "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test"}']
+
 
 @patch("os.path.exists", return_value=True)
 @patch('os.popen')
-def test_httpd_cmds(m_popen, m_exists):
+def test_ls_files(m_popen, m_exists):
     m_popen().read.return_value = "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test"
     fstab_info = FSTab(context_wrap(FSTAB_DATA))
     blkid_info = BlockIDInfo(context_wrap(BLKID_DATA))
@@ -49,6 +54,44 @@ def test_httpd_cmds(m_popen, m_exists):
     expected = DatasourceProvider(content=EXPECTED_RESULT, relative_path=RELATIVE_PATH)
     assert result.content == expected.content
     assert result.relative_path == expected.relative_path
+
+
+@patch("os.path.exists", return_value=True)
+@patch('os.popen')
+def test_ls_files_no_fstab(m_popen, m_exists):
+    m_popen().read.return_value = "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test"
+    pvs_info = Pvs(context_wrap(PVS_DATA))
+    broker = {Pvs: pvs_info}
+    result = check_ls_files(broker)
+    expected = DatasourceProvider(content=EXPECTED_RESULT_ONLY_PVS, relative_path=RELATIVE_PATH)
+    assert result.content == expected.content
+    assert result.relative_path == expected.relative_path
+
+
+@patch("os.path.exists", return_value=True)
+@patch('os.popen')
+def test_ls_files_no_pvs(m_popen, m_exists):
+    m_popen().read.return_value = "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test"
+    fstab_info = FSTab(context_wrap(FSTAB_DATA))
+    blkid_info = BlockIDInfo(context_wrap(BLKID_DATA))
+    broker = {FSTab: fstab_info, BlockIDInfo: blkid_info}
+    result = check_ls_files(broker)
+    expected = DatasourceProvider(content=EXPECTED_RESULT_ONLY_FSTAB, relative_path=RELATIVE_PATH)
+    assert result.content == expected.content
+    assert result.relative_path == expected.relative_path
+
+
+@patch("os.path.exists", return_value=False)
+@patch('os.popen')
+def test_ls_files_no_existing(m_popen, m_exists):
+    m_popen().read.return_value = "brw-rw----. 1 0 6 252, 1 Apr 25 03:47 /dev/test"
+    fstab_info = FSTab(context_wrap(FSTAB_DATA))
+    blkid_info = BlockIDInfo(context_wrap(BLKID_DATA))
+    pvs_info = Pvs(context_wrap(PVS_DATA))
+    broker = {FSTab: fstab_info, BlockIDInfo: blkid_info, Pvs: pvs_info}
+    with pytest.raises(SkipComponent) as e:
+        check_ls_files(broker)
+    assert 'SkipComponent' in str(e)
 
 
 @patch("os.path.exists", return_value=True)
