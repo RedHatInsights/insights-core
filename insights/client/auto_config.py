@@ -2,194 +2,247 @@
 Auto Configuration Helper
 """
 from __future__ import absolute_import
+
+import collections
 import logging
-import requests
-import re
+import os
+
+from . import utilities
 
 from .constants import InsightsConstants as constants
 from .cert_auth import rhsmCertificate
-from .connection import InsightsConnection
+
 
 logger = logging.getLogger(__name__)
 APP_NAME = constants.app_name
 
 
-def _is_rhn_or_rhsm(hostname):
-    return (hostname == 'subscription.rhn.redhat.com' or
-            hostname == 'subscription.rhsm.redhat.com')
+try:
+    import rhsm.config
+    # subscription-manager recommends to use 'get_config_parser()' instead,
+    # but RHEL <= 7 doesn't have the method renamed/aliased yet.
+    get_rhsm_config = rhsm.config.initConfig
+    _rhsm_config_exception = None  # type: Exception | None
+except Exception as exc:
+    import configparser
+    _rhsm_config_exception = exc
+
+    def get_rhsm_config():
+        # type: () -> configparser.ConfigParser
+        rhsm_config = configparser.ConfigParser()
+        rhsm_config.read_string(
+            u"[server]\n"
+            u"hostname=subscription.rhsm.redhat.com\n"
+            u"port=443\n"
+            u"proxy_scheme=\n"
+            u"proxy_hostname=\n"
+            u"proxy_port=\n"
+            u"proxy_user=\n"
+            u"proxy_password=\n"
+            u"no_proxy=\n"
+            u"_exception={exctype}: {exc}\n".format(
+                exctype=type(_rhsm_config_exception).__name__,
+                exc=str(_rhsm_config_exception),
+            )
+        )
+        return rhsm_config
 
 
-def _is_staging_rhsm(hostname):
+# Can't use enum, it's not supported in Python below 3.4
+class DeploymentType:
+    PRODUCTION = "production"
+    PRODUCTION_LEGACY = "production-legacy"
+    STAGE = "stage"
+    SATELLITE = "satellite"
+
+
+def _is_console_dot(hostname):
+    return hostname == 'subscription.rhsm.redhat.com'
+
+
+def _is_staging_console_dot(hostname):
     return hostname == 'subscription.rhsm.stage.redhat.com'
 
 
-def verify_connectivity(config):
-    """
-    Verify connectivity to satellite server
-    """
-    logger.debug("Verifying Connectivity")
-    ic = InsightsConnection(config)
-    try:
-        branch_info = ic.get_branch_info()
-    except requests.ConnectionError as e:
-        logger.debug(e)
-        logger.debug("Failed to connect to satellite")
-        return False
-    except LookupError as e:
-        logger.debug(e)
-        logger.debug("Failed to parse response from satellite")
-        return False
-
-    try:
-        remote_leaf = branch_info['remote_leaf']
-        return remote_leaf
-    except LookupError as e:
-        logger.debug(e)
-        logger.debug("Failed to find accurate branch_info")
-        return False
+# Can't use dataclass, it's not supported in Python below 3.7
+ProxyConfig = collections.namedtuple("ProxyConfig", ["proxy", "no_proxy"])
 
 
-def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite, is_stage, rhsm_no_proxy=None):
-    """
-    Set config based on discovered data
-    """
-    logger.debug("Attempting to auto configure!")
-    logger.debug("Attempting to auto configure hostname: %s", hostname)
-    logger.debug("Attempting to auto configure CA cert: %s", ca_cert)
-    logger.debug("Attempting to auto configure proxy: %s", proxy)
-    logger.debug("Attempting to auto configure no_proxy: %s", rhsm_no_proxy)
-    saved_base_url = config.base_url
-    if ca_cert is not None:
-        saved_cert_verify = config.cert_verify
-        config.cert_verify = ca_cert
-    if proxy is not None:
-        saved_proxy = config.proxy
-        config.proxy = proxy
-    if rhsm_no_proxy and rhsm_no_proxy != '':
-        config.no_proxy = rhsm_no_proxy
-    if is_satellite:
-        # satellite
-        config.base_url = hostname + '/r/insights'
-        logger.debug('Auto-configured base_url: %s', config.base_url)
-    else:
-        # connected directly to RHSM
-        if is_stage:
-            config.base_url = hostname + '/api'
+def _read_rhsm_proxy_settings(rhsm_config):
+    # type: ("rhsm.config.RhsmConfigParser") -> ProxyConfig
+
+    rhsm_proxy_scheme = rhsm_config.get("server", "proxy_scheme").strip()  # type: str
+    rhsm_proxy_hostname = rhsm_config.get('server', 'proxy_hostname').strip()  # type: str
+    rhsm_proxy_port = rhsm_config.get('server', 'proxy_port').strip()  # type: str
+    rhsm_proxy_user = rhsm_config.get('server', 'proxy_user').strip()  # type: str
+    rhsm_proxy_pass = rhsm_config.get('server', 'proxy_password').strip()  # type: str
+
+    proxy = None  # type: str | None
+    if rhsm_proxy_hostname != "":
+        proxy_credentials = ""
+        obfuscated_proxy_credentials = ""
+        if rhsm_proxy_user != "" and rhsm_proxy_pass != "":
+            proxy_credentials = "{}:{}@".format(rhsm_proxy_user, rhsm_proxy_pass)
+            obfuscated_proxy_credentials = "{}:{}@".format(rhsm_proxy_user, "***")
+        proxy = "{scheme}://{credentials}{hostname}:{port}".format(
+            scheme=rhsm_proxy_scheme,
+            credentials=proxy_credentials,
+            hostname=rhsm_proxy_hostname,
+            port=rhsm_proxy_port,
+        )
+        logger.debug("Using RHSM proxy '{scheme}://{credentials}{hostname}:{port}'.".format(
+            scheme=rhsm_proxy_scheme,
+            credentials=obfuscated_proxy_credentials,
+            hostname=rhsm_proxy_hostname,
+            port=rhsm_proxy_port,
+        ))
+
+    rhsm_no_proxy = rhsm_config.get('server', 'no_proxy').strip()  # type: str | None
+    if rhsm_no_proxy.lower() == 'none' or rhsm_no_proxy == '':
+        rhsm_no_proxy = None
+
+    return ProxyConfig(proxy, rhsm_no_proxy)
+
+
+APIConfig = collections.namedtuple("APIConfig", ["url", "cert_verify", "deployment_type"])
+
+
+def _read_rhsm_settings(rhsm_config, rhel_version):
+    # type: ("rhsm.config.RhsmConfigParser", int) -> APIConfig
+    """Interpret RHSM configuration to figure out where are Insights."""
+
+    rhsm_hostname = rhsm_config.get('server', 'hostname')  # type: str
+    rhsm_port = rhsm_config.get('server', 'port')  # type: str
+    logger.debug("RHSM is configured for '{}:{}'.".format(rhsm_hostname, rhsm_port))
+
+    if _is_console_dot(rhsm_hostname):
+        logger.debug("RHSM is pointed at ConsoleDot.")
+        if rhel_version >= 10:
+            # This is the default ConsoleDot API URL these days.
+            api_url = constants.consoledot_fqdn + "/api"
         else:
-            config.base_url = hostname + '/r/insights'
-        logger.debug('Auto-configured base_url: %s', config.base_url)
-        logger.debug('Not connected to Satellite, skipping branch_info')
-        # direct connection to RHSM, skip verify_connectivity
+            # The non-legacy API has historically been CloudDot, let's keep it that way.
+            api_url = constants.clouddot_fqdn + "/api"
+        deployment_type = DeploymentType.PRODUCTION
+    elif _is_staging_console_dot(rhsm_hostname):
+        logger.debug('RHSM is pointed at staging ConsoleDot.')
+        api_url = constants.consoledot_fqdn_stage + "/api"
+        deployment_type = DeploymentType.STAGE
+    else:
+        # Satellite, Capsule or other deployment at customer site
+        logger.debug("RHSM is pointed at Satellite.")
+        api_url = "{}:{}/redhat_access/r/insights".format(rhsm_hostname, rhsm_port)
+        deployment_type = DeploymentType.SATELLITE
+
+    return APIConfig(
+        url=api_url,
+        cert_verify=True,
+        deployment_type=deployment_type,
+    )
+
+
+def _should_use_legacy_api(client_config, rhel_version):
+    """Should we use the legacy API?
+
+    Legacy API is at cert-api.access.redhat.com. The newer one is ConsoleDot
+    at cert.{cloud,console}.redhat.com. We cannot simply change the URLs we
+    talk to, the customer firewalls might not be configured to do so, and we
+    wouldn't be able to operate.
+
+    :type client_config: insights.client.config.InsightsConfig
+    :param rhel_version: Version-dependent behavior. Passing in 0 (e.g. because
+        the RHEL version couldn't be determined) keeps the legacy behavior.
+    :type rhel_version: int
+    :rtype: bool
+    """
+    if os.getenv("INSIGHTS_FORCE_ACCESSDOT_API", None) is not None:
+        logger.debug("Forcing legacy API through environment variable.")
+        return True
+
+    if client_config.legacy_upload is False:
+        logger.debug("Legacy API is explicitly disabled (reason: {}).".format(client_config._legacy_upload_reason))
+        return False
+
+    if rhel_version >= 10:
+        logger.debug("RHEL 10 doesn't support legacy API.")
+        return False
+
+    return True
+
+
+def autoconfigure_network(client_config):
+    """Autoconfigure to connect to Hosted or Satellite.
+
+    :type client_config: insights.client.config.InsightsConfig
+    :rtype: None
+    """
+    logger.debug("Detecting API URLs.")
+    if client_config.offline:
+        logger.debug("Autoconfiguration is not necessary in offline mode.")
+        return
+    if not rhsmCertificate.existsAndValid():
+        logger.debug("No reason to autoconfigure, host isn't registered with subscription-manager.")
+        return
+    if not client_config.auto_config:
+        logger.debug("Autoconfiguration is disabled, API URL is '{}'.".format(client_config.base_url))
         return
 
-    if not verify_connectivity(config):
-        logger.warn("Could not auto configure, falling back to static config")
-        logger.warn("See %s for additional information",
-                    constants.default_log_file)
-        config.base_url = saved_base_url
-        if proxy is not None:
-            if saved_proxy is not None and saved_proxy.lower() == 'none':
-                saved_proxy = None
-            config.proxy = saved_proxy
-        if ca_cert is not None:
-            config.cert_verify = saved_cert_verify
-
-
-def _importInitConfig():
-    from rhsm.config import initConfig
-    return initConfig()
-
-
-def _try_satellite6_configuration(config):
-    """
-    Try to autoconfigure for Satellite 6
-    """
     try:
-        rhsm_config = _importInitConfig()
+        rhel_version = utilities.get_rhel_version()
+    except ValueError:
+        rhel_version = 0
 
-        logger.debug('Trying to autoconfigure...')
-        cert = open(rhsmCertificate.certpath(), 'r').read()
-        key = open(rhsmCertificate.keypath(), 'r').read()
-        rhsm = rhsmCertificate(key, cert)
-        is_satellite = False
-        is_stage = False
+    rhsm_config = get_rhsm_config()  # type: "rhsm.config.RhsmConfigParser"
+    try:
+        exc = rhsm_config.get("server", "_exception")
+        # We cannot log this fact at import time, logging isn't initialized yet.
+        logger.debug(
+            "The 'rhsm.config' module isn't available. "
+            "Using in-memory version of '/etc/rhsm/rhsm.conf' instead. ({})".format(exc)
+        )
+    except Exception:
+        pass
+    api_config = _read_rhsm_settings(rhsm_config, rhel_version)  # type: APIConfig
+    proxy_config = _read_rhsm_proxy_settings(rhsm_config)  # type: ProxyConfig
 
-        # This will throw an exception if we are not registered
-        logger.debug('Checking if system is subscription-manager registered')
-        rhsm.getConsumerId()
-        logger.debug('System is subscription-manager registered')
+    if api_config.deployment_type == DeploymentType.PRODUCTION and _should_use_legacy_api(client_config, rhel_version):
+        api_config = APIConfig(
+            url="cert-api.access.redhat.com/r/insights",
+            cert_verify=None,  # the connection.py treats None as 'use dedicated certificate'
+            deployment_type=DeploymentType.PRODUCTION_LEGACY,
+        )
 
-        rhsm_hostname = rhsm_config.get('server', 'hostname')
-        rhsm_hostport = rhsm_config.get('server', 'port')
-        rhsm_proxy_hostname = rhsm_config.get('server', 'proxy_hostname').strip()
-        rhsm_proxy_port = rhsm_config.get('server', 'proxy_port').strip()
-        rhsm_proxy_user = rhsm_config.get('server', 'proxy_user').strip()
-        rhsm_proxy_pass = rhsm_config.get('server', 'proxy_password').strip()
-        rhsm_no_proxy = rhsm_config.get('server', 'no_proxy').strip()
-        if rhsm_no_proxy.lower() == 'none' or rhsm_no_proxy == '':
-            rhsm_no_proxy = None
+    logger.debug("Parsed RHSM configuration: deployment={deployment}, authorization={authn}.".format(
+        deployment=api_config.deployment_type,
+        authn="legacy certificate" if api_config.cert_verify is None else str(api_config.cert_verify),
+    ))
 
-        proxy = None
+    apply_network_configuration(
+        client_config,
+        api_config,
+        proxy_config,
+    )
 
-        if rhsm_proxy_hostname != "":
-            logger.debug("Found rhsm_proxy_hostname %s", rhsm_proxy_hostname)
-            proxy = "http://"
-            if rhsm_proxy_user != "" and rhsm_proxy_pass != "":
-                logger.debug("Found user and password for rhsm_proxy")
-                proxy = proxy + rhsm_proxy_user + ":" + rhsm_proxy_pass + "@"
-            proxy = proxy + rhsm_proxy_hostname + ':' + rhsm_proxy_port
-            logger.debug("RHSM Proxy: %s", proxy)
-        logger.debug("Found %sHost: %s, Port: %s",
-                     ('' if _is_rhn_or_rhsm(rhsm_hostname) or
-                         _is_staging_rhsm(rhsm_hostname)
-                         else 'Satellite 6 Server '),
-                     rhsm_hostname, rhsm_hostport)
-        rhsm_ca = rhsm_config.get('rhsm', 'repo_ca_cert')
-        logger.debug("Found CA: %s", rhsm_ca)
-        logger.debug("Setting authmethod to CERT")
-        config.authmethod = 'CERT'
-
-        # Directly connected to Red Hat, use cert auth directly with the api
-        if _is_rhn_or_rhsm(rhsm_hostname):
-            # URL changes. my favorite
-            logger.debug("Connected to Red Hat Directly, using cert-api")
-            rhsm_hostname = 'cert-api.access.redhat.com'
-            rhsm_ca = None
-        elif _is_staging_rhsm(rhsm_hostname):
-            logger.debug('Connected to staging RHSM, using cert.cloud.stage.redhat.com')
-            rhsm_hostname = 'cert.cloud.stage.redhat.com'
-            # never use legacy upload for staging
-            config.legacy_upload = False
-            config.cert_verify = True
-            is_stage = True
-            rhsm_ca = None
-        else:
-            # Set the host path
-            # 'rhsm_hostname' should really be named ~ 'rhsm_host_base_url'
-            rhsm_hostname = rhsm_hostname + ':' + rhsm_hostport + '/redhat_access'
-            is_satellite = True
-
-        logger.debug("Trying to set auto_configuration")
-        set_auto_configuration(config, rhsm_hostname, rhsm_ca, proxy, is_satellite, is_stage, rhsm_no_proxy=rhsm_no_proxy)
-        return True
-    except Exception as e:
-        logger.debug(e)
-        logger.debug('System is NOT subscription-manager registered')
-        return False
+    logger.debug("API URL is '{}'.".format(client_config.base_url))
 
 
-def try_auto_configuration(config):
+def apply_network_configuration(client_config, api_config, proxy_config):
+    """Update configuration based on discovered data.
+
+    :type client_config: insights.client.config.InsightsConfig
+    :type api_config: APIConfig
+    :type proxy_config: ProxyConfig
     """
-    Try to auto-configure if we are attached to a sat6
-    """
-    if config.auto_config and not config.offline:
-        _try_satellite6_configuration(config)
-    if not config.legacy_upload and re.match(r'(.+)?\/r\/insights', config.base_url):
-        # When to append /platform
-        #   base url ~= console.redhat.com/r/insights
-        #   base url ~= cert-api.access.redhat.com/r/insights
-        #   base url ~= satellite.host.example.com/redhat_access/r/insights
-        # When not to append /platform
-        #   base url ~= console.redhat.com/api
-        config.base_url = config.base_url + '/platform'
-    logger.debug('Updated base_url: %s', config.base_url)
+    client_config.base_url = api_config.url
+    # This won't be necessary when CERT becomes the default in config.py
+    client_config.authmethod = "CERT"
+
+    client_config.legacy_upload = api_config.deployment_type == DeploymentType.PRODUCTION_LEGACY
+
+    if api_config.cert_verify is not None:
+        client_config.cert_verify = api_config.cert_verify
+
+    if proxy_config.proxy is not None:
+        client_config.proxy = proxy_config.proxy
+    if proxy_config.no_proxy is not None:
+        client_config.no_proxy = proxy_config.no_proxy
