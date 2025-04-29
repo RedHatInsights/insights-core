@@ -6,7 +6,6 @@ from insights.client.connection import InsightsConnection
 from mock.mock import Mock
 from mock.mock import patch
 from pytest import mark
-from sys import argv
 
 
 @patch("insights.client.connection.InsightsConnection._init_session")
@@ -28,8 +27,9 @@ def test_inventory_url_from_base_url(get_proxies, init_session):
 @patch("insights.client.auto_config.rhsmCertificate.existsAndValid", return_value=True)
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-@patch('insights.client.config.sys.argv', [argv[0]])
+@patch('insights.client.config.argparse.ArgumentParser.parse_args')
 def test_inventory_url_from_phase(
+    _parse_args,
     _get_proxies,
     _init_session,
     _rhsm_is_registered,
