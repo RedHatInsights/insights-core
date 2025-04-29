@@ -52,6 +52,9 @@ class InsightsConstants(object):
     default_sed_file = os.path.join(default_conf_dir, '.exp.sed')
     base_url = 'cert-api.access.redhat.com/r/insights/platform'
     legacy_base_url = 'cert-api.access.redhat.com/r/insights'
+    clouddot_fqdn = "cert.cloud.redhat.com"
+    consoledot_fqdn = "cert.console.redhat.com"
+    consoledot_fqdn_stage = "cert.console.stage.redhat.com"
     unregistered_files = [os.path.join(default_conf_dir, '.unregistered'),
                           os.path.join(simple_find_replace_dir, '.unregistered')]
     registered_files = [os.path.join(default_conf_dir, '.registered'),
