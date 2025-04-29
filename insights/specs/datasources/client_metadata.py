@@ -93,8 +93,7 @@ def blacklist_report(broker):
     client_config = broker.get('client_config')
 
     ret = dict(
-        obfuscate=False,
-        obfuscate_hostname=False,
+        obfuscation_list=[],
         commands=0,
         files=0,
         components=0,
@@ -104,10 +103,7 @@ def blacklist_report(broker):
         using_patterns_regex=False,
     )
     if client_config:
-        ret.update(
-            obfuscate=client_config.obfuscate,
-            obfuscate_hostname=client_config.obfuscate_hostname,
-        )
+        ret.update(obfuscation_list=client_config.obfuscation_list)
     if redact_config:
         ret.update(
             commands=length(redact_config.get('commands', [])),

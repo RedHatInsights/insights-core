@@ -1,6 +1,7 @@
 """
 Handle adding files and preparing the archive for upload
 """
+
 from __future__ import absolute_import
 
 import atexit
@@ -35,6 +36,7 @@ class InsightsArchive(object):
         compressor      - tar compression flag to use
         tar_file        - path of the final archive file
     """
+
     def __init__(self, config):
         """
         Initialize the Insights Archive
@@ -45,19 +47,22 @@ class InsightsArchive(object):
 
         # Create a random temp directory
         # input this to core collector as `tmp_path`
-        self.tmp_dir = tempfile.mkdtemp(dir=constants.insights_tmp_path, prefix=constants.insights_tmp_prefix + '-')
+        self.tmp_dir = tempfile.mkdtemp(
+            dir=constants.insights_tmp_path, prefix=constants.insights_tmp_prefix + '-'
+        )
 
         # We should not hint the hostname in the archive if it has to be obfuscated
-        if config.obfuscate_hostname:
+        obfuscated = config.obfuscation_list or []
+        if 'hostname' in obfuscated:
             # insights-YYYYmmddHHMMSS-dddddd
-            self.archive_name = ("insights-{0}-{1}".format(
-                                    time.strftime("%Y%m%d%H%M%S"),
-                                    uuid.uuid4().hex[:6]))
+            self.archive_name = "insights-{0}-{1}".format(
+                time.strftime("%Y%m%d%H%M%S"), uuid.uuid4().hex[:6]
+            )
         else:
             # insights-hostname-YYYYmmddHHMMSS
-            self.archive_name = ("insights-{0}-{1}".format(
-                                    determine_hostname(),
-                                    time.strftime("%Y%m%d%H%M%S")))
+            self.archive_name = "insights-{0}-{1}".format(
+                determine_hostname(), time.strftime("%Y%m%d%H%M%S")
+            )
 
         # lazy create these, only if needed when certain
         #   functions are called
@@ -139,12 +144,7 @@ class InsightsArchive(object):
         return path
 
     def get_compression_flag(self, compressor):
-        return {
-            "gz": "z",
-            "xz": "J",
-            "bz2": "j",
-            "none": ""
-        }.get(compressor, "z")
+        return {"gz": "z", "xz": "J", "bz2": "j", "none": ""}.get(compressor, "z")
 
     def create_tar_file(self):
         """
@@ -159,12 +159,18 @@ class InsightsArchive(object):
         logger.debug("Tar File: " + tar_file_name)
         # change cwd to compress the archive directory inside the temporary directory
         # with the correct structure
-        return_code = subprocess.call(shlex.split("tar c%sfS %s %s" % (
-            self.get_compression_flag(self.compressor),
-            tar_file_name, self.archive_name)),
-            stderr=subprocess.PIPE, cwd=self.tmp_dir)
-        if (self.compressor in ["bz2", "xz"] and return_code != 0):
-            logger.error("ERROR: %s compressor is not installed, cannot compress file", self.compressor)
+        return_code = subprocess.call(
+            shlex.split(
+                "tar c%sfS %s %s"
+                % (self.get_compression_flag(self.compressor), tar_file_name, self.archive_name)
+            ),
+            stderr=subprocess.PIPE,
+            cwd=self.tmp_dir,
+        )
+        if self.compressor in ["bz2", "xz"] and return_code != 0:
+            logger.error(
+                "ERROR: %s compressor is not installed, cannot compress file", self.compressor
+            )
             return None
         self.delete_archive_dir()
         logger.debug("Tar File Size: %s", str(os.path.getsize(tar_file_name)))
@@ -219,13 +225,17 @@ class InsightsArchive(object):
         try:
             one_day_ago = time.time() - 24 * 60 * 60
             # list insights-client temporary directories
-            directories = [os.path.join(constants.insights_tmp_path, directory)
-                           for directory in os.listdir(constants.insights_tmp_path)
-                           if directory.startswith(constants.insights_tmp_prefix)]
+            directories = [
+                os.path.join(constants.insights_tmp_path, directory)
+                for directory in os.listdir(constants.insights_tmp_path)
+                if directory.startswith(constants.insights_tmp_prefix)
+            ]
             # filter only those last modified more than 24 hours ago
-            directories = [directory
-                           for directory in directories
-                           if os.path.isdir(directory) and os.path.getmtime(directory) <= one_day_ago]
+            directories = [
+                directory
+                for directory in directories
+                if os.path.isdir(directory) and os.path.getmtime(directory) <= one_day_ago
+            ]
             # remove the directories
             for directory in directories:
                 logger.debug("Deleting previous archive %s", directory)
