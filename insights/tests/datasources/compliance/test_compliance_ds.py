@@ -108,7 +108,7 @@ def test_package_check():
     proxy=None,
     compressor='gz',
     compliance=True,
-    obfuscate=False,
+    obfuscation_list=[],
 )
 def test_compliance_ds(config, policies, dt_file, run_scan, ntmpf):
     content = """
@@ -170,7 +170,7 @@ def test_compliance_ds(config, policies, dt_file, run_scan, ntmpf):
     proxy=None,
     compressor='gz',
     compliance=True,
-    obfuscate=True,
+    obfuscation_list=['ipv4', 'ipv6'],
 )
 def test_compliance_ds_with_obfuscation(config, policies, dt_file, run_scan, ntmpf):
     content = """
@@ -262,8 +262,7 @@ def test_compliance_ds_with_obfuscation(config, policies, dt_file, run_scan, ntm
     proxy=None,
     compressor='gz',
     compliance=True,
-    obfuscate=True,
-    obfuscate_hostname=True,
+    obfuscation_list=['ipv4', 'ipv6', 'hostname'],
 )
 def test_compliance_ds_with_hostname_obfuscation(config, policies, dt_file, run_scan, ntmpf):
     content = """
