@@ -30,13 +30,17 @@ LSlaRZ - command ``ls -lanRZ <dirs>``
 
 LSlaZ - command ``ls -lanZ <dirs>``
 -----------------------------------
+
+LSlHFiles - spec ``ls_files`` -  command ``ls -lH  <files>``
+------------------------------------------------------------
 """
 
 from insights.core import ls_parser, CommandParser
+from insights.core.exceptions import SkipComponent
 from insights.core.filters import add_filter
+from insights.core.ls_parser import FilePermissions
 from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.util.file_permissions import FilePermissions
 
 # Required basic filters for `LS` specs that the content needs to be filtered
 add_filter(Specs.ls_la_filtered, ['total '])
@@ -77,7 +81,7 @@ class FileListing(CommandParser, dict):
         - the name, and link destination if it's a symlink
 
     .. note::
-        The :class:`FileListing` Parser parses the content collected by
+        The :class:`FileListing` parses the content collected by
         diffirent ``ls_*`` specs. The ``ls_*`` specs collect the corresponding
         ``ls`` command output according to the filters defined by the relevant
         ``ls_*_dirs`` specs.  For the ``ls_*_dirs`` specs, only absolute
@@ -107,7 +111,7 @@ class FileListing(CommandParser, dict):
         >>> from insights.specs import Specs
         >>> add_filter(Specs.ls_lan_dirs, ['/boot', '/etc/sysconfig'])
         >>> type(ls_lan)
-        <class 'insights.parsers.ls.FileListing'>
+        <class 'insights.parsers.ls.LSlan'>
         >>> "/etc" in ls_lan
         False
         >>> "/etc/sysconfig" in ls_lan
@@ -399,3 +403,37 @@ class LSlaZ(FileListing):
     """
 
     pass
+
+
+@parser(Specs.ls_files)
+class LSlHFiles(CommandParser, dict):
+    """
+    Parses file information of ``ls -lH`` command.
+
+    .. note::
+
+        To parse a specific file, its full path should be added to the
+        `ls_lH_files` spec via `add_filter`.
+        Only paths point to files are acceptable.
+
+    Examples:
+        >>> from insights.core.filters import add_filter
+        >>> from insights.specs import Specs
+        >>> add_filter(Specs.ls_lH_files, ['/etc/redhat-release', '/var/log/messages'])
+        >>> type(ls_files)
+        <class 'insights.parsers.ls.LSlHFiles'>
+        >>> "/etc/redhat-release" in ls_files
+        True
+        >>> ls_files["/etc/redhat-release"].all_zero()
+        False
+    """
+
+    def parse_content(self, content):
+        for line in content:
+            try:
+                line = line.strip()
+                self[line.rsplit(None, 1)[-1]] = FilePermissions(line)
+            except Exception:
+                pass
+        if not self:
+            raise SkipComponent
