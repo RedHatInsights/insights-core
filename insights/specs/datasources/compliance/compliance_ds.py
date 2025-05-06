@@ -164,16 +164,18 @@ def compliance(broker):
                 tailoring_file_path=tailoring_file,
             )
             # TODO: align with core collection
-            if insights_config.obfuscate:
+            obfuscation_list = insights_config.obfuscation_list
+            if obfuscation_list:
                 tree = ET.parse(results_file.name)
                 # Retrieve the list of xpaths that need to be obfuscated
                 xpaths = yaml.load(
                     pkgutil.get_data('insights', 'compliance_obfuscations.yaml'),
                     Loader=yaml.SafeLoader,
                 )
-                # Obfuscate IP addresses in the XCCDF report
-                compliance.obfuscate(tree, xpaths['obfuscate'])
-                if insights_config.obfuscate_hostname:
+                if 'ipv4' in obfuscation_list or 'ipv6' in obfuscation_list:
+                    # Obfuscate IP addresses in the XCCDF report
+                    compliance.obfuscate(tree, xpaths['obfuscate_ip'])
+                if 'hostname' in obfuscation_list:
                     # Obfuscate the hostname in the XCCDF report
                     compliance.obfuscate(tree, xpaths['obfuscate_hostname'])
                 # Overwrite the results file with the obfuscations

@@ -1438,6 +1438,10 @@ class LazyLogFileOutput(LogFileOutput):
         [{'raw_line': 'Text file line three, and more'}]
     """
 
+    def __init__(self, *args, **kwargs):
+        deprecated(LazyLogFileOutput, "Use LogFileOutput instead.", "3.7.0")
+        super(LazyLogFileOutput, self).__init__(*args, **kwargs)
+
     def _handle_content(self, context):
         self._lines = None
         self._context = context

@@ -270,11 +270,13 @@ class DefaultSpecs(Specs):
     dnf_module_list = simple_command(
         "/usr/bin/dnf -C --noplugins module list", signum=signal.SIGTERM
     )  # used by puptoo
-    docker_info = simple_command("/usr/bin/docker info")
-    docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
-    docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
-    docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
-    docker_sysconfig = simple_file("/etc/sysconfig/docker")
+    docker_info = simple_command("/usr/bin/docker info")  # v3.7.0
+    docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")  # v3.7.0
+    docker_list_images = simple_command(
+        "/usr/bin/docker images --all --no-trunc --digests"
+    )  # v3.7.0
+    docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")  # v3.7.0
+    docker_sysconfig = simple_file("/etc/sysconfig/docker")  # v3.7.0
     dotnet_version = simple_command("/usr/bin/dotnet --version")
     doveconf = simple_command("/usr/bin/doveconf")
     dracut_kdump_capture_service = simple_file(
@@ -485,6 +487,7 @@ class DefaultSpecs(Specs):
     ls_laRZ = command_with_args('/bin/ls -laRZ %s', ls.list_with_laRZ, keep_rc=True)
     ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, keep_rc=True)
     ls_dev = simple_command("/bin/ls -lanR /dev")  # T.B.D
+    ls_files = command_with_args('/bin/ls -lH %s', ls.list_files_with_lH, keep_rc=True)
     lsattr = command_with_args("/bin/lsattr %s", lsattr.paths_to_lsattr)
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command(
@@ -903,7 +906,7 @@ class DefaultSpecs(Specs):
     systemctl_show_target = simple_command("/bin/systemctl show *.target")
     systemctl_status_all = simple_command("/bin/systemctl status --all")  # used by puptoo
     systemd_analyze_blame = simple_command("/bin/systemd-analyze blame")
-    systemd_docker = simple_command("/usr/bin/systemctl cat docker.service")
+    systemd_docker = simple_command("/usr/bin/systemctl cat docker.service")  # v3.7.0
     systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
     systemd_openshift_node = simple_command("/usr/bin/systemctl cat atomic-openshift-node.service")
     systemd_system_conf = simple_file("/etc/systemd/system.conf")
