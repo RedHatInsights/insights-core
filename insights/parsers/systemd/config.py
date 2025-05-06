@@ -34,6 +34,7 @@ from insights.core.plugins import parser
 from insights.parsr import iniparser
 from insights.specs import Specs
 from insights import CommandParser
+from insights.util import deprecated
 
 
 class SystemdConf(CommandParser, LegacyItemAccess, ConfigParser):
@@ -41,6 +42,7 @@ class SystemdConf(CommandParser, LegacyItemAccess, ConfigParser):
     Base class for parsing systemd INI like configuration files
 
     """
+
     def parse_doc(self, content):
         return iniparser.parse_doc("\n".join(content), self)
 
@@ -88,6 +90,11 @@ class SystemdDocker(SystemdConf):
         >>> len(docker_service["Service"]["EnvironmentFile"])
         3
     """
+
+    def __init__(self, *args, **kwargs):
+        deprecated(SystemdDocker, "This Parser is deprecated", "3.7.0")
+        super(SystemdDocker, self).__init__(*args, **kwargs)
+
     pass
 
 
@@ -107,6 +114,7 @@ class SystemdSystemConf(SystemdConf):
         >>> system_conf["Manager"]["RuntimeWatchdogSec"]
         '0'
     """
+
     pass
 
 
@@ -127,6 +135,7 @@ class SystemdOriginAccounting(SystemdConf):
         >>> system_origin_accounting["Manager"]["DefaultCPUAccounting"]
         'True'
     """
+
     pass
 
 
@@ -151,6 +160,7 @@ class SystemdOpenshiftNode(SystemdConf):
         >>> len(openshift_node_service["Service"]["ExecStartPost"])
         2
     """
+
     pass
 
 
@@ -174,6 +184,7 @@ class SystemdLogindConf(SystemdConf):
         >>> logind_conf.get("Login").get("RemoveIPC")  # 'no' turns to 'False'
         'False'
     """
+
     pass
 
 
@@ -207,6 +218,7 @@ class SystemdRpcbindSocketConf(SystemdConf):
         >>> rpcbind_socket["Socket"]["ListenStream"]
         ['/run/rpcbind.sock', '0.0.0.0:111', '[::]:111']
     """
+
     pass
 
 
@@ -231,4 +243,5 @@ class SystemdDnsmasqServiceConf(SystemdConf):
         >>> dnsmasq_service["Unit"]["After"]
         'network.target'
     """
+
     pass
