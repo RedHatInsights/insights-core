@@ -6,27 +6,19 @@ Named-checkconf is a syntax checking tool for named configuration file.
 Named is a name server used by BIND.
 """
 
-import re
-
 from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
-# regex for matching 'dnssec-enable no'
-DNSSEC_DISABLED = re.compile(r'dnssec-enable\s+no;')
-# regex for matching 'disable-algorithms' section
-DISABLE_ALGORITHMS = re.compile(r'disable-algorithms[^}]*};')
-# regex for matching 'disable-ds-digests' section
-DISABLE_DS_DIGESTS = re.compile(r'disable-ds-digests[^}]*};')
-# regex for matching values in single or double quotation marks
-INNER_VALLUES = re.compile(r'(?:\"|\')(.*)(?:\"|\')')
+OPTIONS_ONE_LINE_NAMES = ['max-cache-size', 'cleaning-interval', 'dnssec-enable']
+OPTIONS_MUL_LINES_NAMES = ['disable-algorithms', 'disable-ds-digests']
 
 
 @parser(Specs.named_checkconf_p)
 class NamedCheckconf(CommandParser):
     """
-    Class for parsing the ``named-checkconf -p`` command.
+    Class for parsing the ``named-checkconf -p`` command. But the output is filtered.
 
     Attributes:
         is_dnssec_disabled (bool): True, if dnssec is not enabled, False otherwise.
@@ -35,6 +27,9 @@ class NamedCheckconf(CommandParser):
                                    the value is a list of all algorithms associated with it.
         disable_ds_digests (dict): Dictionary where the key is a domain and
                                    the value is a list of all digests associated with it.
+        options (dict): A dictionary contains all the options. The key is the option name, the value is
+                                   the value but removed quote and semi-colon. However if the value of
+                                   the option spans multiple lines, the value is a list.
 
     Raises:
         SkipComponent: When content is empty or cannot be parsed.
@@ -136,51 +131,49 @@ class NamedCheckconf(CommandParser):
     Examples:
         >>> type(named_checkconf)
         <class 'insights.parsers.named_checkconf.NamedCheckconf'>
-        >>> named_checkconf.is_dnssec_disabled
-        False
-        >>> named_checkconf.dnssec_line is None
-        True
-        >>> named_checkconf.disable_algorithms
+        >>> named_checkconf.options['disable-algorithms']
         {'.': ['RSAMD5', 'DSA']}
-        >>> named_checkconf.disable_ds_digests
+        >>> named_checkconf.options['disable-ds-digests']
         {'.': ['GOST']}
+        >>> named_checkconf.options['dnssec-enable']
+        'yes'
     """
 
     def __init__(self, context):
         self.is_dnssec_disabled = False  # dnssec is enabled by default
         self.dnssec_line = None
-        self.disable_algorithms = {}
-        self.disable_ds_digests = {}
+        self.options = {}
         super(NamedCheckconf, self).__init__(context)
 
     def parse_content(self, content):
         if not content:
             raise SkipComponent('No content.')
 
-        full_result = '\n'.join(content)
+        option_values = None
+        for line in content:
+            if not line.strip():
+                continue
+            items = line.strip().split()
+            if items[0] in OPTIONS_ONE_LINE_NAMES:
+                value = ' '.join(items[1:]).strip('\'";')
+                self.options[items[0]] = value
+                # to be compatible with previous code
+                # it will be deleted later when there is no reference with it
+                # plese use self.options to get data now.
+                if items[0] == 'dnssec-enable' and value == 'no':
+                    self.is_dnssec_disabled = True
+                    self.dnssec_line = line.strip()
+            elif items[0] in OPTIONS_MUL_LINES_NAMES:
+                name_value = ' '.join(items[1:]).strip('\'"{ ')
+                self.options[items[0]] = {name_value: []}
+                option_values = self.options[items[0]][name_value]
+            elif option_values is not None and line.strip() != '};':
+                option_values.append(line.strip('\'"; '))
+            elif option_values is not None and line.strip() == '};':
+                option_values = None
 
-        match_dnssec = DNSSEC_DISABLED.search(full_result)
-        if match_dnssec:
-            self.is_dnssec_disabled = True
-            self.dnssec_line = match_dnssec.group(0)
-
-        self.disable_algorithms = self.retrieve_disabled(DISABLE_ALGORITHMS, full_result)
-        self.disable_ds_digests = self.retrieve_disabled(DISABLE_DS_DIGESTS, full_result)
-
-    def retrieve_disabled(self, section_regex, source):
-        """
-        Parses 'disable-algorithms' or 'disable_ds_digests' section into a dictionary,
-        where the key is a domain and the value is a list of all algorithms/digests associated with it.
-
-        Attributes:
-            section_regex (string): The regular expression for a given section.
-            source (string): The source in which a given section is searched for.
-        """
-        dict_of_sections = dict()
-        for match_entry in section_regex.finditer(source):
-            entry = match_entry.group(0)
-            # collects all values in quotation marks for given section
-            entry_values = [match_value.group(1) for match_value in INNER_VALLUES.finditer(entry)]
-            dict_of_sections[entry_values[0]] = entry_values[1:]
-
-        return dict_of_sections
+        # to be compatible with previous code
+        # it will be deleted later when there is no reference with it
+        # plese use self.options to get data now.
+        self.disable_algorithms = self.options['disable-algorithms'] if 'disable-algorithms' in self.options else {}
+        self.disable_ds_digests = self.options['disable-ds-digests'] if 'disable-ds-digests' in self.options else {}
