@@ -98,6 +98,14 @@ def list_with_laZ(broker):
 
 
 @datasource(HostContext)
+def list_files_with_lH(broker):
+    files = set(_f for _f in _list_items(Specs.ls_lH_files) if not os.path.isdir(_f))
+    if files:
+        return ' '.join(sorted(files))
+    raise SkipComponent
+
+
+@datasource(HostContext)
 def files_dirs_number(broker):
     """Return a dict of file numbers from the spec filter"""
     result = {}

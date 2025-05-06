@@ -403,6 +403,7 @@ class Specs(SpecSet):
     lpstat_protocol_printers = RegistryPoint()
     lpstat_queued_jobs_count = RegistryPoint()
     # New `ls` Specs
+    ls_files = RegistryPoint()
     ls_la = RegistryPoint()
     ls_la_dirs = RegistryPoint(filterable=True)
     ls_la_filtered = RegistryPoint(filterable=True)
@@ -421,6 +422,7 @@ class Specs(SpecSet):
     ls_laRZ_dirs = RegistryPoint(filterable=True)
     ls_laZ = RegistryPoint()
     ls_laZ_dirs = RegistryPoint(filterable=True)
+    ls_lH_files = RegistryPoint(filterable=True)
     # Useful individual `ls` Specs
     ls_boot = RegistryPoint()
     ls_dev = RegistryPoint()
@@ -766,7 +768,9 @@ class Specs(SpecSet):
         filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
     smartctl = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    smartctl_health = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    smartctl_health = RegistryPoint(
+        multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
+    )
     smartpdc_settings = RegistryPoint(filterable=True)
     smbstatus_S = RegistryPoint()
     smbstatus_p = RegistryPoint()
