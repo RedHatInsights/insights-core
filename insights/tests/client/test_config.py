@@ -1,16 +1,14 @@
 import pytest
-import sys
 import os
 from io import TextIOWrapper, BytesIO
 from insights.client.config import InsightsConfig, DEFAULT_OPTS
-from mock.mock import patch
+from mock.mock import patch, Mock
 from pytest import mark
 
 
 @patch('insights.client.config.ConfigParser.open')
 def test_config_load(open_):
-    open_.return_value = TextIOWrapper(
-        BytesIO(b'[insights-client]\nusername=AMURO'))
+    open_.return_value = TextIOWrapper(BytesIO(b'[insights-client]\nusername=AMURO'))
     c = InsightsConfig()
     c._load_config_file()
     assert c.username == 'AMURO'
@@ -18,8 +16,7 @@ def test_config_load(open_):
 
 @patch('insights.client.config.ConfigParser.open')
 def test_config_load_legacy(open_):
-    open_.return_value = TextIOWrapper(
-        BytesIO(b'[redhat-access-insights]\nusername=BRIGHT'))
+    open_.return_value = TextIOWrapper(BytesIO(b'[redhat-access-insights]\nusername=BRIGHT'))
     c = InsightsConfig()
     c._load_config_file()
     assert c.username == 'BRIGHT'
@@ -28,8 +25,8 @@ def test_config_load_legacy(open_):
 @patch('insights.client.config.ConfigParser.open')
 def test_config_load_legacy_ignored(open_):
     open_.return_value = TextIOWrapper(
-        BytesIO(b'[insights-client]\nusername=CASVAL\n'
-                b'[redhat-access-insights]\nusername=SAYLA'))
+        BytesIO(b'[insights-client]\nusername=CASVAL\n' b'[redhat-access-insights]\nusername=SAYLA')
+    )
     c = InsightsConfig()
     c._load_config_file()
     assert c.username == 'CASVAL'
@@ -38,8 +35,7 @@ def test_config_load_legacy_ignored(open_):
 @patch('insights.client.config.ConfigParser.open')
 def test_config_load_section_error(open_):
     # defaults on incorrect conf
-    open_.return_value = TextIOWrapper(
-        BytesIO(b'aFUHAEFJhFhlAFJKhnfjeaf\nusername=RAMBA'))
+    open_.return_value = TextIOWrapper(BytesIO(b'aFUHAEFJhFhlAFJKhnfjeaf\nusername=RAMBA'))
     c = InsightsConfig()
     c._load_config_file()
     assert c.username == DEFAULT_OPTS['username']['default']
@@ -48,8 +44,7 @@ def test_config_load_section_error(open_):
 @patch('insights.client.config.ConfigParser.open')
 def test_config_load_value_error(open_):
     # defaults on incorrect conf
-    open_.return_value = TextIOWrapper(
-        BytesIO(b'[insights-client]\nhttp_timeout=ZGOK'))
+    open_.return_value = TextIOWrapper(BytesIO(b'[insights-client]\nhttp_timeout=ZGOK'))
     c = InsightsConfig()
     c._load_config_file()
     assert c.http_timeout == DEFAULT_OPTS['http_timeout']['default']
@@ -62,11 +57,10 @@ def test_defaults():
     assert isinstance(c.http_timeout, float)
 
 
-@patch('insights.client.config.os.environ', {
-        'INSIGHTS_HTTP_TIMEOUT': '1234',
-        'INSIGHTS_RETRIES': '1234',
-        'INSIGHTS_CMD_TIMEOUT': '1234'
-       })
+@patch(
+    'insights.client.config.os.environ',
+    {'INSIGHTS_HTTP_TIMEOUT': '1234', 'INSIGHTS_RETRIES': '1234', 'INSIGHTS_CMD_TIMEOUT': '1234'},
+)
 def test_env_number_parsing():
     c = InsightsConfig()
     c._load_env()
@@ -75,11 +69,14 @@ def test_env_number_parsing():
     assert isinstance(c.http_timeout, float)
 
 
-@patch('insights.client.config.os.environ', {
+@patch(
+    'insights.client.config.os.environ',
+    {
         'INSIGHTS_HTTP_TIMEOUT': 'STAY AWAY',
         'INSIGHTS_RETRIES': 'FROM ME',
-        'INSIGHTS_CMD_TIMEOUT': 'BICK HAZARD'
-     })
+        'INSIGHTS_CMD_TIMEOUT': 'BICK HAZARD',
+    },
+)
 def test_env_number_bad_values():
     c = InsightsConfig()
     with pytest.raises(ValueError):
@@ -88,55 +85,57 @@ def test_env_number_bad_values():
 
 @patch('insights.client.config.os.environ', {})
 def test_env_no_proxy_no_warning():
-    with patch('insights.client.config.sys.stdout.write') as write:
+    with patch('insights.client.config.logger') as logger:
         c = InsightsConfig(_print_errors=True)
         c._load_env()
-        write.assert_not_called()
+        logger.warning.assert_not_called()
 
 
 @patch('insights.client.config.os.environ', {'HTTP_PROXY': '127.0.0.1'})
 def test_env_http_proxy_warning():
-    with patch('insights.client.config.sys.stdout.write') as write:
+    with patch('insights.client.config.logger') as logger:
         c = InsightsConfig(_print_errors=True)
         c._load_env()
-        write.assert_called_once()
+        logger.warning.assert_called_once()
 
 
 @patch('insights.client.config.os.environ', {'HTTP_PROXY': '127.0.0.1'})
 @pytest.mark.parametrize(("kwargs",), (({},), ({"_print_errors": False},)))
 def test_env_http_proxy_no_warning(kwargs):
-    with patch('insights.client.config.sys.stdout.write') as write:
+    with patch('insights.client.config.logger') as logger:
         c = InsightsConfig(**kwargs)
         c._load_env()
-        write.assert_not_called()
+        logger.warning.assert_not_called()
 
 
 @patch('insights.client.config.os.environ', {'HTTP_PROXY': '127.0.0.1', 'HTTPS_PROXY': '127.0.0.1'})
 def test_env_http_and_https_proxy_no_warning():
-    with patch('insights.client.config.sys.stdout.write') as write:
+    with patch('insights.client.config.logger') as logger:
         c = InsightsConfig(_print_errors=True)
         c._load_env()
-        write.assert_not_called()
+        logger.warning.assert_not_called()
 
 
 @patch('insights.client.config.os.environ', {'HTTPS_PROXY': '127.0.0.1'})
 def test_env_https_proxy_no_warning():
-    with patch('insights.client.config.sys.stdout.write') as write:
+    with patch('insights.client.config.logger') as logger:
         c = InsightsConfig(_print_errors=True)
         c._load_env()
-        write.assert_not_called()
+        logger.warning.assert_not_called()
 
 
-# empty argv so parse_args isn't polluted with pytest arguments
-@mark.parametrize(("config",), (
-    ({"payload": "./payload.tar.gz", "content_type": "application/gzip"},),
-    ({"diagnosis": True},),
-    ({"compliance": True},),
-    ({"check_results": True},),
-    ({"checkin": True},),
-))
-@patch('insights.client.config.sys.argv', [sys.argv[0]])
-def test_implied_non_legacy_upload(config):
+@mark.parametrize(
+    ("config",),
+    (
+        ({"payload": "./payload.tar.gz", "content_type": "application/gzip"},),
+        ({"diagnosis": True},),
+        ({"compliance": True},),
+        ({"check_results": True},),
+        ({"checkin": True},),
+    ),
+)
+@patch('insights.client.config.argparse.ArgumentParser.parse_args')
+def test_implied_non_legacy_upload(_, config):
     '''
     Some arguments should always imply legacy_upload=False.
     '''
@@ -145,9 +144,8 @@ def test_implied_non_legacy_upload(config):
     assert c.legacy_upload is False
 
 
-# empty argv so parse_args isn't polluted with pytest arguments
-@patch('insights.client.config.sys.argv', [sys.argv[0]])
-def test_to_json_quiet_implies_diagnosis():
+@patch('insights.client.config.argparse.ArgumentParser.parse_args')
+def test_to_json_quiet_implies_diagnosis(_):
     '''
     --diagnosis should always imply legacy_upload=False
     '''
@@ -177,9 +175,8 @@ def test_offline_disables_options():
         InsightsConfig(unregister=True, offline=True)
 
 
-# empty argv so parse_args isn't polluted with pytest arguments
-@patch('insights.client.config.sys.argv', [sys.argv[0]])
-def test_output_dir_file_cant_use_both():
+@patch('insights.client.config.argparse.ArgumentParser.parse_args')
+def test_output_dir_file_cant_use_both(_):
     '''
     Cannot supply both --output-file and --output-dir
     '''
@@ -188,9 +185,8 @@ def test_output_dir_file_cant_use_both():
         c.load_all()
 
 
-# empty argv so parse_args isn't polluted with pytest arguments
-@patch('insights.client.config.sys.argv', [sys.argv[0]])
-def test_output_dir_file_validate():
+@patch('insights.client.config.argparse.ArgumentParser.parse_args')
+def test_output_dir_file_validate(_):
     '''
     Must supply non-empty strings for --output-dir or --output-file
     '''
@@ -202,9 +198,8 @@ def test_output_dir_file_validate():
         c.load_all()
 
 
-# empty argv so parse_args isn't polluted with pytest arguments
-@patch('insights.client.config.sys.argv', [sys.argv[0]])
-def test_output_dir_file_implies_no_upload_true_keep_archive_false():
+@patch('insights.client.config.argparse.ArgumentParser.parse_args')
+def test_output_dir_file_implies_no_upload_true_keep_archive_false(_):
     '''
     Using --output-dir or --tar-file should imply:
         no-upload    == True,  because we don't want to upload
@@ -220,9 +215,8 @@ def test_output_dir_file_implies_no_upload_true_keep_archive_false():
     assert not c.keep_archive
 
 
-# empty argv so parse_args isn't polluted with pytest arguments
-@patch('insights.client.config.sys.argv', [sys.argv[0]])
-def test_compressor_option_validate():
+@patch('insights.client.config.argparse.ArgumentParser.parse_args')
+def test_compressor_option_validate(_):
     '''
     Compressor options are validated in config.py
     (used to be in archive.py)
@@ -238,9 +232,8 @@ def test_compressor_option_validate():
     assert c.compressor == 'gz'
 
 
-# empty argv so parse_args isn't polluted with pytest arguments
-@patch('insights.client.config.sys.argv', [sys.argv[0]])
-def test_output_file_guess_file_ext():
+@patch('insights.client.config.argparse.ArgumentParser.parse_args')
+def test_output_file_guess_file_ext(_):
     '''
     If --output-file is selected, automatically guess
     the compressor option based on the file extension.
@@ -278,8 +271,8 @@ def test_output_file_guess_file_ext():
     assert c.compressor == 'none'
 
 
-@patch('insights.client.config.sys.argv', [sys.argv[0], "--status"])
-def test_command_line_parse_twice():
+@patch('insights.client.config.argparse.ArgumentParser.parse_args', return_value=Mock(status=True))
+def test_command_line_parse_twice(_):
     '''
     Verify that running _load_command_line() twice does not
     raise an argparse error.

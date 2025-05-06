@@ -84,21 +84,17 @@ class InsightsConnection(object):
         self.username = self.config.username
         self.password = self.config.password
 
-        # workaround while we support both legacy and plat APIs
         self.cert_verify = self.config.cert_verify
         if self.cert_verify is None:
-            # if self.config.legacy_upload:
-            self.cert_verify = os.path.join(
-                constants.default_conf_dir,
-                'cert-api.access.redhat.com.pem')
-            # else:
-            # self.cert_verify = True
+            self.cert_verify = os.path.join(constants.default_conf_dir, 'cert-api.access.redhat.com.pem')
+            logger.debug("Using packaged legacy API CA certificate.")
         else:
             if isinstance(self.cert_verify, six.string_types):
                 if self.cert_verify.lower() == 'false':
                     self.cert_verify = False
                 elif self.cert_verify.lower() == 'true':
                     self.cert_verify = True
+                logger.debug("Cert verification set to '{}'.".format(self.cert_verify))
 
         protocol = "https://"
 
@@ -467,8 +463,8 @@ class InsightsConnection(object):
             if req.status_code == 403 and self.auto_config:
                 # Insights disabled in satellite
                 rhsm_hostname = urlparse(self.base_url).hostname
-                if (rhsm_hostname != 'subscription.rhn.redhat.com' and
-                   rhsm_hostname != 'subscription.rhsm.redhat.com'):
+                if (rhsm_hostname != 'subscription.rhsm.redhat.com' and
+                   rhsm_hostname != 'subscription.rhsm.stage.redhat.com'):
                     logger.error('Please enable Insights on Satellite server '
                                  '%s to continue.', rhsm_hostname)
             if req.status_code == 404 or req.status_code == 409:

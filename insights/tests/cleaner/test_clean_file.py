@@ -49,7 +49,7 @@ def test_clean_file_obfuscate_disabled_by_no_obfuscate():
     test_file = os.path.join(arch.archive_dir, 'data', 'testfile.netstat_-neopa')
     with open(test_file, 'w') as t:
         t.write(line)
-    pp.clean_file(test_file, no_obfuscate=['ip'])
+    pp.clean_file(test_file, no_obfuscate=['ipv4'])
     # file is NOT changed
     with open(test_file, 'r') as t:
         assert line == ''.join(t.readlines())
