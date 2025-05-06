@@ -2,7 +2,7 @@
 import doctest
 
 from insights.parsers import ls as ls_module
-from insights.parsers.ls import FileListing
+from insights.parsers.ls import FileListing, LSlan, LSlHFiles
 from insights.tests import context_wrap
 
 SINGLE_DIRECTORY = """
@@ -131,6 +131,10 @@ FILE_LISTING_DOC = '''
         lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub
 '''
 
+LS_FILE_PERMISSIONS_DOC = '''
+-rw-r--r--. 1 root  root      46 Apr 24  2024 /etc/redhat-release
+-rw-r--r--. 1 liuxc wheel 664118 Feb 20 14:40 /var/log/messages
+'''
 # Note - should we test for anomalous but parseable entries?  E.g. block
 # devices without a major/minor number?  Or non-devices that have a comma in
 # the size?  Permissions that don't make sense?  Dates that don't make sense
@@ -434,6 +438,9 @@ def test_files_created_with_selinux_disabled():
 
 
 def test_doc_example():
-    env = {'ls_lan': FileListing(context_wrap(FILE_LISTING_DOC))}
+    env = {
+        'ls_lan': LSlan(context_wrap(FILE_LISTING_DOC)),
+        'ls_files': LSlHFiles(context_wrap(LS_FILE_PERMISSIONS_DOC)),
+    }
     failed, total = doctest.testmod(ls_module, globs=env)
     assert failed == 0

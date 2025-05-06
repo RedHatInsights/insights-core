@@ -2,11 +2,17 @@ import pytest
 
 from collections import defaultdict
 
+try:
+    from unittest.mock import patch
+except Exception:
+    from mock import patch
+
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.parsers.fstab import FSTab
 from insights.specs import Specs
 from insights.specs.datasources.ls import (
+    list_files_with_lH,
     list_with_la,
     list_with_la_filtered,
     list_with_lan,
@@ -53,6 +59,8 @@ def setup_function(func):
         filters.add_filter(Specs.ls_laZ_dirs, ["/", '/mnt'])
     if func is test_lan_with_fstab_mounted_filter:
         filters.add_filter(Specs.ls_lan_dirs, ["/", '/boot', 'fstab_mounted.dirs'])
+    if func is test_lH_files:
+        filters.add_filter(Specs.ls_lH_files, ["/etc/redhat-release", '/var/log/messages'])
 
 
 def teardown_function(func):
@@ -115,3 +123,9 @@ def test_lan_with_fstab_mounted_filter():
     broker = {FSTab: fstab}
     ret = list_with_lan(broker)
     assert ret == '/ /boot /hana/data'
+
+
+@patch("os.path.isdir", return_value=False)
+def test_lH_files(_):
+    ret = list_files_with_lH({})
+    assert ret == '/etc/redhat-release /var/log/messages'
