@@ -9,10 +9,13 @@ Named is a name server used by BIND.
 from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
+from insights.core.filters import add_filter
 from insights.specs import Specs
 
 OPTIONS_ONE_LINE_NAMES = ['max-cache-size', 'cleaning-interval', 'dnssec-enable']
 OPTIONS_MUL_LINES_NAMES = ['disable-algorithms', 'disable-ds-digests']
+
+add_filter(Specs.named_checkconf_p, '};')
 
 
 @parser(Specs.named_checkconf_p)
@@ -151,9 +154,10 @@ class NamedCheckconf(CommandParser):
 
         option_values = None
         for line in content:
-            if not line.strip():
+            line = line.strip()
+            if not line:
                 continue
-            items = line.strip().split()
+            items = line.split()
             if items[0] in OPTIONS_ONE_LINE_NAMES:
                 value = ' '.join(items[1:]).strip('\'";')
                 self.options[items[0]] = value
@@ -162,14 +166,14 @@ class NamedCheckconf(CommandParser):
                 # plese use self.options to get data now.
                 if items[0] == 'dnssec-enable' and value == 'no':
                     self.is_dnssec_disabled = True
-                    self.dnssec_line = line.strip()
+                    self.dnssec_line = line
             elif items[0] in OPTIONS_MUL_LINES_NAMES:
                 name_value = ' '.join(items[1:]).strip('\'"{ ')
                 self.options[items[0]] = {name_value: []}
                 option_values = self.options[items[0]][name_value]
-            elif option_values is not None and line.strip() != '};':
+            elif option_values is not None and line != '};':
                 option_values.append(line.strip('\'"; '))
-            elif option_values is not None and line.strip() == '};':
+            elif option_values is not None and line == '};':
                 option_values = None
 
         # to be compatible with previous code
