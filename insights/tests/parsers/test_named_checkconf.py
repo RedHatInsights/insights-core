@@ -72,6 +72,9 @@ options {
     allow-query {
         "localhost";
     };
+
+    max-cache-size 75M;
+    cleaning-interval 10;
 };
 """
 
@@ -202,6 +205,12 @@ def test_config_disabled_sections():
     assert disabled_sections.dnssec_line is None
     assert disabled_sections.disable_algorithms == {".": ["RSAMD5", "DSA"]}
     assert disabled_sections.disable_ds_digests == {".": ["GOST"]}
+
+
+def test_config_options():
+    conf = NamedCheckconf(context_wrap(CONFIG_DNSSEC_DEFAULT))
+    assert conf.options['max-cache-size'] == '75M'
+    assert conf.options['cleaning-interval'] == '10'
 
 
 def test_doc_examples():
