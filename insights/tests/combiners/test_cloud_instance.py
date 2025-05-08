@@ -8,13 +8,15 @@ from insights.core.exceptions import ContentException, SkipComponent
 from insights.parsers.aws_instance_id import AWSInstanceIdDoc
 from insights.parsers.azure_instance import AzureInstanceID, AzureInstanceType
 from insights.parsers.dmidecode import DMIDecode
+from insights.parsers.cloud_init import CloudInitQuery
 from insights.parsers.gcp_instance_type import GCPInstanceType
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.subscription_manager import SubscriptionManagerFacts
 from insights.tests import context_wrap
-from insights.tests.combiners.test_cloud_provider import RPMS_AWS, RPMS_GOOGLE, RPMS_AZURE
+from insights.tests.combiners.test_cloud_provider import RPMS_AWS, RPMS_GOOGLE
 from insights.tests.parsers.test_aws_instance_id import AWS_ID_DOC
 from insights.tests.parsers.test_azure_instance import AZURE_ID_1, AZURE_TYPE_2
+from insights.tests.parsers.test_cloud_init import CLOUD_INIT_QUERY_OUTPUT1 as CLOUD_QUERY_AZURE
 from insights.tests.parsers.test_gcp_instance_type import GOOGLE_TYPE_1
 from insights.tests.parsers.test_subscription_manager import FACTS_NORMAL_1
 
@@ -63,7 +65,7 @@ End Of Table
 def test_cloud_instance_google():
     rpms = InstalledRpms(context_wrap(RPMS_GOOGLE))
     _type = GCPInstanceType(context_wrap(GOOGLE_TYPE_1))
-    cp = CloudProvider(rpms, None, None, None)
+    cp = CloudProvider(rpms, None, None, None, None, None)
     facts = SubscriptionManagerFacts(context_wrap(GOOGLE_RHSM_FACTS))
     ret = CloudInstance(cp, None, None, None, _type, facts)
     assert ret.provider == CloudProvider.GOOGLE
@@ -75,7 +77,7 @@ def test_cloud_instance_google():
 def test_cloud_instance_aws():
     rpms = InstalledRpms(context_wrap(RPMS_AWS))
     _id = AWSInstanceIdDoc(context_wrap(AWS_ID_DOC))
-    cp = CloudProvider(rpms, None, None, None)
+    cp = CloudProvider(rpms, None, None, None, None, None)
     ret = CloudInstance(cp, _id, None, None, None, None)
     assert ret.provider == CloudProvider.AWS
     assert ret.id == "i-1234567890abcdef0"
@@ -84,10 +86,10 @@ def test_cloud_instance_aws():
 
 
 def test_cloud_instance_azure():
-    rpms = InstalledRpms(context_wrap(RPMS_AZURE))
+    cloud_query = CloudInitQuery(context_wrap(CLOUD_QUERY_AZURE))
     _id = AzureInstanceID(context_wrap(AZURE_ID_1))
     _type = AzureInstanceType(context_wrap(AZURE_TYPE_2))
-    cp = CloudProvider(rpms, None, None, None)
+    cp = CloudProvider(None, None, None, None, cloud_query, None)
     ret = CloudInstance(cp, None, _id, _type, None, None)
     assert ret.provider == CloudProvider.AZURE
     assert ret.id == "f904ece8-c6c1-4b5c-881f-309b50f25e50"
@@ -99,7 +101,7 @@ def test_cloud_instance_aws_from_submanfacts():
     rpms = InstalledRpms(context_wrap(RPMS_AWS))
     bios = DMIDecode(context_wrap(AWS_DMIDECODE))
     facts = SubscriptionManagerFacts(context_wrap(AWS_RHSM_FACTS))
-    cp = CloudProvider(rpms, bios, None, None)
+    cp = CloudProvider(rpms, bios, None, None, None, facts)
     ret = CloudInstance(cp, None, None, None, None, facts)
     assert ret.provider == CloudProvider.AWS
     assert ret.id == "i-01234567890abcdef"
@@ -111,7 +113,7 @@ def test_cloud_instance_aws_from_submanfacts_no_type():
     rpms = InstalledRpms(context_wrap(RPMS_AWS))
     bios = DMIDecode(context_wrap(AWS_DMIDECODE))
     facts = SubscriptionManagerFacts(context_wrap(AWS_RHSM_FACTS_NO_TYPE))
-    cp = CloudProvider(rpms, bios, None, None)
+    cp = CloudProvider(rpms, bios, None, None, None, facts)
     ret = CloudInstance(cp, None, None, None, None, facts)
     assert ret.provider == CloudProvider.AWS
     assert ret.id == "i-01234567890abcdef"
@@ -122,7 +124,7 @@ def test_cloud_instance_aws_from_submanfacts_no_type():
 def test_cloud_instance_ex():
     rpms = InstalledRpms(context_wrap(RPMS_GOOGLE))
     _type = GCPInstanceType(context_wrap(GOOGLE_TYPE_1))
-    cp = CloudProvider(rpms, None, None, None)
+    cp = CloudProvider(rpms, None, None, None, None, None)
     aws_facts = SubscriptionManagerFacts(context_wrap(FACTS_NORMAL_1))
 
     with pytest.raises(ContentException) as ce:
@@ -136,7 +138,7 @@ def test_cloud_instance_ex():
 def test_cloud_instance_doc():
     rpms = InstalledRpms(context_wrap(RPMS_AWS))
     _id = AWSInstanceIdDoc(context_wrap(AWS_ID_DOC))
-    cp = CloudProvider(rpms, None, None, None)
+    cp = CloudProvider(rpms, None, None, None, None, None)
     env = {'ci': CloudInstance(cp, _id, None, None, None, None)}
     failed, total = doctest.testmod(cloud_instance, globs=env)
     assert failed == 0
