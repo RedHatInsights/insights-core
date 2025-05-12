@@ -284,7 +284,7 @@ class FilePermissions(object):
         #   s == setuid/setgid
         #   S == setuid/setgid without execute permissions
         #   t == sticky bit
-        #   S == sticky bit without execute bit
+        #   T == sticky bit without execute bit
 
         \S*                      # the character(s) after rwxrwxrwx for ACLs/xattrs
         # -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
