@@ -398,7 +398,9 @@ class InsightsConnection(object):
         except REQUEST_FAILED_EXCEPTIONS as exc:
             logger.error(
                 "Could not successfully connect to: %s", url)
-            print(exc)
+            print("Connection issues were detected. Please check your network configuration. "
+                  "Additional information may be in /var/log/insights-client/insights-client.log")
+            logger.error(exc)
             raise
 
     def test_connection(self, rc=0):
