@@ -120,7 +120,7 @@ class InsightsClient(object):
             else:
                 raise ConnectionError("%s: %s" % (response.status_code, response.reason))
         except ConnectionError as e:
-            logger.warning("Unable to fetch egg url %s: %s. Defaulting to /release", url, str(e))
+            logger.debug("Unable to fetch egg url %s: %s. Defaulting to /release", url, str(e))
             return '/release'
 
     def fetch(self, force=False):
@@ -556,7 +556,9 @@ class InsightsClient(object):
             print(json.dumps(insights_data, indent=1))
         except IOError as e:
             if e.errno == errno.ENOENT:
-                raise Exception("Error: no report found. Run insights-client --check-results to update the report cache: %s" % e)
+                raise Exception("Error: no report found. "
+                                "Check the results to update the report cache: %s"
+                                "\n# insights-client --check-results" % e)
             else:
                 raise e
 
