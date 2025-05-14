@@ -18,7 +18,8 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.list_specs": False,
                        "return_value.load_all.return_value.show_results": False,
                        "return_value.load_all.return_value.check_results": False,
-                       "return_value.load_all.return_value.no_upload": False})
+                       "return_value.load_all.return_value.no_upload": False,
+                       "return_value.load_all.return_value.module": False})
     return patcher(old_function)
 
 
@@ -37,9 +38,10 @@ def test_post_update_legacy_upload_off(insights_config, insights_client):
     insights_client.return_value.get_machine_id.assert_called_once()
 
 
+@patch("insights.client.phase.v1._get_rhsm_identity", return_value=True)
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
-def test_post_update_legacy_upload_on(insights_config, insights_client):
+def test_post_update_legacy_upload_on(insights_config, insights_client, _get_rhsm_identity):
     """
     Registration is processed in legacy_upload=True
     """
@@ -52,10 +54,10 @@ def test_post_update_legacy_upload_on(insights_config, insights_client):
     insights_client.return_value.register.assert_called_once()
 
 
+@patch("insights.client.phase.v1._get_rhsm_identity", return_value=True)
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
-# @patch("insights.client.phase.v1.InsightsClient")
-def test_exit_ok(insights_config, insights_client):
+def test_exit_ok(insights_config, insights_client, _get_rhsm_identity):
     """
     Support collection replaces the normal client run.
     """
@@ -64,9 +66,10 @@ def test_exit_ok(insights_config, insights_client):
     assert exc_info.value.code == 0
 
 
+@patch("insights.client.phase.v1._get_rhsm_identity", return_value=True)
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
-def test_post_update_no_upload(insights_config, insights_client):
+def test_post_update_no_upload(insights_config, insights_client, _get_rhsm_identity):
     """
     No-upload short circuits this phase
     """
