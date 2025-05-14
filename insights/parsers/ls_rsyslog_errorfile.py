@@ -9,11 +9,16 @@ from insights.core import Parser, ls_parser
 from insights.core.exceptions import ParseException
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_rsyslog_errorfile)
 class LsRsyslogErrorfile(Parser):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.ls.LSlHFiles` instead.
+
     The ``ls -ln <rsyslog errorfile path>`` command provides information for the
     rsyslog errorfile paths.
 
@@ -33,6 +38,9 @@ class LsRsyslogErrorfile(Parser):
         >>> rsyslog_errorfile.entries.get('/var/log/omelasticsearch.log').get('size')
         9
     """
+
+    def __init__(self, *args, **kwargs):
+        deprecated(LsRsyslogErrorfile, "Please use insights.parsers.ls.LSlHFiles instead.", "3.7.0")
 
     def parse_content(self, content):
         parsed_content = []
