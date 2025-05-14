@@ -61,9 +61,7 @@ def _get_fstab_mounted_device_files(fstab_mounts, blkid_info):
         if label:
             blk_label_name_map[label] = name
     for record in fstab_mounts:
-        original_config = record.raw
         record = {k: v for k, v in record.items()}
-        record['raw'] = original_config
         fs_spec = record['fs_spec']
         fs_spec_pair = fs_spec.split("=", 1)
         if fs_spec_pair[0] == "UUID" and fs_spec_pair[1] in blk_uuid_name_map:
@@ -73,8 +71,8 @@ def _get_fstab_mounted_device_files(fstab_mounts, blkid_info):
             blkid_name = blk_label_name_map.get(fs_spec_pair[1])
             result.append(blkid_name)
         # Filter out devices like tmpfs, sysfs, proc ...
-        elif "/" in record['fs_spec'] and "bind" not in record['fs_mntops']:
-            result.append(record['fs_spec'])
+        elif "/" in fs_spec and "bind" not in record['fs_mntops']:
+            result.append(fs_spec)
     return result
 
 
