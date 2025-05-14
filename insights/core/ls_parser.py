@@ -277,12 +277,14 @@ class FilePermissions(object):
     _PERMISSIONS_PATTERN = re.compile(
         r'''
         ^
-        (.)([-rwxsS]{3})([-rwxsS]{3})([-rwxsS]{3})   # -rwxrwxrwx
+        (.)([-rwxsStT]{3})([-rwxsStT]{3})([-rwxsStT]{3})   # -rwxrwxrwx
         # -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
         # ^^^^^^^^^^
-        # Valid characters are -rwxsS
-        #   s == execute bit and sticky bit
-        #   S == sticky bit without execute bit
+        # Valid characters are -rwxsStT
+        #   s == setuid/setgid
+        #   S == setuid/setgid without execute permissions
+        #   t == sticky bit
+        #   T == sticky bit without execute bit
 
         \S*                      # the character(s) after rwxrwxrwx for ACLs/xattrs
         # -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
