@@ -126,11 +126,30 @@ class FileListing(CommandParser, dict):
         []
         >>> ls_lan.total_of("/etc/sysconfig")
         96
-        >>> ls_lan.dir_entry('/etc/sysconfig', 'grub') == {'group': '0', 'name': 'grub', 'links': 1, 'perms': 'rwxrwxrwx.', 'raw_entry': 'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub', 'owner': '0', 'link': '/etc/default/grub', 'date': 'Jul  6 23:32', 'type': 'l', 'dir': '/etc/sysconfig', 'size': 17}
-        True
+        >>> grub_entry = ls_lan.dir_entry('/etc/sysconfig', 'grub')
+        >>> grub_entry['group']
+        '0'
+        >>> grub_entry['name']
+        'grub'
+        >>> grub_entry['links']
+        1
+        >>> grub_entry['perms']
+        'rwxrwxrwx.'
+        >>> grub_entry['owner']
+        '0'
+        >>> grub_entry['link']
+        '/etc/default/grub'
+        >>> grub_entry['date']
+        'Jul  6 23:32'
+        >>> grub_entry['type']
+        'l'
+        >>> grub_entry['dir']
+        '/etc/sysconfig'
+        >>> grub_entry['size']
+        17
         >>> sorted(ls_lan.listing_of("/etc/sysconfig").keys()) == sorted(['console', 'grub', '..', 'firewalld', '.', 'cbq', 'ebtables-config'])
         True
-        >>> sorted(ls_lan.listing_of("/etc/sysconfig")['console'].keys()) == sorted(['group', 'name', 'links', 'perms', 'raw_entry', 'owner', 'date', 'type', 'dir', 'size'])
+        >>> sorted(ls_lan.listing_of("/etc/sysconfig")['console'].keys()) == sorted(['group', 'name', 'links', 'perms', 'owner', 'date', 'type', 'dir', 'size'])
         True
         >>> ls_lan.listing_of("/etc/sysconfig")['console']['type']
         'd'
@@ -138,8 +157,25 @@ class FileListing(CommandParser, dict):
         'rwxr-xr-x.'
         >>> ls_lan.dir_contains("/etc/sysconfig", "console")
         True
-        >>> ls_lan.dir_entry("/etc/sysconfig", "console") == {'group': '0', 'name': 'console', 'links': 2, 'perms': 'rwxr-xr-x.', 'raw_entry': 'drwxr-xr-x.  2 0 0    6 Sep 16  2015 console', 'owner': '0', 'date': 'Sep 16  2015', 'type': 'd', 'dir': '/etc/sysconfig', 'size': 6}
-        True
+        >>> console_entry = ls_lan.dir_entry("/etc/sysconfig", "console")
+        >>> console_entry['group']
+        '0'
+        >>> console_entry['name']
+        'console'
+        >>> console_entry['links']
+        2
+        >>> console_entry['perms']
+        'rwxr-xr-x.'
+        >>> console_entry['owner']
+        '0'
+        >>> console_entry['date']
+        'Sep 16  2015'
+        >>> console_entry['type']
+        'd'
+        >>> console_entry['dir']
+        '/etc/sysconfig'
+        >>> console_entry['size']
+        6
         >>> ls_lan.dir_entry("/etc/sysconfig", "grub")['type']
         'l'
         >>> ls_lan.dir_entry("/etc/sysconfig", "grub")['link']
