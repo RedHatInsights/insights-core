@@ -61,7 +61,6 @@ def _get_fstab_mounted_device_files(fstab_mounts, blkid_info):
         if label:
             blk_label_name_map[label] = name
     for record in fstab_mounts:
-        record = {k: v for k, v in record.items()}
         fs_spec = record['fs_spec']
         fs_spec_pair = fs_spec.split("=", 1)
         if fs_spec_pair[0] == "UUID" and fs_spec_pair[1] in blk_uuid_name_map:
@@ -73,15 +72,7 @@ def _get_fstab_mounted_device_files(fstab_mounts, blkid_info):
         # Filter out devices like tmpfs, sysfs, proc ...
         elif "/" in fs_spec and "bind" not in record['fs_mntops']:
             result.append(fs_spec)
-    return result
-
-
-def _get_pvs_devices_files(pvs_info):
-    result = []
-    for item in pvs_info:
-        pv_path = item['PV']
-        result.append(pv_path)
-    return result
+    return set(result)
 
 
 @datasource(HostContext)
@@ -137,8 +128,8 @@ def list_with_laZ(broker):
 
 @datasource(HostContext)
 def list_files_with_lH(broker):
-    files = set(_f for _f in _list_items(Specs.ls_lH_files) if not os.path.isdir(_f))
     filters = set(_list_items(Specs.ls_lH_files))
+    files = set(_f for _f in filters if not os.path.isdir(_f))
     if 'fstab_mounted.devices' in filters and FSTab in broker and BlockIDInfo in broker:
         files.remove('fstab_mounted.devices')
         fstab_mounts = broker[FSTab]
@@ -147,7 +138,7 @@ def list_files_with_lH(broker):
     if 'pvs.devices' in filters and Pvs in broker:
         files.remove('pvs.devices')
         pvs_info = broker[Pvs]
-        files.update(_get_pvs_devices_files(pvs_info))
+        files.update(set([item['PV'] for item in pvs_info]))
     if files:
         return ' '.join(sorted(files))
     raise SkipComponent
