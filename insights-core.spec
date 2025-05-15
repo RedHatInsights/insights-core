@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.13
+Version:        3.5.14
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,39 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu May 15 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.14-1
+- chore: Improve load tests (#4443) (71874510+jholecek-
+  rh@users.noreply.github.com)
+- chore: improve listdir and listglob tests (#4442) (71874510+jholecek-
+  rh@users.noreply.github.com)
+- feat: Add files into datasource list_files_with_lH (#4456)
+  (jiazhang@redhat.com)
+- fix: Update files_permissions function for T permission (#4452)
+  (jiazhang@redhat.com)
+- chore: uname supports RHEL 10.0 (#4455) (xiangceliu@redhat.com)
+- chore: deprecate *ConfigPerms parsers (#4450) (xiangceliu@redhat.com)
+- chore: deprecate LsRsyslogErrorfile parser (#4449) (xiangceliu@redhat.com)
+- fix(client): Update log messages when unregistered (#4421)
+  (pkoprda@redhat.com)
+- fix: add spec deps component IsGtOrRhel84 to manifests (#4451)
+  (xiaoxwan@redhat.com)
+- fix: add more candidates to CloudProvider combiner (#4428)
+  (xiangceliu@redhat.com)
+- fix: Enhance parser "NamedCheckconf" to support new filtered option (#4448)
+  (44796653+huali027@users.noreply.github.com)
+- chore: deprecate NetworkNamespace parser (#4445) (xiangceliu@redhat.com)
+- feat: new LSlHFiles parser for ls -lH <files> spec (#4444)
+  (xiangceliu@redhat.com)
+- chore: deprecate unused docker parsers (#4446) (xiangceliu@redhat.com)
+- chore: deprecate LazyLogFileOutput (#4439) (71874510+jholecek-
+  rh@users.noreply.github.com)
+- fix: remove extra quotation marks in FileProvider.__repr__ (#4441)
+  (71874510+jholecek-rh@users.noreply.github.com)
+- feat: introduce a unique obfuscation configure entry: obfuscation_list
+  (#4409) (xiangceliu@redhat.com)
+- chore(client): Simplify automatic configuration logic (#4376)
+  (mhorky@redhat.com)
+
 * Thu Apr 24 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.13-1
 - Add new Parser SnmpdConf (#4434) (986222045@qq.com)
 - fix: remove useless code from client collection (#4438)

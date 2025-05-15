@@ -2,6 +2,27 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.14](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.14) (2025-05-15)
+
+- chore: Improve load tests ([PR 4443](https://github.com/RedHatInsights/insights-core/pull/4443))
+- chore: improve listdir and listglob tests ([PR 4442](https://github.com/RedHatInsights/insights-core/pull/4442))
+- feat: Add files into datasource list_files_with_lH ([PR 4456](https://github.com/RedHatInsights/insights-core/pull/4456))
+- fix: Update files_permissions function for T permission ([PR 4452](https://github.com/RedHatInsights/insights-core/pull/4452))
+- chore: uname supports RHEL 10.0 ([PR 4455](https://github.com/RedHatInsights/insights-core/pull/4455))
+- chore: deprecate *ConfigPerms parsers ([PR 4450](https://github.com/RedHatInsights/insights-core/pull/4450))
+- chore: deprecate LsRsyslogErrorfile parser ([PR 4449](https://github.com/RedHatInsights/insights-core/pull/4449))
+- fix(client): Update log messages when unregistered ([PR 4421](https://github.com/RedHatInsights/insights-core/pull/4421))
+- fix: add spec deps component IsGtOrRhel84 to manifests ([PR 4451](https://github.com/RedHatInsights/insights-core/pull/4451))
+- fix: add more candidates to CloudProvider combiner ([PR 4428](https://github.com/RedHatInsights/insights-core/pull/4428))
+- fix: Enhance parser "NamedCheckconf" to support new filtered option ([PR 4448](https://github.com/RedHatInsights/insights-core/pull/4448))
+- chore: deprecate NetworkNamespace parser ([PR 4445](https://github.com/RedHatInsights/insights-core/pull/4445))
+- feat: new LSlHFiles parser for ls -lH <files> spec ([PR 4444](https://github.com/RedHatInsights/insights-core/pull/4444))
+- chore: deprecate unused docker parsers ([PR 4446](https://github.com/RedHatInsights/insights-core/pull/4446))
+- chore: deprecate LazyLogFileOutput ([PR 4439](https://github.com/RedHatInsights/insights-core/pull/4439))
+- fix: remove extra quotation marks in FileProvider.__repr__ ([PR 4441](https://github.com/RedHatInsights/insights-core/pull/4441))
+- feat: introduce a unique obfuscation configure entry: obfuscation_list ([PR 4409](https://github.com/RedHatInsights/insights-core/pull/4409))
+- chore(client): Simplify automatic configuration logic ([PR 4376](https://github.com/RedHatInsights/insights-core/pull/4376))
+
 # [insights-core-3.5.13](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.13) (2025-04-24)
 
 - Add new Parser SnmpdConf ([PR 4434](https://github.com/RedHatInsights/insights-core/pull/4434))
