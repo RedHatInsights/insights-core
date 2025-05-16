@@ -235,10 +235,14 @@ class ComplianceClient:
         logger.debug("Content of the response {0} - {1}".format(response, response.content))
 
         if response.status_code == 202:
-            logger.info("Operation completed successfully.\n")
+            logger.info("System successfully assigned to policy.\n")
             return 0
         else:
-            logger.error("Policy ID {0} does not exist.".format(policy_id))
+            logger.error(
+                "Policy ID {0} can not be assigned. "
+                "Refer to the /var/log/insights-client/insights-client.log for more details."
+                .format(policy_id)
+            )
             return constants.sig_kill_bad
 
     def get_system_policies(self):
