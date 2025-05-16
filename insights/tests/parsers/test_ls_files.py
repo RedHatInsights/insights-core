@@ -269,3 +269,13 @@ def test_multiple_directories():
     assert obj.perms_owner == 'rw-'
     assert obj.perms_group == 'r--'
     assert obj.perms_other == 'r--'
+    assert obj.size == 46
+
+    assert '/dev/vda1' in dirs
+    obj2 = dirs['/dev/vda1']
+    assert obj2.perms_owner == 'rw-'
+    assert obj2.perms_group == 'rw-'
+    assert obj2.perms_other == '---'
+    assert obj2.type == 'b'
+    assert obj2.major == 252
+    assert obj2.minor == 1
