@@ -299,7 +299,7 @@ class FilePermissions(object):
         #               ^^^^^^^^^
         # Username and group name are strings without whitespace \s and without colon :.
 
-        \s+(?:\d+|\d+,\s*\d+)+\s+        # size and spaces around
+        \s+(?:\d+|\d+,\s*\d+)+\s+        # (size or major/minor) and spaces around
         # -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
         #                        ^^^^^^
         # brw-rw----. 1 root disk 252, 1 May 16 01:30 /dev/vda1
@@ -350,7 +350,7 @@ class FilePermissions(object):
                 self.path,
             ) = r.groups()
             parts = self.line.split()
-            if "," in parts[4]:
+            if "," in parts[4] and self.type == 'b':
                 self.major = int(parts[4].strip(","))
                 self.minor = int(parts[5])
             else:
