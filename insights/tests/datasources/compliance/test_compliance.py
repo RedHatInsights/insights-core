@@ -390,7 +390,7 @@ def test_policy_link_assign(config, log):
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.patch.assert_called_with(url)
-    log.info.assert_called_with("Operation completed successfully.\n")
+    log.info.assert_called_with("System successfully assigned to policy.\n")
 
 
 @patch('insights.specs.datasources.compliance.logger')
@@ -407,7 +407,11 @@ def test_policy_link_assign_invalid_policy_id(config, log):
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.patch.assert_called_with(url)
-    log.error.assert_called_with("Policy ID {0} does not exist.".format(policy_id))
+    log.error.assert_called_with(
+        "Policy ID {0} can not be assigned. "
+        "Refer to the /var/log/insights-client/insights-client.log for more details."
+        .format(policy_id)
+    )
 
 
 @patch('insights.specs.datasources.compliance.logger')
@@ -424,7 +428,7 @@ def test_policy_link_unassign(config, log):
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.delete.assert_called_with(url)
-    log.info.assert_called_with("Operation completed successfully.\n")
+    log.info.assert_called_with("System successfully assigned to policy.\n")
 
 
 @patch('insights.specs.datasources.compliance.logger')
@@ -441,4 +445,8 @@ def test_policy_link_unassign_invalid_policy_id(config, log):
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.delete.assert_called_with(url)
-    log.error.assert_called_with("Policy ID {0} does not exist.".format(policy_id))
+    log.error.assert_called_with(
+        "Policy ID {0} can not be assigned. "
+        "Refer to the /var/log/insights-client/insights-client.log for more details."
+        .format(policy_id)
+    )
