@@ -350,7 +350,7 @@ class FilePermissions(object):
                 self.path,
             ) = r.groups()
             parts = self.line.split()
-            if "," in parts[4] and self.type == 'b':
+            if "," in parts[4]:
                 self.major = int(parts[4].strip(","))
                 self.minor = int(parts[5])
             else:
