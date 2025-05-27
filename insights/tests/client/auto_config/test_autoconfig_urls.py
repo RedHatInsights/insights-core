@@ -1,185 +1,215 @@
-from insights.client.auto_config import APIConfig, DeploymentType
-from insights.client.auto_config import ProxyConfig  # noqa: F401
-from insights.client.auto_config import (
-    _should_use_legacy_api,
-    _read_rhsm_settings,
-    _read_rhsm_proxy_settings,
-    autoconfigure_network,
-)
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
-
-import pytest
-import configparser
+from insights.client.auto_config import set_auto_configuration, _try_satellite6_configuration, try_auto_configuration
+from mock.mock import Mock, patch
 
 
-def test_read_rhsm_proxy_settings__none():
-    rhsm_config = configparser.ConfigParser()
-    rhsm_config.read_string(
-        u"[server]\n"
-        u"proxy_scheme=http\nproxy_hostname=\nproxy_port=\n"
-        u"proxy_user=\nproxy_password=\n"
-        u"no_proxy=\n"
-    )
-    result = _read_rhsm_proxy_settings(rhsm_config)  # type: ProxyConfig
-    assert result.proxy is None
-    assert result.no_proxy is None
+@patch("insights.client.auto_config.rhsmCertificate", Mock())
+@patch("insights.client.auto_config.open", Mock())
+@patch("insights.client.auto_config._importInitConfig")
+@patch("insights.client.auto_config.set_auto_configuration")
+def test_rhsm_legacy_url(set_auto_configuration, initConfig):
+    '''
+    Ensure the correct host URL is selected for auto_config on a legacy RHSM upload
+    '''
+    initConfig().get.side_effect = ['subscription.rhsm.redhat.com', '443', '', '', '', '', '', '']
+    config = Mock(base_url=None, upload_url=None, legacy_upload=True)
+    _try_satellite6_configuration(config)
+    set_auto_configuration.assert_called_with(config, 'cert-api.access.redhat.com', None, None, False, False, rhsm_no_proxy=None)
 
 
-def test_read_rhsm_proxy_settings__no_auth_proxy():
-    rhsm_config = configparser.ConfigParser()
-    rhsm_config.read_string(
-        u"[server]\n"
-        u"proxy_scheme=http\nproxy_hostname=proxy.internal\nproxy_port=8888\n"
-        u"proxy_user=\nproxy_password=\n"
-        u"no_proxy=\n"
-    )
-    result = _read_rhsm_proxy_settings(rhsm_config)  # type: ProxyConfig
-    assert result.proxy == "http://proxy.internal:8888"
-    assert result.no_proxy is None
+@patch("insights.client.auto_config.rhsmCertificate", Mock())
+@patch("insights.client.auto_config.open", Mock())
+@patch("insights.client.auto_config._importInitConfig")
+@patch("insights.client.auto_config.set_auto_configuration")
+def test_rhsm_platform_url(set_auto_configuration, initConfig):
+    '''
+    Ensure the correct host URL is selected for auto_config on a platform RHSM upload
+    '''
+    initConfig().get.side_effect = ['subscription.rhsm.redhat.com', '443', '', '', '', '', '', '']
+    config = Mock(base_url=None, upload_url=None, legacy_upload=False)
+    _try_satellite6_configuration(config)
+    # set_auto_configuration.assert_called_with(config, 'console.redhat.com', None, None, False)
+    set_auto_configuration.assert_called_with(config, 'cert-api.access.redhat.com', None, None, False, False, rhsm_no_proxy=None)
 
 
-def test_read_rhsm_proxy_settings__auth_proxy():
-    rhsm_config = configparser.ConfigParser()
-    rhsm_config.read_string(
-        u"[server]\n"
-        u"proxy_scheme=https\nproxy_hostname=proxy.internal\nproxy_port=8888\n"
-        u"proxy_user=user\nproxy_password=password\n"
-        u"no_proxy=\n"
-    )
-    result = _read_rhsm_proxy_settings(rhsm_config)  # type: ProxyConfig
-    assert result.proxy == "https://user:password@proxy.internal:8888"
-    assert result.no_proxy is None
+@patch("insights.client.auto_config.rhsmCertificate", Mock())
+@patch("insights.client.auto_config.open", Mock())
+@patch("insights.client.auto_config._importInitConfig")
+@patch("insights.client.auto_config.set_auto_configuration")
+def test_rhsm_stage_legacy_url(set_auto_configuration, initConfig):
+    '''
+    Ensure the correct host URL is selected for auto_config on a legacy staging RHSM upload
+
+    This will still force legacy_upload=False as there is no classic staging env,
+    so the result is the same as platform upload.
+
+    '''
+    initConfig().get.side_effect = ['subscription.rhsm.stage.redhat.com', '443', '', '', '', '', '', '']
+    config = Mock(base_url=None, upload_url=None, legacy_upload=True)
+    _try_satellite6_configuration(config)
+    # config.legacy_upload is modified in the function
+    config.legacy_upload = False
+    set_auto_configuration.assert_called_with(config, 'cert.cloud.stage.redhat.com', None, None, False, True, rhsm_no_proxy=None)
 
 
-def test_read_rhsm_proxy_settings__no_proxy():
-    rhsm_config = configparser.ConfigParser()
-    rhsm_config.read_string(
-        u"[server]\n"
-        u"proxy_scheme=http\nproxy_hostname=\nproxy_port=\n"
-        u"proxy_user=\nproxy_password=\n"
-        u"no_proxy=hostname.internal\n"
-    )
-    result = _read_rhsm_proxy_settings(rhsm_config)  # type: ProxyConfig
-    assert result.no_proxy == "hostname.internal"
+@patch("insights.client.auto_config.rhsmCertificate", Mock())
+@patch("insights.client.auto_config.open", Mock())
+@patch("insights.client.auto_config._importInitConfig")
+@patch("insights.client.auto_config.set_auto_configuration")
+def test_rhsm_stage_platform_url(set_auto_configuration, initConfig):
+    '''
+    Ensure the correct host URL is selected for auto_config on a platform staging RHSM upload
+    '''
+    initConfig().get.side_effect = ['subscription.rhsm.stage.redhat.com', '443', '', '', '', '', '', '']
+    config = Mock(base_url=None, upload_url=None, legacy_upload=False)
+    _try_satellite6_configuration(config)
+    set_auto_configuration.assert_called_with(config, 'cert.cloud.stage.redhat.com', None, None, False, True, rhsm_no_proxy=None)
 
 
-API_CONFIG_PRODUCTION_CONSOLEDOT = APIConfig(
-    url="cert.console.redhat.com/api",
-    cert_verify=True,
-    deployment_type=DeploymentType.PRODUCTION,
-)
-API_CONFIG_PRODUCTION_CLOUDDOT = APIConfig(
-    url="cert.cloud.redhat.com/api",
-    cert_verify=True,
-    deployment_type=DeploymentType.PRODUCTION,
-)
-API_CONFIG_LEGACY = APIConfig(
-    url="cert-api.access.redhat.com/r/insights",
-    cert_verify=None,
-    deployment_type=DeploymentType.PRODUCTION,
-)
-API_CONFIG_STAGE = APIConfig(
-    url="cert.console.stage.redhat.com/api",
-    cert_verify=True,
-    deployment_type=DeploymentType.STAGE,
-)
-API_CONFIG_SATELLITE = APIConfig(
-    url="satellite.internal:443/redhat_access/r/insights",
-    cert_verify=True,
-    deployment_type=DeploymentType.SATELLITE,
-)
+@patch("insights.client.auto_config.rhsmCertificate", Mock())
+@patch("insights.client.auto_config.open", Mock())
+@patch("insights.client.auto_config._importInitConfig")
+@patch("insights.client.auto_config.set_auto_configuration")
+def test_sat_legacy_url(set_auto_configuration, initConfig):
+    '''
+    Ensure the correct host URL is selected for auto_config on a legacy Sat upload
+    '''
+    initConfig().get.side_effect = ['test.satellite.com', '443', '', '', '', '', '', 'test_cert']
+    config = Mock(base_url=None, upload_url=None, legacy_upload=True)
+    _try_satellite6_configuration(config)
+    set_auto_configuration.assert_called_with(config, 'test.satellite.com:443/redhat_access', 'test_cert', None, True, False, rhsm_no_proxy=None)
 
 
-# On RHEL >=10, the production URL is cert.console.redhat.com.
-# On RHEL <=9, the production URL is cert.cloud.redhat.com.
-# Downgrade to cert-api.access.redhat.com is done through _should_use_legacy_api,
-# as it is a special compatibility case.
+@patch("insights.client.auto_config.rhsmCertificate", Mock())
+@patch("insights.client.auto_config.open", Mock())
+@patch("insights.client.auto_config._importInitConfig")
+@patch("insights.client.auto_config.set_auto_configuration")
+def test_sat_platform_url(set_auto_configuration, initConfig):
+    '''
+    Ensure the correct host URL is selected for auto_config on a platform Sat upload
+    '''
+    initConfig().get.side_effect = ['test.satellite.com', '443', '', '', '', '', '', 'test_cert']
+    config = Mock(base_url=None, upload_url=None, legacy_upload=False)
+    _try_satellite6_configuration(config)
+    set_auto_configuration.assert_called_with(config, 'test.satellite.com:443/redhat_access', 'test_cert', None, True, False, rhsm_no_proxy=None)
 
 
-def test_read_rhsm_settings__production_el10(*args):
-    rhsm_config = configparser.ConfigParser()
-    rhsm_config.read_string(u"[server]\nhostname=subscription.rhsm.redhat.com\nport=443\n")
-    result = _read_rhsm_settings(rhsm_config, rhel_version=10)
-    assert result == API_CONFIG_PRODUCTION_CONSOLEDOT
+@patch("insights.client.auto_config.verify_connectivity", Mock())
+def test_rhsm_legacy_base_url_configured():
+    '''
+    Ensure the correct base URL is assembled for a legacy RHSM upload
+    '''
+    config = Mock(base_url=None, upload_url=None, legacy_upload=True, proxy=None)
+    set_auto_configuration(config, 'cert-api.access.redhat.com', None, None, False, False)
+    assert config.base_url == 'cert-api.access.redhat.com/r/insights'
 
 
-def test_read_rhsm_settings__production_el9(*args):
-    rhsm_config = configparser.ConfigParser()
-    rhsm_config.read_string(u"[server]\nhostname=subscription.rhsm.redhat.com\nport=443\n")
-    result = _read_rhsm_settings(rhsm_config, rhel_version=9)
-    assert result == API_CONFIG_PRODUCTION_CLOUDDOT
+@patch("insights.client.auto_config.verify_connectivity", Mock())
+def test_rhsm_platform_base_url_configured():
+    '''
+    Ensure the correct base URL is assembled for a platform RHSM upload
+    '''
+    config = Mock(base_url=None, upload_url=None, legacy_upload=False, proxy=None)
+    # set_auto_configuration(config, 'console.redhat.com', None, None, False)
+    # assert config.base_url == 'console.redhat.com/api'
+    # [CIRCUS MUSIC]
+    set_auto_configuration(config, 'cert-api.access.redhat.com', None, None, False, False)
+    # assert config.base_url == 'cert-api.access.redhat.com/r/insights/platform'
+    assert config.base_url == 'cert-api.access.redhat.com/r/insights'
 
 
-def test_read_rhsm_settings__stage():
-    rhsm_config = configparser.ConfigParser()
-    rhsm_config.read_string(u"[server]\nhostname=subscription.rhsm.stage.redhat.com\nport=443\n")
-    result = _read_rhsm_settings(rhsm_config, rhel_version=0)
-    assert result == API_CONFIG_STAGE
+@patch("insights.client.auto_config.verify_connectivity", Mock())
+def test_sat_legacy_base_url_configured():
+    '''
+    Ensure the correct base URL is assembled for a legacy RHSM upload
+    '''
+    config = Mock(base_url=None, upload_url=None, legacy_upload=True, proxy=None)
+    set_auto_configuration(config, 'test.satellite.com:443/redhat_access', 'test_cert', None, True, False)
+    assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights'
 
 
-def test_read_rhsm_settings__satellite():
-    rhsm_config = configparser.ConfigParser()
-    rhsm_config.read_string(u"[server]\nhostname=satellite.internal\nport=443\n")
-    result = _read_rhsm_settings(rhsm_config, rhel_version=0)
-    assert result == API_CONFIG_SATELLITE
+@patch("insights.client.auto_config.verify_connectivity", Mock())
+def test_sat_platform_base_url_configured():
+    '''
+    Ensure the correct base URL is assembled for a platform RHSM upload
+    '''
+    config = Mock(base_url=None, upload_url=None, legacy_upload=False, proxy=None)
+    set_auto_configuration(config, 'test.satellite.com:443/redhat_access', 'test_cert', None, True, False)
+    # assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights/platform'
+    assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights'
 
 
-@pytest.mark.parametrize(
-    "rhel,config_legacy_upload,expected",
-    [
-        (9, True, True),
-        (9, False, False),
-        (10, True, False),
-        (10, False, False),
-    ],
-    ids=["el9,legacy=True", "el9,legacy=False", "el10,legacy=True", "el10,legacy=False"],
-)
-def test_legacy_api(rhel, config_legacy_upload, expected):
-    """Keep using legacy API on RHEL <= 9, where it is the default."""
-    client_config = mock.Mock(legacy_upload=config_legacy_upload)
-    result = _should_use_legacy_api(client_config, rhel_version=rhel)
-    assert result == expected
+@patch("insights.client.auto_config.verify_connectivity", Mock())
+def test_platform_path_added():
+    '''
+    Ensure /platform is added when legacy_upload is false
+    Ensure it's not added when legacy_upload is true
+    '''
+    # auto_config=True, legacy_upload=True
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=True, legacy_upload=True, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights'
+
+    # auto_config=True, legacy_upload=False
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=True, legacy_upload=False, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights/platform'
+
+    # auto_config=False, legacy_upload=True
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=False, legacy_upload=True, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights'
+
+    # auto_config=False, legacy_upload=False
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=False, legacy_upload=False, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights/platform'
 
 
-@pytest.mark.parametrize(
-    "rhel,legacy_enabled,rhsm_url,expected_url",
-    [
-        (10, True, "subscription.rhsm.redhat.com", API_CONFIG_PRODUCTION_CONSOLEDOT.url),
-        (10, False, "subscription.rhsm.redhat.com", API_CONFIG_PRODUCTION_CONSOLEDOT.url),
-        (9, True, "subscription.rhsm.redhat.com", API_CONFIG_LEGACY.url),
-        (9, False, "subscription.rhsm.redhat.com", API_CONFIG_PRODUCTION_CLOUDDOT.url),
-        (8, True, "subscription.rhsm.stage.redhat.com", API_CONFIG_STAGE.url),
-        (8, True, "satellite.internal", API_CONFIG_SATELLITE.url),
-        (8, False, "satellite.internal", API_CONFIG_SATELLITE.url),
-    ],
-    ids=[
-        "el9,legacy=True",
-        "el9,legacy=False",
-        "el10,legacy=True",
-        "el10,legacy=False",
-        "el8,legacy=True,stage",
-        "el8,legacy=True,satellite",
-        "el8,legacy=False,satellite",
-    ],
-)
-@mock.patch("insights.client.auto_config.rhsmCertificate.existsAndValid", return_value=True)
-@mock.patch("insights.client.auto_config.get_rhsm_config")
-def test_autoconfigure_network(get_config_parser, _cert_exists, rhel, legacy_enabled, rhsm_url, expected_url):
-    rhsm_config = configparser.ConfigParser()
-    rhsm_config.read_string(
-        u"[server]\nhostname={}\nport=443\n".format(rhsm_url) +
-        u"proxy_scheme=https\nproxy_hostname=proxy.internal\nproxy_port=443\n" +
-        u"proxy_user=user\nproxy_password=password\nno_proxy=\n"
-    )
-    get_config_parser.return_value = rhsm_config
-    client_config = mock.Mock(offline=False, auto_config=True, legacy_upload=legacy_enabled)
+@patch("insights.client.auto_config._try_satellite6_configuration", Mock())
+def test_platform_path_added_cloud_redhat():
+    '''
+    Ensure /platform is added when legacy_upload is false
+    for any base_url ending in /r/insights, otherwise not added
+    '''
+    # classic API
+    config = Mock(base_url='cert-api.access.redhat.com/r/insights', auto_config=True, legacy_upload=False, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'cert-api.access.redhat.com/r/insights/platform'
 
-    with mock.patch("insights.client.auto_config.utilities.get_rhel_version", return_value=rhel):
-        autoconfigure_network(client_config=client_config)
+    # satellite
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=True, legacy_upload=False, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights/platform'
 
-    assert client_config.base_url == expected_url
-    assert client_config.proxy == "https://user:password@proxy.internal:443"
+    # console.redhat.com compatibility layer - classic API hosted on c.rh.c
+    config = Mock(base_url='console.redhat.com/r/insights', auto_config=True, legacy_upload=False, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'console.redhat.com/r/insights/platform'
+
+    # console.redhat.com API directly connected
+    config = Mock(base_url='console.redhat.com/api', auto_config=True, legacy_upload=False, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'console.redhat.com/api'
+
+
+@patch("insights.client.auto_config.verify_connectivity", Mock())
+def test_rhsm_stage_legacy_base_url_configured():
+    '''
+    Ensure the correct base URL is assembled for a legacy staging RHSM upload
+
+    This will still force legacy_upload=False as there is no classic staging env,
+    so the result is the same as platform upload.
+    '''
+    config = Mock(base_url=None, upload_url=None, legacy_upload=True, proxy=None)
+    set_auto_configuration(config, 'cert.cloud.stage.redhat.com', None, None, False, True)
+    assert config.base_url == 'cert.cloud.stage.redhat.com/api'
+
+
+@patch("insights.client.auto_config.verify_connectivity", Mock())
+def test_rhsm_stage_platform_base_url_configured():
+    '''
+    Ensure the correct base URL is assembled for a platform staging RHSM upload
+    '''
+    config = Mock(base_url=None, upload_url=None, legacy_upload=False, proxy=None)
+    set_auto_configuration(config, 'cert.cloud.stage.redhat.com', None, None, False, True)
+    assert config.base_url == 'cert.cloud.stage.redhat.com/api'
