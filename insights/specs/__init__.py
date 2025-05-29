@@ -268,7 +268,7 @@ class Specs(SpecSet):
     grub_efi_conf = RegistryPoint()
     grubby_default_index = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     grubby_default_kernel = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    grubby_info_all = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    grubby_info_all = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     grubenv = RegistryPoint()
     hammer_ping = RegistryPoint()
     hammer_task_list = RegistryPoint()
@@ -453,9 +453,9 @@ class Specs(SpecSet):
     lvm_fullreport = RegistryPoint()
     lvm_system_devices = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     lvmconfig = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    lvs_headings = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    lvs_noheadings = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    lvs_noheadings_all = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    lvs_headings = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
+    lvs_noheadings = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
+    lvs_noheadings_all = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     mac_addresses = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6'])
     machine_id = RegistryPoint(
         no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac', 'password'], no_redact=True
