@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.15) (2025-05-29)
+
+- Revert "chore(client): Simplify automatic configuration logic (4376)" (#4465)
+
 # [insights-core-3.5.14](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.14) (2025-05-15)
 
 - chore: Improve load tests ([PR 4443](https://github.com/RedHatInsights/insights-core/pull/4443))

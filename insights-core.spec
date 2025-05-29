@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.14
+Version:        3.5.15
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu May 29 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.15-1
+- Revert "chore(client): Simplify automatic configuration logic (#4376)"
+  (#4465) (xiangceliu@redhat.com)
+
 * Thu May 15 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.14-1
 - chore: Improve load tests (#4443) (71874510+jholecek-
   rh@users.noreply.github.com)
