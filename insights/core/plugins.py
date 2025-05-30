@@ -471,21 +471,15 @@ class Response(dict):
         """
         length = len(str(kwargs))
         if length > settings.defaults["max_detail_length"]:
-            self._log_length_error(key, length)
+            self._log_length_error(key, length, settings.defaults["max_detail_length"])
             r["max_detail_length_error"] = length
             return r
         return kwargs
 
-    def _log_length_error(self, key, length):
+    def _log_length_error(self, key, length, limit):
         """ Helper function for logging a response length error. """
-        extra = {
-            "max_detail_length": settings.defaults["max_detail_length"],
-            "len": length
-        }
-        if self.key_name:
-            extra[self.key_name] = key
-        msg = "Length of data in %s is too long." % self.__class__.__name__
-        log.error(msg, extra=extra)
+        msg = "Data length %d in rule response %s(%s) exceeds the limit of %d characters."
+        log.error(msg, length, self.__class__.__name__, key, settings.defaults["max_detail_length"])
 
     def __str__(self):
         key_val = self.get_key()
