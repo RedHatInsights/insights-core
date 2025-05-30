@@ -17,6 +17,7 @@ import IPython
 from pygments.console import ansiformat
 from traitlets.config.loader import Config
 
+from insights.core import SafeLoader as Loader
 from insights.core.context import SerializedArchiveContext
 from insights.core.serde import Hydration
 from insights.parsr.query import *  # noqa
@@ -39,8 +40,6 @@ from insights.core.context import HostContext
 from insights.core.spec_factory import ContentProvider, RegistryPoint
 from insights.formats import render
 from insights.formats.text import render_links
-
-Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
 RULE_COLORS = {"fail": "brightred", "pass": "blue", "info": "magenta", "skip": "yellow"}
 
@@ -116,12 +115,8 @@ def _get_available_models(broker, group=dr.GROUPS.single):
             if dr.DELEGATES[comp].get_missing_dependencies(state):
                 continue
 
-            if plugins.is_type(
-                comp, (plugins.rule, plugins.condition, plugins.incident)
-            ):
-                name = "_".join(
-                    [dr.get_base_module_name(comp), dr.get_simple_name(comp)]
-                )
+            if plugins.is_type(comp, (plugins.rule, plugins.condition, plugins.incident)):
+                name = "_".join([dr.get_base_module_name(comp), dr.get_simple_name(comp)])
             else:
                 name = dr.get_simple_name(comp)
 
@@ -190,11 +185,11 @@ class Models(dict):
         super(Models, self).__init__(models)
 
     def __dir__(self):
-        """ Enabled ipython autocomplete. """
+        """Enabled ipython autocomplete."""
         return sorted(set(list(self.keys()) + dir(Models)))
 
     def _ipython_key_completions_(self):
-        """ For autocomplete of keys when accessing models as a dict. """
+        """For autocomplete of keys when accessing models as a dict."""
         return sorted(self.keys())
 
     def __str__(self):
@@ -365,7 +360,7 @@ class Models(dict):
             imports.append("")
 
         for k in sorted(filterable):
-            for (cls, n) in filterable[k]:
+            for cls, n in filterable[k]:
                 if (k, cls) not in seen:
                     imports.append("from {} import {}".format(k, cls))
                     seen.add((k, cls))
@@ -400,9 +395,7 @@ class Models(dict):
                     path = os.path.join(self._cwd, path)
 
             if os.path.exists(path) and not overwrite:
-                print(
-                    "{} already exists. Use overwrite=True to overwrite.".format(path)
-                )
+                print("{} already exists. Use overwrite=True to overwrite.".format(path))
                 return
 
             if not os.path.exists(path) or overwrite:
@@ -454,18 +447,16 @@ class Models(dict):
         return results
 
     def show_requested(self):
-        """ Show the components you've worked with so far. """
+        """Show the components you've worked with so far."""
         results = []
         for name, comp in sorted(self._requested):
             results.append(
-                ansiformat(
-                    self._get_color(comp), "{} {}".format(name, dr.get_name(comp))
-                )
+                ansiformat(self._get_color(comp), "{} {}".format(name, dr.get_name(comp)))
             )
         IPython.core.page.page(six.u(os.linesep.join(results)))
 
     def reset_requested(self):
-        """ Reset requested state so you can work on a new rule. """
+        """Reset requested state so you can work on a new rule."""
         IPython.get_ipython().history_manager.reset()
         self._requested.clear()
 
@@ -487,11 +478,11 @@ class Models(dict):
                 width = len(str(len(src)))
                 template = "{0:>%s}" % width
                 results = []
-                file_line = "{} {}".format(
-                    ansiformat("red", "File:"), os.path.realpath(path)
-                )
-                explain_line = "{} numbered lines have executed. python standard libs are excluded.".format(
-                    ansiformat("*brightgreen*", "Green")
+                file_line = "{} {}".format(ansiformat("red", "File:"), os.path.realpath(path))
+                explain_line = (
+                    "{} numbered lines have executed. python standard libs are excluded.".format(
+                        ansiformat("*brightgreen*", "Green")
+                    )
                 )
                 results.append(file_line)
                 results.append(explain_line)
@@ -578,9 +569,7 @@ class Models(dict):
         results = []
         color = self._get_color(node)
         if plugins.is_datasource(node):
-            results.extend(
-                self._show_datasource(node, self._broker.get(node), indent=indent)
-            )
+            results.extend(self._show_datasource(node, self._broker.get(node), indent=indent))
         else:
             _type = self._get_type_name(node)
             name = dr.get_name(node)
@@ -598,7 +587,10 @@ class Models(dict):
         for d in deps:
             results.extend(
                 self._show_tree(
-                    d, next_indent, depth=depth if depth is None else depth - 1, dep_getter=dep_getter
+                    d,
+                    next_indent,
+                    depth=depth if depth is None else depth - 1,
+                    dep_getter=dep_getter,
                 )
             )
         return results
@@ -785,6 +777,7 @@ class Holder(dict):
     This is a dictionary that holds models for multiple archives. Access each model
     set using the path to the archive as the key. See models.keys().
     """
+
     def _ipython_key_completions_(self):
         return self.keys()
 
@@ -818,6 +811,7 @@ def start_session(paths, change_directory=False, __coverage=None, kernel=False):
 
         if kernel:
             from ipykernel import kernelapp
+
             kernelapp.launch_new_instance([], user_ns=__ns, config=__cfg)
         else:
             IPython.start_ipython([], user_ns=__ns, config=__cfg)
@@ -844,9 +838,7 @@ def _parse_args():
     """.strip()
     p = argparse.ArgumentParser(description=desc, epilog=epilog)
 
-    p.add_argument(
-        "-p", "--plugins", default="", help="Comma separated list of packages to load."
-    )
+    p.add_argument("-p", "--plugins", default="", help="Comma separated list of packages to load.")
     p.add_argument("-c", "--config", help="The insights configuration to apply.")
     p.add_argument(
         "--no-coverage",
@@ -858,16 +850,15 @@ def _parse_args():
         action="store_true",
         help="Change into the expanded directory for analysis.",
     )
+    p.add_argument("--no-defaults", action="store_true", help="Don't load default components.")
+    p.add_argument("-v", "--verbose", action="store_true", help="Global debug level logging.")
     p.add_argument(
-        "--no-defaults", action="store_true", help="Don't load default components."
-    )
-    p.add_argument(
-        "-v", "--verbose", action="store_true", help="Global debug level logging."
-    )
-    p.add_argument(
-        "-k", "--kernel", action="store_true", default=False,
+        "-k",
+        "--kernel",
+        action="store_true",
+        default=False,
         help="Start an IPython kernel instead of an interactive session."
-        " Requires ipykernel module"
+        " Requires ipykernel module",
     )
 
     path_desc = "Archives or paths to analyze. Leave off to target the current system."
