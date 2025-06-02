@@ -2,9 +2,9 @@ import doctest
 import pytest
 
 from insights.combiners import redhat_release as rr
-from insights.combiners.redhat_release import RedHatRelease
+from insights.combiners.redhat_release import RedHatRelease, serialize_RedHatRelease, deserialize_RedHatRelease
 from insights.core.exceptions import SkipComponent
-from insights.parsers.redhat_release import RedhatRelease
+from insights.parsers.redhat_release import RedhatRelease as RRParser
 from insights.parsers.uname import Uname
 from insights.tests import context_wrap
 
@@ -54,7 +54,7 @@ def test_RedHatRelease_uname_10():
 
 
 def test_RedHatRelease_redhat_release():
-    rel = RedhatRelease(context_wrap(REDHAT_RELEASE))
+    rel = RRParser(context_wrap(REDHAT_RELEASE))
     expected = (7, 2)
     result = RedHatRelease(None, rel)
     assert result.major == expected[0]
@@ -66,7 +66,7 @@ def test_RedHatRelease_redhat_release():
 
 def test_RedHatRelease_both():
     un = Uname(context_wrap(UNAME))
-    rel = RedhatRelease(context_wrap(REDHAT_RELEASE))
+    rel = RRParser(context_wrap(REDHAT_RELEASE))
     expected = (7, 2)
     result = RedHatRelease(un, rel)
     assert result.major == expected[0]
@@ -75,6 +75,31 @@ def test_RedHatRelease_both():
     assert result.rhel6 is None
     assert result.rhel8 is None
     assert result.rhel9 is None
+
+
+def test_RedHatRelease_serialize_deserialize():
+    rel = RedHatRelease(None, RRParser(context_wrap(REDHAT_RELEASE_10_0)))
+    serialized = serialize_RedHatRelease(rel)
+    assert serialized == {
+            "major": 10,
+            "minor": 0,
+            "rhel": "10.0",
+            "rhel6": None,
+            "rhel7": None,
+            "rhel8": None,
+            "rhel9": None,
+            "rhel10": "10.0",
+    }
+
+    deserialized = deserialize_RedHatRelease(RedHatRelease, serialized)
+    expected = (10, 0)
+    assert deserialized.major == expected[0]
+    assert deserialized.minor == expected[1]
+    assert deserialized.rhel6 is None
+    assert deserialized.rhel7 is None
+    assert deserialized.rhel8 is None
+    assert deserialized.rhel9 is None
+    assert deserialized.rhel == deserialized.rhel10 == '10.0'
 
 
 def test_raise():
