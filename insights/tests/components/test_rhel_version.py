@@ -6,6 +6,7 @@ from insights.components.rhel_version import (
     IsRhel7,
     IsRhel8,
     IsRhel9,
+    IsRhel10,
     IsGtOrRhel84,
     IsGtRhel86,
     IsGtOrRhel86,
@@ -44,6 +45,10 @@ Red Hat Enterprise Linux release 8.6 (Ootpa)
 
 REDHAT_RELEASE_90 = """
 Red Hat Enterprise Linux release 9.0 (Plow)
+""".strip()
+
+REDHAT_RELEASE_10_0 = """
+Red Hat Enterprise Linux release 10.0 (Coughlan)
 """.strip()
 
 
@@ -118,6 +123,20 @@ def test_is_rhel9():
     with pytest.raises(SkipComponent) as e:
         IsRhel9(rel)
     assert "Not RHEL 9" in str(e)
+
+
+# RHEL10 Tests
+def test_is_rhel10():
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE_10_0))
+    rel = RR(None, rr)
+    result = IsRhel10(rel)
+    assert isinstance(result, IsRhel10)
+
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE_80))
+    rel = RR(None, rr)
+    with pytest.raises(SkipComponent) as e:
+        IsRhel10(rel)
+    assert "Not RHEL 10" in str(e)
 
 
 # Great Than or Equal to RHEL 8.4
