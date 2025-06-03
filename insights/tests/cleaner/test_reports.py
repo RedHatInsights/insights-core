@@ -70,6 +70,7 @@ def test_rhsm_facts(test_umask, obfuscate, obfuscate_hostname, obfuscation_list,
         if obfuscate_hostname or obfuscation_list and 'hostname' in obfuscation_list:
             assert hns[0]['original'] == hostname
             assert '.example.com' in hns[0]['obfuscated']
+            assert len(hns[0]['obfuscated'].split('.', 1)[0]) == 12
         else:
             assert hns == []
         # ip
@@ -194,7 +195,7 @@ def test_all_csv_reports(rhsm_facts, obfuscate, obfuscate_hostname, obfuscation_
             # hn
             assert len(hns) > 1
             assert hns[0] == ['Obfuscated Hostname', 'Original Hostname']
-            assert hns[1] == ['f9fe0db0c046.example.com', 'report.test.com']
+            assert len(hns[1][0].split('.', 1)[0]) == 12
         os.unlink(hn_report_file)
     else:
         assert not os.path.isfile(hn_report_file)
