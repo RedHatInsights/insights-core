@@ -72,6 +72,49 @@ ruby       3.5      common [d]                            An interpreter of obje
 Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled
 """.strip()
 
+# For "Default" stream in RHEL9, take nginx module as an example, no "default"
+# stream for nginx. And with no stram be enabled, it would install nginx
+# version 2:1.20.1 from appstream.
+DNF_MODULE_LIST_RHEL9_WO_ENABLED = """
+Last metadata expiration check: 18:15:32 ago on Mon May 19 15:20:54 2025.
+Red Hat Enterprise Linux 9 for x86_64 - AppStream (RPMs)
+Name       Stream Profiles                                              Summary
+mariadb    10.11  client, galera, server [d]                            MariaDB Module
+maven      3.8    common [d]                                            Java project management and project comprehension tool
+maven      3.9    common [d], openjdk11, openjdk17, openjdk21, openjdk8 Java project management and project comprehension tool
+mysql      8.4    api, client, filter, server [d]                       MySQL Module
+nginx      1.22   common [d]                                            nginx webserver
+nginx      1.24   common [d]                                            nginx webserver
+nginx      1.26   common [d]                                            nginx webserver
+nodejs     18     common [d], development, minimal, s2i                 Javascript runtime
+nodejs     20     common [d], development, minimal, s2i                 Javascript runtime
+nodejs     22     common [d], development, minimal, s2i                 Javascript runtime
+php        8.1    common [d], devel, minimal                            PHP scripting language
+php        8.2    common [d], devel, minimal                            PHP scripting language
+php        8.3    common [d], devel, minimal                            PHP scripting language
+postgresql 15     client, server [d]                                    PostgreSQL server and client module
+postgresql 16     client, server [d]                                    PostgreSQL server and client module
+redis      7      common [d]                                            Redis persistent key-value database
+ruby       3.1    common [d]                                            An interpreter of object-oriented scripting language
+ruby       3.3    common [d]                                            An interpreter of object-oriented scripting language
+
+Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled
+""".strip()
+
+DNF_MODULE_LIST_RHEL8_WO_ENABLED = """
+Last metadata expiration check: 0:18:14 ago on Tue May 20 15:42:40 2025.
+Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)
+Name                 Stream          Profiles                                 Summary
+nginx                1.14 [d]        common [d]                               nginx webserver
+nginx                1.16            common [d]                               nginx webserver
+nginx                1.18            common [d]                               nginx webserver
+nginx                1.20            common [d]                               nginx webserver
+nginx                1.22            common [d]                               nginx webserver
+nginx                1.24            common [d]                               nginx webserver
+
+Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled
+""".strip()
+
 DNF_MODULE_LIST_DOC = """
 Updating Subscription Management repositories.
 Name                Stream      Profiles                                  Summary
@@ -243,12 +286,24 @@ def test_dnf_module_list():
     assert module_list['default_disabled'].streams[0].disabled
     assert not module_list['default_disabled'].streams[0].enabled
     assert not module_list['default_disabled'].streams[0].active
+    assert len(module_list.modules) == 25
 
     module_list = DnfModuleList(context_wrap(DNF_MODULE_LIST_MULTI_SECTIONS))
     assert 'nginx' in module_list
     assert [s.stream for s in module_list["nginx"].streams if s.active] == ['1.22']
     assert len(module_list["nginx"].streams) == 2
     assert len(module_list["ruby"].streams) == 3
+
+    module_list = DnfModuleList(context_wrap(DNF_MODULE_LIST_RHEL9_WO_ENABLED))
+    assert 'nginx' in module_list
+    assert [s.stream for s in module_list["nginx"].streams if s.active] == []
+    assert len(module_list["nginx"].streams) == 3
+    assert len(module_list["ruby"].streams) == 2
+
+    module_list = DnfModuleList(context_wrap(DNF_MODULE_LIST_RHEL8_WO_ENABLED))
+    assert 'nginx' in module_list
+    assert [s.stream for s in module_list["nginx"].streams if s.active] == ['1.14']
+    assert len(module_list["nginx"].streams) == 6
 
 
 def test_dnf_module_list_exp():
