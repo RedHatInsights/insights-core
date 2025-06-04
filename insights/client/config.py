@@ -11,6 +11,7 @@ from six.moves import configparser as ConfigParser
 from insights.cleaner import DEFAULT_OBFUSCATIONS
 from insights.client.utilities import get_rhel_version, get_egg_version_tuple
 from insights.specs.manifests import manifests, content_types
+from insights.util import parse_bool
 
 try:
     from .constants import InsightsConstants as constants
@@ -687,6 +688,9 @@ class InsightsConfig(object):
         '''
 
         def _validate_obfuscation_options():
+            # Old switches are "str" by default now, convert them to boolean
+            self.obfuscate = parse_bool(self.obfuscate, None)
+            self.obfuscate_hostname = parse_bool(self.obfuscate_hostname, None)
             # When old switches are set explicitly, even set as False
             if self.obfuscate is not None or self.obfuscate_hostname is not None:
                 # Warning deprecation only on RHEL 8+ and from egg v 3.6.0 (planned)
