@@ -133,6 +133,101 @@ VARIANT="RHEL AI"
 BUILD_ID='v1.1.3'
 """.strip()
 
+MIRACLE_LINUX_OS_RELEASE = """
+NAME="MIRACLE LINUX"
+VERSION="8.10 (Peony)"
+ID="miraclelinux"
+ID_LIKE="rhel fedora"
+PLATFORM_ID="platform:el8"
+VERSION_ID="8"
+PRETTY_NAME="MIRACLE LINUX 8.10 (Peony)"
+ANSI_COLOR="0;31"
+CPE_NAME="cpe:/o:cybertrust_japan:miracle_linux:8"
+HOME_URL="https://www.cybertrust.co.jp/miracle-linux/"
+DOCUMENTATION_URL="https://www.miraclelinux.com/support/miraclelinux8"
+BUG_REPORT_URL="https://bugzilla.asianux.com/"
+MIRACLELINUX_SUPPORT_PRODUCT="MIRACLE LINUX"
+MIRACLELINUX_SUPPORT_PRODUCT_VERSION="8"
+""".strip()
+
+MIRACLE_LINUX_REDHAT_RELEASE = """MIRACLE LINUX release 8.10 (Peony)"""
+
+MIRACLE_LINUX_RPMS = '''
+{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"425.3.1.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Tue Nov  8 18:10:54 2022, Key ID 99e2f91fd431d51"}
+{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"372.19.1.el8_6uek", "arch":"x86_64", "vendor":"Oracle America", "sigpgp":"RSA/SHA256, Wed Sep 15 17:11:22 2021, Key ID 99e2f91fd431d51"}
+{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"372.19.1.el8_6", "arch":"x86_64", "vendor":"SUSE, Inc.", "sigpgp":"RSA/SHA256, Wed Sep 15 17:11:22 2021, Key ID 99e2f91fd431d51"}
+{"name":"libselinux", "epoch":"(none)", "version":"2.9", "release":"6.el8", "arch":"i686", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 08:55:09 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"dbus", "epoch":"1", "version":"1.12.8", "release":"23.el8", "arch":"x86_64", "vendor":"Red, Inc.", "sigpgp":"RSA/SHA256, Wed 07 Sep 2022 04:08:12 AM CST, Key ID 99e2f91fd431d51"}
+{"name":"dracut", "epoch":"(none)", "version":"049", "release":"209.git20220815.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 09:56:58 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"libgcc", "epoch":"(none)", "version":"8.5.0", "release":"15.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Thu 21 Jul 2022 05:36:25 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"policycoreutils", "epoch":"(none)", "version":"2.9", "release":"20.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 08:51:06 PM CST, Key ID 199e2f91fd431d51"}
+{"name":"glibc", "epoch":"(none)", "version":"2.28", "release":"211.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 29 Aug 2022 04:13:20 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"libacl", "epoch":"(none)", "version":"2.2.53", "release":"1.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Sat 15 Dec 2018 05:44:36 AM CST, Key ID 199e2f91fd431d51"}
+{"name":"glibc", "epoch":"(none)", "version":"2.28", "release":"211.el8", "arch":"i686", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 29 Aug 2022 04:12:26 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"libgcc", "epoch":"(none)", "version":"8.5.0", "release":"15.el8", "arch":"i686", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Thu 21 Jul 2022 05:36:01 PM CST, Key ID 199e2f91fd431d51"}
+{"name":"bash", "epoch":"(none)", "version":"4.4.20", "release":"4.el8_6", "arch":"x86_64", "vendor":"RHat, Inc.", "sigpgp":"RSA/SHA256, Mon 20 Jun 2022 09:20:51 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"libselinux", "epoch":"(none)", "version":"2.9", "release":"6.el8", "arch":"x86_64", "vendor":"Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 08:55:11 PM CST, Key ID 09e2f91fd431d51"}
+{"name":"coreutils", "epoch":"(none)", "version":"8.30", "release":"13.el8", "arch":"x86_64", "vendor":"Hat, Inc.", "sigpgp":"RSA/SHA256, Thu 16 Jun 2022 12:18:02 PM CST, Key ID 09e2f91fd431d51"}
+{"name":"firewalld", "epoch":"(none)", "version":"0.9.3", "release":"13.el8", "arch":"noarch", "vendor":"Red, Inc.", "sigpgp":"RSA/SHA256, Fri 25 Feb 2022 09:40:17 PM CST, Key ID 09e2f91fd431d51"}
+{"name":"miraclelinux-release", "epoch":"(none)", "version":"3.8", "release":"6.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 21 Jun 2021 07:17:43 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"gmp", "epoch":"1", "version":"6.1.2", "release":"10.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Fri 14 Jun 2019 04:58:39 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"basesystem", "epoch":"(none)", "version":"11", "release":"5.el8", "arch":"noarch", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Sat 15 Dec 2018 05:49:21 AM CST, Key ID 09e2f91fd431d51"}
+{"name":"dmidecode", "epoch":"1", "version":"3.3", "release":"4.el8", "arch":"x86_64", "vendor":"Red, Inc.", "sigpgp":"RSA/SHA256, Mon 14 Mar 2022 02:13:06 PM CST, Key ID 99e2f91fd431d51"}
+'''.strip()
+
+ALAMALINUX_OS_RELEASE = """
+NAME="AlmaLinux"
+VERSION="8.10 (Cerulean Leopard)"
+ID="almalinux"
+ID_LIKE="rhel centos fedora"
+VERSION_ID="8.10"
+PLATFORM_ID="platform:el8"
+PRETTY_NAME="AlmaLinux 8.10 (Cerulean Leopard)"
+ANSI_COLOR="0;34"
+LOGO="fedora-logo-icon"
+CPE_NAME="cpe:/o:almalinux:almalinux:8::baseos"
+HOME_URL="https://almalinux.org/"
+DOCUMENTATION_URL="https://wiki.almalinux.org/"
+BUG_REPORT_URL="https://bugs.almalinux.org/"
+
+ALMALINUX_MANTISBT_PROJECT="AlmaLinux-8"
+ALMALINUX_MANTISBT_PROJECT_VERSION="8.10"
+REDHAT_SUPPORT_PRODUCT="AlmaLinux"
+REDHAT_SUPPORT_PRODUCT_VERSION="8.10"
+SUPPORT_END=2029-06-01
+""".strip()
+
+ALAMALINUX_REDHAT_RELEASE = "AlmaLinux release 8.10 (Cerulean Leopard)"
+ALAMALINUX_RPMS = """
+{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"425.3.1.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Tue Nov  8 18:10:54 2022, Key ID 99e2f91fd431d51"}
+{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"372.19.1.el8_6uek", "arch":"x86_64", "vendor":"Oracle America", "sigpgp":"RSA/SHA256, Wed Sep 15 17:11:22 2021, Key ID 99e2f91fd431d51"}
+{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"372.19.1.el8_6", "arch":"x86_64", "vendor":"SUSE, Inc.", "sigpgp":"RSA/SHA256, Wed Sep 15 17:11:22 2021, Key ID 99e2f91fd431d51"}
+{"name":"libselinux", "epoch":"(none)", "version":"2.9", "release":"6.el8", "arch":"i686", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 08:55:09 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"dbus", "epoch":"1", "version":"1.12.8", "release":"23.el8", "arch":"x86_64", "vendor":"Red, Inc.", "sigpgp":"RSA/SHA256, Wed 07 Sep 2022 04:08:12 AM CST, Key ID 99e2f91fd431d51"}
+{"name":"dracut", "epoch":"(none)", "version":"049", "release":"209.git20220815.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 09:56:58 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"libgcc", "epoch":"(none)", "version":"8.5.0", "release":"15.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Thu 21 Jul 2022 05:36:25 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"policycoreutils", "epoch":"(none)", "version":"2.9", "release":"20.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 08:51:06 PM CST, Key ID 199e2f91fd431d51"}
+{"name":"glibc", "epoch":"(none)", "version":"2.28", "release":"211.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 29 Aug 2022 04:13:20 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"libacl", "epoch":"(none)", "version":"2.2.53", "release":"1.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Sat 15 Dec 2018 05:44:36 AM CST, Key ID 199e2f91fd431d51"}
+{"name":"almalinux-logos","epoch":"(none)","version":"84.5","release":"1.el8","arch":"x86_64","installtime":"Tue Apr  8 06:01:08 2025","buildtime":"1633815955","vendor":"AlmaLinux","buildhost":"build02","sigpgp":"RSA/SHA256, Sat Oct  9 16:52:10 2021, Key ID sfwersf24545"}
+{"name":"almalinux-backgrounds","epoch":"(none)","version":"84.5","release":"1.el8","arch":"noarch","installtime":"Tue Apr  8 06:01:09 2025","buildtime":"1633815613","vendor":"AlmaLinux","buildhost":"build02","sigpgp":"RSA/SHA256, Sat Oct  9 16:52:09 2021, Key ID sfwersf24545"}
+""".strip()
+
+CENTOS_RPMS = """
+{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"425.3.1.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Tue Nov  8 18:10:54 2022, Key ID 99e2f91fd431d51"}
+{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"372.19.1.el8_6uek", "arch":"x86_64", "vendor":"Oracle America", "sigpgp":"RSA/SHA256, Wed Sep 15 17:11:22 2021, Key ID 99e2f91fd431d51"}
+{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"372.19.1.el8_6", "arch":"x86_64", "vendor":"SUSE, Inc.", "sigpgp":"RSA/SHA256, Wed Sep 15 17:11:22 2021, Key ID 99e2f91fd431d51"}
+{"name":"libselinux", "epoch":"(none)", "version":"2.9", "release":"6.el8", "arch":"i686", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 08:55:09 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"dbus", "epoch":"1", "version":"1.12.8", "release":"23.el8", "arch":"x86_64", "vendor":"Red, Inc.", "sigpgp":"RSA/SHA256, Wed 07 Sep 2022 04:08:12 AM CST, Key ID 99e2f91fd431d51"}
+{"name":"dracut", "epoch":"(none)", "version":"049", "release":"209.git20220815.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 09:56:58 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"libgcc", "epoch":"(none)", "version":"8.5.0", "release":"15.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Thu 21 Jul 2022 05:36:25 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"policycoreutils", "epoch":"(none)", "version":"2.9", "release":"20.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 08:51:06 PM CST, Key ID 199e2f91fd431d51"}
+{"name":"glibc", "epoch":"(none)", "version":"2.28", "release":"211.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 29 Aug 2022 04:13:20 PM CST, Key ID 99e2f91fd431d51"}
+{"name":"centos-linux-release","epoch":"(none)","version":"8.3","release":"1.2011.el8","arch":"noarch","installtime":"Fri Jan 26 12:23:35 2024","buildtime":"1605023356","vendor":"CentOS","buildhost":"aaa.def.com","sigpgp":"RSA/SHA256, Tue Nov 10 16:46:39 2020, Key ID sfwersf24545"}
+""".strip()
+
+CENTOS_REDHAT_RELEASE = 'CentOS Linux release 8.3.2011'
+
 
 def test_is_rhel():
     # RHEL, uname only
@@ -506,6 +601,36 @@ def test_not_rhel():
     assert result.reasons == {'reason': 'NON-RHEL: redhat-release'}
     assert result.name == "Red Hat Enterprise Linux"
     assert result.is_rhel_compatible is False
+
+    # miracle linux
+    osr = OsRelease(context_wrap(MIRACLE_LINUX_OS_RELEASE))
+    rhr = RedhatRelease(context_wrap(MIRACLE_LINUX_REDHAT_RELEASE))
+    rpms = InstalledRpms(context_wrap(MIRACLE_LINUX_RPMS))
+    result = OSRelease(None, None, rpms, osr, rhr)
+    assert result.is_rhel is False
+    assert result.release == 'Miracle'
+    assert result.name == "MIRACLE LINUX"
+    assert result.is_rhel_compatible is False
+
+    # AlmaLinux
+    osr = OsRelease(context_wrap(ALAMALINUX_OS_RELEASE))
+    rhr = RedhatRelease(context_wrap(ALAMALINUX_REDHAT_RELEASE))
+    rpms = InstalledRpms(context_wrap(ALAMALINUX_RPMS))
+    result = OSRelease(None, None, rpms, osr, rhr)
+    assert result.is_rhel is False
+    assert result.release == 'AlmaLinux'
+    assert result.name == "AlmaLinux"
+    assert result.is_rhel_compatible is False
+
+    # centos
+    osr = OsRelease(context_wrap(OS_RELEASE_RH))
+    rhr = RedhatRelease(context_wrap(CENTOS_REDHAT_RELEASE))
+    rpms = InstalledRpms(context_wrap(CENTOS_RPMS))
+    result = OSRelease(None, None, rpms, osr, rhr)
+    assert result.is_rhel is False
+    assert result.release == "CentOS"
+    assert result.name == "Red Hat Enterprise Linux"
+    assert result.is_rhel_compatible is True
 
 
 def test_osr_doc():
