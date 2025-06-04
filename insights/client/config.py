@@ -11,6 +11,7 @@ from six.moves import configparser as ConfigParser
 from insights.cleaner import DEFAULT_OBFUSCATIONS
 from insights.client.utilities import get_rhel_version, get_egg_version_tuple
 from insights.specs.manifests import manifests, content_types
+from insights.util import parse_bool
 
 try:
     from .constants import InsightsConstants as constants
@@ -72,7 +73,7 @@ DEFAULT_OPTS = {
     },
     'base_url': {
         # non-CLI
-        'default': constants.base_url
+        'default': constants.legacy_base_url
     },
     'branch_info': {
         # non-CLI
@@ -458,12 +459,6 @@ DEFAULT_OPTS = {
         # False: upload to insights platform API
         'default': True
     },
-    '_legacy_upload_reason': {
-        # Since we don't have access to logging when the configuration is
-        # determined, this is a way to gather information about why the
-        # option isn't on its default value.
-        'default': 'default behavior',
-    },
     'payload': {
         'default': None,
         'opt': ['--payload'],
@@ -693,6 +688,9 @@ class InsightsConfig(object):
         '''
 
         def _validate_obfuscation_options():
+            # Old switches are "str" by default now, convert them to boolean
+            self.obfuscate = parse_bool(self.obfuscate, None)
+            self.obfuscate_hostname = parse_bool(self.obfuscate_hostname, None)
             # When old switches are set explicitly, even set as False
             if self.obfuscate is not None or self.obfuscate_hostname is not None:
                 # Warning deprecation only on RHEL 8+ and from egg v 3.6.0 (planned)
@@ -851,7 +849,6 @@ class InsightsConfig(object):
             self.net_debug = True
         if self.payload or self.diagnosis or self.check_results or self.checkin:
             self.legacy_upload = False
-            self._legacy_upload_reason = "--payload, --diagnosis, --check-results and --checkin require non-legacy"
         if self.payload and (self.logging_file == constants.default_log_file):
             self.logging_file = constants.default_payload_log
         if self.output_dir or self.output_file:
@@ -872,7 +869,6 @@ class InsightsConfig(object):
             self.manifest = manifests.get(self.app)
             self.content_type = content_types.get(self.app)
             self.legacy_upload = False
-            self._legacy_upload_reason = "apps require non-legacy"
             self._set_app_config()
         if (
             self.compliance
@@ -884,7 +880,6 @@ class InsightsConfig(object):
             self.manifest = manifests.get('compliance')
             self.content_type = content_types.get('compliance')
             self.legacy_upload = False
-            self._legacy_upload_reason = "compliance requires non-legacy"
         if self.output_dir:
             # get full path
             self.output_dir = os.path.abspath(self.output_dir)
@@ -924,7 +919,6 @@ class InsightsConfig(object):
             #   Therefore, only force legacy_upload to False when attempting
             #   to change Ansible hostname from the CLI, when not registering.
             self.legacy_upload = False
-            self._legacy_upload_reason = "--ansible-host requires non-legacy"
 
     def _set_app_config(self):
         '''
