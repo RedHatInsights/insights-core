@@ -134,6 +134,7 @@ FILE_LISTING_DOC = '''
 LS_FILE_PERMISSIONS_DOC = '''
 -rw-r--r--. 1 root  root      46 Apr 24  2024 /etc/redhat-release
 -rw-r--r--. 1 liuxc wheel 664118 Feb 20 14:40 /var/log/messages
+brw-rw----. 1 root  disk 252, 1 May 16 01:30 /dev/vda1
 '''
 # Note - should we test for anomalous but parseable entries?  E.g. block
 # devices without a major/minor number?  Or non-devices that have a comma in
