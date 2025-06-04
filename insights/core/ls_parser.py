@@ -299,9 +299,11 @@ class FilePermissions(object):
         #               ^^^^^^^^^
         # Username and group name are strings without whitespace \s and without colon :.
 
-        \s+\S+\s+                # size and spaces around
+        \s+(?:\d+|\d+,\s*\d+)+\s+        # (size or major/minor) and spaces around
         # -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
         #                        ^^^^^^
+        # brw-rw----. 1 root disk 252, 1 May 16 01:30 /dev/vda1
+        #                        ^^^^^^^^
 
         \S+\s+\S+                # month and day
         # -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
@@ -331,6 +333,7 @@ class FilePermissions(object):
                         -rw-------. 1 root root 762 Sep 23 002 /etc/ssh/sshd_config
                         -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
                         -rw-r--r--. 1 root root 4179 Dec  1  2014 /boot/grub2/grub.cfg
+                        brw-rw----. 1 root disk 252, 1 May 16 01:30 /dev/vda1
         Raises:
             ValueError: If line is malformed
         """
@@ -346,6 +349,12 @@ class FilePermissions(object):
                 self.group,
                 self.path,
             ) = r.groups()
+            parts = self.line.split()
+            if "," in parts[4]:
+                self.major = int(parts[4].strip(","))
+                self.minor = int(parts[5])
+            else:
+                self.size = int(parts[4])
         else:
             raise ValueError('Invalid `ls -l` line "{}"'.format(self.line))
 
