@@ -4,12 +4,14 @@ Top level OpenShift 4 component
 The :py:func:`conf` component recognizes insights-operator and must-gather
 archives.
 """
+
 import logging
 import os
 import yaml
 import warnings
 
 from fnmatch import fnmatch
+from insights.core import SafeLoader as Loader
 from insights.core.plugins import component, datasource
 from insights.core.context import ExecutionContext, fs_root
 
@@ -19,23 +21,18 @@ from insights.util import content_type
 
 log = logging.getLogger(__name__)
 
-try:
-    # requires pyyaml installed after libyaml
-    Loader = yaml.CSafeLoader
-except:
-    log.info("Couldn't find libyaml loader. Falling back to python loader.")
-    Loader = yaml.SafeLoader
-
 
 @fs_root
 class InsightsOperatorContext(ExecutionContext):
     """Recognizes insights-operator archives"""
+
     marker = "config/featuregate"
 
 
 @fs_root
 class MustGatherContext(ExecutionContext):
     """Recognizes must-gather archives"""
+
     marker = "cluster-scoped-resources"
 
 
