@@ -2,9 +2,26 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.16](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.16) (2025-06-05)
+
+- fix(setup): remove CONTRIBUTING.md from dynamic readme in pyproject.toml ([PR 4473](https://github.com/RedHatInsights/insights-core/pull/4473))
+- add dnf_module_list spec file path for sos_archive ([PR 4472](https://github.com/RedHatInsights/insights-core/pull/4472))
+- fix(test): use yaml.SafeLoader only in test ([PR 4466](https://github.com/RedHatInsights/insights-core/pull/4466))
+- test: add unit tests for dnf_module RHEL9 spec input ([PR 4461](https://github.com/RedHatInsights/insights-core/pull/4461))
+- feat: Update FilePermissions cover device_ls ([PR 4457](https://github.com/RedHatInsights/insights-core/pull/4457))
+- Enhance OSRelease to support Miracle Linux and AlmaLinux ([PR 4471](https://github.com/RedHatInsights/insights-core/pull/4471))
+- fix: Compatible with old obfuscation switches ([PR 4470](https://github.com/RedHatInsights/insights-core/pull/4470))
+- fix: update the hostname obfuscation logic per manual ([PR 4454](https://github.com/RedHatInsights/insights-core/pull/4454))
+- fix: Skip extraction of all device files in archive ([PR 4469](https://github.com/RedHatInsights/insights-core/pull/4469))
+- Feat: Add support for RHEL 10 ([PR 4467](https://github.com/RedHatInsights/insights-core/pull/4467))
+- fix: Improve error message for too long rule responses ([PR 4463](https://github.com/RedHatInsights/insights-core/pull/4463))
+- chore: add tests for FileProvider.validate() ([PR 4458](https://github.com/RedHatInsights/insights-core/pull/4458))
+- fix: hostname should be obfuscated for lvs and grubby ([PR 4464](https://github.com/RedHatInsights/insights-core/pull/4464))
+- fix: improve wording for unassignable Policy ([PR 4414](https://github.com/RedHatInsights/insights-core/pull/4414))
+
 # [insights-core-3.5.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.15) (2025-05-29)
 
-- Revert "chore(client): Simplify automatic configuration logic (4376)" (#4465)
+- Revert "chore(client): Simplify automatic configuration logic (4376)" ([PR 4465](https://github.com/RedHatInsights/insights-core/pull/4465))
 
 # [insights-core-3.5.14](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.14) (2025-05-15)
 

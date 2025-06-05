@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.15
+Version:        3.5.16
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,33 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 05 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.16-1
+- fix(setup): remove CONTRIBUTING.md from dynamic readme in pyproject.toml
+  (#4473) (xiangceliu@redhat.com)
+- add dnf_module_list spec file path for sos_archive (#4472)
+  (tayushi1610@gmail.com)
+- fix(test): use yaml.SafeLoader only in test (#4466) (xiangceliu@redhat.com)
+- test: add unit tests for dnf_module RHEL9 spec input (#4461)
+  (xiaoxwan@redhat.com)
+- feat: Update FilePermissions cover device_ls (#4457) (jiazhang@redhat.com)
+- Enhance OSRelease to support Miracle Linux and AlmaLinux (#4471)
+  (44796653+huali027@users.noreply.github.com)
+- fix: Compatible with old obfuscation switches (#4470) (xiangceliu@redhat.com)
+- fix: update the hostname obfuscation logic per manual (#4454)
+  (xiangceliu@redhat.com)
+- fix: Skip extraction of all device files in archive (#4469)
+  (sauravchandra123@gmail.com)
+- Feat: Add support for RHEL 10 (#4467)
+  (20520336+bfahr@users.noreply.github.com)
+- fix: Improve error message for too long rule responses (#4463)
+  (71874510+jholecek-rh@users.noreply.github.com)
+- chore: add tests for FileProvider.validate() (#4458) (71874510+jholecek-
+  rh@users.noreply.github.com)
+- fix: hostname should be obfuscated for lvs and grubby (#4464)
+  (xiangceliu@redhat.com)
+- fix: improve wording for unassignable Policy (#4414)
+  (1187051+romanblanco@users.noreply.github.com)
+
 * Thu May 29 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.15-1
 - Revert "chore(client): Simplify automatic configuration logic (#4376)"
   (#4465) (xiangceliu@redhat.com)
