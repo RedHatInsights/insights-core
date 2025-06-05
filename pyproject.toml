@@ -85,7 +85,7 @@ mangle = "insights.util.mangle:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "insights.version._VERSION_"}
-readme = {file = ["README.rst", "CONTRIBUTING.md"]}
+readme = {file = ["README.rst"]}
 
 [tool.pytest.ini_options]
 addopts = "-rsxXfE --ignore=./build/"
