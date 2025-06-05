@@ -554,13 +554,8 @@ class InsightsClient(object):
             with open("/var/lib/insights/insights-details.json", mode="r+b") as f:
                 insights_data = json.load(f)
             print(json.dumps(insights_data, indent=1))
-        except IOError as e:
-            if e.errno == errno.ENOENT:
-                raise Exception("Error: no report found. "
-                                "Check the results to update the report cache: %s"
-                                "\n# insights-client --check-results" % e)
-            else:
-                raise e
+        except IOError:
+            logger.info("No reports found for this host.")
 
     def show_inventory_deep_link(self):
         """
