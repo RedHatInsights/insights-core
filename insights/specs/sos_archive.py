@@ -73,6 +73,7 @@ class SosSpecs(Specs):
     dmsetup_info = simple_file("sos_commands/devicemapper/dmsetup_info_-c")
     dmsetup_status = simple_file("sos_commands/devicemapper/dmsetup_status")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
+    dnf_module_list = simple_file("/sos_commands/dnf/dnf_module_list")
     dnsmasq_config = glob_file(["/etc/dnsmasq.conf", "/etc/dnsmasq.d/*.conf"])
     docker_host_machine_id = simple_file("/etc/redhat-access-insights/machine-id")
     docker_info = simple_file("sos_commands/docker/docker_info")
