@@ -1118,15 +1118,24 @@ class InsightsConnection(object):
                             "\n# insights-client --register" % generate_machine_id())
 
         if not os.path.exists("/var/lib/insights"):
-            os.makedirs("/var/lib/insights", mode=0o755)
+            os.makedirs("/var/lib/insights", mode=0o750)
 
+        host_id = host_details["results"][0]["id"]
         with open("/var/lib/insights/host-details.json", mode="w+b") as f:
             f.write(res.content)
             logger.debug("Wrote \"/var/lib/insights/host-details.json\"")
 
-        host_id = host_details["results"][0]["id"]
-        url = self.base_url + "/insights/v1/system/%s/reports/" % host_id
-        res = self.get(url)
+        url_reports = self.base_url + "/insights/v1/system/%s/" % host_id
+        res = self.get(url_reports)
+        if res.status_code not in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
+            return None
+
+        num_hits = json.loads(res.content.decode('utf-8')).get("hits", 0)
+        if num_hits == 0:
+            return {}
+
+        url_latest_reports = self.base_url + "/insights/v1/system/%s/reports/" % host_id
+        res = self.get(url_latest_reports)
         if res.status_code not in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
             return None
 
