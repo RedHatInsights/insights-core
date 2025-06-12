@@ -478,8 +478,16 @@ class Response(dict):
 
     def _log_length_error(self, key, length, limit):
         """ Helper function for logging a response length error. """
-        msg = "Data length %d in rule response %s(%s) exceeds the limit of %d characters."
-        log.error(msg, length, self.__class__.__name__, key, settings.defaults["max_detail_length"])
+        msg = (
+            "Rule response %(response_type)s(%(response_key)s) "
+            "exceeds the size limit of %(limit)d characters."
+        )
+        data = {
+            "response_type": self.__class__.__name__,
+            "response_key": key,
+            "limit": settings.defaults["max_detail_length"]
+        }
+        log.error(msg, data, extra=data)
 
     def __str__(self):
         key_val = self.get_key()
