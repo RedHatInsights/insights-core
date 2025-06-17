@@ -28,6 +28,7 @@ drwxr-xr-x.  2 0 0    6 Sep 16  2015 console
 -rw-------.  1 0 0 1390 Mar  4  2014 ebtables-config
 -rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld
 lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub
+lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grubX
 
 /etc/rc.d/rc3.d:
 total 4
@@ -171,7 +172,7 @@ def test_multiple_directories():
     esc = dirs['/etc/sysconfig']
     assert sorted(esc.keys()) == sorted(['entries', 'files', 'dirs', 'specials', 'total', 'name'])
 
-    assert dirs.files_of('/etc/sysconfig') == ['ebtables-config', 'firewalld', 'grub']
+    assert dirs.files_of('/etc/sysconfig') == ['ebtables-config', 'firewalld', 'grub', 'grubX']
     assert dirs.dirs_of('/etc/sysconfig') == ['.', '..', 'cbq', 'console']
     assert dirs.specials_of('/etc/sysconfig') == []
     assert dirs.files_of('non-exist') == []
@@ -315,6 +316,10 @@ def test_raw_entry_of_permissions_of():
     raw_entry = 'lrwxrwxrwx. 1 0 0 17 Jul  6 23:32 grub -> /etc/default/grub'
     assert dirs.raw_entry_of('/etc/sysconfig', 'grub') == raw_entry
     assert dirs.permissions_of('/etc/sysconfig', 'grub').line == raw_entry
+    # abnormal case, no '->' for links
+    raw_entry = 'lrwxrwxrwx. 1 0 0 17 Jul  6 23:32 grubX'
+    assert dirs.raw_entry_of('/etc/sysconfig', 'grubX') == raw_entry
+    assert dirs.permissions_of('/etc/sysconfig', 'grubX').line == raw_entry
     # no such target file
     dirs.raw_entry_of('/etc/sysconfig', 'test') is None
     dirs.permissions_of('/etc/sysconfig', 'test') is None
