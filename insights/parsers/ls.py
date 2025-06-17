@@ -293,7 +293,7 @@ class FileListing(CommandParser, dict):
                 if 'date' in tgt:
                     raw_line += ' ' + tgt['date']
                 raw_line += ' ' + tgt['name']
-                if tgt['type'] == 'l':
+                if tgt['type'] == 'l' and 'link' in tgt:
                     raw_line += ' -> ' + tgt['link']
                 return raw_line
 
