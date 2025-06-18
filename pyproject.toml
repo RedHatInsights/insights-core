@@ -79,7 +79,6 @@ insights-collect = "insights.collect:main"
 insights-dupkeycheck = "insights.tools.dupkeycheck:main"
 insights-info = "insights.tools.query:main"
 insights-inspect = "insights.tools.insights_inspect:main"
-insights-ocpshell = "insights.ocpshell:main"
 insights-run = "insights:main"
 mangle = "insights.util.mangle:main"
 

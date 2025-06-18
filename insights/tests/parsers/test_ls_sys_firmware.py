@@ -69,7 +69,6 @@ def test_ls_sys_firmware():
         "se_mls": "s0",
         "name": "efi",
         "date": "Sep 30 16:58",
-        "raw_entry": "drwxr-xr-x.  3 root root system_u:object_r:sysfs_t:s0   0 Sep 30 16:58 efi",
         "dir": "/sys/firmware",
     }
     assert (

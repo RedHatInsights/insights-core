@@ -179,10 +179,6 @@ class Directory(dict):
             # Update our entry and put it into the correct buckets
             # based on its type.
             entry.update(rest)
-            # TODO
-            # - The `raw_entry` key is deprecated and will be removed from 3.6.0.
-            #   Please use the `insights.parsers.ls.FileListingParser.raw_entry_of` instead.
-            entry["raw_entry"] = line
             entry["dir"] = name
             nm = entry["name"]
             ents[nm] = entry

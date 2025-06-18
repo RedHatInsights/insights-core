@@ -31,25 +31,6 @@ root     111434      1  0 22:32 ?        00:00:00 nginx: master process /usr/sbi
 nginx    111435 111434  0 22:32 ?        00:00:00 nginx: worker process
 """
 
-PsEo_TEST_DOC = """
- PID  PPID COMMAND       NLWP
-   1     0 systemd         1
-   2     0 kthreadd        1
-   3     2 ksoftirqd/0     1
-2416     1 auditd          1
-2419  2416 audispd         1
-2421  2419 sedispatch      1
-2892     1 NetworkManager  1
-3172  2892 dhclient        1
-3871     1 master          1
-3886  3871 qmgr            1
-13724  3871 pickup         1
-15663     2 kworker/0:1    1
-16998     2 kworker/0:3    1
-17259     2 kworker/0:0    1
-18294  3357 sshd           1
-"""
-
 PsAlxwww_TEST_DOC = """
 F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
 4     0     1     0  20   0 128292  6928 ep_pol Ss   ?          0:02 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
@@ -76,7 +57,6 @@ def test_doc_examples():
         'ps': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
         'ps_auxww': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
         'ps_ef': ps.PsEf(context_wrap(PsEf_TEST_DOC)),
-        'ps_eo': ps.PsEo(context_wrap(PsEo_TEST_DOC, strip=False)),
         'ps_alxwww': ps.PsAlxwww(context_wrap(PsAlxwww_TEST_DOC)),
         'ps_eo_cmd': ps.PsEoCmd(context_wrap(PsEoCmd_TEST_DOC)),
         'container_ps_aux': ps.ContainerPsAux(context_wrap(
@@ -371,89 +351,6 @@ def test_ps_auxww_with_bad_input():
     assert 'PsAuxww: Cannot find ps header line containing' in str(exc)
 
 
-PS_EO_WITHOUT_NLWP = """
-  PID  PPID COMMAND
-    1     0 systemd
-    2     0 kthreadd
-    3     2 ksoftirqd/0
-    5     2 kworker/0:0H
-    6     2 kworker/u2:0
- 2416     1 auditd
- 2419  2416 audispd
- 2421  2419 sedispatch
- 2892     1 NetworkManager
- 3172  2892 dhclient
- 3871     1 master
- 3886  3871 qmgr
-13724  3871 pickup
-15663     2 kworker/0:1
-16998     2 kworker/0:3
-17259     2 kworker/0:0
-18294  3357 sshd
-18302 18294 sshd
-18303 18302 bash
-18338 18303 sudo
-18346 18338 su
-18347 18346 bash
-18379 18347 ps
-"""
-
-PS_EO_WITH_NLWP = """
-    PID    PPID COMMAND         NLWP
-      1       0 systemd            1
-      2       0 kthreadd           1
-      3       2 rcu_gp             1
-      4       2 rcu_par_gp         1
-      6       2 kworker/0:0H-ev    1
-      9       2 mm_percpu_wq       1
-     10       2 rcu_tasks_rude_    1
-     11       2 rcu_tasks_trace    1
-     12       2 ksoftirqd/0        1
-     13       2 rcu_sched          1
-     14       2 migration/0        1
-     15       2 watchdog/0         1
-     16       2 cpuhp/0            1
-     17       2 cpuhp/1            1
-     18       2 watchdog/1         1
-     19       2 migration/1        1
-     20       2 ksoftirqd/1        1
-     22       2 kworker/1:0H-ev    1
-     23       2 cpuhp/2            1
-     24       2 watchdog/2         1
-     25       2 migration/2        1
-"""
-
-
-def test_ps_eo():
-    p = ps.PsEo(context_wrap(PS_EO_WITHOUT_NLWP, strip=False))
-    assert p is not None
-    assert len(p.pid_info) == 23
-    assert '15663' in p.pid_info
-    assert p.pid_info['2416'] == {
-        'PID': '2416', 'PPID': '1', 'COMMAND': 'auditd', 'COMMAND_NAME': 'auditd', 'ARGS': ''
-    }
-    assert p.pid_info['18379'] == {
-        'PID': '18379', 'PPID': '18347', 'COMMAND': 'ps', 'COMMAND_NAME': 'ps', 'ARGS': ''
-    }
-    assert p.children('18347') == [
-        {'PID': '18379', 'PPID': '18347', 'COMMAND': 'ps', 'COMMAND_NAME': 'ps', 'ARGS': ''}
-    ]
-    assert len(p.children('2')) == 6
-
-    ps_with_elwp = ps.PsEo(context_wrap(PS_EO_WITH_NLWP, strip=False))
-    assert ps_with_elwp is not None
-    assert len(ps_with_elwp.pid_info) == 21
-    assert ps_with_elwp.pid_info['25'] == {
-        'PID': '25', 'PPID': '2', 'COMMAND': 'migration/2', 'COMMAND_NAME': 'migration/2', 'ARGS': '', 'NLWP': '1'
-    }
-
-
-def test_ps_eo_stripped():
-    p = ps.PsEo(context_wrap(PS_EO_WITHOUT_NLWP, strip=True))
-    assert p is not None
-    assert len(p.pid_info) == 23
-
-
 PS_ALXWWW_DATA = """
 F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
 4     0     1     0  20   0 128292  6944 ep_pol Ss   ?          0:02 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
@@ -527,12 +424,6 @@ def test_ps_eo_cmd():
     assert p.pid_info['3106'] == {
         'PID': '3106', 'PPID': '3101', 'NLWP': '1', 'COMMAND': '[NFSv4', 'COMMAND_NAME': '[NFSv4', 'ARGS': ''
     }
-
-
-def test_ps_eo_cmd_stripped():
-    p = ps.PsEo(context_wrap(PS_EO_CMD_NORMAL, strip=True))
-    assert p is not None
-    assert len(p.running_pids()) == 11
 
 
 PS_AUXWWWM = """

@@ -3,7 +3,7 @@ from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.uname import Uname
 from insights.parsers.redhat_release import RedhatRelease
 from insights.parsers.messages import Messages
-from insights.parsers.ps import PsAuxcww, PsAux, PsAuxww, PsEf, PsEo
+from insights.parsers.ps import PsAuxcww, PsAux, PsAuxww, PsEf, PsEoCmd
 from insights.parsers.virt_what import VirtWhat
 from insights.parsers.date import Date, DateUTC
 from insights.parsers.client_metadata import Tags
@@ -38,7 +38,7 @@ def condition_03(*args):
     return True
 
 
-@condition(PsEf, [DMIDecode], optional=[PsEo])
+@condition(PsEf, [DMIDecode], optional=[PsEoCmd])
 def condition_04(*args):
     return True
 
@@ -53,7 +53,7 @@ def condition_06(*args):
     return True
 
 
-@condition(Mount, [OsRelease, PsEo], optional=[DateUTC])
+@condition(Mount, [OsRelease, PsEoCmd], optional=[DateUTC])
 def condition_07(*args):
     return True
 
