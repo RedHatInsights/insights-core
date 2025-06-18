@@ -3,11 +3,11 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 
 class Specs(SpecSet):
     # Client metadata specs/files
-    ansible_host = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    ansible_host = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     blacklist_report = RegistryPoint(prio=-1)
     blacklisted_specs = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'], prio=-1)
     branch_info = RegistryPoint()  # https://issues.redhat.com/browse/RHIN-639
-    display_name = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    display_name = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     egg_release = RegistryPoint()
     tags = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     version_info = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
@@ -157,7 +157,7 @@ class Specs(SpecSet):
     designate_conf = RegistryPoint(filterable=True)
     df__al = RegistryPoint()
     df__alP = RegistryPoint()
-    df__li = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    df__li = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     dig = RegistryPoint()
     dig_dnssec = RegistryPoint()
     dig_edns = RegistryPoint()
@@ -190,7 +190,7 @@ class Specs(SpecSet):
     dracut_kdump_capture_service = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     dse_ldif = RegistryPoint(multi_output=True, filterable=True)
     du_dirs = RegistryPoint(
-        multi_output=True, filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
+        multi_output=True, filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac']
     )
     dumpe2fs_h = RegistryPoint(multi_output=True)
     duplicate_machine_id = RegistryPoint(filterable=True)
@@ -224,7 +224,7 @@ class Specs(SpecSet):
     fcoeadm_i = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     filefrag = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     files_dirs_number_filter = RegistryPoint(filterable=True)
-    files_dirs_number = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    files_dirs_number = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     findmnt_lo_propagation = RegistryPoint()
     firewall_cmd_list_all_zones = RegistryPoint()
     firewalld_conf = RegistryPoint(
@@ -297,7 +297,7 @@ class Specs(SpecSet):
     httpd_limits = RegistryPoint(
         multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
-    httpd_on_nfs = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    httpd_on_nfs = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     httpd_ssl_access_log = RegistryPoint(filterable=True)
     httpd_ssl_cert_enddate = RegistryPoint(multi_output=True, no_obfuscate=['ipv4', 'ipv6', 'mac'])
     httpd_ssl_error_log = RegistryPoint(filterable=True)
@@ -324,7 +324,7 @@ class Specs(SpecSet):
     ip_addresses = RegistryPoint(no_obfuscate=['hostname'])
     ip_neigh_show = RegistryPoint(no_obfuscate=['hostname'])
     ip_netns_exec_namespace_lsof = RegistryPoint(
-        multi_output=True, filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
+        multi_output=True, filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac']
     )
     ip_route_show_table_all = RegistryPoint(no_obfuscate=['hostname'])
     ip_s_link = RegistryPoint(no_obfuscate=['hostname'])
@@ -383,10 +383,10 @@ class Specs(SpecSet):
         multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
     lastupload = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    ld_library_path_global_conf = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    ld_library_path_global_conf = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     leapp_migration_results = RegistryPoint()
     leapp_report = RegistryPoint()
-    ld_library_path_of_user = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    ld_library_path_of_user = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     libssh_client_config = RegistryPoint(filterable=True)
     libssh_server_config = RegistryPoint(filterable=True)
     libvirtd_log = RegistryPoint(filterable=True)
@@ -434,12 +434,12 @@ class Specs(SpecSet):
     lsblk = RegistryPoint()
     lsblk_pairs = RegistryPoint()
     lscpu = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    lsinitrd = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    lsinitrd = RegistryPoint(filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac'])
     lsinitrd_kdump_image = RegistryPoint(
-        filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
+        filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac']
     )
     lsinitrd_lvm_conf = RegistryPoint(
-        filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
+        filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac']
     )
     lsmod = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     lsof = RegistryPoint(filterable=True)
@@ -448,11 +448,11 @@ class Specs(SpecSet):
     lssap = RegistryPoint()
     lsscsi = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     luksmeta = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    lvdisplay = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    lvm_conf = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    lvdisplay = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
+    lvm_conf = RegistryPoint(filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac'])
     lvm_fullreport = RegistryPoint()
     lvm_system_devices = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
-    lvmconfig = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    lvmconfig = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     lvs_headings = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     lvs_noheadings = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     lvs_noheadings_all = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
@@ -599,7 +599,7 @@ class Specs(SpecSet):
         filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
     pam_conf = RegistryPoint()
-    parted__l = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    parted__l = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     partitions = RegistryPoint()
     passenger_status = RegistryPoint()
     password_auth = RegistryPoint()
@@ -759,7 +759,7 @@ class Specs(SpecSet):
     sealert = RegistryPoint()
     secure = RegistryPoint(filterable=True)
     securetty = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    selinux_config = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    selinux_config = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     selinux_users = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     sendmail_mc = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     sendq_socket_buffer = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
@@ -811,7 +811,7 @@ class Specs(SpecSet):
     )
     subscription_manager_status = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     subscription_manager_syspurpose = RegistryPoint(
-        no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
+        no_obfuscate=['ipv4', 'ipv6', 'mac']
     )
     sudoers = RegistryPoint(multi_output=True, filterable=True)
     swift_conf = RegistryPoint()
