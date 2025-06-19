@@ -402,6 +402,7 @@ class Specs(SpecSet):
     lpstat_p = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     lpstat_protocol_printers = RegistryPoint()
     lpstat_queued_jobs_count = RegistryPoint()
+    lru_gen_enabled = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     # New `ls` Specs
     ls_files = RegistryPoint()
     ls_la = RegistryPoint()
