@@ -473,6 +473,7 @@ class DefaultSpecs(Specs):
     lpstat_p = simple_command("/usr/bin/lpstat -p")
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
     lpstat_queued_jobs_count = lpstat.lpstat_queued_jobs_count
+    lru_gen_enabled = simple_file("/sys/kernel/mm/lru_gen/enabled")
     ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, keep_rc=True)
     ls_la_filtered = command_with_args(
         '/bin/ls -la %s', ls.list_with_la_filtered, keep_rc=True
