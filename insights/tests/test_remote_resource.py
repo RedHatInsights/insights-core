@@ -24,10 +24,20 @@ class TestRemoteResource(TestMockServer):
         rtn = rr.get(url)
         assert rtn.content == NOT_FOUND
 
+    # Test disable RemoteResource
+    def test_get_disable_remote_resource(self):
+        RemoteResource.Disable_Remote_Resource_Access = True
+        try:
+            rr = RemoteResource()
+            url = 'http://localhost:{port}/moc/'.format(port=self.server_port)
+            rr.get(url)
+        except Exception as e:
+            RemoteResource.Disable_Remote_Resource_Access = False
+            assert str(e) == "Disabled remote resource access by admin"
+
     # Test CachedRemoteResource not cached
     def test_get_cached_remote_resource(self):
         crr = CachedRemoteResource()
-
         url = 'http://localhost:{port}/mock/'.format(port=self.server_port)
         rtn = crr.get(url)
         assert GOOD_PAYLOAD in rtn.content
