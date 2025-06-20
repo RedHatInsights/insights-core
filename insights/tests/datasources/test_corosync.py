@@ -2,7 +2,8 @@ import pytest
 
 from mock.mock import patch
 
-from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8, IsRhel9
+from insights.components.rhel_version import IsRhel6, IsRhel7
+from insights.combiners.redhat_release import RedHatRelease
 from insights.core.exceptions import SkipComponent
 from insights.specs.datasources.corosync import corosync_cmapctl_cmds
 
@@ -30,11 +31,7 @@ def test_corosync_cmapctl_cmds(path_exists):
     result = corosync_cmapctl_cmds(broker)
     assert result == COROSYNC_CMD_RHEL7
 
-    broker = {IsRhel8: True}
-    result = corosync_cmapctl_cmds(broker)
-    assert result == COROSYNC_CMD_RHEL9
-
-    broker = {IsRhel9: True}
+    broker = {RedHatRelease: True}
     result = corosync_cmapctl_cmds(broker)
     assert result == COROSYNC_CMD_RHEL9
 
@@ -46,6 +43,6 @@ def test_corosync_cmapctl_cmds_no_such_cmd(path_exists):
     with pytest.raises(SkipComponent):
         corosync_cmapctl_cmds(broker)
 
-    broker = {IsRhel9: True}
+    broker = {RedHatRelease: True}
     with pytest.raises(SkipComponent):
         corosync_cmapctl_cmds(broker)
