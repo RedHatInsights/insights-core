@@ -1,6 +1,7 @@
 from cachecontrol.cache import DictCache
 from insights.core.remote_resource import RemoteResource, CachedRemoteResource
 from insights.tests.mock_web_server import TestMockServer
+from insights import apply_configs
 
 GOOD_PAYLOAD = b'Successful return from Mock Service'
 NOT_FOUND = b'{"error":{"code": "404", "message": "Not Found"}}'
@@ -26,14 +27,16 @@ class TestRemoteResource(TestMockServer):
 
     # Test disable RemoteResource
     def test_get_disable_remote_resource(self):
-        RemoteResource.Disable_Remote_Resource_Access = True
+        apply_configs({"allow_remote_resource_access": False})
         try:
             rr = RemoteResource()
             url = 'http://localhost:{port}/moc/'.format(port=self.server_port)
             rr.get(url)
+            apply_configs({"allow_remote_resource_access": True})
+            raise AssertionError("Expected code to be unreachable")
         except Exception as e:
-            RemoteResource.Disable_Remote_Resource_Access = False
-            assert str(e) == "Disabled remote resource access by admin"
+            apply_configs({"allow_remote_resource_access": True})
+            assert str(e) == "Remote resource access is disabled"
 
     # Test CachedRemoteResource not cached
     def test_get_cached_remote_resource(self):

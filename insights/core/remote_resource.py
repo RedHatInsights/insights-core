@@ -22,8 +22,8 @@ class RemoteResource(object):
         >>> rtn = rr.get("http://google.com")
         >>> print (rtn.content)
     """
-    Disable_Remote_Resource_Access = False
-    """Disable remote resource access, default is False"""
+    allow_remote_resource_access = True
+    """Allow remote resource access, default is True"""
     timeout = 10
     """ float: Time in seconds for the requests.get api call to wait before returning a timeout exception """
 
@@ -45,13 +45,14 @@ class RemoteResource(object):
         Returns:
             response: (HttpResponse): Response object from requests.get api request
         """
-        if self.Disable_Remote_Resource_Access:
-            raise Exception("Disabled remote resource access by admin")
-        if certificate_path:
+        if self.allow_remote_resource_access:
+            if certificate_path:
+                return self.session.get(url, params=params, headers=headers,
+                        verify=certificate_path, auth=auth, timeout=self.timeout)
             return self.session.get(url, params=params, headers=headers,
-                    verify=certificate_path, auth=auth, timeout=self.timeout)
-        return self.session.get(url, params=params, headers=headers,
-                auth=auth, timeout=self.timeout)
+                    auth=auth, timeout=self.timeout)
+        else:
+            raise Exception("Remote resource access is disabled")
 
 
 class CachedRemoteResource(RemoteResource):

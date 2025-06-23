@@ -54,7 +54,8 @@ plugins:
   # disable everything by default
   # defaults to false if not specified.
   default_component_enabled: false
-
+  # enable the insights.core.remote_resource access the external resource
+  allow_remote_resource_access: True
   # packages and modules to load
   packages:
     - insights.specs.default

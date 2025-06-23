@@ -39,6 +39,7 @@ from insights.core.hydration import create_context, initialize_broker  # noqa: F
 from insights.core.plugins import (combiner, condition, datasource, fact, incident, make_fail, make_fingerprint,  # noqa: F401
                                    make_info, make_metadata, make_none, make_pass, make_response, metadata,
                                    parser, rule)
+from insights.core.remote_resource import RemoteResource
 from insights.core.spec_factory import RawFileProvider, TextFileProvider
 from insights.formats import Formatter as FormatterClass, get_formatter
 from insights.parsers import get_active_lines  # noqa: F401
@@ -233,6 +234,8 @@ def apply_configs(config):
                 component. The dictionary can be retrieved by the component at
                 runtime.
     """
+    allow_remote_access = config.get("allow_remote_resource_access", True)
+    RemoteResource.allow_remote_resource_access = allow_remote_access
     default_enabled = config.get("default_component_enabled", True)
     delegate_keys = sorted(dr.DELEGATES, key=dr.get_name)
     for comp_cfg in config.get("configs", []):
