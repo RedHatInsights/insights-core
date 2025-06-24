@@ -37,6 +37,8 @@ drwxr-xr-x.  2 0 0    6 Sep 16  2015 console
 -rw-------.  1 0 0 1390 Mar  4  2014 ebtables-config
 -rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld
 lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub
+d-w----r-T   2 0 0         6 Jul 24  2022 spooler-T
+d-w----r-t   2 0 0         6 Jul 24  2022 spooler-t
 
 /etc/rc.d/rc3.d:
 total 4
@@ -240,6 +242,9 @@ def test_parse_multiple_directories():
     assert results["/etc/sysconfig"]["total"] == 96
     assert results["/etc/rc.d/rc3.d"]["name"] == "/etc/rc.d/rc3.d"
     assert results["/etc/rc.d/rc3.d"]["total"] == 4
+
+    assert results["/etc/sysconfig"]["entries"]["spooler-T"]["perms"] == "-w----r-T"
+    assert results["/etc/sysconfig"]["entries"]["spooler-t"]["perms"] == "-w----r-t"
 
     res = results["/etc/sysconfig"]["entries"]["ebtables-config"]
     assert res["type"] == "-"

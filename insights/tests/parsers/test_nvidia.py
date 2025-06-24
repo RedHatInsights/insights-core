@@ -3,6 +3,7 @@ import pytest
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import nvidia
 from insights.parsers.nvidia import NvidiaSmiL
+from insights.parsers.nvidia import NvidiaSmiActiveClocksEventReasons
 from insights.tests import context_wrap
 
 NVIDIA_SMI_L_INPUT_1 = """
@@ -33,16 +34,15 @@ def test_nvidia_smi_l():
     assert len(gpus) == 2
     assert gpus[0] == {
         "model": "NVIDIA A100-PCIE-40GB",
-        "uuid": "GPU-63110aaa-3561-c8f5-e125-4ab40bbcf838"}
+        "uuid": "GPU-63110aaa-3561-c8f5-e125-4ab40bbcf838",
+    }
     assert gpus.gpu_count == 2
     assert len(gpus.gpu_models) == 1
     assert "NVIDIA A100-PCIE-40GB" in gpus.gpu_models
 
     gpus = NvidiaSmiL(context_wrap(NVIDIA_SMI_L_INPUT_2))
     assert len(gpus) == 2
-    assert gpus[0] == {
-        "model": "NVIDIA T1000",
-        "uuid": "GPU-c05fe28c-5935-1c6d-3633-2fc61d26b6d4"}
+    assert gpus[0] == {"model": "NVIDIA T1000", "uuid": "GPU-c05fe28c-5935-1c6d-3633-2fc61d26b6d4"}
     assert gpus.gpu_count == 2
     assert len(gpus.gpu_models) == 2
     assert "Tesla V100-PCIE-16GB" in gpus.gpu_models
@@ -51,7 +51,8 @@ def test_nvidia_smi_l():
     assert len(gpus) == 8
     assert gpus[0] == {
         "model": "Quadro RTX 8000",
-        "uuid": "GPU-6b201039-6477-dd9c-1edd-137c8c44f8d6"}
+        "uuid": "GPU-6b201039-6477-dd9c-1edd-137c8c44f8d6",
+    }
     assert gpus.gpu_count == 8
 
 
@@ -107,9 +108,81 @@ def test_nvidia_smi_l_exceptions():
     assert "Unparsable GPU line:" in str(err)
 
 
+ACTIVE_CLOCKS_EVENT_REASONS = """
+NVIDIA L4, 0x0000000000000001
+NVIDIA A1, 0x0000000000000000
+NVIDIA H1, 0x0000000000000084
+""".strip()
+
+
+def test_nvidia_smi_active_clocks_event_reasons():
+    active_clocks_event_reasons = NvidiaSmiActiveClocksEventReasons(
+        context_wrap(ACTIVE_CLOCKS_EVENT_REASONS)
+    )
+    assert len(active_clocks_event_reasons) == 3
+    assert active_clocks_event_reasons[0]['gpu_name'] == "NVIDIA L4"
+    assert not active_clocks_event_reasons[0]['none']
+    assert active_clocks_event_reasons[1]['none']
+    assert not active_clocks_event_reasons[2]['none']
+    assert active_clocks_event_reasons[2]['sw_power_cap']
+    assert active_clocks_event_reasons[2]['hw_power_brake_slowdown']
+    assert not active_clocks_event_reasons[2]['hw_slowdown']
+
+
+INVALID_ACTIVE_CLOCKS_EVENT_REASONS_1 = """
+NVIDIA L4, 0000000000000001
+""".strip()
+
+INVALID_ACTIVE_CLOCKS_EVENT_REASONS_2 = """
+NVIDIA L4
+""".strip()
+
+INVALID_ACTIVE_CLOCKS_EVENT_REASONS_3 = """
+NVIDIA L4, 0x0000000000000001
+
+NVIDIA A1, 0x0000000000000000
+""".strip()
+
+INVALID_ACTIVE_CLOCKS_EVENT_REASONS_4 = """
+NVIDIA L4, 0x0000000000000001
+NVIDIA H1, 0000000000000084
+NVIDIA A1, 0x0000000000000000
+""".strip()
+
+INVALID_ACTIVE_CLOCKS_EVENT_REASONS_5 = """
+
+
+"""
+
+
+def test_nvidia_smi_active_clocks_event_reasons_exceptions():
+    with pytest.raises(ParseException) as err:
+        NvidiaSmiActiveClocksEventReasons(context_wrap(INVALID_ACTIVE_CLOCKS_EVENT_REASONS_1))
+    assert "Not an expected command output for active clocks event reasons" in str(err)
+
+    with pytest.raises(ParseException) as err:
+        NvidiaSmiActiveClocksEventReasons(context_wrap(INVALID_ACTIVE_CLOCKS_EVENT_REASONS_2))
+    assert "Not an expected command output for active clocks event reasons" in str(err)
+
+    with pytest.raises(ParseException) as err:
+        NvidiaSmiActiveClocksEventReasons(context_wrap(INVALID_ACTIVE_CLOCKS_EVENT_REASONS_3))
+    assert "Not an expected command output for active clocks event reasons" in str(err)
+
+    with pytest.raises(ParseException) as err:
+        NvidiaSmiActiveClocksEventReasons(context_wrap(INVALID_ACTIVE_CLOCKS_EVENT_REASONS_4))
+    assert "Not an expected command output for active clocks event reasons" in str(err)
+
+    with pytest.raises(SkipComponent) as err:
+        NvidiaSmiActiveClocksEventReasons(context_wrap(INVALID_ACTIVE_CLOCKS_EVENT_REASONS_5))
+    assert "Empty content." in str(err)
+
+
 def test_nvidia_doc_examples():
     env = {
         'gpus': NvidiaSmiL(context_wrap(NVIDIA_SMI_L_INPUT_1)),
+        'active_clocks_event_reasons': NvidiaSmiActiveClocksEventReasons(
+            context_wrap(ACTIVE_CLOCKS_EVENT_REASONS)
+        ),
     }
     failed, total = doctest.testmod(nvidia, globs=env)
     assert failed == 0

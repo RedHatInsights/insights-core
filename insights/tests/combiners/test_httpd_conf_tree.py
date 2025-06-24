@@ -122,6 +122,15 @@ IncludeOptional conf.d/*.conf
 SSLProtocol -ALL +TLSv1.2  # SSLv3
 '''.strip()
 
+HTTPD_CONF_MAIN_1_LOWER_CASE = '''
+ServerRoot "/etc/httpd"
+Listen 80
+
+# Load config files in the "/etc/httpd/conf.d" directory, if any.
+includeOptional conf.d/*.conf
+SSLProtocol -ALL +TLSv1.2  # SSLv3
+'''.strip()
+
 HTTPD_CONF_MAIN_2 = '''
 # Load config files in the "/etc/httpd/conf.d" directory, if any.
 IncludeOptional conf.d/*.conf
@@ -696,6 +705,23 @@ def test_splits():
     assert listen.line == 'Listen 80'
     assert listen.file_name == 'httpd.conf'
     assert listen.file_path == '/etc/httpd/conf/httpd.conf'
+
+    httpd1 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_MAIN_1_LOWER_CASE, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_FILE_1, path='/etc/httpd/conf.d/00-a.conf'))
+    httpd3 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/01-b.conf'))
+    result = HttpdConfTree([httpd1, httpd2, httpd3])
+
+    server_root = result['ServerRoot'][-1]
+    assert server_root.value == '/home/skontar/www'
+    assert server_root.line == 'ServerRoot "/home/skontar/www"'
+    assert server_root.file_name == '01-b.conf'
+    assert server_root.file_path == '/etc/httpd/conf.d/01-b.conf'
+
+    listen = result["Listen"][-1]
+    assert listen.value == 8080
+    assert listen.line == 'Listen 8080'
+    assert listen.file_name == '00-a.conf'
+    assert listen.file_path == '/etc/httpd/conf.d/00-a.conf'
 
 
 def test_httpd_one_file_overwrites():

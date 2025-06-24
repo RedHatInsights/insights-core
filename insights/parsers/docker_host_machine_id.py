@@ -20,6 +20,7 @@ Examples:
 
 from .. import parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.docker_host_machine_id)
@@ -29,5 +30,7 @@ def docker_host_machineid_parser(context):
         (dict): Return the Insights machine ID in a dict with the key
         'host_system_id'.
     """
+    deprecated(docker_host_machineid_parser, "This parser is deprecated", "3.7.0")
+
     content = list(context.content)[0]
     return {"host_system_id": content}

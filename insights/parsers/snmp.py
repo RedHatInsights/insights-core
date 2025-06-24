@@ -1,6 +1,10 @@
 """
+snmpd parser
+============
+Parsers provided by this module are:
+
 TcpIpStats - file ``/proc/net/snmp``
-====================================
+------------------------------------
 The ``TcpIpStats`` class implements the parsing of ``/proc/net/snmp``
 file, which contains TCP/IP stats of individual layer.
 
@@ -9,9 +13,17 @@ TcpIpStatsIPV6 - file ``/proc/net/snmp6``
 The ``TcpIpStatsIPV6`` class implements the parsing of ``/proc/net/snmp6``
 file, which contains TCP/IP stats of individual layer.
 
+
+SnmpdConf - file ``/etc/snmp/snmpd.conf``
+-----------------------------------------
+The ``SnmpdConf`` class implements the parsing of ``/etc/snmp/snmpd.conf``
+file, which is the configuration file for the Net-SNMP SNMP agent.
 """
 
-from .. import Parser, parser, LegacyItemAccess
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 
@@ -38,14 +50,13 @@ class TcpIpStats(Parser, LegacyItemAccess):
         ... UdpLite: InDatagrams NoPorts InErrors OutDatagrams RcvbufErrors SndbufErrors InCsumErrors IgnoredMulti
         ... UdpLite: 0 0 0 0 0 0 0 0
         ... '''.strip()
-        >>> from insights.tests import context_wrap
-        >>> shared = {TcpIpStats: TcpIpStats(context_wrap(SNMP_CONTENT))}
-        >>> stats = shared[TcpIpStats]
-        >>> snmp_stats = stats.get("Ip")
-        >>> print snmp_stats["DefaultTTL"]
+        >>> type(proc_snmp_ipv4)
+        <class 'insights.parsers.snmp.TcpIpStats'>
+        >>> snmp_stats = proc_snmp_ipv4.get("Ip")
+        >>> snmp_stats["DefaultTTL"]
         64
-        >>> snmp_stats = stats.get("Udp")
-        >>> print snmp_stats["InDatagrams"]
+        >>> snmp_stats = proc_snmp_ipv4.get("Udp")
+        >>> snmp_stats["InDatagrams"]
         18905
 
 
@@ -109,15 +120,14 @@ class TcpIpStatsIPV6(Parser, LegacyItemAccess):
         ... Ip6InOctets                     	579410
         ... Icmp6OutErrors                  	0
         ... Icmp6InCsumErrors               	0
-        ...'''.strip()
-        >>> from insights.tests import context_wrap
-        >>> shared = {TcpIpStatsIPV6: TcpIpStatsIPV6(context_wrap(SNMP_CONTENT))}
-        >>> stats = shared[TcpIpStatsIPV6]
-        >>> IP6_RX_stats = stats.get("Ip6InReceives")
-        >>> print IP6_RX_stats
+        ... '''.strip()
+        >>> type(proc_snmp_ipv6)
+        <class 'insights.parsers.snmp.TcpIpStatsIPV6'>
+        >>> IP6_RX_stats = proc_snmp_ipv6.get("Ip6InReceives")
+        >>> IP6_RX_stats
         757
-        >>> IP6_In_Disc = stats.get("Ip6InDiscards")
-        >>> print IP6_In_Disc
+        >>> IP6_In_Disc = proc_snmp_ipv6.get("Ip6InDiscards")
+        >>> IP6_In_Disc
         10
 
 
@@ -141,3 +151,51 @@ class TcpIpStatsIPV6(Parser, LegacyItemAccess):
             line_split = line.split()
             snmp6_stats[line_split[0]] = int(line_split[1]) if len(line_split) > 1 and line_split[1] else None
         self.data = snmp6_stats
+
+
+@parser(Specs.snmpd_conf)
+class SnmpdConf(Parser, dict):
+    """
+    Class for parsing the file ``/etc/snmp/snmpd.conf``
+
+    Sample file content::
+
+        #       sec.name  source          community
+        com2sec notConfigUser  default       public
+
+        #       groupName      securityModel securityName
+        group   notConfigGroup v1           notConfigUser
+        group   notConfigGroup v2c           notConfigUser
+
+        # Make at least  snmpwalk -v 1 localhost -c public system fast again.
+        #       name           incl/excl     subtree         mask(optional)
+        view    systemview    included   .1.3.6.1.2.1.1
+        view    systemview    included   .1.3.6.1.2.1.25.1.1
+
+        #       group          context sec.model sec.level prefix read   write  notif
+        access  notConfigGroup ""      any       noauth    exact  systemview none none
+
+        dontLogTCPWrappersConnects yes
+        include_ifmib_iface_prefix eth enp1s0
+
+    Examples:
+        >>> type(snmpd_conf)
+        <class 'insights.parsers.snmp.SnmpdConf'>
+        >>> snmpd_conf['dontLogTCPWrappersConnects']
+        ['yes']
+        >>> snmpd_conf['include_ifmib_iface_prefix']
+        ['eth enp1s0']
+    """
+
+    def parse_content(self, content):
+        content = get_active_lines(content)
+        if not content:
+            raise ParseException('Empty Content')
+
+        for line in content:
+            parts = line.split(None, 1)
+            key = parts[0].strip()
+            self.setdefault(key, [])
+            if len(parts) > 1:
+                value = parts[1].strip()
+                self[key].append(value)

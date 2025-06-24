@@ -59,7 +59,7 @@ def ld_library_path_global_conf(broker):
         "/root/.profile",
         "/root/.cshrc",
         "/root/.zshrc",
-        "/root/.tcshrc"
+        "/root/.tcshrc",
     ]
     data = {}
 
@@ -91,7 +91,9 @@ def ld_library_path_global_conf(broker):
     if not data:
         raise SkipComponent()
 
-    return DatasourceProvider(content=json.dumps(data), relative_path='insights_commands/ld_library_path_global_conf')
+    return DatasourceProvider(
+        content=json.dumps(data), relative_path='insights_datasources/ld_library_path_global_conf'
+    )
 
 
 def _is_env_exported(file_path, env_name):
@@ -105,7 +107,9 @@ def _is_env_exported(file_path, env_name):
     pattern = r"\b{0}\b".format(env_name)
 
     with open(file_path, 'r') as file:
-        active_lines = list(filter(None, (line.split("#", 1)[0].strip() for line in file.readlines())))
+        active_lines = list(
+            filter(None, (line.split("#", 1)[0].strip() for line in file.readlines()))
+        )
         for line in active_lines:
             if "export " in line and re.search(pattern, line):
                 return True
@@ -118,7 +122,9 @@ def _is_env_unset(file_path, env_name):
     pattern = r"\b{0}\b".format(env_name)
 
     with open(file_path, 'r') as file:
-        active_lines = list(filter(None, (line.split("#", 1)[0].strip() for line in file.readlines())))
+        active_lines = list(
+            filter(None, (line.split("#", 1)[0].strip() for line in file.readlines()))
+        )
         for line in active_lines:
             if "unset " in line and re.search(pattern, line):
                 return True

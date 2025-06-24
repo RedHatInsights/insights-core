@@ -1,6 +1,7 @@
 """
 Utility functions
 """
+
 from __future__ import absolute_import
 import glob
 import os
@@ -18,6 +19,7 @@ import errno
 from subprocess import Popen, PIPE, STDOUT
 
 import yaml
+
 try:
     from yaml import CDumper as Dumper
 except ImportError:
@@ -170,7 +172,9 @@ def generate_machine_id(new=False, destination_file=constants.machine_id_file):
     except ValueError as exc:
         logger.error("Invalid machine ID: '%s'." % machine_id)
         logger.error("Error details: %s", str(exc))
-        logger.error("Please delete the file '%s' and rerun the client with '--register'." % destination_file)
+        logger.error(
+            "Please delete the file '%s' and rerun the client with '--register'." % destination_file
+        )
         sys.exit(constants.sig_kill_bad)
 
 
@@ -234,14 +238,10 @@ def magic_plan_b(filename):
 
 
 def run_command_get_output(cmd):
-    proc = Popen(shlex.split(cmd),
-                 stdout=PIPE, stderr=STDOUT)
+    proc = Popen(shlex.split(cmd), stdout=PIPE, stderr=STDOUT)
     stdout, stderr = proc.communicate()
 
-    return {
-        'status': proc.returncode,
-        'output': stdout.decode('utf-8', 'ignore')
-    }
+    return {'status': proc.returncode, 'output': stdout.decode('utf-8', 'ignore')}
 
 
 def modify_config_file(updates):
@@ -271,6 +271,15 @@ def get_version_info():
     return version_info
 
 
+def get_egg_version_tuple():
+    '''
+    Return the core egg version as a tuple of integers.
+    E.g. for insights-core-3.5.25-1, returns (3, 5, 25)
+    '''
+    egg_ver = get_version_info()['core_version'].split('-')[0]
+    return tuple([int(i) for i in egg_ver.split('.')])
+
+
 def print_egg_versions():
     '''
     Log all available eggs' versions
@@ -297,9 +306,16 @@ def print_egg_versions():
             logger.debug('%s not found.', egg)
             continue
         try:
-            proc = Popen([sys.executable, '-c',
-                         'from insights import package_info; print(\'%s-%s\' % (package_info[\'VERSION\'], package_info[\'RELEASE\']))'],
-                         env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')}, stdout=PIPE, stderr=STDOUT)
+            proc = Popen(
+                [
+                    sys.executable,
+                    '-c',
+                    'from insights import package_info; print(\'%s-%s\' % (package_info[\'VERSION\'], package_info[\'RELEASE\']))',
+                ],
+                env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')},
+                stdout=PIPE,
+                stderr=STDOUT,
+            )
         except OSError:
             logger.debug('Could not start python.')
             return
@@ -421,8 +437,11 @@ def migrate_tags():
         return
     if os.path.exists(tags_conf):
         # old file exists and current does not
-        logger.info('Tags file %s detected. This filename is deprecated; please use %s. The file will be renamed automatically.',
-                    tags_conf, tags_yaml)
+        logger.info(
+            'Tags file %s detected. This filename is deprecated; please use %s. The file will be renamed automatically.',
+            tags_conf,
+            tags_yaml,
+        )
         try:
             os.rename(tags_conf, tags_yaml)
         except OSError as e:
@@ -444,6 +463,12 @@ def get_parent_process():
         return "unknown"
 
 
+def _read_file(path):
+    # type: (str) -> list[str]
+    with open(path, mode="r") as f:
+        return f.readlines()
+
+
 def os_release_info():
     '''
     Use insights-core to fetch the os-release or redhat-release info
@@ -454,8 +479,7 @@ def os_release_info():
     os_release = ""
     for p in ["/etc/os-release", "/etc/redhat-release"]:
         try:
-            with open(p) as f:
-                data = f.readlines()
+            data = _read_file(p)  # type: list[str]
 
             ctx = Context(content=data, path=p, relative_path=p)
             if p == "/etc/os-release":
@@ -471,7 +495,41 @@ def os_release_info():
             continue
         except Exception as e:
             logger.warning("Failed to detect OS version: %s", e)
-    return (os_family, os_release)
+    return os_family, os_release
+
+
+def get_rhel_version():
+    # type: () -> int
+    """Reads /etc/os-release to determine RHEL version.
+
+    For RHEL, the major version is always returned.
+
+    For CentOS, the major version is always returned.
+
+    For Fedora, the latest known RHEL version is returned.
+    RHEL 10 was branched from Fedora 40; until RHEL 11 is branched,
+    this method returns `10` for all Fedora versions.
+
+    :returns: Major RHEL version (or an equivalent for non-RHEL systems)
+    :raises ValueError: Version could not be determined.
+    """
+    distribution, release = os_release_info()
+    if distribution == "Unknown":
+        raise ValueError("Could not determine distribution family.")
+    if release == "":
+        raise ValueError("Could not determine version of '{}'.".format(distribution))
+
+    _distribution = distribution.lower()  # type: str
+    if _distribution.startswith("red hat enterprise linux") or _distribution.startswith("centos"):
+        version = int(release.split(".")[0])
+    elif _distribution.startswith("fedora"):
+        version = 10
+    else:
+        raise ValueError("Unknown distribution '{}'.".format(distribution))
+
+    if "red hat enterprise linux" not in _distribution:
+        logger.debug("'{}' version '{}' matches RHEL {}.".format(distribution, release, version))
+    return version
 
 
 def largest_spec_in_archive(archive_file):
@@ -501,7 +559,7 @@ def largest_spec_in_archive(archive_file):
                 abs_fname = os.path.join('.', data_top, fname)
                 # get the archives from inside data directory
                 data_file = tar_file.getmember(abs_fname)
-                if (data_file.size > largest_fsize):
+                if data_file.size > largest_fsize:
                     largest_fsize = data_file.size
                     largest_file_name = fname
                     largest_spec = specs_metadata["name"]

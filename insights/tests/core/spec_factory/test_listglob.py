@@ -1,28 +1,24 @@
 import os
 import pytest
-import tempfile
 
 from insights.core import dr
 from insights.core.context import HostContext
 from insights.core.spec_factory import listglob
 
 
-@pytest.fixture
-def sample_directory(scope="module"):
-    tmpdir = tempfile.mkdtemp()
+@pytest.fixture(scope="module")
+def sample_directory(tmpdir_factory):
+    def touch(fpath):
+        fd = open(fpath, "w")
+        fd.close()
+
+    tmpdir = str(tmpdir_factory.mktemp("test_listglob"))
     os.mkdir(tmpdir + "/dir1")
     os.mkdir(tmpdir + "/dir2")
     for d in ["dir1", "dir2"]:
         for f in ["file_a", "file_b"]:
-            fd = open(tmpdir + "/" + d + "/" + f, "w")
-            fd.close()
-    yield tmpdir
-    for d in ["dir1", "dir2"]:
-        for f in ["file_a", "file_b"]:
-            os.remove(tmpdir + "/" + d + "/" + f)
-    os.rmdir(tmpdir + "/dir1")
-    os.rmdir(tmpdir + "/dir2")
-    os.rmdir(tmpdir)
+            touch(tmpdir + "/" + d + "/" + f)
+    return tmpdir
 
 
 def run_listglob_test(sample_directory, spec):

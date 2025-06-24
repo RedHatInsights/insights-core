@@ -3,7 +3,12 @@ import pytest
 
 from insights.core.exceptions import SkipComponent
 from insights.parsers import subscription_manager
-from insights.parsers.subscription_manager import SubscriptionManagerID, SubscriptionManagerFacts, SubscriptionManagerStatus
+from insights.parsers.subscription_manager import (
+    SubscriptionManagerID,
+    SubscriptionManagerFacts,
+    SubscriptionManagerStatus,
+    SubscriptionManagerSyspurpose,
+)
 from insights.tests import context_wrap
 
 FACTS_NORMAL_1 = """
@@ -62,6 +67,27 @@ SUBSCRIPTION_MANAGER_STATUS_EMPTY = """
 
 """.strip()
 
+SUBSCRIPTION_MANAGER_STATUS_PRODUCT_KEY = """
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Insufficient
+
+Red Hat Enterprise Linux for Virtual Datacenters, Standard:
+- Guest has not been reported on any host and is using a temporary unmapped guest subscription. For more information, please see https://access.redhat.com/solutions/XXXX
+
+System Purpose Status: Matched
+""".strip()
+
+SUBSCRIPTION_MANAGER_SYSPURPOSE = """
+{
+  "addons": [],
+  "role": "Red Hat Enterprise Linux Server",
+  "service_level_agreement": "Standard",
+  "usage": "Development/Test"
+}
+""".strip()
+
 
 def test_subman_facts():
     ret = SubscriptionManagerFacts(context_wrap(FACTS_NORMAL_1))
@@ -99,6 +125,20 @@ def test_subman_status():
     assert ret['Content Access Mode'] == 'Simple Content Access'
     assert ret['System Purpose Status'] == 'Disabled'
 
+    ret = SubscriptionManagerStatus(context_wrap(SUBSCRIPTION_MANAGER_STATUS_PRODUCT_KEY))
+    assert ret['Overall Status'] == 'Insufficient'
+    assert ret['Red Hat Enterprise Linux for Virtual Datacenters'] == 'Standard'
+    assert ret['System Purpose Status'] == 'Matched'
+    assert ret.unparsed_lines == [SUBSCRIPTION_MANAGER_STATUS_PRODUCT_KEY.splitlines()[-3]]
+
+
+def test_subman_syspurpose():
+    ret = SubscriptionManagerSyspurpose(context_wrap(SUBSCRIPTION_MANAGER_SYSPURPOSE))
+    assert ret['addons'] == []
+    assert ret.get('role') == 'Red Hat Enterprise Linux Server'
+    assert ret['service_level_agreement'] == 'Standard'
+    assert ret['usage'] == 'Development/Test'
+
 
 def test_subman_facts_ng():
     with pytest.raises(SkipComponent):
@@ -123,9 +163,12 @@ def test_subman_status_ng():
 
 def test_doc_examples():
     env = {
-            'rhsm_facts': SubscriptionManagerFacts(context_wrap(FACTS_with_AB_LINES)),
-            'subman_id': SubscriptionManagerID(context_wrap(ID_with_AB_LINES)),
-            'subman_status': SubscriptionManagerStatus(context_wrap(SUBSCRIPTION_MANAGER_STATUS)),
-          }
+        'rhsm_facts': SubscriptionManagerFacts(context_wrap(FACTS_with_AB_LINES)),
+        'subman_id': SubscriptionManagerID(context_wrap(ID_with_AB_LINES)),
+        'subman_status': SubscriptionManagerStatus(context_wrap(SUBSCRIPTION_MANAGER_STATUS)),
+        'subman_syspurpose': SubscriptionManagerSyspurpose(
+            context_wrap(SUBSCRIPTION_MANAGER_SYSPURPOSE)
+        ),
+    }
     failed, total = doctest.testmod(subscription_manager, globs=env)
     assert failed == 0

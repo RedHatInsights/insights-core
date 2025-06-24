@@ -22,17 +22,8 @@ class Device(object):
     }
     All fields are accessible as computed attributes
     """
-    keys = [
-        'ansi__scsi_revision',
-        'vendor',
-        'rev',
-        'host',
-        'channel',
-        'model',
-        'type',
-        'id',
-        'lun'
-    ]
+
+    keys = ['ansi__scsi_revision', 'vendor', 'rev', 'host', 'channel', 'model', 'type', 'id', 'lun']
 
     def __init__(self, data):
         for k in Device.keys:
@@ -68,7 +59,7 @@ class SCSI(Parser):
                 msg = 'Expected Header: %s but got %s' % (header, content[0])
                 raise ParseException(msg)
             if len(content) == 1:
-                raise ParseException("Content has only header but no other content: ", content)
+                raise SkipComponent("Content has only header but no other content: ", content)
             content = content[1:]
         lines = deque(filter(None, [line.strip() for line in content]))
         while lines:
@@ -80,6 +71,7 @@ class SCSI(Parser):
     This method now checks for which version is used and runs collect_keys
     with the appropriate key definition
     """
+
     @classmethod
     def parse_device(cls, parts):
         device = {}

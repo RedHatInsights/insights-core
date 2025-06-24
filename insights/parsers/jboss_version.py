@@ -3,6 +3,7 @@ JBoss version
 =============
 Provide information about the versions of all running Jboss on a system.
 """
+
 import json
 
 from collections import namedtuple
@@ -10,7 +11,10 @@ from insights import Parser, parser
 from insights.specs import Specs
 
 # define namedtuple to store the property of version
-_VersionNameTuple = namedtuple("_VersionNameTuple", ["file_path", "product", "version", "code_name", "major", "minor", "release"])
+_VersionNameTuple = namedtuple(
+    "_VersionNameTuple",
+    ["file_path", "product", "version", "code_name", "major", "minor", "release"],
+)
 
 
 def _get_version_tuple(version_line, i_file_path):
@@ -30,7 +34,9 @@ def _get_version_tuple(version_line, i_file_path):
         major, minor, release, code_name = version_name.split(".")[0:4]
         version = '.'.join([major, minor, release])
 
-    return _VersionNameTuple(i_file_path, product, version, code_name, int(major), int(minor), int(release))
+    return _VersionNameTuple(
+        i_file_path, product, version, code_name, int(major), int(minor), int(release)
+    )
 
 
 @parser(Specs.jboss_version)
@@ -100,24 +106,24 @@ class JbossVersion(Parser):
 @parser(Specs.jboss_runtime_versions)
 class JbossRuntimeVersions(Parser, list):
     """
-     This class is to access to file ``data/insights_commands/jboss_versions``
+    This class is to access to file ``jboss_runtime_versions``
 
-     Typical content of file ``data/insights_commands/jboss_versions`` is::
+    Typical content looks like::
 
-         {"/opt/jboss-datagrid-7.3.0-server": "Red Hat Data Grid - Version 7.3.0"}
+        {"/opt/jboss-datagrid-7.3.0-server": "Red Hat Data Grid - Version 7.3.0"}
 
-     This class parses the file content and stores data in the list.
+    This class parses the file content and stores data in the list.
 
-     Examples:
-         >>> len(all_jboss_versions)
-         1
-         >>> all_jboss_versions[0].major
-         7
-         >>> all_jboss_versions[0].minor
-         3
-         >>> all_jboss_versions[0].release
-         0
-     """
+    Examples:
+        >>> len(all_jboss_versions)
+        1
+        >>> all_jboss_versions[0].major
+        7
+        >>> all_jboss_versions[0].minor
+        3
+        >>> all_jboss_versions[0].release
+        0
+    """
 
     def parse_content(self, content):
         jboss_version_dict = json.loads(' '.join(content))

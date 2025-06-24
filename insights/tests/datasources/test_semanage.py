@@ -2,6 +2,7 @@ import json
 import pytest
 
 from mock.mock import Mock
+from collections import defaultdict
 
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
@@ -28,15 +29,10 @@ systemu              systemu              s0-s0:c0.c1023       *
 root                 unconfined_u         s0-s0:c0.c1023       *
 """
 
-RELATIVE_PATH = 'insights_commands/linux_users_count_map_selinux_user'
+RELATIVE_PATH = 'insights_datasources/linux_users_count_map_selinux_user'
 
 
 def setup_function(func):
-    if Specs.selinux_users in filters._CACHE:
-        del filters._CACHE[Specs.selinux_users]
-    if Specs.selinux_users in filters.FILTERS:
-        del filters.FILTERS[Specs.selinux_users]
-
     if func is test_linux_users_count_map_staff_u:
         filters.add_filter(Specs.selinux_users, ["staff_u"])
     if func is test_linux_users_count_map_more_selinux_users:
@@ -45,12 +41,15 @@ def setup_function(func):
         filters.add_filter(Specs.selinux_users, [])
 
 
+def teardown_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(dict)
+
+
 def test_linux_users_count_map_staff_u():
     selinux_list = Mock()
     selinux_list.content = SEMANGE_LOGIN_LIST_OUTPUT1.splitlines()
-    broker = {
-        LocalSpecs.selinux_user_mapping: selinux_list
-    }
+    broker = {LocalSpecs.selinux_user_mapping: selinux_list}
     result = users_count_map_selinux_user(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
@@ -63,9 +62,7 @@ def test_linux_users_count_map_staff_u():
 def test_linux_users_count_map_more_selinux_users():
     selinux_list = Mock()
     selinux_list.content = SEMANGE_LOGIN_LIST_OUTPUT1.splitlines()
-    broker = {
-        LocalSpecs.selinux_user_mapping: selinux_list
-    }
+    broker = {LocalSpecs.selinux_user_mapping: selinux_list}
     result = users_count_map_selinux_user(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
@@ -78,8 +75,6 @@ def test_linux_users_count_map_more_selinux_users():
 def test_linux_users_count_map_staff_u_except():
     selinux_list = Mock()
     selinux_list.content = SEMANGE_LOGIN_LIST_OUTPUT2.splitlines()
-    broker = {
-        LocalSpecs.selinux_user_mapping: selinux_list
-    }
+    broker = {LocalSpecs.selinux_user_mapping: selinux_list}
     with pytest.raises(SkipComponent):
         users_count_map_selinux_user(broker)

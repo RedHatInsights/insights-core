@@ -1,5 +1,10 @@
+import doctest
+import pytest
+from insights.core.exceptions import ParseException
+from insights.parsers import snmp
 from insights.parsers.snmp import TcpIpStats
 from insights.parsers.snmp import TcpIpStatsIPV6
+from insights.parsers.snmp import SnmpdConf
 from insights.tests import context_wrap
 
 PROC_SNMP = """
@@ -121,6 +126,66 @@ Icmp6InType134                  	62
 Ip6InDiscards
 """.strip()
 
+TCP_STATS_DOC = '''
+Ip: Forwarding DefaultTTL InReceives InHdrErrors InAddrErrors ForwDatagrams InUnknownProtos InDiscards InDelivers OutRequests OutDiscards OutNoRoutes ReasmTimeout ReasmReqds ReasmOKs ReasmFails FragOKs FragFails FragCreates
+Ip: 2 64 43767 0 0 0 0 0 41807 18407 12 73 0 0 0 10 0 0 0
+Icmp: InMsgs InErrors InCsumErrors InDestUnreachs InTimeExcds InParmProbs InSrcQuenchs InRedirects InEchos InEchoReps InTimestamps InTimestampReps InAddrMasks InAddrMaskReps OutMsgs OutErrors OutDestUnreachs OutTimeExcds OutParmProbs OutSrcQuenchs OutRedirects OutEchos OutEchoReps OutTimestamps OutTimestampReps OutAddrMasks OutAddrMaskReps
+Icmp: 34 0 0 34 0 0 0 0 0 0 0 0 0 0 44 0 44 0 0 0 0 0 0 0 0 0 0
+IcmpMsg: InType3 OutType3
+IcmpMsg: 34 44
+Tcp: RtoAlgorithm RtoMin RtoMax MaxConn ActiveOpens PassiveOpens AttemptFails EstabResets CurrEstab InSegs OutSegs RetransSegs InErrs OutRsts InCsumErrors
+Tcp: 1 200 120000 -1 444 0 0 6 7 19269 17050 5 4 234 0
+Udp: InDatagrams NoPorts InErrors OutDatagrams RcvbufErrors SndbufErrors InCsumErrors IgnoredMulti
+Udp: 18905 34 0 1348 0 0 0 3565
+UdpLite: InDatagrams NoPorts InErrors OutDatagrams RcvbufErrors SndbufErrors InCsumErrors IgnoredMulti
+UdpLite: 0 0 0 0 0 0 0 0
+'''.strip()
+
+TCP_IP_STATS_IPV6_DOC = '''
+Ip6InReceives                   	757
+Ip6InHdrErrors                  	0
+Ip6InTooBigErrors               	0
+Ip6InNoRoutes                   	0
+Ip6InAddrErrors                 	0
+Ip6InDiscards                       10
+Ip6OutForwDatagrams             	0
+Ip6OutDiscards                  	0
+Ip6OutNoRoutes                  	0
+Ip6InOctets                     	579410
+Icmp6OutErrors                  	0
+Icmp6InCsumErrors               	0
+'''.strip()
+
+SNMPD_CONF = """
+#       sec.name  source          community
+com2sec notConfigUser  default       public
+
+#       groupName      securityModel securityName
+group   notConfigGroup v1           notConfigUser
+group   notConfigGroup v2c           notConfigUser
+
+# Make at least  snmpwalk -v 1 localhost -c public system fast again.
+#       name           incl/excl     subtree         mask(optional)
+view    systemview    included   .1.3.6.1.2.1.1
+view    systemview    included   .1.3.6.1.2.1.25.1.1
+
+#       group          context sec.model sec.level prefix read   write  notif
+access  notConfigGroup ""      any       noauth    exact  systemview none none
+
+dontLogTCPWrappersConnects yes
+include_ifmib_iface_prefix eth enp1s0
+leave_pidfile
+
+syscontact Root <root@localhost> (configure /etc/snmp/snmp.local.conf)
+""".strip()
+
+SNMPD_CONF_NO_HIT = """
+#       sec.name  source          community
+""".strip()
+
+SNMPD_CONF_EMPTY = """
+""".strip()
+
 
 def test_snmp():
     stats = TcpIpStats(context_wrap(PROC_SNMP))
@@ -165,3 +230,36 @@ def test_snmp6():
     snmp6_stats_odd = stats.get("some_unknown")
     assert snmp6_stats_disx is None
     assert snmp6_stats_odd is None
+
+
+def test_snmpd_conf():
+    result = SnmpdConf(context_wrap(SNMPD_CONF))
+    assert len(result) == 8
+    assert 'com2sec' in result
+    assert result['group'][0] == 'notConfigGroup v1           notConfigUser'
+    assert result['group'][1] == 'notConfigGroup v2c           notConfigUser'
+    assert result['leave_pidfile'] == []
+    assert result['access'] == ['notConfigGroup ""      any       noauth    exact  systemview none none']
+    assert result['syscontact'] == ['Root <root@localhost> (configure /etc/snmp/snmp.local.conf)']
+
+
+def test_snmpd_conf_empty():
+    with pytest.raises(ParseException) as exc:
+        SnmpdConf(context_wrap(SNMPD_CONF_EMPTY))
+    assert str(exc.value) == "Empty Content"
+
+
+def test_snmpd_conf_empty2():
+    with pytest.raises(ParseException) as exc:
+        SnmpdConf(context_wrap(SNMPD_CONF_NO_HIT))
+    assert str(exc.value) == "Empty Content"
+
+
+def test_doc():
+    env = {
+        'proc_snmp_ipv4': TcpIpStats(context_wrap(TCP_STATS_DOC)),
+        'proc_snmp_ipv6': TcpIpStatsIPV6(context_wrap(TCP_IP_STATS_IPV6_DOC)),
+        'snmpd_conf': SnmpdConf(context_wrap(SNMPD_CONF)),
+    }
+    failed, total = doctest.testmod(snmp, globs=env)
+    assert failed == 0

@@ -1,0 +1,281 @@
+import pytest
+from insights.core.ls_parser import FilePermissions
+from insights.parsers.ls import FileListing, LSlHFiles
+from insights.tests import context_wrap
+from insights.tests.parsers.test_ls_file_listing import (
+    LS_FILE_PERMISSIONS_DOC,
+    MULTIPLE_DIRECTORIES,
+)
+
+PERMISSIONS_TEST_EXCEPTION_VECTORS = [
+    ('-rw------ 1 root root 762 Sep 23 002 /etc/ssh/sshd_config', True),
+    ('bash: ls: command not found', True),
+    ('-rw------ 1 root root 762 Se', True),
+    ('-rw------- 1 root root 762 Sep 23 002 /etc/ssh/sshd_config', False),
+    ('-rw-------. 1 root root 762 Sep 23 002 /etc/ssh/sshd_config', False),
+    ('-rw-------@ 1 root root 762 Sep 23 002 /etc/ssh/sshd_config', False),
+    ('-rw-------+ 1 root root 762 Sep 23 002 /etc/ssh/sshd_config', False),
+    ('-rw-------* 1 root root 762 Sep 23 002 /etc/ssh/sshd_config', False),
+    ('-rw-------asdf 1 root root 762 Sep 23 002 /etc/ssh/sshd_config', False),
+    ('-rw------- 1 ro:t root 762 Sep 23 002 /etc/ssh/sshd_config', True),
+    ('-rw------- 1 root r:ot 762 Sep 23 002 /etc/ssh/sshd_config', True),
+    ('-rwasdfas- 1 root root 762 Sep 23 002 /etc/ssh/sshd_config', True),
+    ('-rwx/----- 1 root root 762 Sep 23 002 /etc/ssh/sshd_config', True),
+    ('/usr/bin/ls: cannot access /boot/grub2/grub.cfg: No such file or directory', True),
+    ('cannot access /boot/grub2/grub.cfg: No such file or directory', True),
+    ('No such file or directory', True),
+    ('adsf', True),
+]
+
+PERMISSIONS_TEST_VECTORS = [
+    (
+        '-rw------- 1 root root 762 Sep 23 002 /etc/ssh/sshd_config',
+        False,
+        'rw-',
+        '---',
+        '---',
+        'root',
+        'root',
+        '/etc/ssh/sshd_config',
+        True,
+        True,
+        True,
+        True,
+    ),
+    (
+        '-rw------- 1 root root 762 Sep 23 002 /a path/with/spaces everywhere',
+        False,
+        'rw-',
+        '---',
+        '---',
+        'root',
+        'root',
+        '/a path/with/spaces everywhere',
+        True,
+        True,
+        True,
+        True,
+    ),
+    (
+        '-rw------- 1 root root 762 Sep 23 002 no_slash_here',
+        False,
+        'rw-',
+        '---',
+        '---',
+        'root',
+        'root',
+        'no_slash_here',
+        True,
+        True,
+        True,
+        True,
+    ),
+    (
+        '-rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config',
+        False,
+        'rw-',
+        '---',
+        '---',
+        'root',
+        'root',
+        '/etc/ssh/sshd_config',
+        True,
+        True,
+        True,
+        True,
+    ),
+    (
+        '-rw-rw-rw-. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config',
+        False,
+        'rw-',
+        'rw-',
+        'rw-',
+        'root',
+        'root',
+        '/etc/ssh/sshd_config',
+        True,
+        True,
+        False,
+        False,
+    ),
+    (
+        '-rw-rw---- 1 root user 762 Sep 23 002 /etc/ssh/sshd_config',
+        True,
+        'rw-',
+        'rw-',
+        '---',
+        'root',
+        'user',
+        '/etc/ssh/sshd_config',
+        True,
+        False,
+        False,
+        False,
+    ),
+    (
+        '-rw------- 1 root user 762 Sep 23 002 /etc/ssh/sshd_config',
+        False,
+        'rw-',
+        '---',
+        '---',
+        'root',
+        'user',
+        '/etc/ssh/sshd_config',
+        True,
+        False,
+        True,
+        True,
+    ),
+    (
+        '-rw------- 1 user root 762 Sep 23 002 /etc/ssh/sshd_config',
+        False,
+        'rw-',
+        '---',
+        '---',
+        'user',
+        'root',
+        '/etc/ssh/sshd_config',
+        False,
+        False,
+        False,
+        False,
+    ),
+    (
+        '-rw-rw---- 1 root root 762 Sep 23 002 /etc/ssh/sshd_config',
+        True,
+        'rw-',
+        'rw-',
+        '---',
+        'root',
+        'root',
+        '/etc/ssh/sshd_config',
+        True,
+        True,
+        True,
+        True,
+    ),
+    (
+        '-rw-rw-r-- 1 root root 762 Sep 23 002 /etc/ssh/sshd_config',
+        True,
+        'rw-',
+        'rw-',
+        'r--',
+        'root',
+        'root',
+        '/etc/ssh/sshd_config',
+        True,
+        True,
+        False,
+        True,
+    ),
+    (
+        '-rw-rw--w- 1 root root 762 Sep 23 002 /etc/ssh/sshd_config',
+        True,
+        'rw-',
+        'rw-',
+        '-w-',
+        'root',
+        'root',
+        '/etc/ssh/sshd_config',
+        True,
+        True,
+        True,
+        False,
+    ),
+    (
+        '---------- 1 root root 762 Sep 23 002 /etc/ssh/sshd_config',
+        False,
+        '---',
+        '---',
+        '---',
+        'root',
+        'root',
+        '/etc/ssh/sshd_config',
+        True,
+        True,
+        True,
+        True,
+    ),
+]
+
+
+def test_permissions():
+    for vector in PERMISSIONS_TEST_VECTORS:
+        (
+            line,
+            with_group,
+            permissions_owner,
+            permissions_group,
+            permissions_other,
+            owner,
+            group,
+            path,
+            owned_by_root_user,
+            owned_by_root_user_and_group,
+            only_root_can_read,
+            only_root_can_write,
+        ) = vector
+        p = FilePermissions(line)
+        assert p.perms_owner == permissions_owner
+        assert p.perms_group == permissions_group
+        assert p.perms_other == permissions_other
+        assert p.owner == owner
+        assert p.group == group
+        assert p.owned_by('root', also_check_group=False) == owned_by_root_user
+        assert p.owned_by('root', also_check_group=True) == owned_by_root_user_and_group
+        assert p.only_root_can_read(root_group_can_read=with_group) == only_root_can_read
+        assert p.only_root_can_write(root_group_can_write=with_group) == only_root_can_write
+        assert p.all_zero() == all(
+            (p.perms_owner == '---', p.perms_group == '---', p.perms_other == '---')
+        )
+        assert p.owner_can_read() == ('r' in p.perms_owner)
+        assert p.owner_can_write() == ('w' in p.perms_owner)
+        assert p.owner_can_only_read() == ('r--' == p.perms_owner)
+        assert p.group_can_read() == ('r' in p.perms_group)
+        assert p.group_can_write() == ('w' in p.perms_group)
+        assert p.group_can_only_read() == ('r--' == p.perms_group)
+        assert p.others_can_read() == ('r' in p.perms_other)
+        assert p.others_can_write() == ('w' in p.perms_other)
+        assert p.others_can_only_read() == ('r--' == p.perms_other)
+
+
+def test_permissions_invalid():
+    for vector in PERMISSIONS_TEST_EXCEPTION_VECTORS:
+        garbage, should_raise = vector
+        if should_raise:
+            with pytest.raises(ValueError):
+                FilePermissions(garbage)
+        else:
+            # shouldn't raise an exception
+            FilePermissions(garbage)
+
+
+def test_multiple_directories():
+    dirs = FileListing(context_wrap(MULTIPLE_DIRECTORIES))
+    assert '/etc/sysconfig' in dirs
+    assert 'cbq' in dirs.dirs_of('/etc/sysconfig')
+    # drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq
+    obj = FilePermissions.from_dict(dirs.path_entry('/etc/sysconfig/cbq'))
+    assert hasattr(obj, 'name')
+    assert obj.name == 'cbq'
+    assert obj.perms_owner == 'rwx'
+    assert obj.perms_group == 'r-x'
+    assert obj.perms_other == 'r-x'
+
+    dirs = LSlHFiles(context_wrap(LS_FILE_PERMISSIONS_DOC))
+    assert '/etc/sysconfig' not in dirs
+    assert '/etc/redhat-release' in dirs
+    obj = dirs['/etc/redhat-release']
+    assert obj.perms_owner == 'rw-'
+    assert obj.perms_group == 'r--'
+    assert obj.perms_other == 'r--'
+    assert obj.size == 46
+
+    assert '/dev/vda1' in dirs
+    obj2 = dirs['/dev/vda1']
+    assert obj2.perms_owner == 'rw-'
+    assert obj2.perms_group == 'rw-'
+    assert obj2.perms_other == '---'
+    assert obj2.type == 'b'
+    assert obj2.major == 252
+    assert obj2.minor == 1

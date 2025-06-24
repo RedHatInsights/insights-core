@@ -20,6 +20,9 @@ Vgs - command ``/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_a
 VgsHeadings - command ``vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"``
 -------------------------------------------------------------------------------------------------------------------------------------
 
+VgsWithForeignAndShared - command ``/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --nolocking --foreign --shared``
+---------------------------------------------------------------------------------------------------------------------------------------
+
 Lvs - command ``/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config="global{locking_type=0}"``
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -36,6 +39,7 @@ LvmFullReport - command ``/sbin/lvm fullreport -a --reportformat json``
 -----------------------------------------------------------------------
 
 """
+
 from __future__ import print_function
 
 import json
@@ -82,7 +86,7 @@ def find_warnings(content):
             "failed.",
             "Invalid metadata",
             "response failed",
-            "duplicate",
+            " duplicate ",
             "not found",
             "Missing device",
             "Internal error",
@@ -102,15 +106,15 @@ def find_warnings(content):
             "Ignoring supplied major",
             "not match metadata",
             "Reading VG",
-            "Error reading device"
+            "Error reading device",
         ]
     ]
-    for l in content:
+    for index, l in enumerate(content):
         lower = l.strip().lower()
         # Avoid hitting keywords inside the data
         if not lower.startswith("lvm2"):
             if any(k in lower for k in keywords):
-                yield l
+                yield index
 
 
 class LvmHeadings(CommandParser):
@@ -132,9 +136,13 @@ class Lvm(CommandParser):
     def parse_content(self, content):
         if "Unrecognised field:" in content[-1]:
             raise ParseException(content[-1])
-        d = {"warnings": set(find_warnings(content))}
-        content = [l for l in content
-                   if l not in d["warnings"] and not l.startswith("File descriptor ")]
+        _warning_indexs = set(find_warnings(content))
+        d = {"warnings": set([content[idx] for idx in _warning_indexs])}
+        content = [
+            l
+            for idx, l in enumerate(content)
+            if idx not in _warning_indexs and not l.startswith("File descriptor ")
+        ]
         d["content"] = list(map_keys(parse_keypair_lines(content), self.KEYS))
         self.data = d if d else None
 
@@ -160,7 +168,7 @@ class Lvm(CommandParser):
     @property
     def warnings(self):
         """list: Returns a list of lines from input data containing
-            warning/error/info strings.
+        warning/error/info strings.
         """
         return self.data["warnings"]
 
@@ -303,19 +311,17 @@ class PvsHeadings(LvmHeadings):
         '0'
 
     """
+
     def __init__(self, *args, **kwargs):
-        deprecated(
-            PvsHeadings,
-            "Please use insights.parsers.lvm.Pvs instead.",
-            "3.6.0"
-        )
+        deprecated(PvsHeadings, "Please use insights.parsers.lvm.Pvs instead.", "3.6.0")
         super(PvsHeadings, self).__init__(*args, **kwargs)
 
     PRIMARY_KEY = Pvs.PRIMARY_KEY
 
     def parse_content(self, content):
-        self.warnings = set(find_warnings(content))
-        content = [l for l in content if l not in self.warnings]
+        _warning_indexs = set(find_warnings(content))
+        self.warnings = set([content[idx] for idx in _warning_indexs])
+        content = [l for idx, l in enumerate(content) if idx not in _warning_indexs]
         self.data = parse_fixed_table(
             content,
             heading_ignore=["PV "],
@@ -449,19 +455,17 @@ class VgsHeadings(LvmHeadings):
         >>> vgs_info.data[0]['VG_UUID']
         'xK6HXk-xl2O-cqW5-2izb-LI9M-4fV0-dAzfcc'
     """
+
     def __init__(self, *args, **kwargs):
-        deprecated(
-            VgsHeadings,
-            "Please use insights.parsers.lvm.Vgs instead.",
-            "3.6.0"
-        )
+        deprecated(VgsHeadings, "Please use insights.parsers.lvm.Vgs instead.", "3.6.0")
         super(VgsHeadings, self).__init__(*args, **kwargs)
 
     PRIMARY_KEY = Vgs.PRIMARY_KEY
 
     def parse_content(self, content):
-        self.warnings = set(find_warnings(content))
-        content = [l for l in content if l not in self.warnings]
+        _warning_indexs = set(find_warnings(content))
+        self.warnings = set([content[idx] for idx in _warning_indexs])
+        content = [l for idx, l in enumerate(content) if idx not in _warning_indexs]
         self.data = parse_fixed_table(
             content,
             heading_ignore=["VG "],
@@ -469,6 +473,64 @@ class VgsHeadings(LvmHeadings):
             trailing_ignore=["Reloading", "Wiping"],
         )
         self.data = map_keys(self.data, Vgs.KEYS)
+
+
+@parser(Specs.vgs_with_foreign_and_shared)
+class VgsWithForeignAndShared(Vgs):
+    """
+    Parse the output of the `/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --nolocking --foreign --shared` command.
+
+    Note: this parser contains the foreign and shared volume groups besides local volume groups.
+
+    Sample output of this command is::
+
+        LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='9nEuop-JraN-SMv7-DxpS-J1wC-NZvV-fzPtuk'|LVM2_VG_NAME='cluster_vg'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_SYSID='node1.redhat.com'|LVM2_VG_SYSTEMID='node1.redhat.com'|...
+        LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='SHRR9U-WPAB-m25d-8zz7-If1j-lXoX-GpA0lI'|LVM2_VG_NAME='rhel_rhel9'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCK_TYPE=''|...
+
+    Returns a list like::
+
+        [
+            {
+                'Fmt'    : 'lvm2',
+                'VG_UUID': '9nEuop-JraN-SMv7-DxpS-J1wC-NZvV-fzPtuk',
+                'VG'     : 'cluster_vg',
+                ...
+            },
+            {
+                'Fmt'    : 'lvm2',
+                'VG_UUID': 'SHRR9U-WPAB-m25d-8zz7-If1j-lXoX-GpA0lI',
+                'VG'     : 'rhel_rhel9',
+                ...
+            }
+        ]
+
+    Examples:
+        >>> type(vgs_all_data)
+        <class 'insights.parsers.lvm.VgsWithForeignAndShared'>
+        >>> vg1 = vgs_all_data['cluster_vg']
+        >>> vg1['LVM2_VG_SYSTEMID']
+        'node1.redhat.com'
+    """
+
+    def parse_content(self, content):
+        super(VgsWithForeignAndShared, self).parse_content(content)
+        self._shared_vgs = []
+        self._clustered_vgs = []
+        for item in self.data['content']:
+            if item['Attr'][-1] == 's':
+                self._shared_vgs.append(item)
+            elif item['Attr'][-1] == 'c':
+                self._clustered_vgs.append(item)
+
+    @property
+    def shared_vgs(self):
+        '''Return the shared volume groups on the host'''
+        return self._shared_vgs
+
+    @property
+    def clustered_vgs(self):
+        '''Return the clustered volume groups on the host'''
+        return self._clustered_vgs
 
 
 @parser(Specs.lvs_noheadings)
@@ -652,19 +714,17 @@ class LvsHeadings(LvmHeadings):
         >>> lvs_info.data[1]['LSize']
         '2.00g'
     """
+
     def __init__(self, *args, **kwargs):
-        deprecated(
-            LvsHeadings,
-            "Please use insights.parsers.lvm.Lvs instead.",
-            "3.6.0"
-        )
+        deprecated(LvsHeadings, "Please use insights.parsers.lvm.Lvs instead.", "3.6.0")
         super(LvsHeadings, self).__init__(*args, **kwargs)
 
     PRIMARY_KEY = Lvs.PRIMARY_KEY
 
     def parse_content(self, content):
-        self.warnings = set(find_warnings(content))
-        content = [l for l in content if l not in self.warnings]
+        _warning_indexs = set(find_warnings(content))
+        self.warnings = set([content[idx] for idx in _warning_indexs])
+        content = [l for idx, l in enumerate(content) if idx not in _warning_indexs]
         self.data = parse_fixed_table(
             content, heading_ignore=["LV "], header_substitute=[("LV Tags", "LV_Tags")]
         )
@@ -916,19 +976,13 @@ class LvmFullReport(JSONParser):
     Raises:
         SkipComponent: when there is no device info.
     """
+
     def parse_content(self, content):
-        self.warnings = []
-        skip_to_line = len(content)
-        for ndx, line in enumerate(content):
-            if line.strip().startswith('{'):
-                skip_to_line = ndx
-                break
-            self.warnings.append(line)
+        _warning_indexs = set(find_warnings(content))
+        self.warnings = [content[idx] for idx in _warning_indexs]
+        content = [l for idx, l in enumerate(content) if idx not in _warning_indexs]
 
-        if skip_to_line >= len(content):
-            raise SkipComponent("No LVM information in fullreport")
-
-        super(LvmFullReport, self).parse_content(content[skip_to_line:])
+        super(LvmFullReport, self).parse_content(content)
 
         if not self.data['report']:
             raise SkipComponent("No LVM information in fullreport")
@@ -952,8 +1006,6 @@ if __name__ == "__main__":
 
     content = sys.stdin.read().splitlines()
     headers = [h.strip().replace(" ", "_") for h in content[0].split("|")]
-    nameprefixes = [
-        v.split("=")[0].strip() for v in content[1].replace("0 ", "0").split("|")
-    ]
+    nameprefixes = [v.split("=")[0].strip() for v in content[1].replace("0 ", "0").split("|")]
     pairs = zip(nameprefixes, headers)
     print(json.dumps(OrderedDict(sorted(pairs))))

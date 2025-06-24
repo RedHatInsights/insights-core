@@ -30,26 +30,24 @@ LSlaRZ - command ``ls -lanRZ <dirs>``
 
 LSlaZ - command ``ls -lanZ <dirs>``
 -----------------------------------
+
+LSlHFiles - spec ``ls_files`` -  command ``ls -lH  <files>``
+------------------------------------------------------------
 """
-from insights.core import ls_parser, Parser
+
+from insights.core import ls_parser, CommandParser
+from insights.core.exceptions import SkipComponent
 from insights.core.filters import add_filter
+from insights.core.ls_parser import FilePermissions
 from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.util.file_permissions import FilePermissions
 
 # Required basic filters for `LS` specs that the content needs to be filtered
 add_filter(Specs.ls_la_filtered, ['total '])
 add_filter(Specs.ls_lan_filtered, ['total '])
 
-# Required directories to collect for `LSlanR` specs, to:
-# 1. keep compatible with sosreport archives
-# 2. Ensure that the related applications to work properly:
-#    - archive data extraction  (cee-data-engineering)
-#    - insights-facts  (cee-data-engineering)
-add_filter(Specs.ls_lanR_dirs, ['/boot', '/dev', '/sys/firmware'])
 
-
-class FileListing(Parser, dict):
+class FileListing(CommandParser, dict):
     """
     Reads a series of concatenated directory listings and turns them into
     a dictionary of entities by name.  Stores all the information for
@@ -83,7 +81,7 @@ class FileListing(Parser, dict):
         - the name, and link destination if it's a symlink
 
     .. note::
-        The :class:`FileListing` Parser parses the content collected by
+        The :class:`FileListing` parses the content collected by
         diffirent ``ls_*`` specs. The ``ls_*`` specs collect the corresponding
         ``ls`` command output according to the filters defined by the relevant
         ``ls_*_dirs`` specs.  For the ``ls_*_dirs`` specs, only absolute
@@ -113,7 +111,7 @@ class FileListing(Parser, dict):
         >>> from insights.specs import Specs
         >>> add_filter(Specs.ls_lan_dirs, ['/boot', '/etc/sysconfig'])
         >>> type(ls_lan)
-        <class 'insights.parsers.ls.FileListing'>
+        <class 'insights.parsers.ls.LSlan'>
         >>> "/etc" in ls_lan
         False
         >>> "/etc/sysconfig" in ls_lan
@@ -158,6 +156,7 @@ class FileListing(Parser, dict):
         >>> fp.perms_owner
         'rw-'
     """
+
     __root_path = None
     """
     The root path of the dir when there is only one list target.  It only works
@@ -211,14 +210,17 @@ class FileListing(Parser, dict):
 
     def listing_of(self, directory):
         """
-        The listing of this directory, in a dictionary by entry name.  All
-        entries contain the original line as is in the 'raw_entry' key.
+        The listing of this directory, in a dictionary by entry name.
         Entries that can be parsed then have fields as described in the class
         description above.
+
+        .. warning::
+            The 'raw_entry' key in the returned dictionary is deprecated
+            and will be removed from version 3.6.0.
         """
         if directory in self:
             return self[directory]['entries']
-        return []
+        return {}
 
     def dir_contains(self, directory, name):
         """
@@ -254,6 +256,47 @@ class FileListing(Parser, dict):
             return None
         return self[directory]['entries'][name]
 
+    def raw_entry_of(self, directory, target):
+        """
+        Returns the raw line entry of the ``directory``/``target`` listed in
+        'ls' command output.
+
+        Parameters:
+            directory(string): Full path without trailing slash where to
+                search.
+            target (string): Name of the directory or file to get
+                FilePermissions for.
+
+        Returns:
+            str: The re-constructed rough line if found or None if not found.
+
+        .. note::
+            As it's re-constructed according to the serialized items, it's not
+            identical with the original line.
+        """
+        if directory in self:
+            de = self[directory]['entries']
+            if target in de:
+                tgt = de[target]
+                raw_line = ' '.join([tgt['type'] + tgt['perms']])
+                if 'links' in tgt:
+                    raw_line += ' ' + str(tgt['links'])
+                raw_line += ' ' + ' '.join([tgt['owner'], tgt['group']])
+                if 'se_user' in tgt:
+                    raw_line += ' ' + ':'.join(
+                        [tgt['se_user'], tgt['se_role'], tgt['se_type'], tgt['se_mls']]
+                    )
+                if 'size' in tgt:
+                    raw_line += ' ' + str(tgt['size'])
+                if 'major' in tgt:
+                    raw_line += ' ' + ', '.join([str(tgt['major']), str(tgt['minor'])])
+                if 'date' in tgt:
+                    raw_line += ' ' + tgt['date']
+                raw_line += ' ' + tgt['name']
+                if tgt['type'] == 'l' and 'link' in tgt:
+                    raw_line += ' -> ' + tgt['link']
+                return raw_line
+
     def permissions_of(self, directory, target):
         """
         Returns a FilePermissions object, if found.
@@ -267,10 +310,9 @@ class FileListing(Parser, dict):
         Returns:
             FilePermissions: If found or None if not found.
         """
-        if directory in self:
-            d = self[directory]['entries']
-            if target in d:
-                return FilePermissions(d[target]['raw_entry'])
+        raw_line = self.raw_entry_of(directory, target)
+        if raw_line:
+            return FilePermissions(raw_line)
 
 
 @parser(Specs.ls_la)
@@ -279,6 +321,7 @@ class LSla(FileListing):
     Parses output of ``ls -la <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -288,6 +331,7 @@ class LSlaFiltered(FileListing):
     Parses output of ``ls -la <dirs> | grep -F <keywords>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -297,6 +341,7 @@ class LSlan(FileListing):
     Parses output of ``ls -lan <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -306,6 +351,7 @@ class LSlanFiltered(FileListing):
     Parses output of ``ls -lan <dirs> | grep -F <keywords>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -315,6 +361,7 @@ class LSlanL(FileListing):
     Parses output of ``ls -lanR <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -324,6 +371,7 @@ class LSlanR(FileListing):
     Parses output of ``ls -lanR <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -333,6 +381,7 @@ class LSlanRL(FileListing):
     Parses output of ``ls -lanRL <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -342,6 +391,7 @@ class LSlaRZ(FileListing):
     Parses output of ``ls -laRZ <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
 
 
@@ -351,4 +401,39 @@ class LSlaZ(FileListing):
     Parses output of ``ls -laZ <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
+
     pass
+
+
+@parser(Specs.ls_files)
+class LSlHFiles(CommandParser, dict):
+    """
+    Parses file information of ``ls -lH`` command.
+
+    .. note::
+
+        To parse a specific file, its full path should be added to the
+        `ls_lH_files` spec via `add_filter`.
+        Only paths point to files are acceptable.
+
+    Examples:
+        >>> from insights.core.filters import add_filter
+        >>> from insights.specs import Specs
+        >>> add_filter(Specs.ls_lH_files, ['/etc/redhat-release', '/var/log/messages'])
+        >>> type(ls_files)
+        <class 'insights.parsers.ls.LSlHFiles'>
+        >>> "/etc/redhat-release" in ls_files
+        True
+        >>> ls_files["/etc/redhat-release"].all_zero()
+        False
+    """
+
+    def parse_content(self, content):
+        for line in content:
+            try:
+                line = line.strip()
+                self[line.rsplit(None, 1)[-1]] = FilePermissions(line)
+            except Exception:
+                pass
+        if not self:
+            raise SkipComponent

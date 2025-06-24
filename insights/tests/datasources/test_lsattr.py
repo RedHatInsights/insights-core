@@ -1,5 +1,7 @@
 import pytest
 
+from collections import defaultdict
+
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.specs import Specs
@@ -12,12 +14,14 @@ def setup_function(func):
     if func is test_lsattr_one_file:
         filters.add_filter(Specs.lsattr_files_or_dirs, ["/etc/default/grub"])
     if func is test_lsattr_more_files:
-        filters.add_filter(Specs.lsattr_files_or_dirs, ["/etc/default/grub", "/etc/httpd/httpd.conf"])
+        filters.add_filter(
+            Specs.lsattr_files_or_dirs, ["/etc/default/grub", "/etc/httpd/httpd.conf"]
+        )
 
 
 def teardown_function(func):
-    if Specs.lsattr_files_or_dirs in filters._CACHE:
-        del filters._CACHE[Specs.lsattr_files_or_dirs]
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(dict)
 
 
 def test_lsattr_empty():

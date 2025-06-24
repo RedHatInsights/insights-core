@@ -5,7 +5,6 @@ from mock.mock import patch
 
 from insights.client.config import InsightsConfig
 from insights.combiners.ps import Ps
-from insights.combiners.services import Services
 from insights.core import dr
 from insights.core.exceptions import SkipComponent, ContentException
 from insights.parsers.hostname import HostnameDefault, Hostname
@@ -95,18 +94,14 @@ PCP_RAW_FILES = [
 
 
 def test_pcp_enabled():
-    unitfiles = UnitFiles(context_wrap(LIST_UNIT_FILES))
-    services = Services(None, unitfiles)
     broker = dr.Broker()
-    broker[Services] = services
+    broker[UnitFiles] = UnitFiles(context_wrap(LIST_UNIT_FILES))
 
     result = pcp_enabled(broker)
     assert result is True
 
-    unitfiles = UnitFiles(context_wrap(LIST_UNIT_FILES_no_pmproxy))
-    services = Services(None, unitfiles)
     broker = dr.Broker()
-    broker[Services] = services
+    broker[UnitFiles] = UnitFiles(context_wrap(LIST_UNIT_FILES_no_pmproxy))
 
     with pytest.raises(SkipComponent):
         pcp_enabled(broker)

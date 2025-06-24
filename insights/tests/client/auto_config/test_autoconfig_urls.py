@@ -166,7 +166,6 @@ def test_platform_path_added():
 
 
 @patch("insights.client.auto_config._try_satellite6_configuration", Mock())
-@patch("insights.client.auto_config._try_satellite5_configuration", Mock())
 def test_platform_path_added_cloud_redhat():
     '''
     Ensure /platform is added when legacy_upload is false

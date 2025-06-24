@@ -19,16 +19,8 @@ def test_registration_check_ok_reg(get_proxies, _init_session, _machine_id_exist
     res = requests.Response()
     res._content = json.dumps(
         {
-            "count": 1,
-            "page": 1,
-            "per_page": 50,
-            "results": [
-                {
-                    'insights_id': 'xxxxxx',
-                    'id': 'yyyyyy'
-                }
-            ],
-            "total": 1
+            'insights_id': 'xxxxxx',
+            'id': 'yyyyyy'
         })
     res.status_code = 200
 
@@ -80,6 +72,56 @@ def test_registration_check_parse_error(get_proxies, _init_session, _machine_id_
 
     conn.get = MagicMock(return_value=res)
     assert conn.api_registration_check() is None
+
+
+@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
+@patch("insights.client.connection.machine_id_exists", return_value=True)
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+def test_registration_check_no_host(get_proxies, _init_session, _machine_id_exists, _generate_machine_id):
+    '''
+    No hosts found in response
+        Returns False
+    '''
+    config = Mock(legacy_upload=False, base_url='example.com')
+    conn = InsightsConnection(config)
+
+    res = requests.Response()
+    res._content = json.dumps(
+        {
+            "title": "Not Found",
+            "detail": "No host found for Insights ID 'xxxxxx'.",
+            "insights_id": "xxxxxx",
+        })
+    res.status_code = 404
+
+    conn.get = MagicMock(return_value=res)
+    assert conn.api_registration_check() is False
+
+
+@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
+@patch("insights.client.connection.machine_id_exists", return_value=True)
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+def test_registration_check_multiple_hosts(get_proxies, _init_session, _machine_id_exists, _generate_machine_id):
+    '''
+    Multiple hosts found in response
+        Returns False
+    '''
+    config = Mock(legacy_upload=False, base_url='example.com')
+    conn = InsightsConnection(config)
+
+    res = requests.Response()
+    res._content = json.dumps(
+        {
+            "title": "Conflict",
+            "detail": "Multiple hosts with Insights ID 'xxxxxx' detected.",
+            "insights_id": "xxxxxx",
+        })
+    res.status_code = 409
+
+    conn.get = MagicMock(return_value=res)
+    assert conn.api_registration_check() is False
 
 
 @patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')

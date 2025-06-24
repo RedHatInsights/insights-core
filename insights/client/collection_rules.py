@@ -1,6 +1,7 @@
 """
 Rules for data collection
 """
+
 from __future__ import absolute_import
 
 import json
@@ -25,6 +26,7 @@ def correct_format(parsed_data, expected_keys, filename):
     Returns True, <message> on error
     Returns False, None on success
     '''
+
     # validate keys are what we expect
     def is_list_of_strings(data):
         '''
@@ -43,15 +45,23 @@ def correct_format(parsed_data, expected_keys, filename):
     keys = parsed_data.keys()
     invalid_keys = set(keys).difference(expected_keys)
     if invalid_keys:
-        return True, ('Unknown section(s) in %s: ' % filename + ', '.join(invalid_keys) +
-                      '\nValid sections are ' + ', '.join(expected_keys) + '.')
+        return True, (
+            'Unknown section(s) in %s: ' % filename
+            + ', '.join(invalid_keys)
+            + '\nValid sections are '
+            + ', '.join(expected_keys)
+            + '.'
+        )
 
     # validate format (lists of strings)
     for k in expected_keys:
         if k in parsed_data:
             if k == 'patterns' and isinstance(parsed_data['patterns'], dict):
                 if 'regex' not in parsed_data['patterns']:
-                    return True, 'Patterns section contains an object but the "regex" key was not specified.'
+                    return (
+                        True,
+                        'Patterns section contains an object but the "regex" key was not specified.',
+                    )
                 if 'regex' in parsed_data['patterns'] and len(parsed_data['patterns']) > 1:
                     return True, 'Unknown keys in the patterns section. Only "regex" is valid.'
                 if not is_list_of_strings(parsed_data['patterns']['regex']):
@@ -71,9 +81,12 @@ def load_yaml(filename):
             return {}
     except (yaml.YAMLError, yaml.parser.ParserError) as e:
         # can't parse yaml from conf
-        raise RuntimeError('ERROR: Cannot parse %s.\n'
-                           'If using any YAML tokens such as [] in an expression, '
-                           'be sure to wrap the expression in quotation marks.\n\nError details:\n%s\n' % (filename, e))
+        raise RuntimeError(
+            'ERROR: Cannot parse %s.\n'
+            'If using any YAML tokens such as [] in an expression, '
+            'be sure to wrap the expression in quotation marks.\n\nError details:\n%s\n'
+            % (filename, e)
+        )
     if not isinstance(loaded_yaml, dict):
         # loaded data should be a dict with at least one key
         raise RuntimeError('ERROR: Invalid YAML loaded.')
@@ -86,8 +99,7 @@ def verify_permissions(f):
     '''
     mode = stat.S_IMODE(os.stat(f).st_mode)
     if not mode == 0o600:
-        raise RuntimeError("Invalid permissions on %s. "
-                           "Expected 0600 got %s" % (f, oct(mode)))
+        raise RuntimeError("Invalid permissions on %s. " "Expected 0600 got %s" % (f, oct(mode)))
     logger.debug("Correct file permissions on %s", f)
 
 
@@ -107,7 +119,7 @@ class InsightsUploadConf(object):
         self.tags_file = config.tags_file
 
         # set rm_conf as a class attribute so we can observe it
-        #   in create_report
+        # in blacklist_report
         self.rm_conf = None
 
         # attribute to set when using file-redaction.yaml instead of
@@ -127,8 +139,11 @@ class InsightsUploadConf(object):
             logger.debug('remove_file is undefined')
             return None
         if not os.path.isfile(self.remove_file):
-            logger.debug('%s not found. No data files, commands,'
-                         ' or patterns will be ignored, and no keyword obfuscation will occur.', self.remove_file)
+            logger.debug(
+                '%s not found. No data files, commands,'
+                ' or patterns will be ignored, and no keyword obfuscation will occur.',
+                self.remove_file,
+            )
             return None
         try:
             verify_permissions(self.remove_file)
@@ -147,26 +162,44 @@ class InsightsUploadConf(object):
                 return None
 
             if sections != ['remove']:
-                raise RuntimeError('ERROR: invalid section(s) in remove.conf. Only "remove" is valid.')
+                raise RuntimeError(
+                    'ERROR: invalid section(s) in remove.conf. Only "remove" is valid.'
+                )
 
             expected_keys = ('commands', 'files', 'patterns', 'keywords')
             rm_conf = {'new_format': False}
             for item, value in parsedconfig.items('remove'):
                 if item not in expected_keys:
-                    raise RuntimeError('ERROR: Unknown key in remove.conf: ' + item +
-                                       '\nValid keys are ' + ', '.join(expected_keys) + '.')
+                    raise RuntimeError(
+                        'ERROR: Unknown key in remove.conf: '
+                        + item
+                        + '\nValid keys are '
+                        + ', '.join(expected_keys)
+                        + '.'
+                    )
                 if six.PY3:
-                    rm_conf[item] = [v.strip() for v in value.strip().encode('utf-8').decode('unicode-escape').split(',')]
+                    rm_conf[item] = [
+                        v.strip()
+                        for v in value.strip().encode('utf-8').decode('unicode-escape').split(',')
+                    ]
                 else:
-                    rm_conf[item] = [v.strip() for v in value.strip().decode('string-escape').split(',')]
+                    rm_conf[item] = [
+                        v.strip() for v in value.strip().decode('string-escape').split(',')
+                    ]
             self.rm_conf = rm_conf
         except ConfigParser.Error as e:
             # can't parse config file at all
             logger.debug(e)
-            logger.debug('To configure using YAML, please use file-redaction.yaml and file-content-redaction.yaml.')
-            raise RuntimeError('ERROR: Cannot parse the remove.conf file.\n'
-                               'See %s for more information.' % self.config.logging_file)
-        logger.warning('WARNING: remove.conf is deprecated. Please use file-redaction.yaml and file-content-redaction.yaml. See https://access.redhat.com/articles/4511681 for details.')
+            logger.debug(
+                'To configure using YAML, please use file-redaction.yaml and file-content-redaction.yaml.'
+            )
+            raise RuntimeError(
+                'ERROR: Cannot parse the remove.conf file.\n'
+                'See %s for more information.' % self.config.logging_file
+            )
+        logger.warning(
+            'WARNING: remove.conf is deprecated. Please use file-redaction.yaml and file-content-redaction.yaml. See https://access.redhat.com/articles/4511681 for details.'
+        )
         return self.rm_conf
 
     def load_redaction_file(self, fname):
@@ -183,10 +216,15 @@ class InsightsUploadConf(object):
             return None
         if not fname or not os.path.isfile(fname):
             if fname == self.redaction_file:
-                logger.debug('%s not found. No files or commands will be skipped.', self.redaction_file)
+                logger.debug(
+                    '%s not found. No files or commands will be skipped.', self.redaction_file
+                )
             elif fname == self.content_redaction_file:
-                logger.debug('%s not found. '
-                             'No patterns will be skipped and no keyword obfuscation will occur.', self.content_redaction_file)
+                logger.debug(
+                    '%s not found. '
+                    'No patterns will be skipped and no keyword obfuscation will occur.',
+                    self.content_redaction_file,
+                )
             return None
         try:
             verify_permissions(fname)
@@ -225,9 +263,15 @@ class InsightsUploadConf(object):
             # remove Nones, empty strings, and empty lists
             self.rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
 
-        if self.rm_conf and ('/etc/insights-client/machine-id' in self.rm_conf.get('files', []) or
-                'insights.specs.default.DefaultSpecs.machine_id' in self.rm_conf.get('components', [])):
-            logger.warning("WARNING: Spec machine_id will be skipped for redaction; as it would cause issues, please remove it from %s.", self.redaction_file)
+        if self.rm_conf and (
+            '/etc/insights-client/machine-id' in self.rm_conf.get('files', [])
+            or 'insights.specs.default.DefaultSpecs.machine_id'
+            in self.rm_conf.get('components', [])
+        ):
+            logger.warning(
+                "WARNING: Spec machine_id will be skipped for redaction; as it would cause issues, please remove it from %s.",
+                self.redaction_file,
+            )
         # return the RAW rm_conf
         return self.rm_conf
 
@@ -260,51 +304,3 @@ class InsightsUploadConf(object):
         print(json.dumps(success, indent=4))
         logger.info('Parsed successfully.')
         return True
-
-    def create_report(self):
-        def length(lst):
-            '''
-            Because of how the INI remove.conf is parsed,
-            an empty value in the conf will produce
-            the value [''] when parsed. Do not include
-            these in the report
-            '''
-            if len(lst) == 1 and lst[0] == '':
-                return 0
-            return len(lst)
-
-        num_commands = 0
-        num_files = 0
-        num_components = 0
-        num_patterns = 0
-        num_keywords = 0
-        using_regex = False
-
-        if self.rm_conf:
-            for key in self.rm_conf:
-                if key == 'commands':
-                    num_commands = length(self.rm_conf['commands'])
-                if key == 'files':
-                    num_files = length(self.rm_conf['files'])
-                if key == 'components':
-                    num_components = length(self.rm_conf['components'])
-                if key == 'patterns':
-                    if isinstance(self.rm_conf['patterns'], dict):
-                        num_patterns = length(self.rm_conf['patterns']['regex'])
-                        using_regex = True
-                    else:
-                        num_patterns = length(self.rm_conf['patterns'])
-                if key == 'keywords':
-                    num_keywords = length(self.rm_conf['keywords'])
-
-        return {
-            'obfuscate': self.config.obfuscate,
-            'obfuscate_hostname': self.config.obfuscate_hostname,
-            'commands': num_commands,
-            'files': num_files,
-            'components': num_components,
-            'patterns': num_patterns,
-            'keywords': num_keywords,
-            'using_new_format': self.using_new_format,
-            'using_patterns_regex': using_regex
-        }

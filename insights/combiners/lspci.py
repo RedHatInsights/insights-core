@@ -180,4 +180,4 @@ class LsPci(list):
             ...  'Dev_Details': 'Audio device: Intel Corporation 8 Series HD Audio Controller (rev 04)'}]
             True
         """
-        return keyword_search(self, **kwargs)
+        return keyword_search(self, row_keys_change=True, **kwargs)

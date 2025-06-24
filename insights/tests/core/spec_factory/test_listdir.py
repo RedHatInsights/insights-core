@@ -1,6 +1,5 @@
 import os
 import pytest
-import tempfile
 
 from insights.core import dr
 from insights.core.context import HostContext
@@ -8,14 +7,14 @@ from insights.core.exceptions import ContentException
 from insights.core.spec_factory import listdir
 
 
-@pytest.fixture
-def sample_directory(scope="module"):
+@pytest.fixture(scope="module")
+def sample_directory(tmpdir_factory):
     def touch(fpath):
         fd = open(fpath, "w")
         fd.close()
 
     # Python2 does not have tempfile.TemporaryDirectory
-    tmpdir = tempfile.mkdtemp()
+    tmpdir = str(tmpdir_factory.mktemp("test_listglob"))
     os.mkdir(tmpdir + "/dir1")
     os.mkdir(tmpdir + "/dir2")
     touch(tmpdir + "/dir1/file_a")

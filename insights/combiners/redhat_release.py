@@ -86,6 +86,7 @@ class RedHatRelease(object):
         self.rhel7 = self.rhel if self.major == 7 else None
         self.rhel8 = self.rhel if self.major == 8 else None
         self.rhel9 = self.rhel if self.major == 9 else None
+        self.rhel10 = self.rhel if self.major == 10 else None
 
 
 @serializer(RedHatRelease)
@@ -98,6 +99,7 @@ def serialize_RedHatRelease(obj, root=None):
             "rhel7": obj.rhel7,
             "rhel8": obj.rhel8,
             "rhel9": obj.rhel9,
+            "rhel10": obj.rhel10,
     }
 
 
@@ -111,4 +113,5 @@ def deserialize_RedHatRelease(_type, obj, root=None, ctx=None, ds=None):
     foo.rhel7 = obj.get("rhel7")
     foo.rhel8 = obj.get("rhel8")
     foo.rhel9 = obj.get("rhel9")
+    foo.rhel10 = obj.get("rhel10")
     return foo

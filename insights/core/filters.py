@@ -36,6 +36,7 @@ Filtering can be disabled globally by setting the environment variable
 ``INSIGHTS_FILTERS_ENABLED=False``. This means that no datasources will be
 filtered even if filters are defined for them.
 """
+
 import os
 import pkgutil
 import six
@@ -47,11 +48,12 @@ from insights.core import dr, plugins
 from insights.util import parse_bool
 
 _CACHE = {}
-FILTERS = defaultdict(set)
+FILTERS = defaultdict(dict)
 ENABLED = parse_bool(os.environ.get("INSIGHTS_FILTERS_ENABLED"), default=True)
+MAX_MATCH = 10000
 
 
-def add_filter(component, patterns):
+def add_filter(component, patterns, max_match=MAX_MATCH):
     """
     Add a filter or list of filters to a component. When the component is
     a datasource, the filter will be directly added to that datasouce.
@@ -65,28 +67,12 @@ def add_filter(component, patterns):
             parser or combiner.
        patterns (str, [str]): A string, list of strings, or set of strings to
             add to the datasource's filters.
+       max_match (int): A int, the maximum matched lines to filter out.
+            MAX_MATCH by default.
     """
-    def inner(comp, patterns):
-        if comp in _CACHE:
-            del _CACHE[comp]
-
-        types = six.string_types + (list, set)
-        if not isinstance(patterns, types):
-            raise TypeError("Filter patterns must be of type string, list, or set.")
-
-        if isinstance(patterns, six.string_types):
-            patterns = set([patterns])
-        elif isinstance(patterns, list):
-            patterns = set(patterns)
-
-        for pat in patterns:
-            if not pat:
-                raise Exception("Filter patterns must not be empty.")
-
-        FILTERS[comp] |= patterns
 
     def get_dependency_datasources(comp):
-        """"Get (all) the first depended datasource"""
+        """Get (all) the first depended datasource"""
         dep_ds = set()
         if plugins.is_datasource(comp):
             dep_ds.add(comp)
@@ -94,6 +80,36 @@ def add_filter(component, patterns):
         for dep in dr.get_dependencies(comp):
             dep_ds.update(get_dependency_datasources(dep))
         return dep_ds
+
+    def none_max(a, b):
+        return a if b is None else b if a is None else max(a, b)
+
+    def max_matchs(da, db):
+        return dict((k, none_max(da.get(k), db.get(k))) for k in set(da.keys()).union(db.keys()))
+
+    def inner(comp, patterns):
+        if comp in _CACHE:
+            del _CACHE[comp]
+
+        if not isinstance(patterns, (six.string_types, list, set)):
+            raise TypeError("Filter patterns must be of type string, list, or set.")
+
+        if isinstance(patterns, six.string_types):
+            patterns = [patterns]
+
+        for pat in patterns:
+            if not pat:
+                raise Exception("Filter patterns must not be empty.")
+
+        patterns = dict((pt, max_match) for pt in patterns)
+        # here patterns is a dict
+
+        FILTERS[comp].update(max_matchs(FILTERS[comp], patterns))
+
+    if max_match is None or type(max_match) is not int or max_match <= 0:
+        raise Exception(
+            "Invalid argument: {0}. It can only be a positive integer.".format(max_match)
+        )
 
     if not plugins.is_datasource(component):
         deps = get_dependency_datasources(component)
@@ -120,7 +136,7 @@ def add_filter(component, patterns):
 _add_filter = add_filter
 
 
-def get_filters(component):
+def get_filters(component, with_matches=False):
     """
     Get the set of filters for the given datasource.
 
@@ -136,12 +152,19 @@ def get_filters(component):
 
     Args:
         component (a datasource): The target datasource
+        with_matches (boolean): Needs the max matches being returned? False by
+                                default.
 
     Returns:
-        set: The set of filters defined for the datasource
+        (set or dict): when `with_matches=False`, returns the set of filters
+                       defined for the datasource only.
+                       when `with_matches=True`, returns filters defined for
+                       the datasource with the max match count specified by
+                       `add_filter`.
     """
+
     def inner(c, filters=None):
-        filters = filters or set()
+        filters = filters or dict()
 
         if hasattr(c, 'filterable') and c.filterable is False:
             return filters
@@ -153,20 +176,21 @@ def get_filters(component):
             return filters
 
         if c in FILTERS:
-            filters |= FILTERS[c]
+            filters.update(FILTERS[c])
 
         for d in dr.get_dependents(c):
-            filters |= inner(d, filters)
+            filters.update(inner(d, filters))
+
         return filters
 
     if not component:
         # No filters for nothing
-        return set()
+        return dict() if with_matches else set()
 
     if component not in _CACHE:
         _CACHE[component] = inner(component)
 
-    return _CACHE[component]
+    return _CACHE[component] if with_matches else set(_CACHE[component].keys())
 
 
 def apply_filters(target, lines):
@@ -194,7 +218,7 @@ def loads(string):
     """Loads the filters dictionary given a string."""
     d = _loads(string)
     for k, v in d.items():
-        FILTERS[dr.get_component(k) or k] = set(v)
+        FILTERS[dr.get_component(k) or k] = v
 
 
 def load(stream=None):
@@ -214,7 +238,7 @@ def dumps():
     """Returns a string representation of the sorted FILTERS dictionary."""
     d = {}
     for k, v in FILTERS.items():
-        d[dr.get_name(k)] = sorted(v)
+        d[dr.get_name(k)] = dict(sorted(v.items()))
     return _dumps(d)
 
 

@@ -48,9 +48,10 @@ instead of at the end.
 """
 from __future__ import print_function
 
+import importlib
 import inspect
-import logging
 import json
+import logging
 import os
 import pkgutil
 import re
@@ -62,7 +63,6 @@ import traceback
 from collections import defaultdict
 from functools import reduce as _reduce
 
-from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
 from insights.core.blacklist import BLACKLISTED_SPECS
 from insights.core.context import SerializedArchiveContext

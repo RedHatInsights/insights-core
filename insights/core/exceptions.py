@@ -1,8 +1,16 @@
+"""
+Exceptions
+==========
+"""
+
+from insights.parsr.iniparser import NoOptionError, NoSectionError  # noqa: F401
+
 
 class BlacklistedSpec(Exception):
     """
     Exception to be thrown when a blacklisted spec is found.
     """
+
     pass
 
 
@@ -31,18 +39,43 @@ class CalledProcessError(Exception):
 
 
 class InvalidArchive(Exception):
+    """
+    Raised when archive cannot be identified or missing expected structure.
+    """
+
     def __init__(self, msg):
         super(InvalidArchive, self).__init__(msg)
         self.msg = msg
+
+
+class InvalidContentType(InvalidArchive):
+    """
+    Raised when invalid content_type is specified.
+    """
+
+    def __init__(self, content_type):
+        msg = 'Invalid content type: "%s"' % content_type
+        super(InvalidContentType, self).__init__(msg)
+        self.msg = msg
+        self.content_type = content_type
 
 
 class MissingRequirements(Exception):
     """
     Raised during evaluation if a component's dependencies aren't met.
     """
+
     def __init__(self, requirements):
         self.requirements = requirements
         super(MissingRequirements, self).__init__(requirements)
+
+
+class NoFilterException(Exception):
+    """
+    Raised whenever no filters added to a `filterable` :class:`datasource`.
+    """
+
+    pass
 
 
 class ParseException(Exception):
@@ -52,6 +85,7 @@ class ParseException(Exception):
     is thrown, the exception message and data are logged and no
     parser output data is saved.
     """
+
     pass
 
 
@@ -60,33 +94,32 @@ class SkipComponent(Exception):
     This class should be raised by components that want to be taken out of
     dependency resolution.
     """
+
+    pass
+
+
+class ContentException(SkipComponent):
+    """
+    Raised whenever a :class:`datasource` fails to get data.
+    """
+
     pass
 
 
 class TimeoutException(Exception):
-    """ Raised whenever a :class:`datasource` hits the set timeout value. """
+    """
+    Raised whenever a :class:`datasource` hits the set timeout value.
+    """
+
     pass
 
 
 class ValidationException(Exception):
+    """
+    Raised when passes invalid arguments to Response.
+    """
+
     def __init__(self, msg, r=None):
         if r:
             msg = "%s: %s" % (msg, r)
         super(ValidationException, self).__init__(msg)
-
-
-class ContentException(SkipComponent):
-    """ Raised whenever a :class:`datasource` fails to get data. """
-    pass
-
-
-class NoFilterException(ContentException):
-    """ Raised whenever no filters added to a `filterable` :class:`datasource`."""
-    pass
-
-
-class InvalidContentType(InvalidArchive):
-    def __init__(self, content_type):
-        self.msg = 'Invalid content type: "%s"' % content_type
-        super(InvalidContentType, self).__init__(self.msg)
-        self.content_type = content_type

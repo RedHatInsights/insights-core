@@ -442,7 +442,7 @@ def test_ls_lanR():
     assert ls.files_of('non-exist') == []
     assert ls.dirs_of('non-exist') == []
     assert ls.specials_of('non-exist') == []
-    assert ls.listing_of('non-exist') == []
+    assert ls.listing_of('non-exist') == {}
     assert ls.total_of('non-exist') == 0
     assert ls.dir_contains('non-exist', 'test') is False
     assert ls.dir_entry('non-exist', 'test') == {}

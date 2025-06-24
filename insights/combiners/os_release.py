@@ -38,7 +38,7 @@ OTHER_LINUX_KEYS = {
         ['fedora-release']),
     'CentOS': (
         ['centos'],
-        ['centos-stream-release', 'centos-release']),
+        ['centos-stream-release', 'centos-release', 'centos-linux-release']),
     'Oracle': (
         ['oracle'],
         ['enterprise-release', 'oraclelinux-release']),
@@ -50,7 +50,7 @@ OTHER_LINUX_KEYS = {
         ['clearos-release']),
     'AlmaLinux': (
         ['almalinux'],
-        ['almalinux-release']),
+        ['almalinux-release', 'almalinux-logos', 'almalinux-backgrounds']),
     'Rocky': (
         ['rockylinux', 'rocky'],
         ['rocky-release']),
@@ -60,6 +60,10 @@ OTHER_LINUX_KEYS = {
     'SUSE': (
         ['suse', 'sles', 'novell'],
         ['sles-release', 'sles_es-release-server']),
+    'Miracle': (
+        [],  # Empty
+        ['miraclelinux-release']
+    )
 }
 """Known NON-RHEL Linux Distributions."""
 # TODO:

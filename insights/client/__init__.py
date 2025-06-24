@@ -19,6 +19,7 @@ from .utilities import (write_data_to_file,
                         get_tags,
                         write_tags,
                         migrate_tags,
+                        get_rhel_version,
                         get_parent_process)
 
 NETWORK = constants.custom_network_log_level
@@ -50,6 +51,14 @@ class InsightsClient(object):
         if from_phase:
             _init_client_config_dirs()
             self.set_up_logging()
+            logger.debug(
+                "path={path}, version={version}, phase={phase}, arguments={arguments}".format(
+                    path=client.__file__,
+                    version=package_info.get("VERSION", "unknown"),
+                    phase=os.getenv("INSIGHTS_PHASE", "unknown"),
+                    arguments=" ".join(sys.argv[1:]),
+                )
+            )
             try_auto_configuration(self.config)
             self.initialize_tags()
         else:  # from wrapper
@@ -111,7 +120,7 @@ class InsightsClient(object):
             else:
                 raise ConnectionError("%s: %s" % (response.status_code, response.reason))
         except ConnectionError as e:
-            logger.warning("Unable to fetch egg url %s: %s. Defaulting to /release", url, str(e))
+            logger.debug("Unable to fetch egg url %s: %s. Defaulting to /release", url, str(e))
             return '/release'
 
     def fetch(self, force=False):
@@ -121,9 +130,17 @@ class InsightsClient(object):
         """
         self.tmpdir = tempfile.mkdtemp()
         atexit.register(self.delete_tmpdir)
+        try:
+            rhel_major = get_rhel_version()
+            # set egg name as 'insights-core.el#.egg' per RHEL #
+            egg_name = 'insights-core.el{0}.egg'.format(rhel_major)
+        except Exception:
+            # set default egg as 'insights-core.egg'
+            egg_name = 'insights-core.egg'
+
         fetch_results = {
-            'core': os.path.join(self.tmpdir, 'insights-core.egg'),
-            'gpg_sig': os.path.join(self.tmpdir, 'insights-core.egg.asc')
+            'core': os.path.join(self.tmpdir, egg_name),
+            'gpg_sig': os.path.join(self.tmpdir, '{0}.asc'.format(egg_name))
         }
 
         logger.debug("Beginning core fetch.")
@@ -141,13 +158,13 @@ class InsightsClient(object):
         egg_url = self.config.egg_path
         egg_gpg_url = self.config.egg_gpg_path
         if egg_url is None:
-            egg_url = '/v1/static{0}/insights-core.egg'.format(egg_release)
+            egg_url = '/v1/static{0}/{1}'.format(egg_release, egg_name)
             # if self.config.legacy_upload:
             #     egg_url = '/v1/static/core/insights-core.egg'
             # else:
             #     egg_url = '/static/insights-core.egg'
         if egg_gpg_url is None:
-            egg_gpg_url = '/v1/static{0}/insights-core.egg.asc'.format(egg_release)
+            egg_gpg_url = '/v1/static{0}/{1}.asc'.format(egg_release, egg_name)
             # if self.config.legacy_upload:
             #     egg_gpg_url = '/v1/static/core/insights-core.egg.asc'
             # else:
@@ -500,7 +517,7 @@ class InsightsClient(object):
         return self.connection.set_ansible_host(ansible_host)
 
     @_net
-    def get_diagnosis(self, remediation_id=None):
+    def get_diagnosis(self):
         '''
             returns JSON of diagnosis data on success, None on failure
             Optional arg remediation_id to get a particular remediation set.
@@ -508,7 +525,7 @@ class InsightsClient(object):
         if self.config.offline:
             logger.error('Cannot get diagnosis in offline mode.')
             return None
-        return self.connection.get_diagnosis(remediation_id)
+        return self.connection.get_diagnosis()
 
     def delete_cached_branch_info(self):
         '''
@@ -539,7 +556,9 @@ class InsightsClient(object):
             print(json.dumps(insights_data, indent=1))
         except IOError as e:
             if e.errno == errno.ENOENT:
-                raise Exception("Error: no report found. Run insights-client --check-results to update the report cache: %s" % e)
+                raise Exception("Error: no report found. "
+                                "Check the results to update the report cache: %s"
+                                "\n# insights-client --check-results" % e)
             else:
                 raise e
 
@@ -549,17 +568,16 @@ class InsightsClient(object):
         """
         system = self.connection._fetch_system_by_machine_id()
         if system:
-            if len(system) == 1:
-                try:
-                    id = system[0]["id"]
-                    logger.info("View details about this system on console.redhat.com:")
-                    logger.info(
-                        "https://console.redhat.com/insights/inventory/{0}".format(id)
-                    )
-                except Exception as e:
-                    logger.error(
-                        "Error: malformed system record: {0}: {1}".format(system, e)
-                    )
+            try:
+                id = system["id"]
+                logger.info("View details about this system on console.redhat.com:")
+                logger.info(
+                    "https://console.redhat.com/insights/inventory/{0}".format(id)
+                )
+            except Exception as e:
+                logger.error(
+                    "Error: malformed system record: {0}: {1}".format(system, e)
+                )
 
     def copy_to_output_dir(self, insights_archive):
         '''

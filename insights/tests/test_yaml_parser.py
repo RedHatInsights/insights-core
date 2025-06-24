@@ -10,16 +10,33 @@ bi_conf_content = """
 {"remote_branch": -1, "remote_leaf": -1}
 """.strip()
 
-yaml_test_strings = {"""
+yaml_test_strings = {
+    """
 type:        Acquisition
 date:        2019-07-09
-""": {'type': 'Acquisition', 'date': datetime.date(2019, 7, 9)}, """
+""": {
+        'type': 'Acquisition',
+        'date': datetime.date(2019, 7, 9),
+    },
+    """
 - Hesperiidae
 - Papilionidae
 - Apatelodidae
 - Epiplemidae
-""": ['Hesperiidae', 'Papilionidae', 'Apatelodidae', 'Epiplemidae']
+""": [
+        'Hesperiidae',
+        'Papilionidae',
+        'Apatelodidae',
+        'Epiplemidae',
+    ],
 }
+
+yaml_content_with_extra_lines = """
+test=abc
+---
+server:
+  hostname: abc
+""".strip()
 
 empty_yaml_content = """
 ---
@@ -32,18 +49,24 @@ wrong_yaml_content = """
 
 
 class FakeYamlParser(YAMLParser):
-    """ Class for parsing the content of ``branch_info``."""
+    """Class for parsing the content of ``branch_info``."""
+
     pass
 
 
 class MyYamlParser(YAMLParser):
-    pass
+    ignore_lines = ['test=']
 
 
 def test_yaml_parser_success():
     for ymlstr in yaml_test_strings:
         ctx = context_wrap(ymlstr)
         assert FakeYamlParser(ctx).data == yaml_test_strings[ymlstr]
+
+
+def test_yaml_parser_success_skip_lines():
+    ctx = context_wrap(yaml_content_with_extra_lines)
+    assert MyYamlParser(ctx).get('server').get('hostname') == 'abc'
 
 
 def test_yaml_parser_failure():

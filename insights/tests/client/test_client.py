@@ -8,6 +8,7 @@ from insights.client import InsightsClient
 from insights.client.client import get_file_handler, RotatingFileHandlerWithUMask, FileHandlerWithUMask
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
+from insights.client.connection import InsightsConnection
 from insights import package_info
 from insights.client.constants import InsightsConstants as constants
 from mock.mock import patch, Mock, call, ANY
@@ -249,6 +250,27 @@ def test_unregister_legacy(date, client_write, utilities_write, _delete_cache_fi
         call(constants.unregistered_files[0], content=date.return_value),
         call(constants.unregistered_files[1], content=date.return_value)
     ))
+
+
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+@patch("insights.client.connection.machine_id_exists", return_value=True)
+@patch("insights.client.connection.write_unregistered_file")
+@patch("insights.client.connection.write_to_disk")
+@patch("os.path.exists", side_effect=lambda path: path == constants.registered_files[0])
+@patch("insights.client.connection.InsightsConnection._fetch_system_by_machine_id", return_value=False)
+def test_unregister_no_inventory(fetch_system_by_machine_id, os_path_exists, write_to_disk, write_unregistered_file, machine_id_exists, get_proxies, _init_session):
+    '''
+    Test unregister when the system does not exist in Inventory,
+    but local registration files exist.
+    '''
+    config = InsightsConfig(unregister=True, legacy_upload=False)
+    connection = InsightsConnection(config)
+    result = connection.unregister()
+
+    write_unregistered_file.assert_called_once()
+    write_to_disk.assert_called_once_with(constants.machine_id_file, delete=True)
+    assert result is True
 
 
 def test_register_container():

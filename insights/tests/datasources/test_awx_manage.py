@@ -1,14 +1,14 @@
-import collections
 import json
 import pytest
 
+from collections import defaultdict, OrderedDict
 from mock.mock import Mock
 
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs import Specs
-from insights.specs.datasources.awx_manage import LocalSpecs, awx_manage_check_license_data_datasource
+from insights.specs.datasources.awx_manage import LocalSpecs, check_license_data
 
 
 AWX_MANAGE_LICENSE = """
@@ -23,32 +23,41 @@ AWX_MANAGE_FILTER_JSON = {
     "license_type": "enterprise",
     "time_remaining": 29885220,
     "instance_count": 100,
-    "support_level": "Standard"
+    "support_level": "Standard",
 }
 
-RELATIVE_PATH = 'insights_commands/awx-manage_check_license_--data'
+RELATIVE_PATH = 'insights_datasources/awx_manage_check_license_data'
 
 
 def setup_function(func):
-    if Specs.awx_manage_check_license_data in filters._CACHE:
-        del filters._CACHE[Specs.awx_manage_check_license_data]
-    if Specs.awx_manage_check_license_data in filters.FILTERS:
-        del filters.FILTERS[Specs.awx_manage_check_license_data]
-
-    if func is test_ansible_tower_license_datasource or func is test_ansible_tower_license_datasource_NG_output:
-        filters.add_filter(Specs.awx_manage_check_license_data, ["license_type", "support_level", "instance_count", "time_remaining"])
+    if (
+        func is test_ansible_tower_license_datasource
+        or func is test_ansible_tower_license_datasource_NG_output
+    ):
+        filters.add_filter(
+            Specs.awx_manage_check_license_data,
+            ["license_type", "support_level", "instance_count", "time_remaining"],
+        )
     if func is test_ansible_tower_license_datasource_no_filter:
         filters.add_filter(Specs.awx_manage_check_license_data, [])
+
+
+def teardown_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(dict)
 
 
 def test_ansible_tower_license_datasource():
     awx_manage_data = Mock()
     awx_manage_data.content = AWX_MANAGE_LICENSE.splitlines()
     broker = {LocalSpecs.awx_manage_check_license_data_raw: awx_manage_data}
-    result = awx_manage_check_license_data_datasource(broker)
+    result = check_license_data(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
-    expected = DatasourceProvider(content=json.dumps(collections.OrderedDict(sorted(AWX_MANAGE_FILTER_JSON.items()))), relative_path=RELATIVE_PATH)
+    expected = DatasourceProvider(
+        content=json.dumps(OrderedDict(sorted(AWX_MANAGE_FILTER_JSON.items()))),
+        relative_path=RELATIVE_PATH,
+    )
     assert result.content == expected.content
     assert result.relative_path == expected.relative_path
 
@@ -58,7 +67,7 @@ def test_ansible_tower_license_datasource_no_filter():
     awx_manage_data.content = AWX_MANAGE_LICENSE.splitlines()
     broker = {LocalSpecs.awx_manage_check_license_data_raw: awx_manage_data}
     with pytest.raises(SkipComponent) as e:
-        awx_manage_check_license_data_datasource(broker)
+        check_license_data(broker)
     assert 'SkipComponent' in str(e)
 
 
@@ -67,5 +76,5 @@ def test_ansible_tower_license_datasource_NG_output():
     awx_manage_data.content = NG_COMMAND.splitlines()
     broker = {LocalSpecs.awx_manage_check_license_data_raw: awx_manage_data}
     with pytest.raises(SkipComponent) as e:
-        awx_manage_check_license_data_datasource(broker)
+        check_license_data(broker)
     assert 'Unexpected exception' in str(e)

@@ -202,6 +202,63 @@ WARNING: locking_type(0) is deprecated, using - -nolocking.
 }
 """.strip()
 
+LVM_FULLREPORT_WARNING_IN_JSON_MIDDLE = """
+  WARNING: locking_type(0) is deprecated, using - -nolocking.
+  {
+      "report": [
+          {
+          "vg": [{"vg_fmt":"lvm2", "vg_uuid":"zclHZK-pMKd-fSIC-8TRX-xitj-RxY1-vwCRAw", "vg_name":"rhel", "vg_attr":"wz--n-"}],
+          "pv": [{"pv_fmt":"lvm2", "pv_uuid":"LU7am7-ACyz-cPlb-byCA-j4IM-9FK8-iS1WA4", "dev_size":"<9.00g", "pv_name":"/dev/vda2"}],
+          "lv": [{"lv_uuid":"kG4B7g-Ggar-uwtO-EbEX-gBX0-EGO2-Y0VFfU", "lv_name":"root", "lv_full_name":"rhel/root", "lv_path":"/dev/rhel/root"}],
+          "pvseg": [{"pvseg_start":"0", "pvseg_size":"256", "pv_uuid":"LU7am7-ACyz-cPlb-byCA-j4IM-9FK8-iS1WA4", "lv_uuid":"8p6Tu0-OGa9-rbjg-5V22-D1dX-lNw7-Jed3m7"}],
+          "seg": [{"segtype":"linear", "stripes":"1", "data_stripes":"1", "reshape_len":"", "reshape_len_le":"", "data_copies":"1"}]
+          }
+          ,
+  WARNING: PV /dev/sdc in VG oraredo is using an old PV header, modify the VG to update.
+          {
+          "vg": [{"vg_fmt":"lvm2", "vg_uuid":"1rLhOL-Mqkc-gi9I-Yspd-QZ3W-ZWN6-5viZiT", "vg_name":"vg1", "vg_attr":"wz--n-"}],
+          "pv": [{"pv_fmt":"lvm2", "pv_uuid":"WwYITo-ng46-4Ufw-DqKx-0ZQA-LQeh-Vnga1N", "dev_size":"5.00g", "pv_name":"/dev/vdb"}],
+          "lv": [{"lv_uuid":"tZdwGc-xGEg-VMQU-WIgE-k8kP-Udeo-hgLofA", "lv_name":"lvraid1", "lv_full_name":"vg1/lvraid1", "lv_path":"/dev/vg1/lvraid1"}],
+          "pvseg": [{"pvseg_start":"0", "pvseg_size":"1", "pv_uuid":"D39Poc-PupR-sYD5-bUeJ-2aYO-YWdP-XAInA5", "lv_uuid":"3YHTyV-HXoc-wRRH-D1Jw-NNIs-m2g8-cOvgGS"}],
+          "seg": [{"segtype":"linear", "stripes":"1", "data_stripes":"1", "reshape_len":"", "reshape_len_le":"", "data_copies":"1"}]
+          }
+      ]
+  }
+""".strip()
+
+LVM_FULLREPORT_SPECIAL_KEYWORDS = """
+  WARNING: locking_type(0) is deprecated, using - -nolocking.
+  {
+    "report": [
+  WARNING: PV /dev/sdd in VG vgfo is using an old PV header, modify the VG to update.
+      {
+          "vg": [
+              {"vg_fmt":"lvm2", "vg_uuid":"43522d-03cc-11f0-9164-62c3-585c-904cc4", "vg_name":"vgfo", "vg_attr":"wz--n-", "vg_permissions":"writeable", "vg_extendable":"extendable", "vg_exported":"", "vg_autoactivation":"enabled", "vg_partial":"", "vg_allocation_policy":"normal", "vg_clustered":"", "vg_shared":"", "vg_size":"1.99g", "vg_free":"<1.47g", "vg_sysid":"", "vg_systemid":"", "vg_lock_type":"", "vg_lock_args":"", "vg_extent_size":"4.00m", "vg_extent_count":"510", "vg_free_count":"376", "max_lv":"0", "max_pv":"0", "pv_count":"2", "vg_missing_pv_count":"0", "lv_count":"3", "snap_count":"0", "vg_seqno":"65", "vg_tags":"TTT", "vg_profile":"", "vg_mda_count":"2", "vg_mda_used_count":"2", "vg_mda_free":"506.00k", "vg_mda_size":"1020.00k", "vg_mda_copies":"unmanaged"}
+          ]
+          ,
+          "pv": [
+              {"pv_fmt":"lvm2", "pv_uuid":"43522d-03cc-11f0-9164-62c3-585c-904cc5", "dev_size":"1.00g", "pv_name":"/dev/sdd", "pv_major":"8", "pv_minor":"48", "pv_mda_free":"506.00k", "pv_mda_size":"1020.00k", "pv_ext_vsn":"2", "pe_start":"1.00m", "pv_size":"1020.00m", "pv_free":"752.00m", "pv_used":"268.00m", "pv_attr":"a--", "pv_allocatable":"allocatable", "pv_exported":"", "pv_missing":"", "pv_pe_count":"255", "pv_pe_alloc_count":"67", "pv_tags":"", "pv_mda_count":"1", "pv_mda_used_count":"1", "pv_ba_start":"0 ", "pv_ba_size":"0 ", "pv_in_use":"used", "pv_duplicate":"", "pv_device_id":"", "pv_device_id_type":""},
+              {"pv_fmt":"lvm2", "pv_uuid":"43522d-03cc-11f0-9164-62c3-585c-904cc6", "dev_size":"1.00g", "pv_name":"/dev/sde", "pv_major":"8", "pv_minor":"64", "pv_mda_free":"506.00k", "pv_mda_size":"1020.00k", "pv_ext_vsn":"2", "pe_start":"1.00m", "pv_size":"1020.00m", "pv_free":"752.00m", "pv_used":"268.00m", "pv_attr":"a--", "pv_allocatable":"allocatable", "pv_exported":"", "pv_missing":"", "pv_pe_count":"255", "pv_pe_alloc_count":"67", "pv_tags":"", "pv_mda_count":"1", "pv_mda_used_count":"1", "pv_ba_start":"0 ", "pv_ba_size":"0 ", "pv_in_use":"used", "pv_duplicate":"", "pv_device_id":"", "pv_device_id_type":""}
+          ]
+          ,
+          "lv": [
+              {"lv_uuid":"43522d-03cc-11f0-9164-62c3-585c-904cc7", "lv_name":"lv_d", "lv_full_name":"vgfo/lv_d", "lv_path":"/dev/vgfo/lv_d", "lv_dm_path":"/dev/mapper/vgfo-lv_d", "lv_parent":"", "lv_layout":"linear", "lv_role":"public", "lv_initial_image_sync":"", "lv_image_synced":"", "lv_merging":"", "lv_converting":"", "lv_allocation_policy":"inherit", "lv_allocation_locked":"", "lv_fixed_minor":"", "lv_skip_activation":"", "lv_autoactivation":"enabled", "lv_when_full":"", "lv_active":"", "lv_active_locally":"", "lv_active_remotely":"", "lv_active_exclusively":"", "lv_major":"-1", "lv_minor":"-1", "lv_read_ahead":"auto", "lv_size":"4.00m", "lv_metadata_size":"", "seg_count":"1", "origin":"", "origin_uuid":"", "origin_size":"", "lv_ancestors":"", "lv_full_ancestors":"", "lv_descendants":"", "lv_full_descendants":"", "raid_mismatch_count":"", "raid_sync_action":"", "raid_write_behind":"", "raid_min_recovery_rate":"", "raid_max_recovery_rate":"", "raidintegritymode":"", "raidintegrityblocksize":"-1", "integritymismatches":"", "move_pv":"", "move_pv_uuid":"", "convert_lv":"", "convert_lv_uuid":"", "mirror_log":"", "mirror_log_uuid":"", "data_lv":"", "data_lv_uuid":"", "metadata_lv":"", "metadata_lv_uuid":"", "pool_lv":"", "pool_lv_uuid":"", "lv_tags":"", "lv_profile":"", "lv_lockargs":"", "lv_time":"2023-07-06 14:08:52 -0500", "lv_time_removed":"", "lv_host":"r8n0", "lv_modules":"", "lv_historical":"", "writecache_block_size":"-1", "lv_kernel_major":"-1", "lv_kernel_minor":"-1", "lv_kernel_read_ahead":"-1", "lv_permissions":"unknown", "lv_suspended":"unknown", "lv_live_table":"unknown", "lv_inactive_table":"unknown", "lv_device_open":"unknown", "data_percent":"", "snap_percent":"", "metadata_percent":"", "copy_percent":"", "sync_percent":"", "cache_total_blocks":"", "cache_used_blocks":"", "cache_dirty_blocks":"", "cache_read_hits":"", "cache_read_misses":"", "cache_write_hits":"", "cache_write_misses":"", "kernel_cache_settings":"", "kernel_cache_policy":"", "kernel_metadata_format":"", "lv_health_status":"", "kernel_discards":"", "lv_check_needed":"unknown", "lv_merge_failed":"unknown", "lv_snapshot_invalid":"unknown", "vdo_operating_mode":"", "vdo_compression_state":"", "vdo_index_state":"", "vdo_used_size":"", "vdo_saving_percent":"", "writecache_total_blocks":"", "writecache_free_blocks":"", "writecache_writeback_blocks":"", "writecache_error":"", "lv_attr":"-wi-------"},
+              {"lv_uuid":"43522d-03cc-11f0-9164-62c3-585c-904cc8", "lv_name":"lv_e", "lv_full_name":"vgfo/lv_e", "lv_path":"/dev/vgfo/lv_e", "lv_dm_path":"/dev/mapper/vgfo-lv_e", "lv_parent":"", "lv_layout":"linear", "lv_role":"public", "lv_initial_image_sync":"", "lv_image_synced":"", "lv_merging":"", "lv_converting":"", "lv_allocation_policy":"inherit", "lv_allocation_locked":"", "lv_fixed_minor":"", "lv_skip_activation":"", "lv_autoactivation":"enabled", "lv_when_full":"", "lv_active":"", "lv_active_locally":"", "lv_active_remotely":"", "lv_active_exclusively":"", "lv_major":"-1", "lv_minor":"-1", "lv_read_ahead":"auto", "lv_size":"4.00m", "lv_metadata_size":"", "seg_count":"1", "origin":"", "origin_uuid":"", "origin_size":"", "lv_ancestors":"", "lv_full_ancestors":"", "lv_descendants":"", "lv_full_descendants":"", "raid_mismatch_count":"", "raid_sync_action":"", "raid_write_behind":"", "raid_min_recovery_rate":"", "raid_max_recovery_rate":"", "raidintegritymode":"", "raidintegrityblocksize":"-1", "integritymismatches":"", "move_pv":"", "move_pv_uuid":"", "convert_lv":"", "convert_lv_uuid":"", "mirror_log":"", "mirror_log_uuid":"", "data_lv":"", "data_lv_uuid":"", "metadata_lv":"", "metadata_lv_uuid":"", "pool_lv":"", "pool_lv_uuid":"", "lv_tags":"", "lv_profile":"", "lv_lockargs":"", "lv_time":"2023-07-06 14:08:43 -0500", "lv_time_removed":"", "lv_host":"r8n0", "lv_modules":"", "lv_historical":"", "writecache_block_size":"-1", "lv_kernel_major":"-1", "lv_kernel_minor":"-1", "lv_kernel_read_ahead":"-1", "lv_permissions":"unknown", "lv_suspended":"unknown", "lv_live_table":"unknown", "lv_inactive_table":"unknown", "lv_device_open":"unknown", "data_percent":"", "snap_percent":"", "metadata_percent":"", "copy_percent":"", "sync_percent":"", "cache_total_blocks":"", "cache_used_blocks":"", "cache_dirty_blocks":"", "cache_read_hits":"", "cache_read_misses":"", "cache_write_hits":"", "cache_write_misses":"", "kernel_cache_settings":"", "kernel_cache_policy":"", "kernel_metadata_format":"", "lv_health_status":"", "kernel_discards":"", "lv_check_needed":"unknown", "lv_merge_failed":"unknown", "lv_snapshot_invalid":"unknown", "vdo_operating_mode":"", "vdo_compression_state":"", "vdo_index_state":"", "vdo_used_size":"", "vdo_saving_percent":"", "writecache_total_blocks":"", "writecache_free_blocks":"", "writecache_writeback_blocks":"", "writecache_error":"", "lv_attr":"-wi-------"}
+          ]
+          ,
+          "pvseg": [
+              {"pvseg_start":"0", "pvseg_size":"1", "pv_uuid":"43522d-03cc-11f0-9164-62c3-585c-904cc5", "lv_uuid":"43522d-03cc-11f0-9164-62c3-585c-904cc7"},
+              {"pvseg_start":"1", "pvseg_size":"64", "pv_uuid":"43522d-03cc-11f0-9164-62c3-585c-904cc6", "lv_uuid":"43522d-03cc-11f0-9164-62c3-585c-904cc8"}
+          ]
+          ,
+          "seg": [
+              {"segtype":"linear", "stripes":"1", "data_stripes":"1", "reshape_len":"", "reshape_len_le":"", "data_copies":"1", "data_offset":"", "new_data_offset":"", "parity_chunks":"", "stripe_size":"0 ", "region_size":"0 ", "chunk_size":"0 ", "thin_count":"", "discards":"", "cache_metadata_format":"", "cache_mode":"", "zero":"unknown", "transaction_id":"", "thin_id":"", "seg_start":"0 ", "seg_start_pe":"0", "seg_size":"4.00m", "seg_size_pe":"1", "seg_tags":"", "seg_pe_ranges":"/dev/sde:65-65", "seg_le_ranges":"/dev/sde:65-65", "seg_metadata_le_ranges":"", "devices":"/dev/sde(65)", "metadata_devices":"", "seg_monitor":"", "cache_policy":"", "cache_settings":"", "vdo_compression":"", "vdo_deduplication":"", "vdo_use_metadata_hints":"", "vdo_minimum_io_size":"", "vdo_block_map_cache_size":"", "vdo_block_map_era_length":"", "vdo_use_sparse_index":"", "vdo_index_memory_size":"", "vdo_slab_size":"", "vdo_ack_threads":"", "vdo_bio_threads":"", "vdo_bio_rotation":"", "vdo_cpu_threads":"", "vdo_hash_zone_threads":"", "vdo_logical_threads":"", "vdo_physical_threads":"", "vdo_max_discard":"", "vdo_write_policy":"", "vdo_header_size":"", "lv_uuid":"43522d-03cc-11f0-9164-62c3-585c-904cc9"},
+              {"segtype":"linear", "stripes":"1", "data_stripes":"1", "reshape_len":"", "reshape_len_le":"", "data_copies":"1", "data_offset":"", "new_data_offset":"", "parity_chunks":"", "stripe_size":"0 ", "region_size":"0 ", "chunk_size":"0 ", "thin_count":"", "discards":"", "cache_metadata_format":"", "cache_mode":"", "zero":"unknown", "transaction_id":"", "thin_id":"", "seg_start":"0 ", "seg_start_pe":"0", "seg_size":"4.00m", "seg_size_pe":"1", "seg_tags":"", "seg_pe_ranges":"/dev/sde:0-0", "seg_le_ranges":"/dev/sde:0-0", "seg_metadata_le_ranges":"", "devices":"/dev/sde(0)", "metadata_devices":"", "seg_monitor":"", "cache_policy":"", "cache_settings":"", "vdo_compression":"", "vdo_deduplication":"", "vdo_use_metadata_hints":"", "vdo_minimum_io_size":"", "vdo_block_map_cache_size":"", "vdo_block_map_era_length":"", "vdo_use_sparse_index":"", "vdo_index_memory_size":"", "vdo_slab_size":"", "vdo_ack_threads":"", "vdo_bio_threads":"", "vdo_bio_rotation":"", "vdo_cpu_threads":"", "vdo_hash_zone_threads":"", "vdo_logical_threads":"", "vdo_physical_threads":"", "vdo_max_discard":"", "vdo_write_policy":"", "vdo_header_size":"", "lv_uuid":"43522d-03cc-11f0-9164-62c3-585c-904cc0"}
+          ]
+      }
+    ]
+}""".strip()
+
 LVM_FULLREPORT_EMPTY = """
 {
     "report": [
@@ -209,11 +266,32 @@ LVM_FULLREPORT_EMPTY = """
 }
 """.strip()
 
+LVM_FULLREPORT_NO_JSON = """
+WARNING: locking_type(0) is deprecated, using - -nolocking.
+""".strip()
+
+VGS_WITH_FOREIGN_STRING = """
+  LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='9nEuop-JraN-SMv7-DxpS-J1wC-NZvV-fzPtuk'|LVM2_VG_NAME='cluster_vg'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_AUTOACTIVATION=''|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SHARED=''|LVM2_VG_SIZE='<20.00g'|LVM2_VG_FREE='0 '|LVM2_VG_SYSID='node1.redhat.com'|LVM2_VG_SYSTEMID='node1.redhat.com'|LVM2_VG_LOCK_TYPE=''|LVM2_VG_LOCK_ARGS=''|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='5119'|LVM2_VG_FREE_COUNT='0'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_VG_MISSING_PV_COUNT='0'|LVM2_LV_COUNT='1'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='5'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='507.50k'|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+  LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='SHRR9U-WPAB-m25d-8zz7-If1j-lXoX-GpA0lI'|LVM2_VG_NAME='rhel_rhel9'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_AUTOACTIVATION='enabled'|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SHARED=''|LVM2_VG_SIZE='<127.00g'|LVM2_VG_FREE='54.96g'|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCK_TYPE=''|LVM2_VG_LOCK_ARGS=''|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='32511'|LVM2_VG_FREE_COUNT='14070'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_VG_MISSING_PV_COUNT='0'|LVM2_LV_COUNT='2'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='7'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='507.50k'|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+"""
+
+VGS_WITH_SHARED_STRING = """
+  WARNING: File locking is disabled.
+  LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='ms3Po2-XPJP-QLk7-Dh29-JNvQ-9bSN-JavZVj'|LVM2_VG_NAME='cluster_vg'|LVM2_VG_ATTR='wz--ns'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_AUTOACTIVATION='enabled'|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SHARED='shared'|LVM2_VG_SIZE='<10.00g'|LVM2_VG_FREE='0 '|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCK_TYPE='dlm'|LVM2_VG_LOCK_ARGS='1.0.0:hh_cluster'|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='2559'|LVM2_VG_FREE_COUNT='0'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_VG_MISSING_PV_COUNT='0'|LVM2_LV_COUNT='1'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='3'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='508.00k'|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+  LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='Y49xze-fTp1-PypT-vIqE-LlSc-tkyH-uhgdZv'|LVM2_VG_NAME='rhel_rhel8'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_AUTOACTIVATION='enabled'|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SHARED=''|LVM2_VG_SIZE='<127.00g'|LVM2_VG_FREE='<54.94g'|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCK_TYPE=''|LVM2_VG_LOCK_ARGS=''|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='32511'|LVM2_VG_FREE_COUNT='14064'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_VG_MISSING_PV_COUNT='0'|LVM2_LV_COUNT='2'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='7'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='507.50k'|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+"""
+
+VGS_WITH_CLUSTERED_STRING = """
+  WARNING: File locking is disabled.
+  LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='ms3Po2-XPJP-QLk7-Dh29-JNvQ-9bSN-JavZVj'|LVM2_VG_NAME='cluster_vg'|LVM2_VG_ATTR='wz--nc'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_AUTOACTIVATION='enabled'|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SHARED='shared'|LVM2_VG_SIZE='<10.00g'|LVM2_VG_FREE='0 '|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCK_TYPE='dlm'|LVM2_VG_LOCK_ARGS='1.0.0:hh_cluster'|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='2559'|LVM2_VG_FREE_COUNT='0'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_VG_MISSING_PV_COUNT='0'|LVM2_LV_COUNT='1'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='3'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='508.00k'|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+  LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='Y49xze-fTp1-PypT-vIqE-LlSc-tkyH-uhgdZv'|LVM2_VG_NAME='rhel_rhel8'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_AUTOACTIVATION='enabled'|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SHARED=''|LVM2_VG_SIZE='<127.00g'|LVM2_VG_FREE='<54.94g'|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCK_TYPE=''|LVM2_VG_LOCK_ARGS=''|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='32511'|LVM2_VG_FREE_COUNT='14064'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_VG_MISSING_PV_COUNT='0'|LVM2_LV_COUNT='2'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='7'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='507.50k'|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+"""
+
 
 def test_find_warnings():
     data = [l for l in lvm.find_warnings(WARNINGS_CONTENT.splitlines())]
     assert len(data) == len(WARNINGS_FOUND.splitlines())
-    assert data == WARNINGS_FOUND.splitlines()
+    assert data == [0, 2, 4, 5]  # The WARNINGS_FOUND lines index in WARNINGS_CONTENT
 
 
 def compare_partial_dicts(result, expected):
@@ -253,7 +331,10 @@ def test_vgsheading_warnings():
     result = lvm.VgsHeadings(context_wrap(VGSHEADING_CONTENT))
     assert len(result.warnings) == 6
     assert 'Configuration setting "activation/thin_check_executable" unknown.' in result.warnings
-    assert 'WARNING: Locking disabled. Be careful! This could corrupt your metadata.' in result.warnings
+    assert (
+        'WARNING: Locking disabled. Be careful! This could corrupt your metadata.'
+        in result.warnings
+    )
 
 
 def test_vgs_with_extra_tips():
@@ -279,7 +360,7 @@ def test_system_devices_exception():
 
 
 def test_lvm_fullreport():
-    for data in [LVM_FULLREPORT, LVM_FULLREPORT_WARNING]:
+    for data in [LVM_FULLREPORT, LVM_FULLREPORT_WARNING, LVM_FULLREPORT_WARNING_IN_JSON_MIDDLE]:
         report = lvm.LvmFullReport(context_wrap(data))
         assert report is not None
         assert len(report.volume_groups) == 2
@@ -293,17 +374,70 @@ def test_lvm_fullreport():
             "pvseg_start": "0",
             "pvseg_size": "1",
             "pv_uuid": "D39Poc-PupR-sYD5-bUeJ-2aYO-YWdP-XAInA5",
-            "lv_uuid": "3YHTyV-HXoc-wRRH-D1Jw-NNIs-m2g8-cOvgGS"
+            "lv_uuid": "3YHTyV-HXoc-wRRH-D1Jw-NNIs-m2g8-cOvgGS",
         }
         assert vg1['seg'][0]['data_stripes'] == '1'
 
         if data == LVM_FULLREPORT_WARNING:
-            assert report.warnings == [LVM_FULLREPORT_WARNING.splitlines()[0], ]
+            assert report.warnings == [
+                LVM_FULLREPORT_WARNING.splitlines()[0],
+            ]
+
+        if data == LVM_FULLREPORT_WARNING_IN_JSON_MIDDLE:
+            assert report.warnings == [
+                LVM_FULLREPORT_WARNING_IN_JSON_MIDDLE.splitlines()[0],
+                LVM_FULLREPORT_WARNING_IN_JSON_MIDDLE.splitlines()[11],
+            ]
+
+    report = lvm.LvmFullReport(context_wrap(LVM_FULLREPORT_SPECIAL_KEYWORDS))
+    assert report is not None
+    assert len(report.volume_groups) == 1
+    assert 'vgfo' in report.volume_groups
+    vgfo = report.volume_groups['vgfo']
+    assert set(vgfo.keys()) == set(['vg', 'pv', 'lv', 'pvseg', 'seg'])
+    assert vgfo['vg'][0]['vg_name'] == 'vgfo'
+    assert vgfo['pv'][0]['pv_name'] == '/dev/sdd'
+    assert vgfo['lv'][0]['lv_name'] == 'lv_d'
+    assert vgfo['pvseg'][0]['pvseg_size'] == '1'
+    assert vgfo['seg'][0]['data_stripes'] == '1'
+    assert report.warnings == [
+        LVM_FULLREPORT_SPECIAL_KEYWORDS.splitlines()[0],
+        LVM_FULLREPORT_SPECIAL_KEYWORDS.splitlines()[3],
+    ]
 
 
 def test_lvm_fullreport_empty():
-    with pytest.raises(SkipComponent):
+    with pytest.raises(SkipComponent) as e:
         lvm.LvmFullReport(context_wrap(LVM_FULLREPORT_EMPTY))
+    assert "No LVM information in fullreport" in str(e)
+
+
+def test_vgs_with_foreign_and_share():
+    data = lvm.VgsWithForeignAndShared(context_wrap(VGS_WITH_FOREIGN_STRING))
+    assert len(data) == 2
+    assert not data.shared_vgs
+    assert not data.clustered_vgs
+    assert data[0]['VG_UUID'] == '9nEuop-JraN-SMv7-DxpS-J1wC-NZvV-fzPtuk'
+    assert data[0]['LVM2_VG_SYSTEMID'] == 'node1.redhat.com'
+
+    assert data[1]['VG_UUID'] == 'SHRR9U-WPAB-m25d-8zz7-If1j-lXoX-GpA0lI'
+    assert data[1]['LVM2_VG_SYSTEMID'] == ''
+
+    data2 = lvm.VgsWithForeignAndShared(context_wrap(VGS_WITH_SHARED_STRING))
+    assert len(data2) == 2
+    assert len(data2.shared_vgs) == 1
+    data2.shared_vgs[0]['VG_UUID'] == 'ms3Po2-XPJP-QLk7-Dh29-JNvQ-9bSN-JavZVj'
+    data2.shared_vgs[0]['VG'] == 'cluster_vg'
+    data2.shared_vgs[0]['Attr'] == 'wz--ns'
+    assert not data2.clustered_vgs
+
+    data3 = lvm.VgsWithForeignAndShared(context_wrap(VGS_WITH_CLUSTERED_STRING))
+    assert len(data3) == 2
+    assert not data3.shared_vgs
+    assert len(data3.clustered_vgs) == 1
+    data3.clustered_vgs[0]['VG_UUID'] == 'ms3Po2-XPJP-QLk7-Dh29-JNvQ-9bSN-JavZVj'
+    data3.clustered_vgs[0]['VG'] == 'cluster_vg'
+    data3.clustered_vgs[0]['Attr'] == 'wz--nc'
 
 
 def test_docs():
@@ -314,6 +448,7 @@ def test_docs():
         'vgs_info': lvm.VgsHeadings(context_wrap(VGSHEADING_CONTENT_DOC)),
         'lvs_info': lvm.LvsHeadings(context_wrap(LVS_HAEADING_OUTUPT)),
         'lvm_fullreport': lvm.LvmFullReport(context_wrap(LVM_FULLREPORT)),
+        'vgs_all_data': lvm.VgsWithForeignAndShared(context_wrap(VGS_WITH_FOREIGN_STRING)),
     }
     failed, total = doctest.testmod(lvm, globs=env)
     assert failed == 0

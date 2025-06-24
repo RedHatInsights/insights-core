@@ -1,10 +1,18 @@
 """
-SMARTctl - command ``/sbin/smartctl -a {device}``
-=================================================
+smartctl - parser for smartctl commands
+=======================================
+
+Classes to parse the output of smartctl commands:
+
+
+SMARTctl - /usr/sbin/smartctl -a {devices}
+------------------------------------------
+SmartctlHealth - /usr/sbin/smartctl -H {devices} -j
+---------------------------------------------------
 """
 import re
 
-from insights.core import CommandParser
+from insights.core import CommandParser, JSONParser
 from insights.core.exceptions import ParseException
 from insights.core.plugins import parser
 from insights.specs import Specs
@@ -62,18 +70,12 @@ class SMARTctl(CommandParser):
         ...
 
     Examples:
-        >>> for drive in shared[SMARTctl]:
-        ...     print "Device:", drive.device
-        ...     print "Model:", drive.information['Device Model']
-        ...     print "Health check:", drive.health
-        ...     print "Last self-test status:", drive.values['Self-test execution status']
-        ...     print "Raw read error rate:", drive.attributes['Raw_Read_Error_Rate']['RAW_VALUE']
-        ...
-        Device: /dev/sda
-        Model: ST500LM021-1KJ152
-        Health check: PASSED
-        Last self-test status: 0
-        Raw read error rate: 179599704
+        >>> type(smartctl_all)
+        <class 'insights.parsers.smartctl.SMARTctl'>
+        >>> smartctl_all.device
+        '/dev/sdc'
+        >>> smartctl_all.information['Vendor']
+        'NETAPP'
 
     """
 
@@ -201,3 +203,54 @@ class SMARTctl(CommandParser):
 
         # Delete temporary full line storage
         del self.full_line
+
+
+@parser(Specs.smartctl_health)
+class SmartctlHealth(JSONParser):
+    """
+    Parse the output of command "smartctl -H -d scsi {devices}".
+
+    Sample input::
+
+        {
+          "json_format_version": [
+            1,
+            0
+          ],
+          "smartctl": {
+            "version": [
+              7,
+              2
+            ],
+            "svn_revision": "5155",
+            "platform_info": "x86_64-linux-5.14.0-503.11.1.el9_5.x86_64",
+            "build_info": "(local build)",
+            "argv": [
+              "smartctl",
+              "-H",
+              "-d",
+              "scsi",
+              "/dev/sdb",
+              "-j"
+            ],
+            "exit_status": 0
+          },
+          "device": {
+            "name": "/dev/sdb",
+            "info_name": "/dev/sdb",
+            "type": "scsi",
+            "protocol": "SCSI"
+          },
+          "smart_status": {
+            "passed": true
+          }
+        }
+
+    Examples:
+        >>> type(smartctl_health)
+        <class 'insights.parsers.smartctl.SmartctlHealth'>
+        >>> smartctl_health.data['smart_status']["passed"]
+        True
+
+    """
+    pass

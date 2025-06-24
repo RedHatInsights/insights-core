@@ -26,6 +26,8 @@ def parse_bool(s, default=False):
     Return the boolean value of an English string or default if it can't be
     determined.
     """
+    if isinstance(s, bool):
+        return s
     if s is None:
         return default
     return TRUTH.get(s.lower(), default)

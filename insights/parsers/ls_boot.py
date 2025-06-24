@@ -9,21 +9,21 @@ See :class:`insights.parsers.ls.FileListing` for more information.
 
 """
 
-from insights import CommandParser, parser
+from insights import parser
 from insights.parsers.ls import FileListing
 from insights.specs import Specs
 
 
 @parser(Specs.ls_boot)
-class LsBoot(CommandParser, FileListing):
+class LsBoot(FileListing):
     """
     Parse the /boot directory listing using a standard FileListing parser.
 
     .. warning::
 
         For Insights Advisor Rules, it's recommended to use the
-        :class:`insights.parsers.ls.LSlanR` and add the ``"/boot"`` to
-        the filter list of `Specs.ls_lanR_dirs` instead.
+        :class:`insights.parsers.ls.LSlanFiltered` and add the ``"/boot"`` to
+        the filter list of `Specs.ls_lan_filtered_dirs` instead.
 
     Sample directory listing::
 

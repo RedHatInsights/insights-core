@@ -11,7 +11,10 @@ def insights_client():
     config = InsightsConfig(http_timeout=123)
     client = InsightsClient(config)
     client.connection = Mock(**{
-        "base_url": "http://www.example.com/", "get.return_value.headers.items.return_value": []
+        "base_url": "http://www.example.com/",
+        "get.return_value.headers.items.return_value": [],
+        "get.return_value.status_code": 200,
+        "get.return_value.content": b"",
     })
     return client
 
@@ -45,9 +48,6 @@ def test_request_forced(insights_client):
 
 
 @patch('insights.client.InsightsClient._fetch', Mock())
-@patch('insights.client.os.path', Mock())
-@patch('insights.client.tempfile', Mock())
-@patch('insights.client.InsightsClient.delete_tmpdir', Mock())
 @patch('insights.client.InsightsClient.get_egg_url', return_value='/testvalue')
 @patch('insights.client.write_data_to_file')
 def test_egg_release_written(write_data_to_file, get_egg_url, insights_client):
@@ -59,9 +59,6 @@ def test_egg_release_written(write_data_to_file, get_egg_url, insights_client):
 
 
 @patch('insights.client.InsightsClient._fetch')
-@patch('insights.client.os.path', Mock())
-@patch('insights.client.tempfile', Mock())
-@patch('insights.client.InsightsClient.delete_tmpdir', Mock())
 @patch('insights.client.InsightsClient.get_egg_url', return_value='/testvalue')
 @patch('insights.client.write_data_to_file')
 def test_egg_release_error(write_data_to_file, get_egg_url, _fetch, insights_client):

@@ -13,9 +13,11 @@ VarQemuXML - file ``/var/run/libvirt/qemu/*.xml``
 OpenStackInstanceXML - file ``/etc/libvirt/qemu/*.xml``
 -------------------------------------------------------
 """
+
 from insights.components.openstack import IsOpenStackCompute
 from insights.specs import Specs
 from .. import XMLParser, parser
+from insights.util import deprecated
 
 
 class BaseQemuXML(XMLParser):
@@ -26,6 +28,7 @@ class BaseQemuXML(XMLParser):
         vm_name(str): Name of VM
 
     """
+
     def parse_content(self, content):
         super(BaseQemuXML, self).parse_content(content)
 
@@ -187,6 +190,7 @@ class QemuXML(BaseQemuXML):
         >>> memnode[1].get('mode') == 'strict'
         True
     """
+
     pass
 
 
@@ -240,12 +244,18 @@ class VarQemuXML(BaseQemuXML):
           </domain>
         </domstatus>
     """
+
     pass
 
 
 @parser(Specs.qemu_xml, IsOpenStackCompute)
 class OpenStackInstanceXML(BaseQemuXML):
-    """Parse OpenStack instances metadata based on the class ``BaseQemuXML``.
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.7.0.
+        Please use the :class:`insights.parsers.qemu_xml.QemuXML` instead.
+
+    Parse OpenStack instances metadata based on the class ``BaseQemuXML``.
 
     This parser depends on ``insights.components.openstack.IsOpenStackCompute``
     and will be fired only if the dependency is met.
@@ -290,6 +300,15 @@ class OpenStackInstanceXML(BaseQemuXML):
         domain_name(str): XML domain name.
         nova(dict): OpenStack Compute Metadata.
     """
+
+    def __init__(self, context):
+        deprecated(
+            OpenStackInstanceXML,
+            "Please use the :class:`insights.parsers.qemu_xml.QemuXML` instead.",
+            "3.7.0",
+        )
+        super(OpenStackInstanceXML, self).__init__(context)
+
     def parse_content(self, content):
         super(OpenStackInstanceXML, self).parse_content(content)
         self.domain_name = self.file_name.strip('.xml')

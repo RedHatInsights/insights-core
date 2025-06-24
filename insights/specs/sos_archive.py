@@ -10,6 +10,7 @@ simple_file = partial(simple_file, context=SosArchiveContext)
 
 class SosSpecs(Specs):
     alternatives_display_python = simple_file("sos_commands/alternatives/alternatives_--display_python")
+    api_server_log = glob_file("/var/log/pods/openshift-kube-apiserver*/*/*.log")
     auditctl_rules = simple_file("sos_commands/auditd/auditctl_-l")
     auditctl_status = simple_file("sos_commands/auditd/auditctl_-s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
@@ -51,6 +52,7 @@ class SosSpecs(Specs):
     cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
     cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
     containers_policy = simple_file("/etc/containers/policy.json")
+    controller_manager_log = glob_file("/var/log/pods/openshift-kube-controller-manager*/*/*.log")
     corosync_cmapctl = glob_file("sos_commands/corosync/corosync-cmapctl*")
     cpe = simple_file("/etc/system-release-cpe")
     cpu_smt_control = simple_file("sys/devices/system/cpu/smt/control")
@@ -71,6 +73,7 @@ class SosSpecs(Specs):
     dmsetup_info = simple_file("sos_commands/devicemapper/dmsetup_info_-c")
     dmsetup_status = simple_file("sos_commands/devicemapper/dmsetup_status")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
+    dnf_module_list = simple_file("/sos_commands/dnf/dnf_module_list")
     dnsmasq_config = glob_file(["/etc/dnsmasq.conf", "/etc/dnsmasq.d/*.conf"])
     docker_host_machine_id = simple_file("/etc/redhat-access-insights/machine-id")
     docker_info = simple_file("sos_commands/docker/docker_info")
@@ -301,6 +304,7 @@ class SosSpecs(Specs):
         'sos_commands/subscription_manager/subscription-manager_list_--consumed',
         'sos_commands/general/subscription-manager_list_--consumed']
     )
+    subscription_manager_status = simple_file("sos_commands/subscription_manager/subscription-manager_status")
     subscription_manager_list_installed = first_file([
         'sos_commands/yum/subscription-manager_list_--installed',
         'sos_commands/subscription_manager/subscription-manager_list_--installed',

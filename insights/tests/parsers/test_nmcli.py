@@ -247,7 +247,7 @@ def test_nmcli_doc_examples():
     env = {
         'nmcli_obj': NmcliDevShow(context_wrap(NMCLI_SHOW)),
         'nmcli_obj_sos': NmcliDevShowSos(context_wrap(NMCLI_SHOW_SOS)),
-        'static_conn': NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_1)),
+        'static_conn': NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_1))
     }
     failed, total = doctest.testmod(nmcli, globs=env)
     assert failed == 0

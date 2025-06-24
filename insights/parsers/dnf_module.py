@@ -10,6 +10,7 @@ DnfModuleList - command ``dnf module list``
 DnfModuleInfo - command ``dnf module info *``
 ---------------------------------------------
 """
+
 from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
@@ -26,6 +27,7 @@ class Profile(object):
         default (bool): Default flag of the dnf module:stream profile
         installed (bool): Installed flag of the dnf module:stream profile
     """
+
     def __init__(self, profile):
         self.profile = profile.split(" ")[0]
         self.default = "[d]" in profile
@@ -46,12 +48,15 @@ class DnfModuleStream(object):
         installed (bool): Installed flag of the dnf module:stream
         active (Optional[bool]): Active flag of the dnf module:stream
     """
+
     def __init__(self, data=None, cmd="list"):
         data = data or {}
         self._cmd = cmd
         self._stream = data.get('Stream', '')
         self.stream = self._stream.split(" ")[0]
-        self.profiles = [Profile(p.strip()) for p in data.get('Profiles', '').split(',') if p.strip()]
+        self.profiles = [
+            Profile(p.strip()) for p in data.get('Profiles', '').split(',') if p.strip()
+        ]
         self.summary = data.get('Summary', '')
         self.default = "[d]" in self._stream
         self.enabled = "[e]" in self._stream
@@ -71,6 +76,7 @@ class DnfModuleBrief(object):
         name (str): Name of the dnf module
         streams (list): List of streams of the dnf module
     """
+
     def __init__(self, data=None, cmd="list"):
         data = {} if data is None else data
         stream = DnfModuleStream(data, cmd)
@@ -79,6 +85,11 @@ class DnfModuleBrief(object):
         self._has_active_stream = stream.active
 
     def add_stream(self, data):
+        # drop for duplicate stream case
+        new_stream_str = data.get('Stream', '')
+        for exist_s in self.streams:
+            if new_stream_str == exist_s._stream:
+                return
         stream = DnfModuleStream(data)
         if not self._has_active_stream:
             self._has_active_stream = stream.active
@@ -99,6 +110,7 @@ class DnfModuleStreamDetail(DnfModuleBrief):
         description (str): Description of the dnf module:stream
         artifacts (list): List of the artifacts of the dnf module:stream
     """
+
     def __init__(self, data=None):
         super(DnfModuleStreamDetail, self).__init__(data, "info")
         self.version = data.get('Version', '')
@@ -145,13 +157,14 @@ class DnfModuleList(CommandParser, dict):
         >>> dnf_module_list.get("ant").streams[1].active
         False
     """
+
     def __init__(self, *args, **kwargs):
         super(DnfModuleList, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
-        data = parse_fixed_table(content,
-                        heading_ignore=['Name '],
-                        trailing_ignore=['Hint:', 'Error:'])
+        data = parse_fixed_table(
+            content, heading_ignore=['Name '], trailing_ignore=['Hint:', 'Error:']
+        )
         if not data:
             raise SkipComponent('Nothing need to parse.')
 
@@ -323,6 +336,7 @@ class DnfModuleInfo(CommandParser, dict):
         >>> dnf_module_info["httpd"][0].default_profiles
         'common'
     """
+
     def __init__(self, *args, **kwargs):
         super(DnfModuleInfo, self).__init__(*args, **kwargs)
 

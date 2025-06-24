@@ -4,13 +4,10 @@ import yaml
 
 from mock.mock import Mock
 
-from insights.collect import (
-        load_manifest,
-        default_manifest,
-        generate_archive_name,
-        _parse_broker_exceptions)
+from insights.collect import load_manifest, generate_archive_name, _parse_broker_exceptions
 from insights.core.dr import Broker
 from insights.core.exceptions import ContentException
+from insights.specs.manifests import default_manifest
 
 
 def test_parse_broker_exceptions_no_errors():

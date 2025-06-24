@@ -1,5 +1,7 @@
 import pytest
 
+from collections import defaultdict
+
 from insights.combiners.ps import Ps
 from insights.core import dr, filters
 from insights.core.context import HostContext
@@ -26,37 +28,68 @@ class FakeContext(HostContext):
         arg = tmp_cmd[-1]
         if 'readlink' in shell_cmd:
             if arg == JAVA_PATH_1:
-                return (0, [JAVA_PATH_2, ])
+                return (
+                    0,
+                    [
+                        JAVA_PATH_2,
+                    ],
+                )
             elif arg == JAVA_PATH_ERR:
-                return (1, ['file not found', ])
+                return (
+                    1,
+                    [
+                        'file not found',
+                    ],
+                )
             elif arg.startswith('/'):
-                return (0, [arg, ])
+                return (
+                    0,
+                    [
+                        arg,
+                    ],
+                )
         elif 'rpm' in shell_cmd:
             if arg == JAVA_PATH_2:
-                return (0, [JAVA_PKG_2, ])
+                return (
+                    0,
+                    [
+                        JAVA_PKG_2,
+                    ],
+                )
             elif arg == HTTPD_PATH:
-                return (0, [HTTPD_PKG, ])
+                return (
+                    0,
+                    [
+                        HTTPD_PKG,
+                    ],
+                )
             else:
-                return (1, ['file {0} is not owned by any package'.format(arg), ])
+                return (
+                    1,
+                    [
+                        'file {0} is not owned by any package'.format(arg),
+                    ],
+                )
         elif 'which' in shell_cmd:
             if 'exception' in arg:
                 raise Exception()
             elif arg.startswith('/'):
-                return [tmp_cmd[-1], ]
+                return [
+                    tmp_cmd[-1],
+                ]
             elif arg.endswith('java'):
-                return ['/usr/bin/java', ]
+                return [
+                    '/usr/bin/java',
+                ]
             elif arg.endswith('httpd'):
-                return ['/usr/sbin/httpd', ]
+                return [
+                    '/usr/sbin/httpd',
+                ]
 
         raise Exception()
 
 
 def setup_function(func):
-    if Specs.package_provides_command in filters._CACHE:
-        del filters._CACHE[Specs.package_provides_command]
-    if Specs.package_provides_command in filters.FILTERS:
-        del filters.FILTERS[Specs.package_provides_command]
-
     if func is test_cmd_and_pkg:
         filters.add_filter(Specs.package_provides_command, ['httpd', 'java'])
     elif func is test_cmd_and_pkg_not_found:
@@ -64,8 +97,8 @@ def setup_function(func):
 
 
 def teardown_function(func):
-    if func is test_cmd_and_pkg or func is test_cmd_and_pkg_not_found:
-        del filters.FILTERS[Specs.package_provides_command]
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(dict)
 
 
 def test_get_package():
@@ -74,7 +107,9 @@ def test_get_package():
     result = get_package(ctx, '/usr/bin/java')
     assert result == 'java-1.8.0-openjdk-headless-1.8.0.292.b10-1.el7_9.x86_64'
 
-    result = get_package(ctx, '/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.292.b10-1.el7_9.x86_64/jre/bin/java')
+    result = get_package(
+        ctx, '/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.292.b10-1.el7_9.x86_64/jre/bin/java'
+    )
     assert result == 'java-1.8.0-openjdk-headless-1.8.0.292.b10-1.el7_9.x86_64'
 
 
@@ -109,12 +144,14 @@ PS_EO_CMD = """
 """
 
 EXPECTED = DatasourceProvider(
-    "\n".join([
-        "{0} {1}".format(HTTPD_PATH, HTTPD_PKG),
-        "{0} {1}".format(JAVA_PATH_1, JAVA_PKG_2),
-        "{0} {1}".format(JAVA_PATH_2, JAVA_PKG_2)
-    ]),
-    relative_path='insights_commands/package_provides_command'
+    "\n".join(
+        [
+            "{0} {1}".format(HTTPD_PATH, HTTPD_PKG),
+            "{0} {1}".format(JAVA_PATH_1, JAVA_PKG_2),
+            "{0} {1}".format(JAVA_PATH_2, JAVA_PKG_2),
+        ]
+    ),
+    relative_path='insights_datasources/package_provides_command',
 )
 
 

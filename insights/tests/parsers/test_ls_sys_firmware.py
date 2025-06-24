@@ -72,6 +72,10 @@ def test_ls_sys_firmware():
         "raw_entry": "drwxr-xr-x.  3 root root system_u:object_r:sysfs_t:s0   0 Sep 30 16:58 efi",
         "dir": "/sys/firmware",
     }
+    assert (
+        ls_alzr_sys_firmware.raw_entry_of("/sys/firmware", "efi")
+        == "drwxr-xr-x. 3 root root system_u:object_r:sysfs_t:s0 0 Sep 30 16:58 efi"
+    )
 
 
 def test_doc_examples():

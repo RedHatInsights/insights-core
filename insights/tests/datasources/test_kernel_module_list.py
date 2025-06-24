@@ -1,10 +1,12 @@
 import pytest
 
+from collections import defaultdict
+
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.parsers.lsmod import LsMod
 from insights.specs import Specs
-from insights.specs.datasources.kernel_module_list import kernel_module_filters
+from insights.specs.datasources.kernel import kernel_module_filters
 from insights.tests import context_wrap
 
 LSMOD = """
@@ -29,11 +31,6 @@ tcp_diag               16384  0
 
 
 def setup_function(func):
-    if Specs.modinfo_modules in filters._CACHE:
-        del filters._CACHE[Specs.modinfo_modules]
-    if Specs.modinfo_modules in filters.FILTERS:
-        del filters.FILTERS[Specs.modinfo_modules]
-
     if func is test_module_filters:
         filters.add_filter(Specs.modinfo_modules, ["udp_diag", "binfmt_misc", "wireguard"])
     if func is test_module_filters_2:
@@ -42,6 +39,11 @@ def setup_function(func):
         filters.add_filter(Specs.modinfo_modules, ["udp_diag", "binfmt_misc", "wireguard"])
     if func is test_module_filters_empty:
         filters.add_filter(Specs.modinfo_modules, [])
+
+
+def teardown_function(func):
+    filters._CACHE = {}
+    filters.FILTERS = defaultdict(dict)
 
 
 def test_module_filters():
