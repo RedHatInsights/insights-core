@@ -54,6 +54,8 @@ defaults:
   # All options in this section can also be overridden in other sections,
   # though they aren't explicitly defined there.
 
+  # configure the variable allow_remote_resource_access in insights.core.remote_resource.RemoteResource
+  allow_remote_resource_access: True
   # List of plugin packages to load
   plugin_packages:
   - insights.plugins
