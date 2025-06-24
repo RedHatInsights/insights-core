@@ -29,6 +29,7 @@ from insights.specs import Specs
 _aws_curl_invalid_keyworks = [
     'curl: ',
     '<?xml ',
+    'No such metadata item'
 ]
 
 

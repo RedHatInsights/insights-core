@@ -39,6 +39,11 @@ AWS_CURL_ERROR_3 = """
 </html>
 """
 
+AWS_CURL_ERROR_4 = """
+No such metadata item
+"""
+
+
 AWS_ID_DOC = """
 {
     "devpayProductCodes" : null,
@@ -254,6 +259,9 @@ def test_aws_public_ipv4_addresses():
         AWSPublicIpv4Addresses(context_wrap(AWS_CURL_ERROR_3))
 
     with pytest.raises(SkipComponent):
+        AWSPublicIpv4Addresses(context_wrap(AWS_CURL_ERROR_4))
+
+    with pytest.raises(SkipComponent):
         AWSPublicIpv4Addresses(context_wrap(""))
 
     doc = AWSPublicIpv4Addresses(context_wrap("1.2.3.4"))
@@ -270,6 +278,9 @@ def test_aws_public_hostnames():
 
     with pytest.raises(SkipComponent):
         AWSPublicHostnames(context_wrap(AWS_CURL_ERROR_3))
+
+    with pytest.raises(SkipComponent):
+        AWSPublicHostnames(context_wrap(AWS_CURL_ERROR_4))
 
     with pytest.raises(SkipComponent):
         AWSPublicHostnames(context_wrap(""))
