@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 from email.utils import parsedate, formatdate
 from cachecontrol.caches.redis_cache import RedisCache
 
+from insights import settings
+
 
 class RemoteResource(object):
     """
@@ -22,7 +24,8 @@ class RemoteResource(object):
         >>> rtn = rr.get("http://google.com")
         >>> print (rtn.content)
     """
-
+    allow_remote_resource_access = settings.defaults.get("allow_remote_resource_access", True)
+    """Allow remote resource access, default is True"""
     timeout = 10
     """ float: Time in seconds for the requests.get api call to wait before returning a timeout exception """
 
@@ -44,11 +47,14 @@ class RemoteResource(object):
         Returns:
             response: (HttpResponse): Response object from requests.get api request
         """
-        if certificate_path:
+        if self.allow_remote_resource_access:
+            if certificate_path:
+                return self.session.get(url, params=params, headers=headers,
+                                        verify=certificate_path, auth=auth, timeout=self.timeout)
             return self.session.get(url, params=params, headers=headers,
-                    verify=certificate_path, auth=auth, timeout=self.timeout)
-        return self.session.get(url, params=params, headers=headers,
-                auth=auth, timeout=self.timeout)
+                                    auth=auth, timeout=self.timeout)
+        else:
+            raise Exception("Remote resource access is disabled")
 
 
 class CachedRemoteResource(RemoteResource):
