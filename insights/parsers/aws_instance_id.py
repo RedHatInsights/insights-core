@@ -18,6 +18,7 @@ AWSPublicHostname ``curl -s http://169.254.169.254/latest/meta-data/public-hostn
 -------------------------------------------------------------------------------------
 
 """
+
 from __future__ import print_function
 import json
 
@@ -26,17 +27,15 @@ from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
-_aws_curl_invalid_keyworks = [
-    'curl: ',
-    '<?xml ',
-]
+_aws_curl_invalid_keyworks = ['curl: ', '<?xml ', 'No such metadata item']
 
 
 def _validate_content(content, length=0):
-    if (not content or                                 # Empty content
-            (length > 0 and len(content) > length) or  # Too many lines
-            any(item in content[0]                     # Unexpected keywords
-                for item in _aws_curl_invalid_keyworks)):
+    if (
+        not content  # Empty content
+        or (length > 0 and len(content) > length)  # Too many lines
+        or any(item in content[0] for item in _aws_curl_invalid_keyworks)  # Unexpected keywords
+    ):
         raise SkipComponent()
 
 
@@ -139,6 +138,7 @@ class AWSInstanceIdPkcs7(CommandParser):
         >>> aws_id_sig.signature.endswith('NYiytVbZPQUQ5Yaxu2jXnimvw3rrszlaEXAMPLE\\n-----END PKCS7-----')
         True
     """
+
     def parse_content(self, content):
         _validate_content(content)
 
@@ -149,7 +149,11 @@ class AWSInstanceIdPkcs7(CommandParser):
                 break
             startline += 1
 
-        self.signature = '-----BEGIN PKCS7-----\n' + '\n'.join([l.rstrip() for l in content[startline:]]) + "\n-----END PKCS7-----"
+        self.signature = (
+            '-----BEGIN PKCS7-----\n'
+            + '\n'.join([l.rstrip() for l in content[startline:]])
+            + "\n-----END PKCS7-----"
+        )
 
 
 @parser(Specs.aws_public_ipv4_addresses)
