@@ -1,15 +1,16 @@
 """
 Custom datasources related to ``corosync``
 """
+
 import os
 
-from insights.components.rhel_version import IsRhel7, IsRhel8, IsRhel9
+from insights.combiners.redhat_release import RedHatRelease
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
 
 
-@datasource(HostContext, [IsRhel7, IsRhel8, IsRhel9])
+@datasource(HostContext, RedHatRelease)
 def corosync_cmapctl_cmds(broker):
     """
     corosync-cmapctl use different arguments on RHEL7 and RHEL8.
@@ -19,17 +20,22 @@ def corosync_cmapctl_cmds(broker):
     """
     corosync_cmd = '/usr/sbin/corosync-cmapctl'
     if os.path.exists(corosync_cmd):
-        # RHEL 7
-        if broker.get(IsRhel7):
+        rhel = broker.get(RedHatRelease)
+        if rhel.major <= 6:
+            # RHEL 6
+            raise SkipComponent()
+        elif rhel.major == 7:
+            # RHEL 7
             return [
                 corosync_cmd,
                 ' '.join([corosync_cmd, '-d runtime.schedmiss.timestamp']),
-                ' '.join([corosync_cmd, '-d runtime.schedmiss.delay'])]
-        # Others
-        elif broker.get(IsRhel8) or broker.get(IsRhel9):
+                ' '.join([corosync_cmd, '-d runtime.schedmiss.delay']),
+            ]
+        else:
+            # Others
             return [
                 corosync_cmd,
                 ' '.join([corosync_cmd, '-m stats']),
-                ' '.join([corosync_cmd, '-C schedmiss'])]
-
+                ' '.join([corosync_cmd, '-C schedmiss']),
+            ]
     raise SkipComponent()
