@@ -4,13 +4,20 @@ Ps - command ``ps auxww`` and others
 
 This module provides processing for the various outputs of the ``ps`` command.
 """
+
 from insights.core import CommandParser, ContainerParser
 from insights.core.exceptions import ParseException
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsers import keyword_search, parse_delimited_table
 from insights.specs import Specs
-from insights.util import deprecated
+
+
+add_filter(Specs.container_ps_aux, "COMMAND")
+add_filter(Specs.ps_alxwww, "COMMAND")
+add_filter(Specs.ps_aux, "COMMAND")
+add_filter(Specs.ps_auxww, "COMMAND")
+add_filter(Specs.ps_ef, "CMD")
 
 
 def are_present(tags, line):
@@ -39,6 +46,7 @@ class Ps(CommandParser):
         pid_info (dict): Dictionary indexed by ``pid`` returning dict of process info.
 
     """
+
     command_name = "COMMAND_TEMPLATE"
     '''
     ``command_name`` is the name of the subclass specific command column from the header of
@@ -65,15 +73,20 @@ class Ps(CommandParser):
 
     def parse_content(self, content):
         raw_line_key = "_line"
-        header_line = next((l for l in content if are_present(tags=[self.user_name, self.command_name], line=l)), None)
+        header_line = next(
+            (l for l in content if are_present(tags=[self.user_name, self.command_name], line=l)),
+            None,
+        )
         if header_line is not None:
             # parse_delimited_table allows short lines, but we specifically
             # want to ignore them.
             self.data = [
                 row
                 for row in parse_delimited_table(
-                    content, heading_ignore=[header_line], max_splits=self.max_splits,
-                    raw_line_key=raw_line_key
+                    content,
+                    heading_ignore=[header_line],
+                    max_splits=self.max_splits,
+                    raw_line_key=raw_line_key,
                 )
                 # skip the insights-client self grep process "grep -F .."
                 if self.command_name in row and not row[self.command_name].startswith('grep -F ')
@@ -120,7 +133,8 @@ class Ps(CommandParser):
         else:
             raise ParseException(
                 "{0}: Cannot find ps header line containing {1} and {2} in output".format(
-                    self.__class__.__name__, self.user_name, self.command_name)
+                    self.__class__.__name__, self.user_name, self.command_name
+                )
             )
 
     def __contains__(self, proc):
@@ -230,9 +244,6 @@ class Ps(CommandParser):
         return keyword_search(self.data, parent=self, **kwargs)
 
 
-add_filter(Specs.ps_auxww, "COMMAND")
-
-
 @parser(Specs.ps_auxww)
 class PsAuxww(Ps):
     """
@@ -269,6 +280,7 @@ class PsAuxww(Ps):
         >>> sum(int(p['VSZ']) for p in ps_auxww)
         333252
     """
+
     command_name = "COMMAND"
     user_name = "USER"
     max_splits = 10
@@ -290,9 +302,6 @@ class PsAuxww(Ps):
                 return row["%CPU"]
 
     pass
-
-
-add_filter(Specs.ps_ef, "CMD")
 
 
 @parser(Specs.ps_ef)
@@ -324,6 +333,7 @@ class PsEf(Ps):
         >>> ps_ef.fuzzy_match('kthreadd')
         True
     """
+
     command_name = "CMD"
     user_name = "UID"
     max_splits = 7
@@ -351,15 +361,9 @@ class PsAuxcww(PsAuxww):
     pass
 
 
-add_filter(Specs.ps_aux, "COMMAND")
-
-
 @parser(Specs.ps_aux)
 class PsAux(PsAuxww):
     pass
-
-
-add_filter(Specs.container_ps_aux, "COMMAND")
 
 
 @parser(Specs.container_ps_aux)
@@ -388,64 +392,8 @@ class ContainerPsAux(ContainerParser, PsAuxww):
         >>> container_ps_aux.number_occurences("bash")
         1
     """
+
     pass
-
-
-@parser(Specs.ps_eo)
-class PsEo(Ps):
-    """
-    .. warning::
-        This class is deprecated and will be removed from 3.6.0.
-        Please use the :class:`insights.parsers.ps.PsEoCmd` instead.
-
-    Class to parse the command `ps -eo pid,ppid,comm,nlwp`
-
-    Sample input data::
-
-          PID  PPID COMMAND       NLWP
-            1     0 systemd         1
-            2     0 kthreadd        1
-            3     2 ksoftirqd/0     1
-         2416     1 auditd          1
-         2419  2416 audispd         1
-         2421  2419 sedispatch      1
-         2892     1 NetworkManager  1
-         3172  2892 dhclient        1
-         3871     1 master          1
-         3886  3871 qmgr            1
-        13724  3871 pickup          1
-        15663     2 kworker/0:1     1
-        16998     2 kworker/0:3     1
-        17259     2 kworker/0:0     1
-        18294  3357 sshd            1
-
-    Examples:
-        >>> type(ps_eo)
-        <class 'insights.parsers.ps.PsEo'>
-        >>> ps_eo.pid_info['1'] == {'PID': '1', 'PPID': '0', 'COMMAND': 'systemd', 'COMMAND_NAME': 'systemd', 'ARGS': '', 'NLWP': '1'}
-        True
-        >>> ps_eo.children('2') == [
-        ...     {'PID': '3', 'PPID': '2', 'COMMAND': 'ksoftirqd/0', 'COMMAND_NAME': 'ksoftirqd/0', 'ARGS': '', 'NLWP': '1'},
-        ...     {'PID': '15663', 'PPID': '2', 'COMMAND': 'kworker/0:1', 'COMMAND_NAME': 'kworker/0:1', 'ARGS': '', 'NLWP': '1'},
-        ...     {'PID': '16998', 'PPID': '2', 'COMMAND': 'kworker/0:3', 'COMMAND_NAME': 'kworker/0:3', 'ARGS': '', 'NLWP': '1'},
-        ...     {'PID': '17259', 'PPID': '2', 'COMMAND': 'kworker/0:0', 'COMMAND_NAME': 'kworker/0:0', 'ARGS': '', 'NLWP': '1'}
-        ... ]
-        True
-    """
-    command_name = 'COMMAND'
-    user_name = 'PID'
-    max_splits = 3
-
-    def __init__(self, *args, **kwargs):
-        deprecated(PsEo, "Please use the :class:`insights.parsers.ps.PsEoCmd` instead.", "3.6.0")
-        super(PsEo, self).__init__(*args, **kwargs)
-
-    def children(self, ppid):
-        """list: Returns a list of dict for all rows with `ppid` as parent PID"""
-        return [row for row in self.data if row['PPID'] == ppid]
-
-
-add_filter(Specs.ps_alxwww, "COMMAND")
 
 
 @parser(Specs.ps_alxwww)
@@ -482,6 +430,7 @@ class PsAlxwww(Ps):
         True
 
     """
+
     command_name = 'COMMAND'
     user_name = 'UID'
     max_splits = 12
@@ -523,6 +472,7 @@ class PsEoCmd(Ps):
         ... ]
         True
     """
+
     command_name = 'COMMAND'
     user_name = 'PID'
     max_splits = 3
