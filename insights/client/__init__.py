@@ -13,7 +13,7 @@ from . import client
 from . import crypto
 from .constants import InsightsConstants as constants
 from .config import InsightsConfig
-from .auto_config import autoconfigure_network
+from .auto_config import try_auto_configuration
 from .utilities import (write_data_to_file,
                         write_to_disk,
                         get_tags,
@@ -59,7 +59,7 @@ class InsightsClient(object):
                     arguments=" ".join(sys.argv[1:]),
                 )
             )
-            autoconfigure_network(self.config)
+            try_auto_configuration(self.config)
             self.initialize_tags()
         else:  # from wrapper
             _write_pid_files()
@@ -120,7 +120,7 @@ class InsightsClient(object):
             else:
                 raise ConnectionError("%s: %s" % (response.status_code, response.reason))
         except ConnectionError as e:
-            logger.warning("Unable to fetch egg url %s: %s. Defaulting to /release", url, str(e))
+            logger.debug("Unable to fetch egg url %s: %s. Defaulting to /release", url, str(e))
             return '/release'
 
     def fetch(self, force=False):
@@ -556,7 +556,9 @@ class InsightsClient(object):
             print(json.dumps(insights_data, indent=1))
         except IOError as e:
             if e.errno == errno.ENOENT:
-                raise Exception("Error: no report found. Run insights-client --check-results to update the report cache: %s" % e)
+                raise Exception("Error: no report found. "
+                                "Check the results to update the report cache: %s"
+                                "\n# insights-client --check-results" % e)
             else:
                 raise e
 

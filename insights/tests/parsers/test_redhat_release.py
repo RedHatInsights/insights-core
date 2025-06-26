@@ -57,6 +57,14 @@ REDHAT_RELEASE_8_CONTAINER = """
 Red Hat Enterprise Linux Server release 8.6 (Ootpa)
 """.strip()
 
+REDHAT_RELEASE_10_0 = """
+Red Hat Enterprise Linux release 10.0 (Coughlan)
+""".strip()
+
+REDHAT_RELEASE_10_0_BETA = """
+Red Hat Enterprise Linux release 10.0 Beta (Coughlan)
+""".strip()
+
 
 def test_rhe6():
     release = RedhatRelease(context_wrap(REDHAT_RELEASE1))
@@ -139,6 +147,16 @@ def test_rhel8():
     assert release.product == "Red Hat Enterprise Linux"
 
 
+def test_rhel10():
+    release = RedhatRelease(context_wrap(REDHAT_RELEASE_10_0))
+    assert release.raw == REDHAT_RELEASE_10_0
+    assert release.major == 10
+    assert release.minor == 0
+    assert release.version == "10.0"
+    assert release.is_rhel
+    assert release.product == "Red Hat Enterprise Linux"
+
+
 def test_rhel_alpha():
     release = RedhatRelease(context_wrap(REDHAT_RELEASE_ALPHA))
     assert release.raw == REDHAT_RELEASE_ALPHA
@@ -163,6 +181,19 @@ def test_rhel_beta():
     assert not release.is_alpha
     assert release.parsed['code_name'] == 'Ootpa'
     assert release.product == "Red Hat Enterprise Linux Server"
+
+
+def test_rhel_beta_10():
+    release = RedhatRelease(context_wrap(REDHAT_RELEASE_10_0_BETA))
+    assert release.raw == REDHAT_RELEASE_10_0_BETA
+    assert release.major == 10
+    assert release.minor == 0
+    assert release.version == "10.0"
+    assert release.is_rhel
+    assert release.is_beta
+    assert not release.is_alpha
+    assert release.parsed['code_name'] == 'Coughlan'
+    assert release.product == "Red Hat Enterprise Linux"
 
 
 def test_centos_stream():

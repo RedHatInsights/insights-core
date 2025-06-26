@@ -1,3 +1,4 @@
+from mock.mock import patch
 from cachecontrol.cache import DictCache
 from insights.core.remote_resource import RemoteResource, CachedRemoteResource
 from insights.tests.mock_web_server import TestMockServer
@@ -23,6 +24,17 @@ class TestRemoteResource(TestMockServer):
         url = 'http://localhost:{port}/moc/'.format(port=self.server_port)
         rtn = rr.get(url)
         assert rtn.content == NOT_FOUND
+
+    # Test disable RemoteResource
+    @patch('insights.core.remote_resource.RemoteResource.allow_remote_resource_access', new=False)
+    def test_get_disable_remote_resource(self):
+        try:
+            rr = RemoteResource()
+            url = 'http://localhost:{port}/moc/'.format(port=self.server_port)
+            rr.get(url)
+            raise AssertionError("Expected code to be unreachable")
+        except Exception as e:
+            assert str(e) == "Remote resource access is disabled"
 
     # Test CachedRemoteResource not cached
     def test_get_cached_remote_resource(self):

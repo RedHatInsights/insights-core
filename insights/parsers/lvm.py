@@ -50,7 +50,6 @@ from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines, optlist_to_dict, parse_fixed_table
 from insights.specs import Specs
-from insights.util import deprecated
 from insights.util import parse_keypair_lines
 
 
@@ -260,7 +259,7 @@ class PvsAll(Pvs):
 class PvsHeadings(LvmHeadings):
     """
     .. warning::
-        This parser is deprecated, please use
+        This parser can only be used for SOS archives.  For Advisor Rules use
         :py:class:`insights.parsers.lvm.Pvs` instead.
 
     Parses the output of the
@@ -311,10 +310,6 @@ class PvsHeadings(LvmHeadings):
         '0'
 
     """
-
-    def __init__(self, *args, **kwargs):
-        deprecated(PvsHeadings, "Please use insights.parsers.lvm.Pvs instead.", "3.6.0")
-        super(PvsHeadings, self).__init__(*args, **kwargs)
 
     PRIMARY_KEY = Pvs.PRIMARY_KEY
 
@@ -423,7 +418,7 @@ class VgsAll(Vgs):
 class VgsHeadings(LvmHeadings):
     """
     .. warning::
-        This parser is deprecated, please use
+        This parser can only be used for SOS archives.  For Advisor Rules use
         :py:class:`insights.parsers.lvm.Vgs` instead.
 
     Parses output of the
@@ -455,10 +450,6 @@ class VgsHeadings(LvmHeadings):
         >>> vgs_info.data[0]['VG_UUID']
         'xK6HXk-xl2O-cqW5-2izb-LI9M-4fV0-dAzfcc'
     """
-
-    def __init__(self, *args, **kwargs):
-        deprecated(VgsHeadings, "Please use insights.parsers.lvm.Vgs instead.", "3.6.0")
-        super(VgsHeadings, self).__init__(*args, **kwargs)
 
     PRIMARY_KEY = Vgs.PRIMARY_KEY
 
@@ -683,7 +674,7 @@ class LvsAll(Lvs):
 class LvsHeadings(LvmHeadings):
     """
     .. warning::
-        This parser is deprecated, please use
+        This parser can only be used for SOS archives.  For Advisor Rules use
         :py:class:`insights.parsers.lvm.Lvs` instead.
 
     Process output of the command `/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"`.
@@ -714,10 +705,6 @@ class LvsHeadings(LvmHeadings):
         >>> lvs_info.data[1]['LSize']
         '2.00g'
     """
-
-    def __init__(self, *args, **kwargs):
-        deprecated(LvsHeadings, "Please use insights.parsers.lvm.Lvs instead.", "3.6.0")
-        super(LvsHeadings, self).__init__(*args, **kwargs)
 
     PRIMARY_KEY = Lvs.PRIMARY_KEY
 

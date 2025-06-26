@@ -4,8 +4,11 @@ import pytest
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import aws_instance_id
 from insights.parsers.aws_instance_id import (
-        AWSInstanceIdDoc, AWSInstanceIdPkcs7,
-        AWSPublicIpv4Addresses, AWSPublicHostnames)
+    AWSInstanceIdDoc,
+    AWSInstanceIdPkcs7,
+    AWSPublicIpv4Addresses,
+    AWSPublicHostnames,
+)
 from insights.tests import context_wrap
 
 AWS_CURL_ERROR_1 = """
@@ -38,6 +41,11 @@ AWS_CURL_ERROR_3 = """
  </body>
 </html>
 """
+
+AWS_CURL_ERROR_4 = """
+No such metadata item
+"""
+
 
 AWS_ID_DOC = """
 {
@@ -144,12 +152,16 @@ def test_aws_instance_id_doc():
     assert doc is not None
     assert doc == {
         "devpayProductCodes": None,
-        "marketplaceProductCodes": ["1abc2defghijklm3nopqrs4tu", ],
+        "marketplaceProductCodes": [
+            "1abc2defghijklm3nopqrs4tu",
+        ],
         "availabilityZone": "us-west-2b",
         "privateIp": "10.158.112.84",
         "version": "2017-09-30",
         "instanceId": "i-1234567890abcdef0",
-        "billingProducts": ["bp-6ba54002", ],
+        "billingProducts": [
+            "bp-6ba54002",
+        ],
         "instanceType": "t2.micro",
         "accountId": "123456789012",
         "imageId": "ami-5fb8c835",
@@ -157,7 +169,7 @@ def test_aws_instance_id_doc():
         "architecture": "x86_64",
         "kernelId": None,
         "ramdiskId": None,
-        "region": "us-west-2"
+        "region": "us-west-2",
     }
     assert "whatchamacallit" not in doc
 
@@ -165,12 +177,16 @@ def test_aws_instance_id_doc():
     assert doc is not None
     assert doc == {
         "devpayProductCodes": None,
-        "marketplaceProductCodes": ["1abc2defghijklm3nopqrs4tu", ],
+        "marketplaceProductCodes": [
+            "1abc2defghijklm3nopqrs4tu",
+        ],
         "availabilityZone": "us-west-2b",
         "privateIp": "10.158.112.84",
         "version": "2017-09-30",
         "instanceId": "i-1234567890abcdef0",
-        "billingProducts": ["bp-6ba54002", ],
+        "billingProducts": [
+            "bp-6ba54002",
+        ],
         "instanceType": "t2.micro",
         "accountId": "123456789012",
         "imageId": "ami-5fb8c835",
@@ -178,7 +194,7 @@ def test_aws_instance_id_doc():
         "architecture": "x86_64",
         "kernelId": None,
         "ramdiskId": None,
-        "region": "us-west-2"
+        "region": "us-west-2",
     }
     assert "whatchamacallit" not in doc
 
@@ -195,7 +211,9 @@ def test_aws_instance_id_pkcs7():
 
     pkcs7 = AWSInstanceIdPkcs7(context_wrap(AWS_ID_PKCS7))
     assert pkcs7 is not None
-    assert pkcs7.signature == """
+    assert (
+        pkcs7.signature
+        == """
 -----BEGIN PKCS7-----
 MIICiTCCAfICCQD6m7oRw0uXOjANBgkqhkiG9w0BAQUFADCBiDELMAkGA1UEBhMC
 VVMxCzAJBgNVBAgTAldBMRAwDgYDVQQHEwdTZWF0dGxlMQ8wDQYDVQQKEwZBbWF6
@@ -212,10 +230,13 @@ nUhVVxYUntneD9+h8Mg9q6q+auNKyExzyLwaxlAoo7TJHidbtS4J5iNmZgXL0Fkb
 FFBjvSfpJIlJ00zbhNYS5f6GuoEDmFJl0ZxBHjJnyp378OD8uTs7fLvjx79LjSTb
 NYiytVbZPQUQ5Yaxu2jXnimvw3rrszlaEXAMPLE
 -----END PKCS7-----""".strip()
+    )
 
     pkcs7 = AWSInstanceIdPkcs7(context_wrap(AWS_ID_PKCS7_CURL_STATS))
     assert pkcs7 is not None
-    assert pkcs7.signature == """
+    assert (
+        pkcs7.signature
+        == """
 -----BEGIN PKCS7-----
 MIICiTCCAfICCQD6m7oRw0uXOjANBgkqhkiG9w0BAQUFADCBiDELMAkGA1UEBhMC
 VVMxCzAJBgNVBAgTAldBMRAwDgYDVQQHEwdTZWF0dGxlMQ8wDQYDVQQKEwZBbWF6
@@ -232,6 +253,7 @@ nUhVVxYUntneD9+h8Mg9q6q+auNKyExzyLwaxlAoo7TJHidbtS4J5iNmZgXL0Fkb
 FFBjvSfpJIlJ00zbhNYS5f6GuoEDmFJl0ZxBHjJnyp378OD8uTs7fLvjx79LjSTb
 NYiytVbZPQUQ5Yaxu2jXnimvw3rrszlaEXAMPLE
 -----END PKCS7-----""".strip()
+    )
 
 
 def test_doc_examples():
@@ -254,6 +276,9 @@ def test_aws_public_ipv4_addresses():
         AWSPublicIpv4Addresses(context_wrap(AWS_CURL_ERROR_3))
 
     with pytest.raises(SkipComponent):
+        AWSPublicIpv4Addresses(context_wrap(AWS_CURL_ERROR_4))
+
+    with pytest.raises(SkipComponent):
         AWSPublicIpv4Addresses(context_wrap(""))
 
     doc = AWSPublicIpv4Addresses(context_wrap("1.2.3.4"))
@@ -270,6 +295,9 @@ def test_aws_public_hostnames():
 
     with pytest.raises(SkipComponent):
         AWSPublicHostnames(context_wrap(AWS_CURL_ERROR_3))
+
+    with pytest.raises(SkipComponent):
+        AWSPublicHostnames(context_wrap(AWS_CURL_ERROR_4))
 
     with pytest.raises(SkipComponent):
         AWSPublicHostnames(context_wrap(""))

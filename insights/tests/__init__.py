@@ -12,6 +12,7 @@ import six.moves
 from collections import defaultdict
 from functools import wraps
 from operator import eq
+from yaml import SafeLoader
 
 try:
     from StringIO import StringIO
@@ -27,6 +28,9 @@ from insights.core.plugins import make_none
 from insights.specs import Specs
 
 
+# Use yaml.SafeLoader only when pytesting, as the yaml.CSafeLoader does not
+# work well with coverage test.
+insights.core.SafeLoader = SafeLoader
 # we intercept the add_filter call during integration testing so we can ensure
 # that rules add filters to datasources that *should* be filterable
 ADDED_FILTERS = defaultdict(set)

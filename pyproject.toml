@@ -79,13 +79,12 @@ insights-collect = "insights.collect:main"
 insights-dupkeycheck = "insights.tools.dupkeycheck:main"
 insights-info = "insights.tools.query:main"
 insights-inspect = "insights.tools.insights_inspect:main"
-insights-ocpshell = "insights.ocpshell:main"
 insights-run = "insights:main"
 mangle = "insights.util.mangle:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "insights.version._VERSION_"}
-readme = {file = ["README.rst", "CONTRIBUTING.md"]}
+readme = {file = ["README.rst"]}
 
 [tool.pytest.ini_options]
 addopts = "-rsxXfE --ignore=./build/"

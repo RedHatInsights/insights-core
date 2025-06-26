@@ -134,6 +134,22 @@ class IsRhel9(IsRhel):
 
 
 @component(RedHatRelease)
+class IsRhel10(IsRhel):
+    """
+    This component checks if it's RHEL 10.
+
+    Attributes:
+        minor (int): The minor version of RHEL 10.
+
+    Raises:
+        SkipComponent: When RHEL version is not RHEL 10.
+    """
+
+    def __init__(self, rhel):
+        super(IsRhel10, self).__init__(rhel, 10)
+
+
+@component(RedHatRelease)
 class IsGtOrRhel84(IsGtRhel):
     """
     This component checks if the RHEL version is 8.4 or grater than 8.4.

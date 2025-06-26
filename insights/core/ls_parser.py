@@ -179,10 +179,6 @@ class Directory(dict):
             # Update our entry and put it into the correct buckets
             # based on its type.
             entry.update(rest)
-            # TODO
-            # - The `raw_entry` key is deprecated and will be removed from 3.6.0.
-            #   Please use the `insights.parsers.ls.FileListingParser.raw_entry_of` instead.
-            entry["raw_entry"] = line
             entry["dir"] = name
             nm = entry["name"]
             ents[nm] = entry
@@ -277,12 +273,14 @@ class FilePermissions(object):
     _PERMISSIONS_PATTERN = re.compile(
         r'''
         ^
-        (.)([-rwxsS]{3})([-rwxsS]{3})([-rwxsS]{3})   # -rwxrwxrwx
+        (.)([-rwxsStT]{3})([-rwxsStT]{3})([-rwxsStT]{3})   # -rwxrwxrwx
         # -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
         # ^^^^^^^^^^
-        # Valid characters are -rwxsS
-        #   s == execute bit and sticky bit
-        #   S == sticky bit without execute bit
+        # Valid characters are -rwxsStT
+        #   s == setuid/setgid
+        #   S == setuid/setgid without execute permissions
+        #   t == sticky bit
+        #   T == sticky bit without execute bit
 
         \S*                      # the character(s) after rwxrwxrwx for ACLs/xattrs
         # -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
@@ -297,9 +295,11 @@ class FilePermissions(object):
         #               ^^^^^^^^^
         # Username and group name are strings without whitespace \s and without colon :.
 
-        \s+\S+\s+                # size and spaces around
+        \s+(?:\d+|\d+,\s*\d+)+\s+        # (size or major/minor) and spaces around
         # -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
         #                        ^^^^^^
+        # brw-rw----. 1 root disk 252, 1 May 16 01:30 /dev/vda1
+        #                        ^^^^^^^^
 
         \S+\s+\S+                # month and day
         # -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
@@ -329,6 +329,7 @@ class FilePermissions(object):
                         -rw-------. 1 root root 762 Sep 23 002 /etc/ssh/sshd_config
                         -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
                         -rw-r--r--. 1 root root 4179 Dec  1  2014 /boot/grub2/grub.cfg
+                        brw-rw----. 1 root disk 252, 1 May 16 01:30 /dev/vda1
         Raises:
             ValueError: If line is malformed
         """
@@ -344,6 +345,12 @@ class FilePermissions(object):
                 self.group,
                 self.path,
             ) = r.groups()
+            parts = self.line.split()
+            if "," in parts[4]:
+                self.major = int(parts[4].strip(","))
+                self.minor = int(parts[5])
+            else:
+                self.size = int(parts[4])
         else:
             raise ValueError('Invalid `ls -l` line "{}"'.format(self.line))
 
