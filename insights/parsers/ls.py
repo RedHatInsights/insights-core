@@ -126,11 +126,11 @@ class FileListing(CommandParser, dict):
         []
         >>> ls_lan.total_of("/etc/sysconfig")
         96
-        >>> ls_lan.dir_entry('/etc/sysconfig', 'grub') == {'group': '0', 'name': 'grub', 'links': 1, 'perms': 'rwxrwxrwx.', 'raw_entry': 'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub', 'owner': '0', 'link': '/etc/default/grub', 'date': 'Jul  6 23:32', 'type': 'l', 'dir': '/etc/sysconfig', 'size': 17}
+        >>> ls_lan.dir_entry('/etc/sysconfig', 'grub') == {'group': '0', 'name': 'grub', 'links': 1, 'perms': 'rwxrwxrwx.', 'owner': '0', 'link': '/etc/default/grub', 'date': 'Jul  6 23:32', 'type': 'l', 'dir': '/etc/sysconfig', 'size': 17}
         True
         >>> sorted(ls_lan.listing_of("/etc/sysconfig").keys()) == sorted(['console', 'grub', '..', 'firewalld', '.', 'cbq', 'ebtables-config'])
         True
-        >>> sorted(ls_lan.listing_of("/etc/sysconfig")['console'].keys()) == sorted(['group', 'name', 'links', 'perms', 'raw_entry', 'owner', 'date', 'type', 'dir', 'size'])
+        >>> sorted(ls_lan.listing_of("/etc/sysconfig")['console'].keys()) == sorted(['group', 'name', 'links', 'perms', 'owner', 'date', 'type', 'dir', 'size'])
         True
         >>> ls_lan.listing_of("/etc/sysconfig")['console']['type']
         'd'
@@ -138,7 +138,7 @@ class FileListing(CommandParser, dict):
         'rwxr-xr-x.'
         >>> ls_lan.dir_contains("/etc/sysconfig", "console")
         True
-        >>> ls_lan.dir_entry("/etc/sysconfig", "console") == {'group': '0', 'name': 'console', 'links': 2, 'perms': 'rwxr-xr-x.', 'raw_entry': 'drwxr-xr-x.  2 0 0    6 Sep 16  2015 console', 'owner': '0', 'date': 'Sep 16  2015', 'type': 'd', 'dir': '/etc/sysconfig', 'size': 6}
+        >>> ls_lan.dir_entry("/etc/sysconfig", "console") == {'group': '0', 'name': 'console', 'links': 2, 'perms': 'rwxr-xr-x.', 'owner': '0', 'date': 'Sep 16  2015', 'type': 'd', 'dir': '/etc/sysconfig', 'size': 6}
         True
         >>> ls_lan.dir_entry("/etc/sysconfig", "grub")['type']
         'l'
@@ -214,9 +214,9 @@ class FileListing(CommandParser, dict):
         Entries that can be parsed then have fields as described in the class
         description above.
 
-        .. warning::
-            The 'raw_entry' key in the returned dictionary is deprecated
-            and will be removed from version 3.6.0.
+        .. note::
+            The 'raw_entry' key is removed from the return value.  Use the
+            `raw_entry_of` method instead.
         """
         if directory in self:
             return self[directory]['entries']
