@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.16
+Version:        3.6.0
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,25 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 26 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.0-1
+- fix: remove planned deprecations before version bumping to 3.6.0 (#4480)
+  (xiangceliu@redhat.com)
+- fix: handle invalid cmd output of aws curl (#4484) (xiaoxwan@redhat.com)
+- feat: add configurable allow_remote_resource_access to RemoteResource (#4486)
+  (lichen@redhat.com)
+- chore: update corosync datasource to use RedHatRelease only (#4485)
+  (xiangceliu@redhat.com)
+- feat: Collect "corosync-cmapctl" on RHEL10 (#4483)
+  (44796653+huali027@users.noreply.github.com)
+- fix(specs opt): do hostname obfuscation for possible specs (#4478)
+  (xiangceliu@redhat.com)
+- feat: Add a new parser LruGenEnabled (#4481)
+  (30404410+qinpingli@users.noreply.github.com)
+- fix: Simplify error message for too long rule responses (#4477)
+  (71874510+jholecek-rh@users.noreply.github.com)
+- fix: output abnormal raw line of ls entries (#4479) (xiangceliu@redhat.com)
+- feat: Add_rhel_9.6_uname (#4475) (jiazhang@redhat.com)
+
 * Thu Jun 05 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.16-1
 - fix(setup): remove CONTRIBUTING.md from dynamic readme in pyproject.toml
   (#4473) (xiangceliu@redhat.com)

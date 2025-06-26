@@ -2,6 +2,19 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.0) (2025-06-26)
+
+- fix: remove planned deprecations before version bumping to 3.6.0 ([PR 4480](https://github.com/RedHatInsights/insights-core/pull/4480))
+- fix: handle invalid cmd output of aws curl ([PR 4484](https://github.com/RedHatInsights/insights-core/pull/4484))
+- feat: add configurable allow_remote_resource_access to RemoteResource ([PR 4486](https://github.com/RedHatInsights/insights-core/pull/4486))
+- chore: update corosync datasource to use RedHatRelease only ([PR 4485](https://github.com/RedHatInsights/insights-core/pull/4485))
+- feat: Collect "corosync-cmapctl" on RHEL10 ([PR 4483](https://github.com/RedHatInsights/insights-core/pull/4483))
+- fix(specs opt): do hostname obfuscation for possible specs ([PR 4478](https://github.com/RedHatInsights/insights-core/pull/4478))
+- feat: Add a new parser LruGenEnabled ([PR 4481](https://github.com/RedHatInsights/insights-core/pull/4481))
+- fix: Simplify error message for too long rule responses ([PR 4477](https://github.com/RedHatInsights/insights-core/pull/4477))
+- fix: output abnormal raw line of ls entries ([PR 4479](https://github.com/RedHatInsights/insights-core/pull/4479))
+- feat: Add_rhel_9.6_uname ([PR 4475](https://github.com/RedHatInsights/insights-core/pull/4475))
+
 # [insights-core-3.5.16](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.16) (2025-06-05)
 
 - fix(setup): remove CONTRIBUTING.md from dynamic readme in pyproject.toml ([PR 4473](https://github.com/RedHatInsights/insights-core/pull/4473))
