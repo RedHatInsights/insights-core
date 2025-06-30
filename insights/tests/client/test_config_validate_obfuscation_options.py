@@ -43,7 +43,7 @@ def test_validate_obfuscation_options_good(
 
 @patch('insights.client.config.logger')
 @patch('insights.client.config.get_rhel_version', return_value=10)
-@patch('insights.client.config.get_egg_version_tuple', return_value=(3, 6, 0))
+@patch('insights.client.config.get_egg_version_tuple', return_value=(3, 6, 10))
 def test_validate_obfuscation_options_conflict_old_warning(egg, rhel, logger):
     with pytest.raises(ValueError) as ve:
         InsightsConfig(obfuscate=False, obfuscate_hostname=True, _print_errors=True)
@@ -63,7 +63,7 @@ def test_validate_obfuscation_options_conflict_old_no_warning(egg, rhel, logger)
 
 @patch('insights.client.config.logger')
 @patch('insights.client.config.get_rhel_version', return_value=7)
-@patch('insights.client.config.get_egg_version_tuple', return_value=(3, 6, 10))
+@patch('insights.client.config.get_egg_version_tuple', return_value=(3, 6, 12))
 def test_validate_obfuscation_options_conflict_old_rhel7(egg, rhel, logger):
     with pytest.raises(ValueError) as ve:
         InsightsConfig(obfuscate=False, obfuscate_hostname=True, _print_errors=True)
