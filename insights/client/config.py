@@ -693,9 +693,9 @@ class InsightsConfig(object):
             self.obfuscate_hostname = parse_bool(self.obfuscate_hostname, None)
             # When old switches are set explicitly, even set as False
             if self.obfuscate is not None or self.obfuscate_hostname is not None:
-                # Warning deprecation only on RHEL 8+ and from egg v 3.6.0 (planned)
+                # Warning deprecation only on RHEL 8+ and from egg v 3.6.10 (planned)
                 if self._print_errors and get_rhel_version() > 7:
-                    if get_egg_version_tuple() >= (3, 6, 0):
+                    if get_egg_version_tuple() >= (3, 6, 10):
                         logger.warning(
                             'WARNING: `obfuscate` and `obfuscate_hostname` are deprecated, please use `obfuscation_list` instead.'
                         )
