@@ -124,6 +124,10 @@ community_to_release_map = {
     "18.2.1-262": {'version': "7.1.2", 'major': '7', 'minor': '1', 'downstream_release': '2'},
     "19.2.0-53": {'version': "8.0", 'major': '8', 'minor': '0', 'downstream_release': '0'},
     "19.2.0-55": {'version': "8.0.1", 'major': '8', 'minor': '0', 'downstream_release': '1'},
+    "19.2.0-98": {'version': "8.0.1", 'major': '8', 'minor': '0', 'downstream_release': '2'},
+    "19.2.0-124": {'version': "8.0.1", 'major': '8', 'minor': '0', 'downstream_release': '3'},
+    "19.2.0-137": {'version': "8.0.1", 'major': '8', 'minor': '0', 'downstream_release': '4'},
+    "19.2.1-222": {'version': "8.1.0", 'major': '8', 'minor': '1', 'downstream_release': '0'},
 }
 
 
