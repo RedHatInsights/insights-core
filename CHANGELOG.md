@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.1) (2025-07-01)
+
+- chore: postpone warning for 'obfuscate' options ([PR 4487](https://github.com/RedHatInsights/insights-core/pull/4487))
+
 # [insights-core-3.6.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.0) (2025-06-26)
 
 - fix: remove planned deprecations before version bumping to 3.6.0 ([PR 4480](https://github.com/RedHatInsights/insights-core/pull/4480))

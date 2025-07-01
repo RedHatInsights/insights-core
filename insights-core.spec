@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.6.0
+Version:        3.6.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Tue Jul 01 2025 Unknown name 3.6.1-1
+- chore: postpone warning for 'obfuscate' options (#4487)
+  (xiangceliu@redhat.com)
+
 * Thu Jun 26 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.0-1
 - fix: remove planned deprecations before version bumping to 3.6.0 (#4480)
   (xiangceliu@redhat.com)
