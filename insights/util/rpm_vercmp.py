@@ -137,3 +137,6 @@ def rpm_version_compare(left, right):
         return rc
 
     return _rpm_vercmp(left.release, right.release)
+
+
+version_compare = _rpm_vercmp

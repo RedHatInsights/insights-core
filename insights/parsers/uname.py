@@ -40,11 +40,11 @@ kernel strings::
 import warnings
 
 from collections import namedtuple
-from distutils.version import LooseVersion, StrictVersion
 
 from insights import parser, CommandParser
 from insights.core.context import Context
 from insights.specs import Specs
+from insights.util.rpm_vercmp import version_compare
 
 rhel_release_map = {
     "2.4.21-4": "3.0",
@@ -222,10 +222,8 @@ class Uname(CommandParser):
         'ver_rel',
         'rhel_release',
         'debug_kernel',
-        '_lv_release',
         '_rel_maj',
-        '_sv_version',
-        '_lv_version',
+        '_pad_release',
     ]
 
     defaults = dict.fromkeys(keys)
@@ -393,61 +391,47 @@ class Uname(CommandParser):
         rhel_key = "-".join([data['version'], data['_rel_maj']])
         rhel_release = rhel_release_map.get(rhel_key, '-1.-1')
         data['rhel_release'] = rhel_release.split('.')
-        try:
-            data['_sv_version'] = StrictVersion(data['version'])
-        except ValueError:
-            data['_sv_version'] = None
-        # LooseVersion doesn't raise errors, it just goes with what it gets
-        data['_lv_version'] = LooseVersion(data['version'])
         num_sections = 7 if 'rt' in data['release'] else 5
-        data['_lv_release'] = LooseVersion(pad_release(data['release'], num_sections=num_sections))
+        data['_pad_release'] = pad_release(data['release'], num_sections=num_sections)
         data['ver_rel'] = '%s-%s' % (data['version'], data['release'])
         return data
 
-    def _best_version(self, other):
+    def _best_release(self, other):
         """
-        Use strict versions for comparisons, or loose versions if strict are
-        not available.
-        """
-        if self._sv_version and other._sv_version:
-            return self._sv_version, other._sv_version
-        else:
-            return self._lv_version, other._lv_version
-
-    def _best_lv_release(self, other):
-        """
-        When the _lv_release in self and other both or neither have
-        the distribution part, return then directly. Otherwise,
-        removing the distribution part, and raising a warning.
+        When the `release` in self and other both or neither have
+        the distribution part, return `_pad_release` directly.
+        Otherwise, removing the distribution part, and raising a warning.
 
         Notes:: Now, only `.el*` distribution is supported.
         """
         dist_opts = ('el',)
-        s_release_parts = self._lv_release.vstring.split(".")
-        o_release_parts = other._lv_release.vstring.split(".")
+        s_release_parts = self.release.split(".")
+        o_release_parts = other.release.split(".")
         is_s_with_dist = s_release_parts[-1].startswith(dist_opts)
         is_o_with_dist = o_release_parts[-1].startswith(dist_opts)
         if not (is_s_with_dist ^ is_o_with_dist):
-            return self._lv_release, other._lv_release
+            return self._pad_release, other._pad_release
         warnings.warn('Comparison of distribution part will be ignored.')
-        s_release = (
-            self._lv_release.vstring
-            if not is_s_with_dist
-            else pad_release(".".join(s_release_parts[:-1]), len(s_release_parts))
+        nc = 7 if 'rt' in self.release else 5
+        return (
+            (
+                self._pad_release
+                if not is_s_with_dist
+                else pad_release(".".join(s_release_parts[:-1]), nc)
+            ),
+            (
+                other._pad_release
+                if not is_o_with_dist
+                else pad_release(".".join(o_release_parts[:-1]), nc)
+            ),
         )
-        o_release = (
-            other._lv_release.vstring
-            if not is_o_with_dist
-            else pad_release(".".join(o_release_parts[:-1]), len(o_release_parts))
-        )
-        return LooseVersion(s_release), LooseVersion(o_release)
 
     def __str__(self):
-        return "version: %s; release: %s; rel_maj: %s; lv_release: %s" % (
+        return "version: {0}; release: {1}; rel_maj: {2}; pad_release: {3}".format(
             self.version,
             self.release,
             self._rel_maj,
-            self._lv_release,
+            self._pad_release,
         )
 
     def __repr__(self):
@@ -491,9 +475,11 @@ class Uname(CommandParser):
         else:
             other_uname = Uname.from_uname_str(other)
 
-        s_version, o_version = self._best_version(other_uname)
-
-        return s_version == o_version and self._lv_release == other_uname._lv_release
+        if self.version == other_uname.version:
+            s_release, o_release = self._best_release(other_uname)
+            return version_compare(s_release, o_release) == 0
+        else:
+            return version_compare(self.version, other_uname.version) == 0
 
     def __ne__(self, other):
         """
@@ -516,11 +502,11 @@ class Uname(CommandParser):
         else:
             other_uname = Uname.from_uname_str(other)
 
-        s_version, o_version = self._best_version(other_uname)
-
-        return s_version < o_version or (
-            s_version == o_version and self._lv_release < other_uname._lv_release
-        )
+        if self.version == other_uname.version:
+            s_release, o_release = self._best_release(other_uname)
+            return version_compare(s_release, o_release) < 0
+        else:
+            return version_compare(self.version, other_uname.version) < 0
 
     def __le__(self, other):
         """
@@ -543,11 +529,11 @@ class Uname(CommandParser):
         else:
             other_uname = Uname.from_uname_str(other)
 
-        s_version, o_version = self._best_version(other_uname)
-
-        return s_version > o_version or (
-            s_version == o_version and self._lv_release > other_uname._lv_release
-        )
+        if self.version == other_uname.version:
+            s_release, o_release = self._best_release(other_uname)
+            return version_compare(s_release, o_release) > 0
+        else:
+            return version_compare(self.version, other_uname.version) > 0
 
     def __ge__(self, other):
         """
@@ -557,25 +543,6 @@ class Uname(CommandParser):
         See the :__eq__: operator for a detailed description.
         """
         return self.__gt__(other) or self.__eq__(other)
-
-    def _less_than(self, other):
-        """
-        Compare two ``Uname`` classes.  This function is used like one might
-        use ``__lt__``. However, if an invalid ``_lv_release`` indicated by a
-        value of ``None``, ``False`` is returned.
-
-        Since this behavior is not optimal for the the '<' comparison
-        operator (raising an Error would probably be better) we'll keep it
-        internal to the class.
-        """
-        s_version, o_version = self._best_version(other)
-        s_lv_release, o_lv_release = self._best_lv_release(other)
-
-        if s_version == o_version:
-            ret = s_lv_release < o_lv_release
-        else:
-            ret = s_version < o_version
-        return ret
 
     def fixed_by(self, *fixes, **kwargs):
         """
@@ -596,7 +563,7 @@ class Uname(CommandParser):
               `introduced_in` release.
         """
         introduced_in = kwargs.get("introduced_in")
-        if introduced_in and self._less_than(self.from_kernel(introduced_in)):
+        if introduced_in and self < self.from_kernel(introduced_in):
             return []
 
         fix_unames = sorted((self.from_kernel(f) for f in fixes))
@@ -606,14 +573,14 @@ class Uname(CommandParser):
         # See if you are fixed by it
         for i, fixed in enumerate(fix_unames):
             if self._rel_maj == fixed._rel_maj:
-                if self._less_than(fixed):
+                if self < fixed:
                     return fix_kernels[i:]
                 else:
                     return []
 
         # No fixes for your specific release so just return
         # all fixes that are greater
-        return [fix.kernel for fix in fix_unames if self._less_than(fix)]
+        return [fix.kernel for fix in fix_unames if self < fix]
 
     @property
     def release_tuple(self):
