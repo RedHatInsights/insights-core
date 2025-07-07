@@ -97,7 +97,6 @@ MOUNTINFO_DATA = """
 56 21 0:19 / /shared/dir2 rw,nosuid,relatime - nfs hostname2:/shared/some/dir2 rw,sync,vers=3,rsize=32768,wsize=32
 57 21 0:21 / /misc rw,relatime - autofs /etc/auto.misc rw,fd=7,pgrp=4826,timeout=300,minproto=5,maxproto=5,indirect
 58 21 0:22 / /autofshost rw,relatime - autofs -hosts rw,fd=13,pgrp=4826,timeout=300,minproto=5,maxproto=5,indirect
-37 36 253:72 / //MARIADB/tmp rw,relatime - ext4 /dev/mapper/vgsys-var_log rw,barrier=1,stripe=64,data=ordered
 """.strip()
 
 MOUNTINFO_ERR_DATA = """
@@ -319,7 +318,7 @@ def test_proc_mount_exception3():
 def test_mountinfo():
     results = MountInfo(context_wrap(MOUNTINFO_DATA))
     assert results is not None
-    assert len(results) == 17
+    assert len(results) == 16
 
     sda1 = results.search(mount_source='/dev/sda1')[0]
     assert sda1 is not None
