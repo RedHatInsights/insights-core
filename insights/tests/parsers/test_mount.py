@@ -363,6 +363,7 @@ def test_mountinfo():
     # Test get_dir
     assert results.get_dir('/var/log/some_dir') == results.search(mount_point='/var/log')[0]
     assert results.get_dir('//MARIADB/tmp') == results['/']
+    assert results.get_dir('///MARIADB/tmp') == results['/']
     assert results.get_dir('/etc') == results['/']
 
     # Test search

@@ -189,14 +189,12 @@ class MountedFileSystems(CommandParser):
         Returns:
             MountEntry: The mount point that contains the given path.
         """
-        if path.startswith("/"):
-            path_list = path.split("/")
-            path_list = [x for x in path_list if x.strip()]
-            path = "/" + "/".join(path_list)
+        path = os.path.normpath(path)
         while path != '':
             if path in self.mounts:
                 return self.mounts[path]
             path = os.path.split(path)[0]
+            path = '/' if path == '//' else path
         return None
 
     def search(self, **kwargs):
