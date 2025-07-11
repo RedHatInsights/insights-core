@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-from insights.parsers.rpm_vercmp import _rpm_vercmp
+from insights.util.rpm_vercmp import _rpm_vercmp
 
 
 # data copied from
@@ -161,7 +161,9 @@ dnl RPMVERCMP(1.1.ββ, 1.1.αα, 0)
 def convert(data):
     f = "RPMVERCMP("
     lines = [l for l in data.splitlines() if f in l]
-    tuples = [tuple(c.strip() for c in l[len(f) + l.find(f):].rstrip(")").split(",")) for l in lines]
+    tuples = [
+        tuple(c.strip() for c in l[len(f) + l.find(f) :].rstrip(")").split(",")) for l in lines
+    ]
     return [(l, r, int(i)) for (l, r, i) in tuples]
 
 

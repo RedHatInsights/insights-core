@@ -8,7 +8,8 @@ import logging.handlers
 import os
 import time
 import six
-from distutils.version import LooseVersion
+
+from insights.util.rpm_vercmp import version_compare
 
 from .utilities import (
     generate_machine_id,
@@ -94,7 +95,7 @@ def get_file_handler(config):
     # or if there is a problem retrieving the rpm version.
     rpm_version = get_version_info()['client_version']
     if not rpm_version or (
-        LooseVersion(rpm_version) < LooseVersion(constants.rpm_version_before_logrotate)
+        version_compare(rpm_version, constants.rpm_version_before_logrotate) < 0
     ):
         file_handler = RotatingFileHandlerWithUMask(0o077, log_file, backupCount=3)
     else:
