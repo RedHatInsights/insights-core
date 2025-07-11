@@ -105,6 +105,20 @@ def os_version(broker):
         return os_release.split('.')
     sys.exit(constants.sig_kill_bad)
 
+@datasource(
+    HostContext,
+    [OsRelease, RedhatRelease]
+)
+def os_version_advisor_rule(broker):
+    os_release = None
+    if OsRelease in broker:
+        os_release = broker[OsRelease].get("VERSION_ID")
+    if not os_release and RedhatRelease in broker:
+        os_release = broker[RedhatRelease].version
+    if os_release:
+        return os_release.split('.')
+    sys.exit(constants.sig_kill_bad)
+
 
 @datasource(
     HostContext,
@@ -117,6 +131,23 @@ def os_version(broker):
     ],
 )
 def package_check(broker):
+    rpms = broker[InstalledRpms]
+    missed = [rpm for rpm in REQUIRED_PACKAGES if rpm not in rpms]
+    if missed:
+        msg = 'Missing required packages for compliance scanning. Please ensure the following packages are installed: {0}\n'.format(
+            ', '.join(missed)
+        )
+        logger.error(msg)
+        sys.exit(constants.sig_kill_bad)
+
+    return rpms.newest(SSG_PACKAGE).version
+
+
+@datasource(
+    HostContext,
+    InstalledRpms
+)
+def package_check_advisor_rule(broker):
     rpms = broker[InstalledRpms]
     missed = [rpm for rpm in REQUIRED_PACKAGES if rpm not in rpms]
     if missed:
@@ -265,6 +296,37 @@ def compliance_unassign(broker):
         # --compliance-unassign was called
         result = compliance.policy_link(insights_config.compliance_unassign, 'delete')
         sys.exit(result)
+
+    except Exception as err:
+        err_msg = "Unexpected exception in compliance: {0}".format(str(err))
+        logger.error(err_msg)
+        logger.debug(format_exc())
+        sys.exit(constants.sig_kill_bad)
+
+
+@datasource(os_version_advisor_rule, package_check_advisor_rule, HostContext, timeout=0)
+def compliance_advisor_rule_enabled(broker):
+    print ("2222222222222222222")
+    try:
+        insights_config = broker.get('client_config')
+
+        compliance = ComplianceClient(
+            os_version=broker[os_version_advisor_rule], ssg_version=broker[package_check_advisor_rule], config=insights_config
+        )
+
+        policies = compliance.get_system_policies()
+        print ("8080808080080")
+        print (policies)
+        if not policies:
+            logger.error(
+                "System is not associated with any policies. Assign policies using the Compliance web UI.\n"
+            )
+            sys.exit(constants.sig_kill_bad)
+
+        for policy in policies:
+            tailoring_file = compliance.download_tailoring_file(policy)
+            print ("4040400440")
+            print (tailoring_file)
 
     except Exception as err:
         err_msg = "Unexpected exception in compliance: {0}".format(str(err))

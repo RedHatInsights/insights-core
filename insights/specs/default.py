@@ -115,6 +115,7 @@ class DefaultSpecs(Specs):
     compliance_policies = compliance_ds.compliance_policies
     compliance_assign = compliance_ds.compliance_assign
     compliance_unassign = compliance_ds.compliance_unassign
+    compliance_advisor_rule_enabled = compliance_ds.compliance_advisor_rule_enabled
     malware_detection = malware_detection_ds.malware_detection
 
     # Regular collection specs
