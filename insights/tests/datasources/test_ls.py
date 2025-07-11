@@ -85,11 +85,18 @@ def setup_function(func):
     if func is test_lan_with_fstab_mounted_filter:
         filters.add_filter(Specs.ls_lan_dirs, ["/", '/boot', 'fstab_mounted.dirs'])
     if func is test_lH_files:
-        filters.add_filter(Specs.ls_lH_files, ["/etc/redhat-release", '/var/log/messages'])
+        filters.add_filter(
+            Specs.ls_lH_files,
+            ["/etc/redhat-release", '/var/log/messages', 'pvs.devices', 'fstab_mounted.devices'],
+        )
     if func is test_lH_files_pvs:
-        filters.add_filter(Specs.ls_lH_files, ["/etc/redhat-release", '/var/log/messages', 'pvs.devices'])
+        filters.add_filter(
+            Specs.ls_lH_files, ["/etc/redhat-release", '/var/log/messages', 'pvs.devices']
+        )
     if func is test_lH_files_fstab_blkid:
-        filters.add_filter(Specs.ls_lH_files, ["/etc/redhat-release", '/var/log/messages', 'fstab_mounted.devices'])
+        filters.add_filter(
+            Specs.ls_lH_files, ["/etc/redhat-release", '/var/log/messages', 'fstab_mounted.devices']
+        )
 
 
 def teardown_function(func):
@@ -174,4 +181,7 @@ def test_lH_files_fstab_blkid(_):
     blkid_info = BlockIDInfo(context_wrap(BLKID_DATA))
     broker = {FSTab: fstab_info, BlockIDInfo: blkid_info}
     ret = list_files_with_lH(broker)
-    assert ret == '/dev/mapper/rhel-home /dev/mapper/rhel-root /dev/mapper/rhel-var /dev/sdb2 /etc/redhat-release /var/log/messages'
+    assert (
+        ret
+        == '/dev/mapper/rhel-home /dev/mapper/rhel-root /dev/mapper/rhel-var /dev/sdb2 /etc/redhat-release /var/log/messages'
+    )
