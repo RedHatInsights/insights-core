@@ -190,7 +190,8 @@ plugins:
     - name: insights.parsers.docker_list.DockerListContainers
       enabled: true
 
-    # needed for specs: luks_data_sources, smartctl_health spec
+    # needed for specs: luks_data_sources, smartctl_health, 'fstab_mounted.devices' to 'ls_lH_files'
+    #  'fstab_mounted.devices' to 'ls_lH_files''
     - name: insights.parsers.blkid.BlockIDInfo
       enabled: true
     - name: insights.components.cryptsetup.HasCryptsetupWithTokens
@@ -218,8 +219,12 @@ plugins:
     - name: insights.components.selinux.SELinuxEnabled
       enabled: true
 
-    # needed for the 'fstab_mounted.dirs' to the 'ls_lan' spec
+    # needed for 'fstab_mounted.dirs' to 'ls_lan', 'fstab_mounted.devices' to 'ls_lH_files'
     - name: insights.parsers.fstab.FSTab
+      enabled: true
+
+    # needed for 'pvs.devices' to 'ls_lH_files' spec
+    - name: insights.parsers.lvm.Pvs
       enabled: true
 """.strip()
 
