@@ -429,7 +429,11 @@ class LSlHFiles(CommandParser, dict):
     """
 
     def parse_content(self, content):
+        self.error_lines = []
         for line in content:
+            if "/bin/ls: cannot access" in line and "No such file or directory" in line:
+                self.error_lines.append(line)
+                continue
             try:
                 line = line.strip()
                 self[line.rsplit(None, 1)[-1]] = FilePermissions(line)
