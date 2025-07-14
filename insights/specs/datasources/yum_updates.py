@@ -7,12 +7,12 @@ import json
 import logging
 import time
 
-from distutils.version import LooseVersion as version
 from functools import cmp_to_key
 
 from insights import datasource, HostContext, SkipComponent
 from insights.components.rhel_version import IsRhel7, IsRhel8, IsRhel9
 from insights.core.spec_factory import DatasourceProvider
+from insights.util.rpm_vercmp import version_compare
 
 
 def sorted_cmp(it, cmp):
@@ -70,7 +70,7 @@ class DnfManager:
 
         self.packages = hawkey.Query(hawkey.Sack())
         try:
-            if version(dnf.VERSION) >= version("4.7.0") and self.base.conf.cacheonly:
+            if version_compare(dnf.VERSION, "4.7.0") >= 0 and self.base.conf.cacheonly:
                 self.base.fill_sack_from_repos_in_cache(load_system_repo=True)
                 self.packages = self.base.sack.query()
             elif not self.base.conf.cacheonly:

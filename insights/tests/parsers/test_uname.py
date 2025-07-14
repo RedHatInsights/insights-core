@@ -6,8 +6,6 @@ try:
 except Exception:
     from mock import patch
 
-from distutils.version import LooseVersion, StrictVersion
-
 from insights.parsers import uname
 from insights.tests import context_wrap
 
@@ -80,15 +78,16 @@ def test_uname():
     assert uname1.redhat_release == uname.RedhatRelease(major=6, minor=6)
     assert uname1.release == '504.el6'
     assert uname1.release_arch == '504.el6.x86_64'
-    assert uname1.release_tuple == (6, 6,)
+    assert uname1.release_tuple == (
+        6,
+        6,
+    )
     assert uname1.rhel_release == ['6', '6']
     assert uname1.ver_rel == '2.6.32-504.el6'
     assert uname1.version == '2.6.32'
     assert uname1.debug_kernel is False
-    assert uname1._lv_release == LooseVersion('504.0.0.0.el6')
-    assert uname1._lv_version == LooseVersion('2.6.32')
     assert uname1._rel_maj == '504'
-    assert uname1._sv_version == StrictVersion('2.6.32')
+    assert uname1._pad_release == '504.0.0.0.el6'
 
     # Test that the debug kernel returns True
     assert uname4_debug.debug_kernel is True
@@ -108,8 +107,13 @@ def test_uname():
     assert uname1 <= uname4_debug
 
     # String and repr tests
-    assert str(uname1) == 'version: 2.6.32; release: 504.el6; rel_maj: 504; lv_release: 504.0.0.0.el6'
-    assert repr(uname1) == "<Uname 'version: 2.6.32; release: 504.el6; rel_maj: 504; lv_release: 504.0.0.0.el6'>"
+    assert (
+        str(uname1) == 'version: 2.6.32; release: 504.el6; rel_maj: 504; pad_release: 504.0.0.0.el6'
+    )
+    assert (
+        repr(uname1)
+        == "<Uname 'version: 2.6.32; release: 504.el6; rel_maj: 504; pad_release: 504.0.0.0.el6'>"
+    )
 
     # Just a release
     uname_from_release = uname.Uname.from_release('7.2')
@@ -120,9 +124,7 @@ def test_uname():
     # Strict version value error
     nvr = uname.Uname.parse_nvr('quodge-327.204.el7.x86_64')
     assert nvr['version'] == 'quodge'
-    assert nvr['_sv_version'] is None
-    assert nvr['_lv_version'] == 'quodge'
-    assert nvr['_lv_release'] == '327.204.0.0.el7'
+    assert nvr['_pad_release'] == '327.204.0.0.el7'
 
     kernel1 = uname1  # 2.6.32-504.el6.x86_64
     assert [] == kernel1.fixed_by('2.6.32-220.1.el6', '2.6.32-504.el6')
@@ -136,13 +138,11 @@ def test_uname():
     kernel5 = uname5  # 2.6.32-504.8.2.bgq.el6.x86_64
     assert '2.6.32-504.8.2.bgq.el6' == kernel5.ver_rel
 
-    assert uname6._sv_version == StrictVersion('2.6.32')
     assert uname6.arch == 'x86_64'
     assert uname6.hw_platform == 'x86_64'
     assert uname6.kernel == '2.6.32-279.el6.x86_64'
     assert uname6.kernel_date == 'Wed Jun 13 18:24:36 EDT 2012'
 
-    assert uname7._sv_version == StrictVersion('2.6.32')
     assert uname7.arch == 'x86_64'
     assert uname7.hw_platform == 'x86_64'
     assert uname7.kernel == '2.6.32-279.el6.x86_64'
@@ -152,8 +152,6 @@ def test_uname():
     uname_rt_1 = uname.Uname(context_wrap(UNAME_RT_1))
     assert uname_rt_1
     assert uname_rt_1.version == "2.6.24.7"
-    assert uname_rt_1._sv_version is None
-    assert uname_rt_1._lv_version == "2.6.24.7"
     assert uname_rt_1.release == "101.el5rt"
     assert uname_rt_1.arch == "x86_64"
     assert uname_rt_1 == UNAME_RT_1
@@ -167,8 +165,6 @@ def test_uname():
     uname_rt_2 = uname.Uname(context_wrap(UNAME_RT_2))
     assert uname_rt_2
     assert uname_rt_2.version == "2.6.33.9"
-    assert uname_rt_2._sv_version is None
-    assert uname_rt_2._lv_version == "2.6.33.9"
     assert uname_rt_2.release == "rt31.66.el6rt"
     assert uname_rt_2.arch == "x86_64"
     assert uname_rt_2 == UNAME_RT_2
@@ -182,9 +178,8 @@ def test_uname():
     uname_rt_3 = uname.Uname(context_wrap(UNAME_RT_3))
     assert uname_rt_3
     assert uname_rt_3.version == "3.10.0"
-    assert uname_rt_3._sv_version == "3.10.0"
-    assert uname_rt_3._lv_version == "3.10.0"
     assert uname_rt_3.release == "327.rt56.204.el7"
+    assert uname_rt_3._pad_release == "327.0.0.0.rt56.204.el7"
     assert uname_rt_3.arch == "x86_64"
     assert uname_rt_3 == UNAME_RT_3
     assert uname_rt_3 == uname.Uname.from_uname_str(UNAME_RT_3)
@@ -235,7 +230,9 @@ def test_pad_release():
 
 
 def test_fixed_by():
-    u = uname.Uname.from_uname_str("Linux qqhrycsq2 2.6.32-504.el6.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
+    u = uname.Uname.from_uname_str(
+        "Linux qqhrycsq2 2.6.32-504.el6.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux"
+    )
     assert [] == u.fixed_by('2.6.32-220.1.el6', '2.6.32-504.el6')
     assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6')
     assert [] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-504.1.el6')
@@ -249,7 +246,9 @@ def test_fixed_by_warning(warn):
     # For all remaining tests, cause the comparation warnings
     # to always be caught, and ignore other warnings.
     warning_msg = "Comparison of distribution part will be ignored."
-    u = uname.Uname.from_uname_str("Linux qqhrycsq2 2.6.32-504.el6.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
+    u = uname.Uname.from_uname_str(
+        "Linux qqhrycsq2 2.6.32-504.el6.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux"
+    )
     # should be no comparation warning reported
     assert [] == u.fixed_by('2.6.32-220.1.el6', '2.6.32-504.el6')
     warn.reset_mock()
@@ -275,46 +274,74 @@ def test_fixed_by_warning(warn):
     warn.reset_mock()
 
     # fixes without distribution part
-    rt_u = uname.Uname.from_uname_str("Linux qqhrycsq2 4.18.0-305.rt7.72.el8.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
+    rt_u = uname.Uname.from_uname_str(
+        "Linux qqhrycsq2 4.18.0-305.rt7.72.el8.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux"
+    )
     assert [] == rt_u.fixed_by('4.18.0-305.rt7.72')
     warn.assert_any_call(warning_msg)
     warn.reset_mock()
 
     # introduce without distribution part
-    assert ['4.18.0-307.rt7.72.el8'] == rt_u.fixed_by('4.18.0-307.rt7.72.el8', introduced_in='4.18.0-305.rt7.72')
+    assert ['4.18.0-307.rt7.72.el8'] == rt_u.fixed_by(
+        '4.18.0-307.rt7.72.el8', introduced_in='4.18.0-305.rt7.72'
+    )
     warn.assert_any_call(warning_msg)
     warn.reset_mock()
 
 
 def test_unknown_release():
     u = uname.Uname.from_kernel("2.6.23-504.23.3.el6.revertBZ1169225")
-    assert "504.23.3.0.el6" == u._lv_release
+    assert "504.23.3.el6" == u.release
+    assert "504.23.3.0.el6" == u._pad_release
 
 
 def test_fixed_by_rhel5():
     test_kernels = [
-        (uname.Uname.from_uname_str("Linux oprddb1r5.example.com 2.6.18-348.el5 #1 SMP Wed Nov 28 21:22:00 EST 2012 x86_64 x86_64 x86_64 GNU/Linux"), []),
-        (uname.Uname.from_uname_str("Linux srspidr1-3.example2.com 2.6.18-402.el5 #1 SMP Thu Jan 8 06:22:34 EST 2015 x86_64 x86_64 x86_64 GNU/Linux"), []),
-        (uname.Uname.from_uname_str("Linux PVT-Dev1.pvtsolar.local 2.6.18-398.el5 #1 SMP Tue Aug 12 06:30:31 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux"), []),
-        (uname.Uname.from_kernel("2.6.18-194.el5"),
-            ["2.6.18-238.40.1.el5", "2.6.18-308.13.1.el5", "2.6.18-348.el5"]),
-        (uname.Uname.from_kernel("2.6.18-128.el5"),
-            ["2.6.18-128.39.1.el5", "2.6.18-238.40.1.el5", "2.6.18-308.13.1.el5", "2.6.18-348.el5"]),
-
+        (
+            uname.Uname.from_uname_str(
+                "Linux oprddb1r5.example.com 2.6.18-348.el5 #1 SMP Wed Nov 28 21:22:00 EST 2012 x86_64 x86_64 x86_64 GNU/Linux"
+            ),
+            [],
+        ),
+        (
+            uname.Uname.from_uname_str(
+                "Linux srspidr1-3.example2.com 2.6.18-402.el5 #1 SMP Thu Jan 8 06:22:34 EST 2015 x86_64 x86_64 x86_64 GNU/Linux"
+            ),
+            [],
+        ),
+        (
+            uname.Uname.from_uname_str(
+                "Linux PVT-Dev1.pvtsolar.local 2.6.18-398.el5 #1 SMP Tue Aug 12 06:30:31 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux"
+            ),
+            [],
+        ),
+        (
+            uname.Uname.from_kernel("2.6.18-194.el5"),
+            ["2.6.18-238.40.1.el5", "2.6.18-308.13.1.el5", "2.6.18-348.el5"],
+        ),
+        (
+            uname.Uname.from_kernel("2.6.18-128.el5"),
+            ["2.6.18-128.39.1.el5", "2.6.18-238.40.1.el5", "2.6.18-308.13.1.el5", "2.6.18-348.el5"],
+        ),
     ]
     for u, expected in test_kernels:
-        fixed_by = u.fixed_by("2.6.18-128.39.1.el5", "2.6.18-238.40.1.el5", "2.6.18-308.13.1.el5", "2.6.18-348.el5")
+        fixed_by = u.fixed_by(
+            "2.6.18-128.39.1.el5", "2.6.18-238.40.1.el5", "2.6.18-308.13.1.el5", "2.6.18-348.el5"
+        )
         assert expected == fixed_by
 
 
 def test_from_kernel_partial():
     u = uname.Uname.from_kernel("5.14.0-284.13.1")
-    assert "284.13.1.0.0" == u._lv_release
+    assert "284.13.1" == u.release
+    assert "284.13.1.0.0" == u._pad_release
 
     u = uname.Uname.from_kernel("5.14.0-284")
-    assert "284.0.0.0.0" == u._lv_release
+    assert "284.0.0.0.0" == u._pad_release
 
-    early_rhel9 = uname.Uname.from_uname_str("Linux example 5.14.0-70.22.1.el9_0.x86_64 #1 SMP Wed May 24 08:55:08 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux")
+    early_rhel9 = uname.Uname.from_uname_str(
+        "Linux example 5.14.0-70.22.1.el9_0.x86_64 #1 SMP Wed May 24 08:55:08 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux"
+    )
     later_rhel9_1 = uname.Uname.from_kernel("5.14.0-162.18.1")
     later_rhel9_2 = uname.Uname.from_kernel("5.14.0-284")
 
@@ -345,16 +372,26 @@ def test_from_release():
     assert str(from_release) == str(from_nvr)
 
     unknown_list = ["2.4.21-3", "2.6.9-4", "2.6.18-7", "2.6.32-70", "3.10.0-53"]
-    known_list = [{'version': "2.4.21-4", 'rhel_release': ["3", "0"]},
-                  {'version': "2.6.9-55", 'rhel_release': ["4", "5"]},
-                  {'version': "2.6.18-308", 'rhel_release': ["5", "8"]},
-                  {'version': "2.6.32-131.0.15", 'rhel_release': ["6", "1"]},
-                  {'version': "3.10.0-123", 'rhel_release': ["7", "0"]}]
+    known_list = [
+        {'version': "2.4.21-4", 'rhel_release': ["3", "0"]},
+        {'version': "2.6.9-55", 'rhel_release': ["4", "5"]},
+        {'version': "2.6.18-308", 'rhel_release': ["5", "8"]},
+        {'version': "2.6.32-131.0.15", 'rhel_release': ["6", "1"]},
+        {'version': "3.10.0-123", 'rhel_release': ["7", "0"]},
+    ]
     for unknown_ver in unknown_list:
-        unknown_uname = uname.Uname.from_uname_str("Linux hostname {version} #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux".format(version=unknown_ver))
+        unknown_uname = uname.Uname.from_uname_str(
+            "Linux hostname {version} #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux".format(
+                version=unknown_ver
+            )
+        )
         assert unknown_uname.rhel_release == ["-1", "-1"]
     for known_ver in known_list:
-        known_uname = uname.Uname.from_uname_str("Linux hostname {version} #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux".format(version=known_ver['version']))
+        known_uname = uname.Uname.from_uname_str(
+            "Linux hostname {version} #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux".format(
+                version=known_ver['version']
+            )
+        )
         assert known_uname.rhel_release == known_ver['rhel_release']
 
 
@@ -491,7 +528,9 @@ def test_uname_release_length_comparisons():
 
 
 def test_docker_uname():
-    u = uname.Uname.from_uname_str("Linux 06a04d0354dc 4.0.3-boot2docker #1 SMP Wed May 13 20:54:49 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux")
+    u = uname.Uname.from_uname_str(
+        "Linux 06a04d0354dc 4.0.3-boot2docker #1 SMP Wed May 13 20:54:49 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux"
+    )
     assert "boot2docker" == u.release
 
 
