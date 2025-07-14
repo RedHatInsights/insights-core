@@ -1118,21 +1118,38 @@ class InsightsConnection(object):
                             "\n# insights-client --register" % generate_machine_id())
 
         if not os.path.exists("/var/lib/insights"):
-            os.makedirs("/var/lib/insights", mode=0o755)
+            os.makedirs("/var/lib/insights", mode=0o750)
 
+        host_id = host_details["results"][0]["id"]
         with open("/var/lib/insights/host-details.json", mode="w+b") as f:
             f.write(res.content)
             logger.debug("Wrote \"/var/lib/insights/host-details.json\"")
 
-        host_id = host_details["results"][0]["id"]
-        url = self.base_url + "/insights/v1/system/%s/reports/" % host_id
+        if self.config.legacy_upload:
+            url = self.base_url + "/v1/system/%s" % host_id
+        else:
+            url = self.base_url + "/insights/v1/system/%s" % host_id
         res = self.get(url)
         if res.status_code not in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
             return None
 
-        with open("/var/lib/insights/insights-details.json", mode="w+b") as f:
-            f.write(res.content)
-            logger.debug("Wrote \"/var/lib/insights/insights-details.json\"")
+        return json.loads(res.content)
+
+    def get_latest_advisor_report(self):
+        '''
+            Retrieve the latest advisor report
+        '''
+        results = self._fetch_system_by_machine_id()
+        if not results:
+            return None
+
+        if self.config.legacy_upload:
+            url = self.base_url + "/platform/insights/v1/system/%s/reports/" % results['id']
+        else:
+            url = self.base_url + "/insights/v1/system/%s/reports/" % results['id']
+        res = self.get(url)
+        if res.status_code not in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
+            return None
 
         return json.loads(res.content)
 
