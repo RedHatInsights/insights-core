@@ -219,7 +219,12 @@ plugins:
       enabled: true
 
     # needed for the 'fstab_mounted.dirs' to the 'ls_lan' spec
+    # needed for the 'fstab_mounted.devices' to the 'ls_lH_files' spec
     - name: insights.parsers.fstab.FSTab
+      enabled: true
+
+    # needed for the 'pvs.devices' to the 'ls_lH_files' spec
+    - name: insights.parsers.lvm.Pvs
       enabled: true
 """.strip()
 

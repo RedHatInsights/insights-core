@@ -431,7 +431,7 @@ class LSlHFiles(CommandParser, dict):
     def parse_content(self, content):
         self.error_lines = []
         for line in content:
-            if "/bin/ls: cannot access" in line and "No such file or directory" in line:
+            if "ls: cannot access" in line and "No such file or directory" in line:
                 self.error_lines.append(line)
                 continue
             try:
