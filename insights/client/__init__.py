@@ -546,21 +546,17 @@ class InsightsClient(object):
         if content is None:
             raise Exception("Error: failed to download advisor report.")
 
+    @_net
     def show_results(self):
         '''
         Show insights about this machine
         '''
-        try:
-            with open("/var/lib/insights/insights-details.json", mode="r+b") as f:
-                insights_data = json.load(f)
-            print(json.dumps(insights_data, indent=1))
-        except IOError as e:
-            if e.errno == errno.ENOENT:
-                raise Exception("Error: no report found. "
-                                "Check the results to update the report cache: %s"
-                                "\n# insights-client --check-results" % e)
-            else:
-                raise e
+        content = self.connection.get_latest_advisor_report()
+        if content is None:
+            raise Exception("Could not get latest advisor report.\n"
+                            "This host is not registered. Use --register to register this host:\n"
+                            "# insights-client --register")
+        print(json.dumps(content, indent=1))
 
     def show_inventory_deep_link(self):
         """
