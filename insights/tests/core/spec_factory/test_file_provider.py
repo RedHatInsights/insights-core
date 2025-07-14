@@ -32,7 +32,8 @@ def sample_directory(tmpdir_factory):
     create_file(SAMPLE_FILE)
     create_directory("sample/root")
     create_file("sample/root/access_denied.txt")
-    os.chmod(os.path.join(root, "sample/root/access_denied.txt"), 0)
+    os.chmod(os.path.join(root, "sample/root/access_denied.txt"), 0o000)
+    create_file("sample/root.txt")
     return root
 
 
@@ -48,7 +49,7 @@ def test_repr(sample_directory):
 
 
 @pytest.mark.skipif(
-    # GitHub workflows run Python 2.7 and 3.6 tests in containers, because these old Python
+    # GitHub workflows run Python 2.7 and 3.6 tests in containers because these old Python
     # versions are not available in GitHub-hosted runners anymore. The tests are executed as root.
     os.getuid() == 0,
     reason="Test must not be run as root. Root ignores file mode bits."
@@ -59,7 +60,11 @@ def test_repr(sample_directory):
         ("access_denied.txt", ContentException, "Cannot access"),
         ("no_such_file.txt", ContentException, "does not exist"),
         # file outside root that exists
-        ("../../sample_file.txt", Exception, "Relative path points outside the root"),
+        ("../../sample_file.txt", ValueError, "Relative path points outside the root"),
+        # file outside root that does not exist
+        ("../no_such_file.txt", ValueError, "Relative path points outside the root"),
+        # file outside root where root path is a prefix of the file path string-wise
+        ("../root.txt", ValueError, "Relative path points outside the root"),
     ]
 )
 def test_validate(sample_directory, relpath, exception_type, match):
