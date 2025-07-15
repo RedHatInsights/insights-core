@@ -270,6 +270,11 @@ def test_multiple_directories():
     assert obj.perms_group == 'r--'
     assert obj.perms_other == 'r--'
     assert obj.size == 46
+    assert dirs.error_lines == [
+        "/bin/ls: cannot access /boot/grub/grub.conf: No such file or directory",
+        "/bin/ls: cannot access fstab_mounted.devices: No such file or directory",
+        "/bin/ls: cannot access pvs.devices: No such file or directory"
+    ]
 
     assert '/dev/vda1' in dirs
     obj2 = dirs['/dev/vda1']
