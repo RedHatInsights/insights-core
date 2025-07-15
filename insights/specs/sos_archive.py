@@ -57,6 +57,7 @@ class SosSpecs(Specs):
     cpe = simple_file("/etc/system-release-cpe")
     cpu_smt_control = simple_file("sys/devices/system/cpu/smt/control")
     cpupower_frequency_info = simple_file("sos_commands/processor/cpupower_frequency-info")
+    crictl_ps = simple_file("sos_commands/crio/crictl_ps")
     crictl_logs = glob_file(["sos_commands/crio/containers/crictl_logs_-t*", "sos_commands/crio/containers/logs/crictl_logs_-t*"])
     crio_conf = glob_file([r"etc/crio/crio.conf", r"etc/crio/crio.conf.d/*"])
     cups_files_conf = simple_file("/etc/cups/cups-files.conf")
