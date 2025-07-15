@@ -191,6 +191,7 @@ plugins:
       enabled: true
 
     # needed for specs: luks_data_sources, smartctl_health spec
+    # needed for the 'fstab_mounted.devices' to the 'ls_lH_files' spec
     - name: insights.parsers.blkid.BlockIDInfo
       enabled: true
     - name: insights.components.cryptsetup.HasCryptsetupWithTokens
