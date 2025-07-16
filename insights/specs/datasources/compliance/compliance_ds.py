@@ -105,6 +105,7 @@ def os_version(broker):
         return os_release.split('.')
     sys.exit(constants.sig_kill_bad)
 
+
 @datasource(
     HostContext,
     [OsRelease, RedhatRelease]
@@ -306,30 +307,27 @@ def compliance_unassign(broker):
 
 @datasource(os_version_advisor_rule, package_check_advisor_rule, HostContext, timeout=0)
 def compliance_advisor_rule_enabled(broker):
-    print ("2222222222222222222")
     try:
         insights_config = broker.get('client_config')
-
         compliance = ComplianceClient(
             os_version=broker[os_version_advisor_rule], ssg_version=broker[package_check_advisor_rule], config=insights_config
         )
-
+        compliance.config.base_url = compliance.config.base_url + "/platform"
         policies = compliance.get_system_policies()
-        print ("8080808080080")
-        print (policies)
         if not policies:
             logger.error(
                 "System is not associated with any policies. Assign policies using the Compliance web UI.\n"
             )
-            sys.exit(constants.sig_kill_bad)
-
+            raise SkipComponent
+        tailoring_files = []
         for policy in policies:
             tailoring_file = compliance.download_tailoring_file(policy)
-            print ("4040400440")
-            print (tailoring_file)
+            if tailoring_file:
+                tailoring_files.append(tailoring_file)
+        return policies, tailoring_files
 
     except Exception as err:
         err_msg = "Unexpected exception in compliance: {0}".format(str(err))
         logger.error(err_msg)
         logger.debug(format_exc())
-        sys.exit(constants.sig_kill_bad)
+        raise SkipComponent
