@@ -17,7 +17,8 @@ class Specs(SpecSet):
     compliance_policies = RegistryPoint()
     compliance_assign = RegistryPoint()
     compliance_unassign = RegistryPoint()
-    compliance_advisor_rule_enabled = RegistryPoint()
+    compliance_advisor_rule_enabled_policies = RegistryPoint()
+    compliance_advisor_rule_enabled_tailoring_policies = RegistryPoint()
     malware_detection = RegistryPoint()
 
     # Regular collection specs
