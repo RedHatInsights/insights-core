@@ -15,6 +15,7 @@ import os
 import pkgutil
 import sys
 import yaml
+import json
 
 from tempfile import NamedTemporaryFile
 from traceback import format_exc
@@ -108,6 +109,21 @@ def os_version(broker):
 
 @datasource(
     HostContext,
+    [OsRelease, RedhatRelease]
+)
+def os_version_advisor_rule(broker):
+    os_release = None
+    if OsRelease in broker:
+        os_release = broker[OsRelease].get("VERSION_ID")
+    if not os_release and RedhatRelease in broker:
+        os_release = broker[RedhatRelease].version
+    if os_release:
+        return os_release.split('.')
+    sys.exit(constants.sig_kill_bad)
+
+
+@datasource(
+    HostContext,
     InstalledRpms,
     [
         compliance_assign_enabled,
@@ -117,6 +133,23 @@ def os_version(broker):
     ],
 )
 def package_check(broker):
+    rpms = broker[InstalledRpms]
+    missed = [rpm for rpm in REQUIRED_PACKAGES if rpm not in rpms]
+    if missed:
+        msg = 'Missing required packages for compliance scanning. Please ensure the following packages are installed: {0}\n'.format(
+            ', '.join(missed)
+        )
+        logger.error(msg)
+        sys.exit(constants.sig_kill_bad)
+
+    return rpms.newest(SSG_PACKAGE).version
+
+
+@datasource(
+    HostContext,
+    InstalledRpms
+)
+def package_check_advisor_rule(broker):
     rpms = broker[InstalledRpms]
     missed = [rpm for rpm in REQUIRED_PACKAGES if rpm not in rpms]
     if missed:
@@ -271,3 +304,45 @@ def compliance_unassign(broker):
         logger.error(err_msg)
         logger.debug(format_exc())
         sys.exit(constants.sig_kill_bad)
+
+
+@datasource(os_version_advisor_rule, package_check_advisor_rule, HostContext, timeout=0)
+def compliance_advisor_rule_enabled(broker):
+    try:
+        datasources = []
+        insights_config = broker.get('client_config')
+        compliance = ComplianceClient(
+            os_version=broker[os_version_advisor_rule], ssg_version=broker[package_check_advisor_rule], config=insights_config
+        )
+        compliance.config.base_url = compliance.config.base_url + "/platform"
+        policies = compliance.get_system_policies()
+        if not policies:
+            logger.error(
+                "System is not associated with any policies. Assign policies using the Compliance web UI.\n"
+            )
+            raise SkipComponent
+        datasources.append(
+            DatasourceProvider(
+                    content=json.dumps(policies),
+                    relative_path='insights_datasources/compliance_enabled_policies',
+            )
+        )
+        for policy in policies:
+            tailoring_file = compliance.download_tailoring_file(policy)
+            if tailoring_file:
+                with open(tailoring_file, 'r') as f:
+                    data = f.read()
+                datasources.append(
+                    DatasourceProvider(
+                        content=data,
+                        relative_path='insights_datasources/' + tailoring_file.split("/")[-1],
+                    )
+                )
+                os.remove(tailoring_file)
+        return datasources
+
+    except Exception as err:
+        err_msg = "Unexpected exception in compliance: {0}".format(str(err))
+        logger.error(err_msg)
+        logger.debug(format_exc())
+        raise SkipComponent
