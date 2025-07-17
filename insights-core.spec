@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.6.1
+Version:        3.6.2
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jul 17 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.2-1
+- fix: add missed optional deps for ls datasources (#4495)
+  (xiangceliu@redhat.com)
+- feat: Add error_lines to LSlHFiles parser (#4494) (jiazhang@redhat.com)
+- fix: discard distutils (LooseVersion) in version comparison (#4490)
+  (xiangceliu@redhat.com)
+- fix: endless loop caused by Mount.get_dir()  (#4489) (jiazhang@redhat.com)
+- chore: Add ceph new versions 2025_0701 (#4488) (jiazhang@redhat.com)
+- feat(client): Get list of reports for system in more efficient way (#4459)
+  (pkoprda@redhat.com)
+- feat(tests): create 8 empty __init__.py files (#4492) (pschrimp@redhat.com)
+
 * Tue Jul 01 2025 Unknown name 3.6.1-1
 - chore: postpone warning for 'obfuscate' options (#4487)
   (xiangceliu@redhat.com)

@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.2) (2025-07-17)
+
+- fix: add missed optional deps for ls datasources ([PR 4495](https://github.com/RedHatInsights/insights-core/pull/4495))
+- feat: Add error_lines to LSlHFiles parser ([PR 4494](https://github.com/RedHatInsights/insights-core/pull/4494))
+- fix: discard distutils (LooseVersion) in version comparison ([PR 4490](https://github.com/RedHatInsights/insights-core/pull/4490))
+- fix: endless loop caused by Mount.get_dir()  ([PR 4489](https://github.com/RedHatInsights/insights-core/pull/4489))
+- chore: Add ceph new versions 2025_0701 ([PR 4488](https://github.com/RedHatInsights/insights-core/pull/4488))
+- feat(client): Get list of reports for system in more efficient way ([PR 4459](https://github.com/RedHatInsights/insights-core/pull/4459))
+- feat(tests): create 8 empty __init__.py files ([PR 4492](https://github.com/RedHatInsights/insights-core/pull/4492))
+
 # [insights-core-3.6.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.1) (2025-07-01)
 
 - chore: postpone warning for 'obfuscate' options ([PR 4487](https://github.com/RedHatInsights/insights-core/pull/4487))
