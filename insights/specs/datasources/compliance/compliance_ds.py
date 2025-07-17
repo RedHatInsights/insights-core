@@ -15,6 +15,7 @@ import os
 import pkgutil
 import sys
 import yaml
+import json
 
 from tempfile import NamedTemporaryFile
 from traceback import format_exc
@@ -308,6 +309,7 @@ def compliance_unassign(broker):
 @datasource(os_version_advisor_rule, package_check_advisor_rule, HostContext, timeout=0)
 def compliance_advisor_rule_enabled(broker):
     try:
+        datasources = []
         insights_config = broker.get('client_config')
         compliance = ComplianceClient(
             os_version=broker[os_version_advisor_rule], ssg_version=broker[package_check_advisor_rule], config=insights_config
@@ -319,12 +321,25 @@ def compliance_advisor_rule_enabled(broker):
                 "System is not associated with any policies. Assign policies using the Compliance web UI.\n"
             )
             raise SkipComponent
-        tailoring_files = []
+        datasources.append(
+            DatasourceProvider(
+                    content=json.dumps(policies),
+                    relative_path='insights_datasources/compliance_enabled_policies',
+            )
+        )
         for policy in policies:
             tailoring_file = compliance.download_tailoring_file(policy)
             if tailoring_file:
-                tailoring_files.append(tailoring_file)
-        return policies, tailoring_files
+                with open(tailoring_file, 'r') as f:
+                    data = f.read()
+                datasources.append(
+                    DatasourceProvider(
+                        content=data,
+                        relative_path='insights_datasources/' + tailoring_file.split("/")[-1],
+                    )
+                )
+                os.remove(tailoring_file)
+        return datasources
 
     except Exception as err:
         err_msg = "Unexpected exception in compliance: {0}".format(str(err))
