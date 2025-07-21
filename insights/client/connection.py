@@ -233,13 +233,14 @@ class InsightsConnection(object):
         """
         Generates and returns a string suitable for use as a request user-agent
         """
-        import pkg_resources
-        core_version = "insights-core"
-        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(core_version))
-        if pkg is not None:
-            core_version = "%s %s" % (pkg.project_name, pkg.version)
-        else:
+        import importlib.metadata
+
+        try:
+            pkg = importlib.metadata.distribution("insights-core")
+        except ModuleNotFoundError:
             core_version = "Core %s" % package_info["VERSION"]
+        else:
+            core_version = "%s %s" % (pkg.name, pkg.version)
 
         try:
             from insights_client import constants as insights_client_constants
@@ -253,10 +254,12 @@ class InsightsConnection(object):
         else:
             parent_process = "unknown"
 
-        requests_version = None
-        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse("requests"))
-        if pkg is not None:
-            requests_version = "%s %s" % (pkg.project_name, pkg.version)
+        try:
+            pkg = importlib.metadata.distribution("requests")
+        except ModuleNotFoundError:
+            requests_version = None
+        else:
+            requests_version = "%s %s" % (pkg.name, pkg.version)
 
         python_version = "%s %s" % (platform.python_implementation(), platform.python_version())
 
