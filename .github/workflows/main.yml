@@ -32,12 +32,11 @@ jobs:
         pip install -e .[testing]
         pytest --cov --cov-branch --cov-report=
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         verbose: true
         flags: unittests
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        token: ${{ secrets.CODECOV_TOKEN }}
 
   python36-test:
     runs-on: ubuntu-latest
