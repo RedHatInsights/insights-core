@@ -18,6 +18,7 @@ from collections import defaultdict
 from insights import ContainerParser, parser, CommandParser
 from insights.core.exceptions import SkipComponent
 from insights.specs import Specs
+from insights.util import deprecated
 from insights.util import rsplit
 from insights.util.rpm_vercmp import rpm_version_compare
 
@@ -276,22 +277,27 @@ class InstalledRpms(CommandParser, RpmList):
 p = re.compile(r"(\d+|[a-z]+|\.|-|_)")
 
 
-def _int_or_str(c):
-    try:
-        return int(c)
-    except ValueError:
-        return c
-
-
-def vcmp(s):
-    return [_int_or_str(c) for c in p.split(s) if c and c not in (".", "_", "-")]
-
-
 def pad_version(left, right):
-    """Returns two sequences of the same length so that they can be compared.
+    """
+    .. warning::
+        This function is deprecated and will be removed from 3.8.0.
+
+    Returns two sequences of the same length so that they can be compared.
     The shorter of the two arguments is lengthened by inserting extra zeros
     before non-integer components.  The algorithm attempts to align character
-    components."""
+    components.
+    """
+    deprecated(pad_version, "Please use rpm.labelCompare.", "3.8.0")
+
+    def _int_or_str(c):
+        try:
+            return int(c)
+        except ValueError:
+            return c
+
+    def vcmp(s):
+        return [_int_or_str(c) for c in p.split(s) if c and c not in (".", "_", "-")]
+
     pair = vcmp(left), vcmp(right)
 
     mn, mx = min(pair, key=len), max(pair, key=len)
