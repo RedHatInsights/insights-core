@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 subscription-manager commands
 =============================
@@ -38,6 +39,8 @@ add_filter(
 def _local_kv_split(lines):
     ret = dict()
     for line in lines:
+        # handle full-width colon
+        line = line.replace('：', ': ')
         if ': ' in line:
             key, val = [_l.strip() for _l in line.split(': ', 1)]
             ret[key] = val
@@ -53,7 +56,7 @@ class SubscriptionManagerID(CommandParser, dict):
 
     Example output::
 
-        system identity: 6655c27c-f561-4c99-a23f-f53e5a1ef311
+        system identity: 6655c27c-f561-4c99-a23f-111111111111
         name: rhel7.localdomain
         org name: 1234567
         org ID: 1234567
@@ -61,11 +64,11 @@ class SubscriptionManagerID(CommandParser, dict):
     Examples::
         >>> type(subman_id)
         <class 'insights.parsers.subscription_manager.SubscriptionManagerID'>
-        >>> subman_id.identity == '6655c27c-f561-4c99-a23f-f53e5a1ef311'
+        >>> subman_id.identity == '6655c27c-f561-4c99-a23f-111111111111'
         True
         >>> subman_id.get('org ID') == '1234567'
         True
-        >>> subman_id.uuid == '6655c27c-f561-4c99-a23f-f53e5a1ef311'
+        >>> subman_id.uuid == '6655c27c-f561-4c99-a23f-111111111111'
         True
     """
 
@@ -74,14 +77,47 @@ class SubscriptionManagerID(CommandParser, dict):
 
     @property
     def identity(self):
-        """Returns the value of 'system identity'."""
-        return self.get('system identity')
+        """
+        Returns the value of 'system identity'.
+        Multiple language support is from:
+        - https://github.com/candlepin/subscription-manager/tree/main/po
+        """
+        SYSID_MULT_LANG = [
+            'system identity',  # en first
+            'identidad de sistema',
+            'identidade do sistema',
+            'identità del sistema',
+            'identité du système',
+            'Systemidentität',
+            'идентификация системы',
+            'तंत्र पहचान',
+            'प्रणाली ओळख',
+            'চিস্টেম পৰিচয়',
+            'সিস্টেম পরিচয়',
+            'ਸਿਸਟਮ ਸ਼ਨਾਖਤ',
+            'સિસ્ટમ ઓળખ',
+            'ତନ୍ତ୍ର ପରିଚୟ',
+            'கணினி அடையாளம்',
+            'వ్యవస్థ గుర్తింపు',
+            'ವ್ಯವಸ್ಥೆಯ ಗುರುತು',
+            'സിസ്റ്റം ഐഡന്റിറ്റി',
+            'სისტემის იდენტიფიკატორი',
+            'システム ID',
+            '系統身份',
+            '系统身份',
+            '시스템 ID',
+        ]
+        for name in SYSID_MULT_LANG:
+            if name in self:
+                return self[name]
 
     @property
     def uuid(self):
-        """Returns the value of 'system identity'."""
-        if 'system identity' in self:
-            return str(uuid.UUID(self.get('system identity')))
+        """
+        Returns the UUID of 'system identity' in standard format (32 digits separated by hyphens).
+        """
+        if self.identity:
+            return str(uuid.UUID(self.identity))
 
 
 @parser(Specs.subscription_manager_facts)
