@@ -89,12 +89,12 @@ def compliance_unassign_enabled(broker):
 @datasource(
     HostContext,
     [OsRelease, RedhatRelease],
-    [
+    optional=[
         compliance_assign_enabled,
         compliance_enabled,
         compliance_policies_enabled,
         compliance_unassign_enabled,
-    ],
+    ]
 )
 def os_version(broker):
     os_release = None
@@ -104,33 +104,22 @@ def os_version(broker):
         os_release = broker[RedhatRelease].version
     if os_release:
         return os_release.split('.')
-    sys.exit(constants.sig_kill_bad)
-
-
-@datasource(
-    HostContext,
-    [OsRelease, RedhatRelease]
-)
-def os_version_advisor_rule(broker):
-    os_release = None
-    if OsRelease in broker:
-        os_release = broker[OsRelease].get("VERSION_ID")
-    if not os_release and RedhatRelease in broker:
-        os_release = broker[RedhatRelease].version
-    if os_release:
-        return os_release.split('.')
-    sys.exit(constants.sig_kill_bad)
+    if any([compliance_assign_enabled in broker, compliance_enabled in broker,
+            compliance_policies_enabled in broker, compliance_unassign_enabled in broker]):
+        sys.exit(constants.sig_kill_bad)
+    else:
+        raise SkipComponent
 
 
 @datasource(
     HostContext,
     InstalledRpms,
-    [
+    optional=[
         compliance_assign_enabled,
         compliance_enabled,
         compliance_policies_enabled,
         compliance_unassign_enabled,
-    ],
+    ]
 )
 def package_check(broker):
     rpms = broker[InstalledRpms]
@@ -140,24 +129,11 @@ def package_check(broker):
             ', '.join(missed)
         )
         logger.error(msg)
-        sys.exit(constants.sig_kill_bad)
-
-    return rpms.newest(SSG_PACKAGE).version
-
-
-@datasource(
-    HostContext,
-    InstalledRpms
-)
-def package_check_advisor_rule(broker):
-    rpms = broker[InstalledRpms]
-    missed = [rpm for rpm in REQUIRED_PACKAGES if rpm not in rpms]
-    if missed:
-        msg = 'Missing required packages for compliance scanning. Please ensure the following packages are installed: {0}\n'.format(
-            ', '.join(missed)
-        )
-        logger.error(msg)
-        sys.exit(constants.sig_kill_bad)
+        if any([compliance_assign_enabled in broker, compliance_enabled in broker,
+                compliance_policies_enabled in broker, compliance_unassign_enabled in broker]):
+            sys.exit(constants.sig_kill_bad)
+        else:
+            raise SkipComponent
 
     return rpms.newest(SSG_PACKAGE).version
 
@@ -306,40 +282,41 @@ def compliance_unassign(broker):
         sys.exit(constants.sig_kill_bad)
 
 
-@datasource(os_version_advisor_rule, package_check_advisor_rule, HostContext, timeout=0)
+@datasource(os_version, package_check, HostContext, timeout=0)
 def compliance_advisor_rule_enabled(broker):
     try:
-        datasources = []
+        result = {}
         insights_config = broker.get('client_config')
         compliance = ComplianceClient(
-            os_version=broker[os_version_advisor_rule], ssg_version=broker[package_check_advisor_rule], config=insights_config
+            os_version=broker[os_version], ssg_version=broker[package_check], config=insights_config
         )
-        compliance.config.base_url = compliance.config.base_url + "/platform"
         policies = compliance.get_system_policies()
         if not policies:
             logger.error(
                 "System is not associated with any policies. Assign policies using the Compliance web UI.\n"
             )
             raise SkipComponent
-        datasources.append(
-            DatasourceProvider(
-                    content=json.dumps(policies),
-                    relative_path='insights_datasources/compliance_enabled_policies',
-            )
-        )
+        result['enabled_policies'] = policies
+        result['tailoring_policies'] = []
         for policy in policies:
-            tailoring_file = compliance.download_tailoring_file(policy)
-            if tailoring_file:
-                with open(tailoring_file, 'r') as f:
-                    data = f.read()
-                datasources.append(
-                    DatasourceProvider(
-                        content=data,
-                        relative_path='insights_datasources/' + tailoring_file.split("/")[-1],
-                    )
-                )
-                os.remove(tailoring_file)
-        return datasources
+            tailoring_content = compliance.fetch_tailoring_content(policy)
+            if tailoring_content:
+                tailoring_policy = {}
+                tailoring_policy['ref_id'] = policy['ref_id']
+                tailoring_policy['check_items'] = []
+                xml_root = ET.fromstring(tailoring_content)
+                pre_tag = xml_root.tag.split("Tailoring")[0]
+                profile_select_tag = pre_tag + 'Profile/' + pre_tag + 'select'
+                profile_select_info = xml_root.findall(profile_select_tag)
+                for item in profile_select_info:
+                    tailoring_policy['check_items'].append(item.attrib)
+                result['tailoring_policies'].append(tailoring_policy)
+        if not result['tailoring_policies']:
+            del result['tailoring_policies']
+        return DatasourceProvider(
+            content=json.dumps(result),
+            relative_path='insights_datasources/compliance_enabled_policies'
+        )
 
     except Exception as err:
         err_msg = "Unexpected exception in compliance: {0}".format(str(err))
