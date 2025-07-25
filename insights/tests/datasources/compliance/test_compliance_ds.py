@@ -17,6 +17,7 @@ from insights.specs.datasources.compliance.compliance_ds import (
     os_version,
     package_check,
     compliance,
+    compliance_enabled,
     compliance_policies,
     compliance_assign,
     compliance_unassign,
@@ -75,7 +76,7 @@ def test_os_version():
     result = os_version(broker)
     assert result == ['8', '10']
 
-    broker = {OsRelease: os_ng, RedhatRelease: rh_ng}
+    broker = {OsRelease: os_ng, RedhatRelease: rh_ng, compliance_enabled: True}
     with raises(SystemExit):
         os_version(broker)
 
