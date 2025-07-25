@@ -77,6 +77,25 @@ def _api_request_failed(exception, message='The Insights API could not be reache
         logger.error(message)
 
 
+def _pkg_name_version(name):
+    try:
+        import importlib.metadata
+    except ImportError:
+        # Python < 3.8
+        import pkg_resources
+        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(name))
+        if pkg is not None:
+            return pkg.project_name, pkg.version
+    else:
+        try:
+            pkg = importlib.metadata.distribution(name)
+            return pkg.name, pkg.version
+        except ModuleNotFoundError:
+            pass
+    return None, None
+
+
+
 class InsightsConnection(object):
 
     """
@@ -233,14 +252,11 @@ class InsightsConnection(object):
         """
         Generates and returns a string suitable for use as a request user-agent
         """
-        import importlib.metadata
-
-        try:
-            pkg = importlib.metadata.distribution("insights-core")
-        except ModuleNotFoundError:
-            core_version = "Core %s" % package_info["VERSION"]
+        pkg, ver = _pkg_name_version("insights-core")
+        if pkg is not None:
+            core_version = "%s %s" % (pkg, ver)
         else:
-            core_version = "%s %s" % (pkg.name, pkg.version)
+            core_version = "Core %s" % package_info["VERSION"]
 
         try:
             from insights_client import constants as insights_client_constants
@@ -254,12 +270,10 @@ class InsightsConnection(object):
         else:
             parent_process = "unknown"
 
-        try:
-            pkg = importlib.metadata.distribution("requests")
-        except ModuleNotFoundError:
-            requests_version = None
-        else:
-            requests_version = "%s %s" % (pkg.name, pkg.version)
+        requests_version = None
+        pkg, ver = _pkg_name_version("requests")
+        if pkg is not None:
+            requests_version = "%s %s" % (pkg, ver)
 
         python_version = "%s %s" % (platform.python_implementation(), platform.python_version())
 

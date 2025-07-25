@@ -31,6 +31,7 @@ dependencies = [
     "pyyaml",
     "redis",
     "requests",
+    "setuptools; python_version < '3.8'", # for pkg_resources
     "six",
 ]
 
