@@ -77,6 +77,25 @@ def _api_request_failed(exception, message='The Insights API could not be reache
         logger.error(message)
 
 
+def _pkg_name_version(name):
+    try:
+        import importlib.metadata
+    except ImportError:
+        # Python < 3.8
+        import pkg_resources
+        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(name))
+        if pkg is not None:
+            return pkg.project_name, pkg.version
+    else:
+        try:
+            pkg = importlib.metadata.distribution(name)
+            return pkg.name, pkg.version
+        except ModuleNotFoundError:
+            pass
+    return None, None
+
+
+
 class InsightsConnection(object):
 
     """
@@ -233,11 +252,9 @@ class InsightsConnection(object):
         """
         Generates and returns a string suitable for use as a request user-agent
         """
-        import pkg_resources
-        core_version = "insights-core"
-        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(core_version))
+        pkg, ver = _pkg_name_version("insights-core")
         if pkg is not None:
-            core_version = "%s %s" % (pkg.project_name, pkg.version)
+            core_version = "%s %s" % (pkg, ver)
         else:
             core_version = "Core %s" % package_info["VERSION"]
 
@@ -254,9 +271,9 @@ class InsightsConnection(object):
             parent_process = "unknown"
 
         requests_version = None
-        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse("requests"))
+        pkg, ver = _pkg_name_version("requests")
         if pkg is not None:
-            requests_version = "%s %s" % (pkg.project_name, pkg.version)
+            requests_version = "%s %s" % (pkg, ver)
 
         python_version = "%s %s" % (platform.python_implementation(), platform.python_version())
 
