@@ -862,17 +862,17 @@ class DefaultSpecs(Specs):
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     sssd_conf_d = glob_file("/etc/sssd/conf.d/*.conf")
     subscription_manager_facts = simple_command(
-        "/usr/sbin/subscription-manager facts", override_env={"LC_ALL": "C.UTF-8"}
+        "/usr/sbin/subscription-manager facts", override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"}
     )
     subscription_manager_id = simple_command(
         "/usr/sbin/subscription-manager identity",  # use "/usr/sbin" here, BZ#1690529
-        override_env={"LC_ALL": "C.UTF-8"},
+        override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"},
     )
     subscription_manager_installed_product_ids = simple_command(
         r"/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;"
     )
     subscription_manager_status = simple_command(
-        "/usr/sbin/subscription-manager status", override_env={"LC_ALL": "C.UTF-8"}
+        "/usr/sbin/subscription-manager status", override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"}
     )
     sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
     swift_proxy_server_conf = first_file(
