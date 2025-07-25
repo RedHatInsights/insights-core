@@ -474,3 +474,26 @@ def test_compliance_advisor_rule_enabled_policies_no_enabled_policy(config, poli
     broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
     with raises(SkipComponent):
         compliance_advisor_rule_enabled(broker)
+
+
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_content",
+    return_value=None,
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=False,
+)
+def test_compliance_advisor_rule_enabled_policies_no_tailoring_policy(config, policies, tailoring_content):
+    broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
+    ret = compliance_advisor_rule_enabled(broker)
+    assert ret.content == ['{"enabled_policies": [{"ref_id": "foo", "id": "def76af0-9b6f-4b37-ac6c-db61354acbb5"}]}']
+    assert ret.relative_path == "insights_datasources/compliance_enabled_policies"
