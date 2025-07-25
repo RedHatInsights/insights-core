@@ -1101,6 +1101,11 @@ class InsightsConnection(object):
         '''
             Retrieve advisor report
         '''
+        if not os.path.isfile(constants.registered_files[0]):
+            raise Exception("Could not retrieve advisor report.\n"
+                            "This host is not registered. Use --register to register this host:\n"
+                            "# insights-client --register")
+
         url = self.inventory_url + "/hosts?insights_id=%s" % generate_machine_id()
         res = self.get(url)
         if res.status_code not in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
