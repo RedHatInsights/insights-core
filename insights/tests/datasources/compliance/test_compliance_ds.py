@@ -456,3 +456,21 @@ def test_compliance_advisor_rule_enabled_policies(config, policies, tailoring_co
     ret = compliance_advisor_rule_enabled(broker)
     assert ret.content == ['{"enabled_policies": [{"ref_id": "foo", "id": "def76af0-9b6f-4b37-ac6c-db61354acbb5"}], "tailoring_policies": [{"ref_id": "foo", "check_items": [{"idref": "xccdf_org.ssgproject.content_rule_bios_disable_usb_boot", "selected": "true"}, {"idref": "xccdf_org.ssgproject.content_rule_ssh_keys_passphrase_protected", "selected": "true"}]}]}']
     assert ret.relative_path == "insights_datasources/compliance_enabled_policies"
+
+
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=None,
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=False,
+)
+def test_compliance_advisor_rule_enabled_policies_no_enabled_policy(config, policies):
+    broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
+    with raises(SkipComponent):
+        compliance_advisor_rule_enabled(broker)
