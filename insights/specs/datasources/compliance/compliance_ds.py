@@ -104,8 +104,8 @@ def os_version(broker):
         os_release = broker[RedhatRelease].version
     if os_release:
         return os_release.split('.')
-    if any([compliance_assign_enabled in broker, compliance_enabled in broker,
-            compliance_policies_enabled in broker, compliance_unassign_enabled in broker]):
+    if any([compliance_assign_enabled, compliance_enabled,
+            compliance_policies_enabled, compliance_unassign_enabled]):
         sys.exit(constants.sig_kill_bad)
     else:
         raise SkipComponent
@@ -129,8 +129,8 @@ def package_check(broker):
             ', '.join(missed)
         )
         logger.error(msg)
-        if any([compliance_assign_enabled in broker, compliance_enabled in broker,
-                compliance_policies_enabled in broker, compliance_unassign_enabled in broker]):
+        if any([compliance_assign_enabled, compliance_enabled,
+                compliance_policies_enabled, compliance_unassign_enabled]):
             sys.exit(constants.sig_kill_bad)
         else:
             raise SkipComponent
