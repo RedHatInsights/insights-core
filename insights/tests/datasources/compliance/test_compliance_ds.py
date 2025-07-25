@@ -9,6 +9,7 @@ except Exception:
 from pytest import raises
 from tempfile import NamedTemporaryFile
 
+from insights.core.exceptions import SkipComponent
 from insights.client.config import InsightsConfig
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.os_release import OsRelease
@@ -80,6 +81,10 @@ def test_os_version():
     with raises(SystemExit):
         os_version(broker)
 
+    broker = {OsRelease: os_ng, RedhatRelease: rh_ng}
+    with raises(SkipComponent):
+        os_version(broker)
+
 
 def test_package_check():
     rpms = InstalledRpms(context_wrap(RPMS_JSON))
@@ -88,8 +93,13 @@ def test_package_check():
     assert result == '0.1.72'
 
     rpms = InstalledRpms(context_wrap(RPMS_JSON_NG))
-    broker = {InstalledRpms: rpms}
+    broker = {InstalledRpms: rpms, compliance_enabled: True}
     with raises(SystemExit):
+        package_check(broker)
+
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_NG))
+    broker = {InstalledRpms: rpms}
+    with raises(SkipComponent):
         package_check(broker)
 
 
