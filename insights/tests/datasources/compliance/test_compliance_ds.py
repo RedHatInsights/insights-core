@@ -20,6 +20,7 @@ from insights.specs.datasources.compliance.compliance_ds import (
     compliance_policies,
     compliance_assign,
     compliance_unassign,
+    compliance_advisor_rule_enabled,
 )
 from insights.tests import context_wrap
 
@@ -418,3 +419,29 @@ def test_policy_link_unassign(policy_link, sys):
     compliance_unassign(broker)
     policy_link.assert_called_with('123abc', 'delete')
     sys.exit.assert_called_with(policy_link.return_value)
+
+
+tailoring_policies_content2 = b'<?xml version="1.0" encoding="UTF-8"?>\n<xccdf:Tailoring xmlns:xccdf="http://checklists.nist.gov/xccdf/1.2" id="xccdf_csfr-compliance_tailoring_default">\n  <xccdf:benchmark id="xccdf_org.ssgproject.content_benchmark_RHEL-8" version="0.1.72" href="ssg-rhel8-ds.xml"/>\n  <xccdf:version time="2025-07-25T02:04:46+00:00">1</xccdf:version>\n  <xccdf:Profile id="xccdf_org.ssgproject.content_profile_cis_server_l1" extends="xccdf_org.ssgproject.content_profile_cis_server_l1">\n    <xccdf:title xmlns:xhtml="http://www.w3.org/1999/xhtml" xml:lang="en-US" override="true">CIS Red Hat Enterprise Linux 8 Benchmark for Level 1 - Server</xccdf:title>\n    <xccdf:description xmlns:xhtml="http://www.w3.org/1999/xhtml" xml:lang="en-US" override="true">This profile defines a baseline that aligns to the "Level 1 - Server"\nconfiguration from the Center for Internet Security\xc2\xae Red Hat Enterprise\nLinux 8 Benchmark\xe2\x84\xa2, v3.0.0, released 2023-10-30.\n\nThis profile includes Center for Internet Security\xc2\xae\nRed Hat Enterprise Linux 8 CIS Benchmarks\xe2\x84\xa2 content.</xccdf:description>\n    <xccdf:select idref="xccdf_org.ssgproject.content_rule_bios_disable_usb_boot" selected="true"/>\n    <xccdf:select idref="xccdf_org.ssgproject.content_rule_ssh_keys_passphrase_protected" selected="true"/>\n    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_sysctl_net_ipv4_conf_default_log_martians_value">1</xccdf:set-value>\n    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_sshd_idle_timeout_value">300</xccdf:set-value>\n  </xccdf:Profile>\n</xccdf:Tailoring>\n'
+
+
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_content",
+    return_value=tailoring_policies_content2,
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=False,
+)
+def test_compliance_advisor_rule_enabled_policies(config, policies, tailoring_content):
+    broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
+    ret = compliance_advisor_rule_enabled(broker)
+    assert ret.content == ['{"enabled_policies": [{"ref_id": "foo", "id": "def76af0-9b6f-4b37-ac6c-db61354acbb5"}], "tailoring_policies": [{"ref_id": "foo", "check_items": [{"idref": "xccdf_org.ssgproject.content_rule_bios_disable_usb_boot", "selected": "true"}, {"idref": "xccdf_org.ssgproject.content_rule_ssh_keys_passphrase_protected", "selected": "true"}]}]}']
+    assert ret.relative_path == "insights_datasources/compliance_enabled_policies"
