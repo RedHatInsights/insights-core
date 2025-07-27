@@ -32,6 +32,7 @@ import logging
 import json
 import os
 import six
+import tempfile
 
 from insights.cleaner.filters import AllowFilter
 from insights.cleaner.hostname import Hostname
@@ -64,7 +65,7 @@ class Cleaner(object):
     """
 
     def __init__(self, config, rm_conf, fqdn=None):
-        self.report_dir = '/tmp'  # FIXME
+        self.report_dir = tempfile.gettempdir()
         self.rhsm_facts_file = getattr(
             config, 'rhsm_facts_file', os.path.join(self.report_dir, 'insights-client.facts')
         )
