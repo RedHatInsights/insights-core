@@ -16,12 +16,13 @@ if [[ "${PYTHON_VERSION%%.*}" != "3" ]]; then
 fi
 
 rm -rf BUILD BUILDROOT RPMS SRPMS insights_core.egg-info
-# RPM is only for collector for now, remove all depedencies for data processing
+# RPM is only for collector
+# - remove depedencies for data processing
 sed -i -e '/cachecontrol/d' -e '/defusedxml/d' -e '/jinja2/d' -e '/lockfile/d' -e '/redis/d' -e '/setuptools;/d' pyproject.toml setup.py
-# Remove unnecessary "Requires" and add new Requires: insights-core-selinux
-sed -i -e 's/with_selinux 0/with_selinux 1/' insights-core.spec
+# - remove entrypoints for data processing
+sed -i -e '/insights =/d' -e '/insights-dupkey/d' -e '/insights-run/d' -e '/insights-inspect/d' -e '/mangle =/d' pyproject.toml setup.py
 cp MANIFEST.in.core MANIFEST.in
 $PYTHON setup.py sdist
-rpmbuild -D "_topdir $PWD" -D "_sourcedir $PWD/dist" -ba insights-core.spec
+rpmbuild -D "with_selinux 1" -D "_topdir $PWD" -D "_sourcedir $PWD/dist" -ba insights-core.spec
 rm -rf dist BUILD BUILDROOT
-git checkout -- insights-core.spec pyproject.toml setup.py MANIFEST.in
+git checkout -- pyproject.toml setup.py MANIFEST.in
