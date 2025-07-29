@@ -760,6 +760,14 @@ class XMLParser(LegacyItemAccess, Parser):
         return self.dom.findall(real_element)
 
 
+class _PatchedSafeLoader(SafeLoader):
+    yaml_implicit_resolvers = SafeLoader.yaml_implicit_resolvers.copy()
+
+    # Patch the SafeLoader to allow ``=`` to be resolved as a normal str.
+    # See https://github.com/yaml/pyyaml/issues/89 for more info.
+    yaml_implicit_resolvers.pop("=")
+
+
 class YAMLParser(Parser, LegacyItemAccess):
     """
     A parser class that reads YAML files.  Base your own parser on this.
@@ -778,9 +786,9 @@ class YAMLParser(Parser, LegacyItemAccess):
             if type(content) is list:
                 ignore_lines = tuple(self.ignore_lines)
                 content = [l for l in content if not l.lstrip().lower().startswith(ignore_lines)]
-                self.data = yaml.load('\n'.join(content), Loader=SafeLoader)
+                self.data = yaml.load('\n'.join(content), Loader=_PatchedSafeLoader)
             else:
-                self.data = yaml.load(content, Loader=SafeLoader)
+                self.data = yaml.load(content, Loader=_PatchedSafeLoader)
             if self.data is None:
                 raise SkipComponent("There is no data")
             if not isinstance(self.data, (dict, list)):
