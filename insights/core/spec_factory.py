@@ -1584,8 +1584,6 @@ def serialize_command_output(obj, root):
     rc = obj.write(dst)
     return {
         "rc": rc,
-        "cmd": obj.cmd,
-        "args": obj.args,
         "save_as": bool(obj.save_as),
         "relative_path": rel,
     }
@@ -1598,8 +1596,6 @@ def deserialize_command_output(_type, data, root, ctx, ds):
     res = SerializedOutputProvider(rel, root=root, ctx=ctx, ds=ds)
 
     res.rc = data["rc"]
-    res.cmd = data["cmd"]
-    res.args = data["args"]
     return res
 
 
@@ -1710,8 +1706,6 @@ def serialize_container_command(obj, root):
     rc = obj.write(dst)
     return {
         "rc": rc,
-        "cmd": obj.cmd,
-        "args": obj.args,
         "save_as": bool(obj.save_as),
         "relative_path": rel,
         "image": obj.image,
@@ -1725,8 +1719,6 @@ def deserialize_container_command(_type, data, root, ctx, ds):
     rel = data["relative_path"]
     res = SerializedOutputProvider(rel, root=root, ctx=ctx, ds=ds)
     res.rc = data["rc"]
-    res.cmd = data["cmd"]
-    res.args = data["args"]
     res.image = data["image"]
     res.engine = data["engine"]
     res.container_id = data["container_id"]
