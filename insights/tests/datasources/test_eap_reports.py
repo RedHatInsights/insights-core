@@ -24,12 +24,21 @@ def sample_directory(scope="module"):
 
 @pytest.fixture
 def sample_directory_w_extra_files(scope="module"):
+    now = datetime.today()
     tmpdir = tempfile.mkdtemp()
-    os.makedirs(tmpdir + "/var/tmp/insights-runtimes/uploads/")
+    f_dir = tmpdir + "/var/tmp/insights-runtimes/uploads/"
+    os.makedirs(f_dir)
     for f in ['file_%s.json' % str(i) for i in range(12)]:
-        fd = open(tmpdir + "/var/tmp/insights-runtimes/uploads/" + f, "w")
+        fd = open(f_dir + f, "w")
         fd.write('{"name":"example_json", "count_number":30}')
         fd.close()
+    # to diff the file time explicitly
+    os.system(
+        'touch -d "{0}" '.format((now - timedelta(minutes=2)).isoformat()) + f_dir + "file_0.json"
+    )
+    os.system(
+        'touch -d "{0}" '.format((now - timedelta(minutes=1)).isoformat()) + f_dir + "file_1.json"
+    )
     yield tmpdir
     shutil.rmtree(tmpdir)
 
