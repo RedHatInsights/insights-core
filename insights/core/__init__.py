@@ -765,7 +765,7 @@ class _PatchedSafeLoader(SafeLoader):
 
     # Patch the SafeLoader to allow ``=`` to be resolved as a normal str.
     # See https://github.com/yaml/pyyaml/issues/89 for more info.
-    yaml_implicit_resolvers.pop("=")
+    yaml_implicit_resolvers.pop("=", None)
 
 
 class YAMLParser(Parser, LegacyItemAccess):
