@@ -45,31 +45,35 @@ def get_running_commands(ps, ctx, commands):
     for cmd in set(p['COMMAND'] for p in ps_cmds):
         try:
             cmd_prefix = cmd.split(None, 1)[0]
-            which = ctx.shell_out("/usr/bin/which {0}".format(cmd_prefix), timeout=DEFAULT_SHELL_TIMEOUT)
+            which = ctx.shell_out(
+                "/usr/bin/which {0}".format(cmd_prefix), timeout=DEFAULT_SHELL_TIMEOUT
+            )
         except Exception:
             continue
         ret.add(which[0]) if which else None
     return sorted(ret)
 
 
-def get_recent_files(target_path, last_modify_hours):
+def get_recent_files(target_path, last_modify_hours=24, latest_count=0):
     """
-    Get all recent updated files or created
+    Get the recent updated or created files, limited to lastest_count files
 
     Arguments:
         target_path (string): target path to search
-        last_modify_hours (int): Specify the recent hours
+        last_modify_hours (int): specify the recent hours
+        latest_count (int): specify the lastest files count with a positive integer
 
     Returns:
-        list: List of files that updated or creates just in last_modify_hours hours.
+        list: files that updated or creates just in last_modify_hours hours
     """
-    result_files = []
+    latest_files = {}
     if os.path.exists(target_path):
+        current_time = time.time()
         for parent_path, _, report_files in os.walk(target_path):
-            current_time = time.time()
             for one_file in report_files:
                 t_full_file = os.path.join(parent_path, one_file)
                 file_time = os.path.getmtime(t_full_file)
                 if (current_time - file_time) // 3600 < last_modify_hours:
-                    result_files.append(t_full_file)
-    return result_files
+                    latest_files[t_full_file] = file_time
+    result_files = sorted(latest_files, key=lambda x: latest_files[x], reverse=True)
+    return result_files[:latest_count] if latest_count > 0 else result_files
