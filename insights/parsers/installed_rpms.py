@@ -10,7 +10,6 @@ ContainerInstalledRpms - command ``rpm -qa`` for containers
 """
 
 import json
-import re
 import six
 
 from collections import defaultdict
@@ -18,6 +17,7 @@ from collections import defaultdict
 from insights import ContainerParser, parser, CommandParser
 from insights.core.exceptions import SkipComponent
 from insights.specs import Specs
+from insights.util import deprecated
 from insights.util import rsplit
 from insights.util.rpm_vercmp import rpm_version_compare
 
@@ -273,25 +273,29 @@ class InstalledRpms(CommandParser, RpmList):
         return any(c in s for s in self.errors for c in _corrupts)
 
 
-p = re.compile(r"(\d+|[a-z]+|\.|-|_)")
-
-
-def _int_or_str(c):
-    try:
-        return int(c)
-    except ValueError:
-        return c
-
-
-def vcmp(s):
-    return [_int_or_str(c) for c in p.split(s) if c and c not in (".", "_", "-")]
-
-
 def pad_version(left, right):
-    """Returns two sequences of the same length so that they can be compared.
+    """
+    .. warning::
+        This function is deprecated and will be removed from 3.8.0.
+
+    Returns two sequences of the same length so that they can be compared.
     The shorter of the two arguments is lengthened by inserting extra zeros
     before non-integer components.  The algorithm attempts to align character
-    components."""
+    components.
+    """
+    def _int_or_str(c):
+        try:
+            return int(c)
+        except ValueError:
+            return c
+
+    def vcmp(s):
+        import re
+        p = re.compile(r"(\d+|[a-z]+|\.|-|_)")
+        return [_int_or_str(c) for c in p.split(s) if c and c not in (".", "_", "-")]
+
+    deprecated(pad_version, "Please use rpm.labelCompare.", "3.8.0")
+
     pair = vcmp(left), vcmp(right)
 
     mn, mx = min(pair, key=len), max(pair, key=len)
