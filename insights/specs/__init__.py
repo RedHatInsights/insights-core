@@ -53,7 +53,7 @@ class Specs(SpecSet):
         multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
     bios_uuid = RegistryPoint()
-    blkid = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    blkid = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     bond = RegistryPoint(multi_output=True)
     bond_dynamic_lb = RegistryPoint(
         multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
@@ -405,6 +405,7 @@ class Specs(SpecSet):
     lru_gen_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     # New `ls` Specs
     ls_files = RegistryPoint()
+    ls_lH_files = RegistryPoint(filterable=True)
     ls_la = RegistryPoint()
     ls_la_dirs = RegistryPoint(filterable=True)
     ls_la_filtered = RegistryPoint(filterable=True)
@@ -423,8 +424,7 @@ class Specs(SpecSet):
     ls_laRZ_dirs = RegistryPoint(filterable=True)
     ls_laZ = RegistryPoint()
     ls_laZ_dirs = RegistryPoint(filterable=True)
-    ls_lH_files = RegistryPoint(filterable=True)
-    # Useful individual `ls` Specs
+    # Useful for SoS
     ls_boot = RegistryPoint()
     ls_dev = RegistryPoint()
     ls_rsyslog_errorfile = RegistryPoint()
@@ -859,8 +859,8 @@ class Specs(SpecSet):
     systemctl_cat_dnsmasq_service = RegistryPoint()
     systemctl_cat_rpcbind_socket = RegistryPoint()
     systemctl_get_default = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    systemctl_list_unit_files = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    systemctl_list_units = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    systemctl_list_unit_files = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
+    systemctl_list_units = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     systemctl_show_all_services = RegistryPoint()
     systemctl_show_all_services_with_limited_properties = RegistryPoint()
     systemctl_show_target = RegistryPoint()
@@ -927,7 +927,7 @@ class Specs(SpecSet):
     x86_ibrs_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     x86_pti_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     x86_retp_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    xfs_info = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    xfs_info = RegistryPoint(multi_output=True, no_obfuscate=['ipv4', 'ipv6', 'mac'])
     xfs_quota_state = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     xinetd_conf = RegistryPoint(multi_output=True)
     yum_conf = RegistryPoint(filterable=True)
