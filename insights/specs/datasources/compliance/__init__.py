@@ -1,3 +1,4 @@
+import copy
 import os
 import six
 import tempfile
@@ -33,22 +34,26 @@ class ComplianceClient:
         self._inventory_id = None
         self.os_major, self.os_minor = os_version if os_version else [None, None]
         self.ssg_version = ssg_version
-        self.config = config
+        config = copy.deepcopy(config)
+        # Do nothing when it's already `legacy_upload=False`
+        if config.legacy_upload:
+            # use legacy_upload=False basic configurations by force
+            config.legacy_upload = False
+            config.base_url = constants.base_url
         self.conn = InsightsConnection(config)
 
-    def download_tailoring_file(self, policy):
+    def fetch_tailoring_content(self, policy):
         if 'os_minor_version' in policy and policy['os_minor_version'] != self.os_minor:
             return None
 
-        # Download tailoring file to pass as argument to run_scan
         logger.debug(
             "Checking if policy {0} is a tailored policy. Starting tailoring file download...".format(
                 policy['ref_id']
             )
         )
         response = self.conn.session.get(
-            "https://{0}/compliance/v2/policies/{1}/tailorings/{2}/tailoring_file".format(
-                self.config.base_url, policy['id'], self.os_minor
+            "{0}/compliance/v2/policies/{1}/tailorings/{2}/tailoring_file".format(
+                self.conn.base_url, policy['id'], self.os_minor
             )
         )
         logger.debug("Response code: {0}".format(response.status_code))
@@ -79,8 +84,13 @@ class ComplianceClient:
             )
             return None
 
+        return response.content
+
+    def download_tailoring_file(self, policy):
+        # Download tailoring file to pass as argument to run_scan
+        content = self.fetch_tailoring_content(policy)
         # Check if the content is empty, and if so, don't create the file at all
-        if not response.content.strip():
+        if content is None or not content.strip():
             logger.debug(
                 "The tailoring file for policy {0} is empty. Skipping file creation.".format(
                     policy['ref_id']
@@ -96,7 +106,7 @@ class ComplianceClient:
         )[1]
 
         with open(tailoring_file_path, mode="w+b") as f:
-            f.write(response.content)
+            f.write(content)
             logger.info(
                 "Saved tailoring file for {0} to {1}".format(policy['ref_id'], tailoring_file_path)
             )
@@ -203,8 +213,8 @@ class ComplianceClient:
             exit(constants.sig_kill_bad)
 
     def assignable_policies(self):
-        url = "https://{0}/compliance/v2/policies?filter=(os_major_version={1} and os_minor_version={2})&limit=100"
-        full_url = url.format(self.config.base_url, self.os_major, self.os_minor)
+        url = "{0}/compliance/v2/policies?filter=(os_major_version={1} and os_minor_version={2})&limit=100"
+        full_url = url.format(self.conn.base_url, self.os_major, self.os_minor)
         logger.debug("Fetching policies with: {0}".format(full_url))
         response = self.conn.session.get(full_url)
         logger.debug("Content of the response {0} - {1}".format(response, response.content))
@@ -228,8 +238,8 @@ class ComplianceClient:
             return constants.sig_kill_bad
 
     def policy_link(self, policy_id, opt):
-        url = "https://{0}/compliance/v2/policies/{1}/systems/{2}"
-        full_url = url.format(self.config.base_url, policy_id, self.inventory_id)
+        url = "{0}/compliance/v2/policies/{1}/systems/{2}"
+        full_url = url.format(self.conn.base_url, policy_id, self.inventory_id)
         logger.debug("Fetching: {0}".format(full_url))
         response = getattr(self.conn.session, opt)(full_url)
         logger.debug("Content of the response {0} - {1}".format(response, response.content))
@@ -240,15 +250,14 @@ class ComplianceClient:
         else:
             logger.error(
                 "Policy ID {0} can not be assigned. "
-                "Refer to the /var/log/insights-client/insights-client.log for more details."
-                .format(policy_id)
+                "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
+                    policy_id
+                )
             )
             return constants.sig_kill_bad
 
     def get_system_policies(self):
-        url = "https://{0}/compliance/v2/systems/{1}/policies".format(
-            self.config.base_url, self.inventory_id
-        )
+        url = "{0}/compliance/v2/systems/{1}/policies".format(self.conn.base_url, self.inventory_id)
         logger.debug("Fetching policies with: {0}".format(url))
         response = self.conn.session.get(url)
         logger.debug("Content of the response {0} - {1}".format(response, response.content))
