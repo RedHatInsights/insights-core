@@ -11,7 +11,7 @@ from insights.specs.datasources.container import running_rhel_containers
 
 class LocalSpecs(Specs):
     """ Local specs used only by nginx container datasources """
-    container_find_etc_opt_conf = container_execute(running_rhel_containers, "find /etc /opt -name '*.conf'")
+    container_find_etc_opt_conf = container_execute(running_rhel_containers, '/usr/bin/bash -c "/usr/bin/command -v /usr/bin/find > /dev/null && /usr/bin/find /etc /opt -name \'*.conf\'"')
 
 
 @datasource(LocalSpecs.container_find_etc_opt_conf, HostContext)
@@ -26,6 +26,7 @@ def nginx_conf(broker):
             # FIXME: refine the path filter
             if 'etc/nginx' in conf_path or 'rh-nginx' in conf_path:
                 ret.append((conf_list.image, conf_list.engine, conf_list.container_id, conf_path))
+
     if ret:
         # Return list of tuple:
         # - (image, <podman|docker>, container_id, conf_path)

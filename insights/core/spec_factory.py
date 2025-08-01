@@ -1462,7 +1462,7 @@ class container_collect(foreach_execute):
                     e, path = e, self.cmd
                 # e       = (<podman|docker>, container_id)
                 # the_cmd = <podman|docker> exec container_id cat path
-                the_cmd = ("/usr/bin/%s exec %s cat " % e) + path
+                the_cmd = ("/usr/bin/%s exec %s /usr/bin/cat " % e) + path
                 cfp = ContainerFileProvider(
                     the_cmd,
                     ctx,
