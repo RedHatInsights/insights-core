@@ -98,3 +98,11 @@ def test_empty_content():
         FakeYamlParser(ctx)
 
     assert "There is no data" in ex.value.args[0]
+
+
+def test_yaml_parser_with_equal_value():
+    ctx = context_wrap("key: =")
+    assert FakeYamlParser(ctx).data == {"key": "="}
+
+    ctx = context_wrap("key: value")
+    assert FakeYamlParser(ctx).data == {"key": "value"}

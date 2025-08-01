@@ -21,7 +21,7 @@ def eap_report_files(broker):
     ctx = broker[HostContext]
     root = ctx.root
     EAP_REPORTS_JSON_PATH = os.path.join(root, "var/tmp/insights-runtimes/uploads/")
-    final_files = get_recent_files(EAP_REPORTS_JSON_PATH, 24)
+    final_files = get_recent_files(EAP_REPORTS_JSON_PATH, last_modify_hours=24, latest_count=10)
     if final_files:
-        return [f[len(root):] for f in final_files]
+        return [f[len(root) :] for f in final_files]
     raise SkipComponent

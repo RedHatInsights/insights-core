@@ -22,6 +22,7 @@ jobs:
         python-version: ${{ matrix.python-versions }}
     - name: Install dependencies
       run: |
+        sudo apt-get install python3-rpm  # required on Ubuntu
         python -m pip install --upgrade pip
     - name: flake8
       run: |
@@ -32,12 +33,11 @@ jobs:
         pip install -e .[testing]
         pytest --cov --cov-branch --cov-report=
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         verbose: true
         flags: unittests
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        token: ${{ secrets.CODECOV_TOKEN }}
 
   python36-test:
     runs-on: ubuntu-latest

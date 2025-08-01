@@ -10,16 +10,16 @@ ContainerInstalledRpms - command ``rpm -qa`` for containers
 """
 
 import json
-import re
 import six
 
 from collections import defaultdict
 
 from insights import ContainerParser, parser, CommandParser
 from insights.core.exceptions import SkipComponent
-from insights.parsers.rpm_vercmp import rpm_version_compare
 from insights.specs import Specs
+from insights.util import deprecated
 from insights.util import rsplit
+from insights.util.rpm_vercmp import rpm_version_compare
 
 
 # This list of architectures is taken from PDC (Product Definition Center):
@@ -218,6 +218,7 @@ class InstalledRpms(CommandParser, RpmList):
         False
 
     """
+
     def __init__(self, *args, **kwargs):
         self.errors = list()
         """list: List of input lines that indicate an error acquiring the data on the client."""
@@ -242,8 +243,11 @@ class InstalledRpms(CommandParser, RpmList):
             content = content[1:]
         if not content:
             raise SkipComponent("The content of rpm command is empty!")
-        parse_func = InstalledRpm.from_json if any(
-                '"name":' in _l for _l in content) else InstalledRpm.from_line
+        parse_func = (
+            InstalledRpm.from_json
+            if any('"name":' in _l for _l in content)
+            else InstalledRpm.from_line
+        )
         packages = defaultdict(list)
         for line in content:
             if not line.strip():
@@ -269,25 +273,29 @@ class InstalledRpms(CommandParser, RpmList):
         return any(c in s for s in self.errors for c in _corrupts)
 
 
-p = re.compile(r"(\d+|[a-z]+|\.|-|_)")
-
-
-def _int_or_str(c):
-    try:
-        return int(c)
-    except ValueError:
-        return c
-
-
-def vcmp(s):
-    return [_int_or_str(c) for c in p.split(s) if c and c not in (".", "_", "-")]
-
-
 def pad_version(left, right):
-    """Returns two sequences of the same length so that they can be compared.
+    """
+    .. warning::
+        This function is deprecated and will be removed from 3.8.0.
+
+    Returns two sequences of the same length so that they can be compared.
     The shorter of the two arguments is lengthened by inserting extra zeros
     before non-integer components.  The algorithm attempts to align character
-    components."""
+    components.
+    """
+    def _int_or_str(c):
+        try:
+            return int(c)
+        except ValueError:
+            return c
+
+    def vcmp(s):
+        import re
+        p = re.compile(r"(\d+|[a-z]+|\.|-|_)")
+        return [_int_or_str(c) for c in p.split(s) if c and c not in (".", "_", "-")]
+
+    deprecated(pad_version, "Please use rpm.labelCompare.", "3.8.0")
+
     pair = vcmp(left), vcmp(right)
 
     mn, mx = min(pair, key=len), max(pair, key=len)
@@ -356,29 +364,37 @@ class InstalledRpm(object):
              '8902150305004...b3576ff37da7e12e2285358267495ac48a437d4eefb3213' '\t'
              'RSA/8, Mon Aug 16 11:14:17 2010, Key ID 199e2f91fd431d51')
     """
+
     PRODUCT_SIGNING_KEYS = [
         # NOTE: All In lower cases
         # RELEASE PACKAGE SIGNING
-        '199e2f91fd431d51', '1ac4971355a34a82', '5054e4a45a6340b3',
-        'e1a4bd708a828aad', 'f76f66c3d4082792', '5326810137017186',
-        '45689c882fa658e0', '219180cddb42a60e', '7514f77d8366b0d9',
+        '199e2f91fd431d51',
+        '1ac4971355a34a82',
+        '5054e4a45a6340b3',
+        'e1a4bd708a828aad',
+        'f76f66c3d4082792',
+        '5326810137017186',
+        '45689c882fa658e0',
+        '219180cddb42a60e',
+        '7514f77d8366b0d9',
         '08dd962c1c711042',
         # BETA PACKAGE SIGNING
-        'fd372689897da07a', '938a80caf21541eb'
+        'fd372689897da07a',
+        '938a80caf21541eb'
         # DEVELOPMENT PACKAGE SIGNING
         '08b871e6a5787476',
         # OTHER PRODUCTS
         'e191ddb2c509e861',
         # CERTIFICATES
-        '66e8f8a29c65f85c', '680b9144769a9f8f', '8ed29db42a2898c8'
+        '66e8f8a29c65f85c',
+        '680b9144769a9f8f',
+        '8ed29db42a2898c8',
     ]
     """
     list: List of package-signing keys in all lower cases. Should be updated
           timely according to https://access.redhat.com/security/team/key/
     """
-    SOSREPORT_KEYS = [
-        'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig', 'pgpsig_short'
-    ]
+    SOSREPORT_KEYS = ['installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig', 'pgpsig_short']
     """list: List of keys for SOS Report RPM information."""
 
     def __init__(self, data):
@@ -403,10 +419,16 @@ class InstalledRpm(object):
             setattr(self, k, v)
         self.epoch = data['epoch'] if 'epoch' in data and data['epoch'] != '(none)' else '0'
         self.vendor = data['vendor'] if 'vendor' in data else None
-        _gpg_key_pos = data.get('sigpgp', data.get('rsaheader', data.get('pgpsig_short', data.get('pgpsig', data.get('vendor', '')))))
+        _gpg_key_pos = data.get(
+            'sigpgp',
+            data.get(
+                'rsaheader', data.get('pgpsig_short', data.get('pgpsig', data.get('vendor', '')))
+            ),
+        )
         if _gpg_key_pos:
-            self.redhat_signed = any(key in _gpg_key_pos.lower()
-                                     for key in self.PRODUCT_SIGNING_KEYS)
+            self.redhat_signed = any(
+                key in _gpg_key_pos.lower() for key in self.PRODUCT_SIGNING_KEYS
+            )
 
     @classmethod
     def from_package(cls, package_string):
@@ -491,13 +513,7 @@ class InstalledRpm(object):
         if name.startswith('oracleasm') and name.endswith('.el5'):
             name, version2 = name.split('-', 1)
             version = version2 + '-' + version
-        return {
-            'name': name,
-            'version': version,
-            'release': release,
-            'arch': arch,
-            'epoch': epoch
-        }
+        return {'name': name, 'version': version, 'release': release, 'arch': arch, 'epoch': epoch}
 
     @classmethod
     def _parse_line(cls, line):
@@ -526,9 +542,7 @@ class InstalledRpm(object):
     @property
     def package(self):
         """str: Package `name-version-release` string."""
-        return u'{0}-{1}-{2}'.format(self.name,
-                                     self.version,
-                                     self.release)
+        return u'{0}-{1}-{2}'.format(self.name, self.version, self.release)
 
     @property
     def package_with_epoch(self):
@@ -537,10 +551,7 @@ class InstalledRpm(object):
 
             name-epoch:version-release
         """
-        return u'{0}-{1}:{2}-{3}'.format(self.name,
-                                         self.epoch,
-                                         self.version,
-                                         self.release)
+        return u'{0}-{1}:{2}-{3}'.format(self.name, self.epoch, self.version, self.release)
 
     @property
     def nvr(self):
@@ -591,8 +602,11 @@ class InstalledRpm(object):
             return False
 
         if self.name != other.name:
-            raise ValueError('Cannot compare packages with differing names {0} != {1}'
-                             .format(self.name, other.name))
+            raise ValueError(
+                'Cannot compare packages with differing names {0} != {1}'.format(
+                    self.name, other.name
+                )
+            )
 
         return rpm_version_compare(self, other) == 0
 
@@ -669,4 +683,5 @@ class ContainerInstalledRpms(ContainerParser, InstalledRpms):
         >>> container_rpms.get_max("kernel").version
         '3.10.0'
     """
+
     pass

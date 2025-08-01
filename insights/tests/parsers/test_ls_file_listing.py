@@ -133,6 +133,9 @@ FILE_LISTING_DOC = '''
 '''
 
 LS_FILE_PERMISSIONS_DOC = '''
+/bin/ls: cannot access /boot/grub/grub.conf: No such file or directory
+/bin/ls: cannot access fstab_mounted.devices: No such file or directory
+/bin/ls: cannot access pvs.devices: No such file or directory
 -rw-r--r--. 1 root  root      46 Apr 24  2024 /etc/redhat-release
 -rw-r--r--. 1 liuxc wheel 664118 Feb 20 14:40 /var/log/messages
 brw-rw----. 1 root  disk 252, 1 May 16 01:30 /dev/vda1

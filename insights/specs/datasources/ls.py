@@ -85,7 +85,7 @@ def list_with_la_filtered(broker):
     return ' '.join(_list_items(Specs.ls_la_filtered_dirs))
 
 
-@datasource(HostContext)
+@datasource(HostContext, optional=[FSTab])
 def list_with_lan(broker):
     filters = set(_list_items(Specs.ls_lan_dirs))
     if 'fstab_mounted.dirs' in filters and FSTab in broker:
@@ -126,7 +126,7 @@ def list_with_laZ(broker):
     return ' '.join(_list_items(Specs.ls_laZ_dirs))
 
 
-@datasource(HostContext)
+@datasource(HostContext, optional=[FSTab, BlockIDInfo, Pvs])
 def list_files_with_lH(broker):
     filters = set(_list_items(Specs.ls_lH_files))
     files = set(_f for _f in filters if not os.path.isdir(_f))
