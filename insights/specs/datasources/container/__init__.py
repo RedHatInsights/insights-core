@@ -27,11 +27,12 @@ def running_rhel_containers(broker):
     def _is_rhel_image(ctx, c_info):
         """Only collect the containers based from RHEL images"""
         try:
-            ret = ctx.shell_out("/usr/bin/%s exec %s cat /etc/redhat-release" % c_info, timeout=DEFAULT_SHELL_TIMEOUT)
+            # if /usr/bin/cat not exist in a container, the container_collect dependencies won't be processed either
+            ret = ctx.shell_out('/usr/bin/%s exec %s /usr/bin/bash -c "/usr/bin/command -v /usr/bin/cat > /dev/null && /usr/bin/cat /etc/redhat-release"' % c_info, timeout=DEFAULT_SHELL_TIMEOUT)
             if ret and len(ret) == 1 and "red hat enterprise linux" in ret[0].lower():
                 return True
         except Exception:
-            # return False when there is no such file "/etc/redhat-releas"
+            # return False when there is no such file "/etc/redhat-release"
             pass
         return False
 

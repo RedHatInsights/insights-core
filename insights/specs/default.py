@@ -995,11 +995,11 @@ class DefaultSpecs(Specs):
         running_rhel_containers, "/sys/fs/cgroup/cpuset/cpuset.cpus"
     )
     container_dotnet_version = container_execute(
-        running_rhel_containers, "/usr/bin/dotnet --version"
+        running_rhel_containers, '/usr/bin/bash -c "/usr/bin/command -v /usr/bin/dotnet > /dev/null && /usr/bin/dotnet --version"',
     )
     container_installed_rpms = container_execute(
         running_rhel_containers,
-        "/usr/bin/rpm -qa --qf '{0}'".format(_rpm_format),
+        '/usr/bin/bash -c "/usr/bin/command -v /usr/bin/rpm > /dev/null && /usr/bin/rpm -qa --qf \'{0}\'"'.format(_rpm_format),
         context=HostContext,
         signum=signal.SIGTERM,
     )
@@ -1010,7 +1010,7 @@ class DefaultSpecs(Specs):
     container_nginx_error_log = container_collect(
         running_rhel_containers, "/var/log/nginx/error.log"
     )
-    container_ps_aux = container_execute(running_rhel_containers, "/bin/ps aux")
+    container_ps_aux = container_execute(running_rhel_containers, '/usr/bin/bash -c "/usr/bin/command -v /bin/ps > /dev/null && /bin/ps aux"')
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
     container_vsftpd_conf = container_collect(running_rhel_containers, "/etc/vsftpd/vsftpd.conf")
     containers_inspect = containers_inspect.containers_inspect_data_datasource
