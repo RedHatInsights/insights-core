@@ -4,6 +4,8 @@ omit = insights/contrib/*
        insights/*/__main__.py
        # Exclude test files from coverage.
        insights/tests/*
+       # Exclude vendor libs from coverage
+       insights/client/apps/ansible/playbook_verifier/contrib/*
 branch = True
 
 [report]
