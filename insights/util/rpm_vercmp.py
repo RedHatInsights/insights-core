@@ -141,7 +141,7 @@ try:
     def rpm_version_compare(left, right):
         if left is right:
             return 0
-        return version_compare(left.package_with_epoch, right.package_with_epoch)
+        return version_compare((left.epoch, left.version, left.release), (right.epoch, right.version, right.release))
 except Exception:  # pragma: no cover
     def rpm_version_compare(left, right):
         # old _rpm_vercmp
