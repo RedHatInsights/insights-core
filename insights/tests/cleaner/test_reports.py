@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+import tempfile
 
 from mock.mock import patch
 from pytest import mark
@@ -32,7 +33,7 @@ test_file_data += 'mac: 10:20:02:15:f5:ab'
 )
 @mark.parametrize("test_umask", [0o000, 0o022])
 def test_rhsm_facts(test_umask, obfuscate, obfuscate_hostname, obfuscation_list, keywords):
-    rhsm_facts_file = '/tmp/insights_test_rhsm.facts'
+    rhsm_facts_file = os.path.join(tempfile.gettempdir(), 'insights_test_rhsm.facts')
     conf = InsightsConfig(
         obfuscate=obfuscate,
         obfuscate_hostname=obfuscate_hostname,
@@ -226,6 +227,6 @@ def test_all_csv_reports(rhsm_facts, obfuscate, obfuscate_hostname, obfuscation_
 
 
 def test_wirte_report_exp():
-    report_file = '/tmp/_test.csv'
+    report_file = os.path.join(tempfile.gettempdir(), '_test.csv')
     write_report(None, report_file)
     os.unlink(report_file)

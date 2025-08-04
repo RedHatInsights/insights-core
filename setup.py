@@ -27,6 +27,7 @@ runtime = set(
         'six',
         'requests',
         'redis',
+        'rpm; python_version >= "3.6"',
         'cachecontrol',
         'cachecontrol[redis]',
         'cachecontrol[filecache]',

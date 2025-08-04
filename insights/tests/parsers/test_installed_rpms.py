@@ -1,6 +1,11 @@
 import doctest
 import pytest
-from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm, pad_version, ContainerInstalledRpms
+from insights.parsers.installed_rpms import (
+    ContainerInstalledRpms,
+    InstalledRpm,
+    InstalledRpms,
+    pad_version,
+)
 from insights.parsers import installed_rpms
 from insights.tests import context_wrap
 
@@ -281,10 +286,8 @@ def test_corrupt_db():
 def test_rpm_manifest():
     rpms = InstalledRpms(context_wrap(RPM_MANIFEST))
     assert 'gpg-pubkey' in rpms
-    assert rpms.packages['vmware-tools'][0].package == \
-        'vmware-tools-8.3.19-1310361.el6'
-    assert rpms.packages['vmware-tools'][0].installtime == \
-        'Sat Aug 29 19:10:11 2015'
+    assert rpms.packages['vmware-tools'][0].package == 'vmware-tools-8.3.19-1310361.el6'
+    assert rpms.packages['vmware-tools'][0].installtime == 'Sat Aug 29 19:10:11 2015'
 
 
 def test_package_property_aliases():
@@ -325,6 +328,8 @@ def test_release_compare():
     rpm7 = InstalledRpm.from_package('kernel-3.10.0-327.1')
     rpm8 = InstalledRpm.from_package('kernel-3.10.0-327.x86_64')
     rpm9 = InstalledRpm.from_package('kernel-3.10.0-327.1.x86_64')
+    rpm9_e0 = InstalledRpm.from_package('kernel-0:3.10.0-327.1.x86_64')
+    rpm9_e1 = InstalledRpm.from_package('kernel-1:3.10.0-327.1.x86_64')
     with pytest.raises(ValueError) as ve:
         rpm1 > rpm7
     assert "differing names" in str(ve)
@@ -349,6 +354,11 @@ def test_release_compare():
     assert rpm6 <= rpm8
     assert rpm6 >= rpm8
     assert not (rpm7 != rpm9)
+    # with epoch explicitly
+    assert rpm9 == rpm9_e0
+    assert rpm9 >= rpm9_e0
+    assert rpm9 <= rpm9_e1
+    assert rpm9_e0 < rpm9_e1
 
 
 def test_version_compare():
@@ -362,7 +372,7 @@ def test_version_compare():
         "buildtime": "1436354006",
         "rsaheader": "RSA/SHA256,Wed 07 Oct 2015 01:14:10 PM EDT,Key ID 199e2f91fd431d51",
         "dsaheader": "(none)",
-        "srpm": "bash-4.2.46-19.el7.src.rpm"
+        "srpm": "bash-4.2.46-19.el7.src.rpm",
     }
 
     d2 = d1.copy()
@@ -584,6 +594,16 @@ def test_vmaas():
     assert rpm.release == "1.el7"
 
 
+def test_rpm_with_diff_length_version():
+    rpm1 = InstalledRpm.from_package('kernel-3.10-327.204.el7.1')
+    rpm2 = InstalledRpm.from_package('kernel-3.10.1-327.204.el7.1')
+    assert rpm1 < rpm2
+
+    rpm1 = InstalledRpm.from_package('fapolicyd-1.1.3-6.el8_6.1')
+    rpm2 = InstalledRpm.from_package('fapolicyd-1.1-6.el8_6.1')
+    assert rpm1 > rpm2
+
+
 def test_container_installed_rpms():
     rpms = ContainerInstalledRpms(
         context_wrap(
@@ -591,7 +611,7 @@ def test_container_installed_rpms():
             container_id='39310f3ccc12',
             image='registry.access.redhat.com/rhel9',
             engine='podman',
-            path='insights_containers/39310f3ccc12/insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_version_VERSION_release_RELEASE_arch_ARCH_installtime_INSTALLTIME_date_buildtime_BUILDTIME_vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig'
+            path='insights_containers/39310f3ccc12/insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_version_VERSION_release_RELEASE_arch_ARCH_installtime_INSTALLTIME_date_buildtime_BUILDTIME_vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig',
         )
     )
     assert rpms.image == "registry.access.redhat.com/rhel9"
@@ -611,7 +631,7 @@ def test_container_installed_rpms():
             container_id='cc2883a1a369',
             image='quay.io/rhel8',
             engine='podman',
-            path='insights_containers/cc2883a1a369/insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_version_VERSION_release_RELEASE_arch_ARCH_installtime_INSTALLTIME_date_buildtime_BUILDTIME_vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig'
+            path='insights_containers/cc2883a1a369/insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_version_VERSION_release_RELEASE_arch_ARCH_installtime_INSTALLTIME_date_buildtime_BUILDTIME_vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig',
         )
     )
     assert rpms_json.image == "quay.io/rhel8"
@@ -630,9 +650,9 @@ def test_doc_examples():
                 RPMS_DOCTEST_EXAMPLE,
                 container_id='cc2883a1a369',
                 image='quay.io/rhel8',
-                engine='podman'
+                engine='podman',
             )
-        )
+        ),
     }
     failed, total = doctest.testmod(installed_rpms, globs=env)
     assert failed == 0
