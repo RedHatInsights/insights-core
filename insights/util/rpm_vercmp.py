@@ -128,20 +128,27 @@ def _rpm_vercmp(a, b):
     return 1
 
 
-def version_compare(left, right):
-    try:
-        import rpm
-        from functools import cmp_to_key
+try:
+    import rpm
+    from functools import cmp_to_key
 
+    def version_compare(left, right):
         _l = cmp_to_key(rpm.labelCompare)(left)
         _r = cmp_to_key(rpm.labelCompare)(right)
 
         return -1 if _l < _r else 1 if _l > _r else 0
-    except Exception:  # pragma: no cover
-        return _rpm_vercmp(left, right)
 
-
-def rpm_version_compare(left, right):
-    if left is right:
+    def rpm_version_compare(left, right):
+        if left is right:
+            return 0
+        return version_compare(left.package_with_epoch, right.package_with_epoch)
+except Exception:  # pragma: no cover
+    def rpm_version_compare(left, right):
+        # old _rpm_vercmp
+        for attr in ('epoch', 'version', 'release'):
+            rc = _rpm_vercmp(getattr(left, attr, ''), getattr(right, attr, ''))
+            if rc != 0:
+                return rc
         return 0
-    return version_compare(left.package_with_epoch, right.package_with_epoch)
+
+    version_compare = _rpm_vercmp
