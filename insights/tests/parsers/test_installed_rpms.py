@@ -594,6 +594,16 @@ def test_vmaas():
     assert rpm.release == "1.el7"
 
 
+def test_rpm_with_diff_length_version():
+    rpm1 = InstalledRpm.from_package('kernel-3.10-327.204.el7.1')
+    rpm2 = InstalledRpm.from_package('kernel-3.10.1-327.204.el7.1')
+    assert rpm1 < rpm2
+
+    rpm1 = InstalledRpm.from_package('fapolicyd-1.1.3-6.el8_6.1')
+    rpm2 = InstalledRpm.from_package('fapolicyd-1.1-6.el8_6.1')
+    assert rpm1 > rpm2
+
+
 def test_container_installed_rpms():
     rpms = ContainerInstalledRpms(
         context_wrap(
