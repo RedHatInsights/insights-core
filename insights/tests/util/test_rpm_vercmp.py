@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-from insights.util.rpm_vercmp import _rpm_vercmp
+from insights.util.rpm_vercmp import _rpm_vercmp, version_compare
 
 
 # data copied from
@@ -176,3 +176,14 @@ def test_rpm_vercmp(rpm_data):
     for l, r, expected in rpm_data:
         actual = _rpm_vercmp(l, r)
         assert actual == expected, (l, r, actual, expected)
+
+
+def test_version_compare():
+    rpm1 = 'kernel-rt-debug-3.10.0-327.rt56.204.el7_2.1'
+    rpm2 = 'kernel-rt-debug-3.10.0-327.rt56.204.el7_2.2'
+    rpm3 = 'kernel-3.10.0-327.10.1.el7'
+    rpm4 = 'kernel-3.10.0-327.el7'
+    rpm5 = 'kernel-3.10.1-327.el7'
+    assert version_compare(rpm1, rpm2) == -1
+    assert version_compare(rpm3, rpm4) == 1
+    assert version_compare(rpm4, rpm5) == -1
