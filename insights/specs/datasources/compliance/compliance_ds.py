@@ -300,7 +300,6 @@ def compliance_advisor_rule_enabled(broker):
             tailoring_content = compliance.fetch_tailoring_content(policy)
             if tailoring_content:
                 tailoring_policy = dict(ref_id=policy['ref_id'])
-                tailoring_policy['check_items'] = []
                 xml_root = ET.fromstring(tailoring_content)
                 pre_tag = xml_root.tag.split("Tailoring")[0]
                 profile_select_tag = pre_tag + 'Profile/' + pre_tag + 'select'
