@@ -295,22 +295,20 @@ def compliance_advisor_rule_enabled(broker):
             )
             raise SkipComponent
         result['enabled_policies'] = policies
-        result['tailoring_policies'] = []
+        tailoring_policies = []
         for policy in policies:
             tailoring_content = compliance.fetch_tailoring_content(policy)
             if tailoring_content:
-                tailoring_policy = {}
-                tailoring_policy['ref_id'] = policy['ref_id']
+                tailoring_policy = dict(ref_id=policy['ref_id'])
                 tailoring_policy['check_items'] = []
                 xml_root = ET.fromstring(tailoring_content)
                 pre_tag = xml_root.tag.split("Tailoring")[0]
                 profile_select_tag = pre_tag + 'Profile/' + pre_tag + 'select'
                 profile_select_info = xml_root.findall(profile_select_tag)
-                for item in profile_select_info:
-                    tailoring_policy['check_items'].append(item.attrib)
-                result['tailoring_policies'].append(tailoring_policy)
-        if not result['tailoring_policies']:
-            del result['tailoring_policies']
+                tailoring_policy['check_items'] = [item.attrib for item in profile_select_info]
+                tailoring_policies.append(tailoring_policy)
+        if tailoring_policies:
+            result['tailoring_policies'] = tailoring_policies
         return DatasourceProvider(
             content=json.dumps(result),
             relative_path='insights_datasources/compliance_enabled_policies'

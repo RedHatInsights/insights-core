@@ -1,6 +1,6 @@
 """
-ComplianceEnablePolicies - datasource ``compliance_advisor_rule_enabled``
-=========================================================================
+ComplianceEnabledPolicies - datasource ``compliance_advisor_rule_enabled``
+==========================================================================
 This parser is used to parse the output of datasouce compliance_ds.compliance_advisor_rule_enabled
 """
 from insights.core import JSONParser
@@ -8,8 +8,8 @@ from insights.core.plugins import parser
 from insights.specs import Specs
 
 
-@parser(Specs.compliance_advisor_rule_enabled_policies)
-class ComplianceEnablePolicies(JSONParser):
+@parser(Specs.compliance_enabled_policies)
+class ComplianceEnabledPolicies(JSONParser):
     """
     Parses the output of datasouce compliance_ds.compliance_advisor_rule_enabled
 
@@ -18,7 +18,7 @@ class ComplianceEnablePolicies(JSONParser):
     {
         "enabled_policies": [
             {
-                "id": "717539de-3c90-473b-acca-c8ee95bb6cc3",
+                "id": "12345678-aaaa-bbbb-cccc-1234567890ab",
                 "title": "advisor rule test - CIS Red Hat Enterprise Linux 8 Benchmark for Level 1 - Server",
                 "description": "This profile defines a baseline that aligns to the Level 1 - Server",
                 "business_objective": null,
@@ -30,7 +30,7 @@ class ComplianceEnablePolicies(JSONParser):
                 "ref_id": "xccdf_org.ssgproject.content_profile_cis_server_l1"
             },
             {
-                "id": "bc11fd8a-9c76-484c-ac63-14b29414a455",
+                "id": "12345678-aaaa-bbbb-cccc-1234567890xy",
                 "title": "CIS Red Hat Enterprise Linux 8 Benchmark for Level 2 - Server",
                 "description": "This profile defines a baseline that aligns to the Level 2 - Server",
                 "business_objective": null,
@@ -69,7 +69,7 @@ class ComplianceEnablePolicies(JSONParser):
 
     Examples:
         >>> type(compliance_enabled_policies)
-        <class 'insights.parsers.compliance_enabled_policies.ComplianceEnablePolicies'>
+        <class 'insights.parsers.compliance_enabled_policies.ComplianceEnabledPolicies'>
         >>> compliance_enabled_policies['enabled_policies'][0]['ref_id']
         'xccdf_org.ssgproject.content_profile_cis_server_l1'
         >>> compliance_enabled_policies['tailoring_policies'][0]['ref_id']

@@ -3,14 +3,14 @@ import pytest
 
 from insights.core.exceptions import SkipComponent
 from insights.parsers import compliance_enabled_policies
-from insights.parsers.compliance_enabled_policies import ComplianceEnablePolicies
+from insights.parsers.compliance_enabled_policies import ComplianceEnabledPolicies
 from insights.tests import context_wrap
 
 COMPLIANCE_ENABLE_POLICIES = '''
 {
     "enabled_policies": [
         {
-            "id": "717539de-3c90-473b-acca-c8ee95bb6cc3",
+            "id": "12345678-aaaa-bbbb-cccc-1234567890ab",
             "title": "advisor rule test - CIS Red Hat Enterprise Linux 8 Benchmark for Level 1 - Server",
             "description": "This profile defines a baseline that aligns to the Level 1 - Server",
             "business_objective": null,
@@ -22,7 +22,7 @@ COMPLIANCE_ENABLE_POLICIES = '''
             "ref_id": "xccdf_org.ssgproject.content_profile_cis_server_l1"
         },
         {
-            "id": "bc11fd8a-9c76-484c-ac63-14b29414a455",
+            "id": "12345678-aaaa-bbbb-cccc-1234567890xy",
             "title": "CIS Red Hat Enterprise Linux 8 Benchmark for Level 2 - Server",
             "description": "This profile defines a baseline that aligns to the Level 2 - Server",
             "business_objective": null,
@@ -63,21 +63,41 @@ COMPLIANCE_ENABLE_POLICIES = '''
 
 def test_compliance_enabled_policies_skip():
     with pytest.raises(SkipComponent) as ex:
-        ComplianceEnablePolicies(context_wrap(""))
+        ComplianceEnabledPolicies(context_wrap(""))
     assert "Empty output." in str(ex)
 
 
 def test_compliance_enabled_policies():
-    compliance_enabled_policies_info = ComplianceEnablePolicies(context_wrap(COMPLIANCE_ENABLE_POLICIES))
+    compliance_enabled_policies_info = ComplianceEnabledPolicies(context_wrap(COMPLIANCE_ENABLE_POLICIES))
     assert compliance_enabled_policies_info['enabled_policies'][0]['ref_id'] == 'xccdf_org.ssgproject.content_profile_cis_server_l1'
     assert compliance_enabled_policies_info['tailoring_policies'][0]['ref_id'] == 'xccdf_org.ssgproject.content_profile_cis_server_l1'
     assert len(compliance_enabled_policies_info['enabled_policies']) == 2
     assert len(compliance_enabled_policies_info['tailoring_policies'][0]['check_items']) == 4
 
 
+def test_compliance_enabled_policies_only_enabled():
+    """
+    Test parser with only enabled_policies and no tailoring_policies.
+    """
+    only_enabled_policies = '''
+    {
+        "enabled_policies": [
+            {
+                "id": "12345678-aaaa-bbbb-cccc-1234567890ab",
+                "ref_id": "xccdf_org.ssgproject.content_profile_standard"
+            }
+        ]
+    }
+    '''
+    compliance_enabled_policies_info = ComplianceEnabledPolicies(context_wrap(only_enabled_policies))
+    assert 'enabled_policies' in compliance_enabled_policies_info
+    assert compliance_enabled_policies_info['enabled_policies'][0]['ref_id'] == 'xccdf_org.ssgproject.content_profile_standard'
+    assert 'tailoring_policies' not in compliance_enabled_policies_info or not compliance_enabled_policies_info.get('tailoring_policies')
+
+
 def test_compliance_enabled_policies_doc_examples():
     env = {
-        "compliance_enabled_policies": ComplianceEnablePolicies(context_wrap(COMPLIANCE_ENABLE_POLICIES)),
+        "compliance_enabled_policies": ComplianceEnabledPolicies(context_wrap(COMPLIANCE_ENABLE_POLICIES)),
     }
     failed, total = doctest.testmod(compliance_enabled_policies, globs=env)
     assert failed == 0

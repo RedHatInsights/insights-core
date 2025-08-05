@@ -17,7 +17,6 @@ class Specs(SpecSet):
     compliance_policies = RegistryPoint()
     compliance_assign = RegistryPoint()
     compliance_unassign = RegistryPoint()
-    compliance_advisor_rule_enabled_policies = RegistryPoint()
     malware_detection = RegistryPoint()
 
     # Regular collection specs
@@ -108,6 +107,7 @@ class Specs(SpecSet):
     cluster_conf = RegistryPoint(filterable=True)
     cmdline = RegistryPoint()
     cni_podman_bridge_conf = RegistryPoint()
+    compliance_enabled_policies = RegistryPoint()
     cobbler_modules_conf = RegistryPoint()
     cobbler_settings = RegistryPoint()
     containers_policy = RegistryPoint()

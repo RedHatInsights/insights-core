@@ -441,7 +441,7 @@ tailoring_policies_content2 = b'<?xml version="1.0" encoding="UTF-8"?>\n<xccdf:T
 )
 @patch(
     "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
-    return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
+    return_value=[{'ref_id': 'foo', 'id': '12345678-aaaa-bbbb-cccc-1234567890ab'}],
 )
 @patch(
     "insights.client.config.InsightsConfig",
@@ -454,8 +454,30 @@ tailoring_policies_content2 = b'<?xml version="1.0" encoding="UTF-8"?>\n<xccdf:T
 def test_compliance_advisor_rule_enabled_policies(config, policies, tailoring_content):
     broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
     ret = compliance_advisor_rule_enabled(broker)
-    assert ret.content == ['{"enabled_policies": [{"ref_id": "foo", "id": "def76af0-9b6f-4b37-ac6c-db61354acbb5"}], "tailoring_policies": [{"ref_id": "foo", "check_items": [{"idref": "xccdf_org.ssgproject.content_rule_bios_disable_usb_boot", "selected": "true"}, {"idref": "xccdf_org.ssgproject.content_rule_ssh_keys_passphrase_protected", "selected": "true"}]}]}']
+    assert ret.content == ['{"enabled_policies": [{"ref_id": "foo", "id": "12345678-aaaa-bbbb-cccc-1234567890ab"}], "tailoring_policies": [{"ref_id": "foo", "check_items": [{"idref": "xccdf_org.ssgproject.content_rule_bios_disable_usb_boot", "selected": "true"}, {"idref": "xccdf_org.ssgproject.content_rule_ssh_keys_passphrase_protected", "selected": "true"}]}]}']
     assert ret.relative_path == "insights_datasources/compliance_enabled_policies"
+
+
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_content",
+    return_value="<Tailoring><Broken></Tailoring",
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=[{'ref_id': 'foo', 'id': '12345678-aaaa-bbbb-cccc-1234567890ab'}],
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=False,
+)
+def test_compliance_advisor_rule_enabled_malformed_tailoring(config, policies, tailoring_content):
+    broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
+    with raises(SkipComponent):
+        compliance_advisor_rule_enabled(broker)
 
 
 @patch(
@@ -482,7 +504,7 @@ def test_compliance_advisor_rule_enabled_policies_no_enabled_policy(config, poli
 )
 @patch(
     "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
-    return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
+    return_value=[{'ref_id': 'foo', 'id': '12345678-aaaa-bbbb-cccc-1234567890ab'}],
 )
 @patch(
     "insights.client.config.InsightsConfig",
@@ -495,5 +517,39 @@ def test_compliance_advisor_rule_enabled_policies_no_enabled_policy(config, poli
 def test_compliance_advisor_rule_enabled_policies_no_tailoring_policy(config, policies, tailoring_content):
     broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
     ret = compliance_advisor_rule_enabled(broker)
-    assert ret.content == ['{"enabled_policies": [{"ref_id": "foo", "id": "def76af0-9b6f-4b37-ac6c-db61354acbb5"}]}']
+    assert ret.content == ['{"enabled_policies": [{"ref_id": "foo", "id": "12345678-aaaa-bbbb-cccc-1234567890ab"}]}']
+    assert ret.relative_path == "insights_datasources/compliance_enabled_policies"
+
+
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_content",
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=False,
+)
+def test_compliance_advisor_rule_enabled_policies_mixed_tailoring(
+    mock_config, mock_get_tailoring_content, mock_get_system_policies
+):
+    # Setup: two policies, one with tailoring, one without
+    policies = [
+        {'ref_id': 'foo', 'id': '12345678-aaaa-bbbb-cccc-1234567890ab'},
+        {'ref_id': 'bar', 'id': '12345678-aaaa-bbbb-cccc-1234567890xy'}
+    ]
+    tailoring_content = {
+        '12345678-aaaa-bbbb-cccc-1234567890ab': tailoring_policies_content2
+        # No tailoring for '12345678-aaaa-bbbb-cccc-1234567890xy'
+    }
+    mock_get_system_policies.return_value = policies
+    mock_get_tailoring_content.side_effect = lambda policy_id: tailoring_content.get(policy_id['id'])
+    broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': mock_config}
+    ret = compliance_advisor_rule_enabled(broker)
+    assert ret.content == ['{"enabled_policies": [{"ref_id": "foo", "id": "12345678-aaaa-bbbb-cccc-1234567890ab"}, {"ref_id": "bar", "id": "12345678-aaaa-bbbb-cccc-1234567890xy"}], "tailoring_policies": [{"ref_id": "foo", "check_items": [{"idref": "xccdf_org.ssgproject.content_rule_bios_disable_usb_boot", "selected": "true"}, {"idref": "xccdf_org.ssgproject.content_rule_ssh_keys_passphrase_protected", "selected": "true"}]}]}']
     assert ret.relative_path == "insights_datasources/compliance_enabled_policies"
