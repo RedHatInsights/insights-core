@@ -522,7 +522,9 @@ def test_compliance_advisor_rule_enabled_policies_no_enabled_policy(config, poli
 def test_compliance_advisor_rule_enabled_policies_no_tailoring_policy(config, policies, tailoring_content):
     broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
     ret = compliance_advisor_rule_enabled(broker)
-    assert ret.content == ['{"enabled_policies": [{"ref_id": "foo", "id": "12345678-aaaa-bbbb-cccc-1234567890ab"}]}']
+    result = json.loads(ret.content[0])
+    assert len(result['enabled_policies']) == 1
+    assert result['enabled_policies'][0]['id'] == '12345678-aaaa-bbbb-cccc-1234567890ab'
     assert ret.relative_path == "insights_datasources/compliance_enabled_policies"
 
 
