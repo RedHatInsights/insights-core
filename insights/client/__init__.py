@@ -663,17 +663,6 @@ class InsightsClient(object):
         return self.connection.checkin()
 
 
-def format_config(config):
-    # Log config except the password
-    # and proxy as it might have a pw as well
-    config_copy = config.copy()
-    try:
-        del config_copy["password"]
-        del config_copy["proxy"]
-    finally:
-        return json.dumps(config_copy, indent=4)
-
-
 def _init_client_config_dirs():
     '''
     Initialize log and lib dirs
