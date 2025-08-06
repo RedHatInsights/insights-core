@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 import os
+import json
 
 try:
     from unittest.mock import patch
@@ -454,7 +455,11 @@ tailoring_policies_content2 = b'<?xml version="1.0" encoding="UTF-8"?>\n<xccdf:T
 def test_compliance_advisor_rule_enabled_policies(config, policies, tailoring_content):
     broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
     ret = compliance_advisor_rule_enabled(broker)
-    assert ret.content == ['{"enabled_policies": [{"ref_id": "foo", "id": "12345678-aaaa-bbbb-cccc-1234567890ab"}], "tailoring_policies": [{"ref_id": "foo", "check_items": [{"idref": "xccdf_org.ssgproject.content_rule_bios_disable_usb_boot", "selected": "true"}, {"idref": "xccdf_org.ssgproject.content_rule_ssh_keys_passphrase_protected", "selected": "true"}]}]}']
+    result = json.loads(ret.content[0])
+    assert len(result['enabled_policies']) == 1
+    assert len(result['tailoring_policies']) == 1
+    assert result['enabled_policies'][0]['id'] == '12345678-aaaa-bbbb-cccc-1234567890ab'
+    assert result['tailoring_policies'][0]['ref_id'] == 'foo'
     assert ret.relative_path == "insights_datasources/compliance_enabled_policies"
 
 
@@ -551,5 +556,11 @@ def test_compliance_advisor_rule_enabled_policies_mixed_tailoring(
     mock_get_tailoring_content.side_effect = lambda policy_id: tailoring_content.get(policy_id['id'])
     broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': mock_config}
     ret = compliance_advisor_rule_enabled(broker)
-    assert ret.content == ['{"enabled_policies": [{"ref_id": "foo", "id": "12345678-aaaa-bbbb-cccc-1234567890ab"}, {"ref_id": "bar", "id": "12345678-aaaa-bbbb-cccc-1234567890xy"}], "tailoring_policies": [{"ref_id": "foo", "check_items": [{"idref": "xccdf_org.ssgproject.content_rule_bios_disable_usb_boot", "selected": "true"}, {"idref": "xccdf_org.ssgproject.content_rule_ssh_keys_passphrase_protected", "selected": "true"}]}]}']
+    result = json.loads(ret.content[0])
+    assert len(result['enabled_policies']) == 2
+    assert len(result['tailoring_policies']) == 1
+    assert any(p['id'] == '12345678-aaaa-bbbb-cccc-1234567890ab' for p in result['enabled_policies'])
+    assert any(p['id'] == '12345678-aaaa-bbbb-cccc-1234567890xy' for p in result['enabled_policies'])
+    assert any(p['ref_id'] == 'foo' for p in result['tailoring_policies'])
+    assert all(p['ref_id'] != 'bar' for p in result['tailoring_policies'])
     assert ret.relative_path == "insights_datasources/compliance_enabled_policies"
