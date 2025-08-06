@@ -12,10 +12,17 @@ TEST_RPM_V_PACKAGE_1 = """
 ..?......    /usr/bin/sudo
 ..?......    /usr/bin/sudoreplay
 missing     /var/db/sudo/lectured (Permission denied)
+error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal error, run database recovery
 """
 
 TEST_RPM_V_PACKAGE_2 = """
 package sudo is not installed
+"""
+
+TEST_RPM_V_PACKAGE_3 = """
+error: rpmdb: BDB0113 Thread/process 259/139 failed: BDB1507 Thread died in Berkeley DB library
+error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal error, run database recovery
+error: cannot open Packages index using db5 - (-30973)
 """
 
 CONTEXT_PATH_1 = "insights_commands/rpm_-V_sudo"
@@ -59,6 +66,13 @@ def test_rpm_pkg_empty():
     with pytest.raises(SkipComponent) as exc:
         RpmVPackage(context_wrap([], CONTEXT_PATH_1))
     assert 'Empty result' in str(exc)
+
+
+def test_rpm_pkg_erros():
+    rpm_pkg = RpmVPackage(context_wrap(TEST_RPM_V_PACKAGE_3, CONTEXT_PATH_1))
+    assert rpm_pkg.package_name == 'sudo'
+    assert rpm_pkg.error_lines is not None
+    assert len(rpm_pkg.error_lines) == 3
 
 
 def test_rpm_pkg_not_installed():
