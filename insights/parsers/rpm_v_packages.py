@@ -22,6 +22,7 @@ class RpmVPackage(CommandParser):
     Attributes:
         package_name (String): The name of package
         discrepancies (list of dictionaries): Every dictionary contains information about one entry
+        error_lines (list of strings): The error messages from the command `rpm -V <package>`
 
     Sample output of this command is::
 
@@ -29,6 +30,12 @@ class RpmVPackage(CommandParser):
         ..?......    /usr/bin/sudo
         ..?......    /usr/bin/sudoreplay
         missing     /var/db/sudo/lectured (Permission denied)
+
+    OR::
+
+        error: rpmdb: BDB0113 Thread/process 259/139 failed: BDB1507 Thread died in Berkeley DB library
+        error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal error, run database recovery
+        error: cannot open Packages index using db5 - (-30973)
 
     Examples:
         >>> type(rpm_v_pkg)
@@ -39,13 +46,20 @@ class RpmVPackage(CommandParser):
         4
         >>> sorted(rpm_v_pkg.discrepancies[0].items())
         [('attributes', '..?......'), ('file', '/etc/sudoers'), ('line', '..?......  c /etc/sudoers'), ('mark', 'c')]
+        >>> "error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal error, run database recovery" in rpm_v_pkg.error_lines
+        True
     """
 
     def parse_content(self, content):
+        self.error_lines = []
         self.discrepancies = []
         self.package_name = self.file_name.split('_')[-1] if self.file_name else None
 
         for line in content:
+            if line.startswith("error: "):
+                self.error_lines.append(line)
+                continue
+
             line_parts = line.split()
             if not line_parts:
                 continue
@@ -71,5 +85,5 @@ class RpmVPackage(CommandParser):
                 }
             self.discrepancies.append(entry)
 
-        if not self.discrepancies:
+        if not self.discrepancies and not self.error_lines:
             raise SkipComponent("Empty result")
