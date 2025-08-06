@@ -1,6 +1,7 @@
 """
 Datasources to collect the nginx configuration files from containers
 """
+
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
@@ -10,8 +11,13 @@ from insights.specs.datasources.container import running_rhel_containers
 
 
 class LocalSpecs(Specs):
-    """ Local specs used only by nginx container datasources """
-    container_find_etc_opt_conf = container_execute(running_rhel_containers, "find /etc /opt -name '*.conf'")
+    """Local specs used only by nginx container datasources"""
+
+    container_find_etc_opt_conf = container_execute(
+        running_rhel_containers,
+        "find /etc /opt -name '*.conf'",
+        keep_rc=True,
+    )
 
 
 @datasource(LocalSpecs.container_find_etc_opt_conf, HostContext)
@@ -22,10 +28,16 @@ def nginx_conf(broker):
     find_list = broker[LocalSpecs.container_find_etc_opt_conf]
     ret = []
     for conf_list in find_list:
-        for conf_path in conf_list.content:
-            # FIXME: refine the path filter
-            if 'etc/nginx' in conf_path or 'rh-nginx' in conf_path:
-                ret.append((conf_list.image, conf_list.engine, conf_list.container_id, conf_path))
+        try:
+            for conf_path in conf_list.content:
+                # FIXME: refine the path filter
+                if 'etc/nginx' in conf_path or 'rh-nginx' in conf_path:
+                    ret.append(
+                        (conf_list.image, conf_list.engine, conf_list.container_id, conf_path)
+                    )
+        except Exception:
+            # continue on the processing for next container when the find failed for this one
+            pass
     if ret:
         # Return list of tuple:
         # - (image, <podman|docker>, container_id, conf_path)
