@@ -93,6 +93,10 @@ def parse_ip_addr(content):
             tx_next_line = True
         elif line.startswith("vf "):
             current['vf_enabled'] = True
+        elif line.startswith('bond mode') and current:
+            current['bond_options'] = line.strip()
+        elif line.startswith('bond_slave') and current:
+            current['bond_slave_options'] = line.strip()
     for k, v in r.items():
         if_details[k] = NetworkInterface(v)
     return if_details
