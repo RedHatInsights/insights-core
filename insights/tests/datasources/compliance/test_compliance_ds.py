@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 import os
+import json
 
 try:
     from unittest.mock import patch
@@ -9,6 +10,7 @@ except Exception:
 from pytest import raises
 from tempfile import NamedTemporaryFile
 
+from insights.core.exceptions import SkipComponent
 from insights.client.config import InsightsConfig
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.os_release import OsRelease
@@ -17,9 +19,11 @@ from insights.specs.datasources.compliance.compliance_ds import (
     os_version,
     package_check,
     compliance,
+    compliance_enabled,
     compliance_policies,
     compliance_assign,
     compliance_unassign,
+    compliance_advisor_rule_enabled,
 )
 from insights.tests import context_wrap
 
@@ -74,8 +78,12 @@ def test_os_version():
     result = os_version(broker)
     assert result == ['8', '10']
 
-    broker = {OsRelease: os_ng, RedhatRelease: rh_ng}
+    broker = {OsRelease: os_ng, RedhatRelease: rh_ng, compliance_enabled: True}
     with raises(SystemExit):
+        os_version(broker)
+
+    broker = {OsRelease: os_ng, RedhatRelease: rh_ng}
+    with raises(SkipComponent):
         os_version(broker)
 
 
@@ -86,8 +94,13 @@ def test_package_check():
     assert result == '0.1.72'
 
     rpms = InstalledRpms(context_wrap(RPMS_JSON_NG))
-    broker = {InstalledRpms: rpms}
+    broker = {InstalledRpms: rpms, compliance_enabled: True}
     with raises(SystemExit):
+        package_check(broker)
+
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_NG))
+    broker = {InstalledRpms: rpms}
+    with raises(SkipComponent):
         package_check(broker)
 
 
@@ -418,3 +431,138 @@ def test_policy_link_unassign(policy_link, sys):
     compliance_unassign(broker)
     policy_link.assert_called_with('123abc', 'delete')
     sys.exit.assert_called_with(policy_link.return_value)
+
+
+tailoring_policies_content2 = b'<?xml version="1.0" encoding="UTF-8"?>\n<xccdf:Tailoring xmlns:xccdf="http://checklists.nist.gov/xccdf/1.2" id="xccdf_csfr-compliance_tailoring_default">\n  <xccdf:benchmark id="xccdf_org.ssgproject.content_benchmark_RHEL-8" version="0.1.72" href="ssg-rhel8-ds.xml"/>\n  <xccdf:version time="2025-07-25T02:04:46+00:00">1</xccdf:version>\n  <xccdf:Profile id="xccdf_org.ssgproject.content_profile_cis_server_l1" extends="xccdf_org.ssgproject.content_profile_cis_server_l1">\n    <xccdf:title xmlns:xhtml="http://www.w3.org/1999/xhtml" xml:lang="en-US" override="true">CIS Red Hat Enterprise Linux 8 Benchmark for Level 1 - Server</xccdf:title>\n    <xccdf:description xmlns:xhtml="http://www.w3.org/1999/xhtml" xml:lang="en-US" override="true">This profile defines a baseline that aligns to the "Level 1 - Server"\nconfiguration from the Center for Internet Security\xc2\xae Red Hat Enterprise\nLinux 8 Benchmark\xe2\x84\xa2, v3.0.0, released 2023-10-30.\n\nThis profile includes Center for Internet Security\xc2\xae\nRed Hat Enterprise Linux 8 CIS Benchmarks\xe2\x84\xa2 content.</xccdf:description>\n    <xccdf:select idref="xccdf_org.ssgproject.content_rule_bios_disable_usb_boot" selected="true"/>\n    <xccdf:select idref="xccdf_org.ssgproject.content_rule_ssh_keys_passphrase_protected" selected="true"/>\n    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_sysctl_net_ipv4_conf_default_log_martians_value">1</xccdf:set-value>\n    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_sshd_idle_timeout_value">300</xccdf:set-value>\n  </xccdf:Profile>\n</xccdf:Tailoring>\n'
+
+
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_content",
+    return_value=tailoring_policies_content2,
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=[{'ref_id': 'foo', 'id': '12345678-aaaa-bbbb-cccc-1234567890ab'}],
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=False,
+)
+def test_compliance_advisor_rule_enabled_policies(config, policies, tailoring_content):
+    broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
+    ret = compliance_advisor_rule_enabled(broker)
+    result = json.loads(ret.content[0])
+    assert len(result['enabled_policies']) == 1
+    assert len(result['tailoring_policies']) == 1
+    assert result['enabled_policies'][0]['id'] == '12345678-aaaa-bbbb-cccc-1234567890ab'
+    assert result['tailoring_policies'][0]['ref_id'] == 'foo'
+    assert ret.relative_path == "insights_datasources/compliance_enabled_policies"
+
+
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_content",
+    return_value="<Tailoring><Broken></Tailoring",
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=[{'ref_id': 'foo', 'id': '12345678-aaaa-bbbb-cccc-1234567890ab'}],
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=False,
+)
+def test_compliance_advisor_rule_enabled_malformed_tailoring(config, policies, tailoring_content):
+    broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
+    with raises(SkipComponent):
+        compliance_advisor_rule_enabled(broker)
+
+
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=None,
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=False,
+)
+def test_compliance_advisor_rule_enabled_policies_no_enabled_policy(config, policies):
+    broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
+    with raises(SkipComponent):
+        compliance_advisor_rule_enabled(broker)
+
+
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_content",
+    return_value=None,
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=[{'ref_id': 'foo', 'id': '12345678-aaaa-bbbb-cccc-1234567890ab'}],
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=False,
+)
+def test_compliance_advisor_rule_enabled_policies_no_tailoring_policy(config, policies, tailoring_content):
+    broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': config}
+    ret = compliance_advisor_rule_enabled(broker)
+    result = json.loads(ret.content[0])
+    assert len(result['enabled_policies']) == 1
+    assert result['enabled_policies'][0]['id'] == '12345678-aaaa-bbbb-cccc-1234567890ab'
+    assert ret.relative_path == "insights_datasources/compliance_enabled_policies"
+
+
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_content",
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=False,
+)
+def test_compliance_advisor_rule_enabled_policies_mixed_tailoring(
+    mock_config, mock_get_tailoring_content, mock_get_system_policies
+):
+    # Setup: two policies, one with tailoring, one without
+    policies = [
+        {'ref_id': 'foo', 'id': '12345678-aaaa-bbbb-cccc-1234567890ab'},
+        {'ref_id': 'bar', 'id': '12345678-aaaa-bbbb-cccc-1234567890xy'}
+    ]
+    tailoring_content = {
+        '12345678-aaaa-bbbb-cccc-1234567890ab': tailoring_policies_content2
+        # No tailoring for '12345678-aaaa-bbbb-cccc-1234567890xy'
+    }
+    mock_get_system_policies.return_value = policies
+    mock_get_tailoring_content.side_effect = lambda policy_id: tailoring_content.get(policy_id['id'])
+    broker = {os_version: ['8', '10'], package_check: '0.1.73', 'client_config': mock_config}
+    ret = compliance_advisor_rule_enabled(broker)
+    result = json.loads(ret.content[0])
+    assert len(result['enabled_policies']) == 2
+    assert len(result['tailoring_policies']) == 1
+    assert any(p['id'] == '12345678-aaaa-bbbb-cccc-1234567890ab' for p in result['enabled_policies'])
+    assert any(p['id'] == '12345678-aaaa-bbbb-cccc-1234567890xy' for p in result['enabled_policies'])
+    assert any(p['ref_id'] == 'foo' for p in result['tailoring_policies'])
+    assert all(p['ref_id'] != 'bar' for p in result['tailoring_policies'])
+    assert ret.relative_path == "insights_datasources/compliance_enabled_policies"
