@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.6.2
+Version:        3.6.3
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,41 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 07 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.3-1
+- feat(client): Exclude vendor libs from coverage stats (#4520)
+  (pschrimp@redhat.com)
+- fix: handle error from relied spec for container_nginx_conf (#4514)
+  (xiaoxwan@redhat.com)
+- fix: enhance RpmVPackage handles the rpm error message (#4521)
+  (39508521+shlao@users.noreply.github.com)
+- fix: Enhance "IpLinkInfo" to keep the bond or slave options (#4522)
+  (44796653+huali027@users.noreply.github.com)
+- chore: do not collect ls_dev anymore in core collection (#4453)
+  (xiangceliu@redhat.com)
+- Replace pkg_resources with importlib.metadata (Python 3.8+) (#4500)
+  (miro@hroncok.cz)
+- fix(client): remove unused format_config() function (#4519)
+  (pkoprda@redhat.com)
+- fix: compatibility of version_compare (#4518) (xiangceliu@redhat.com)
+- fix: arguments passed to rpm.labelCompare (#4516) (xiangceliu@redhat.com)
+- fix: rpm_vercmp can't compare pkgs with different version length (#4515)
+  (xiangceliu@redhat.com)
+- fix(spec): limit to last 10 files for eap_json_reports (#4509)
+  (xiaoxwan@redhat.com)
+- chore(rpmcmp): use rpm.labelCompare first (#4501) (xiangceliu@redhat.com)
+- fix: ComplianceClient support general data collection (#4503)
+  (xiangceliu@redhat.com)
+- fix: use tempfile.gettempdir as default tmpdir for obfuscation reports
+  (#4496) (xiangceliu@redhat.com)
+- chore: enhance YAMLParser to parse yaml files containing = as value (#4508)
+  (30404410+qinpingli@users.noreply.github.com)
+- fix: subman.identity supports multiple languages (#4505)
+  (xiangceliu@redhat.com)
+- perf(client): add check before retrieving report (#4502)
+  (pschrimp@redhat.com)
+- chore(ci/cd): update the codecov actions to v5 (#4504)
+  (xiangceliu@redhat.com)
+
 * Thu Jul 17 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.2-1
 - fix: add missed optional deps for ls datasources (#4495)
   (xiangceliu@redhat.com)

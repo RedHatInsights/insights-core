@@ -2,6 +2,27 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.3) (2025-08-07)
+
+- feat(client): Exclude vendor libs from coverage stats ([PR 4520](https://github.com/RedHatInsights/insights-core/pull/4520))
+- fix: handle error from relied spec for container_nginx_conf ([PR 4514](https://github.com/RedHatInsights/insights-core/pull/4514))
+- fix: enhance RpmVPackage handles the rpm error message ([PR 4521](https://github.com/RedHatInsights/insights-core/pull/4521))
+- fix: Enhance "IpLinkInfo" to keep the bond or slave options ([PR 4522](https://github.com/RedHatInsights/insights-core/pull/4522))
+- chore: do not collect ls_dev anymore in core collection ([PR 4453](https://github.com/RedHatInsights/insights-core/pull/4453))
+- Replace pkg_resources with importlib.metadata (Python 3.8+) ([PR 4500](https://github.com/RedHatInsights/insights-core/pull/4500))
+- fix(client): remove unused format_config() function ([PR 4519](https://github.com/RedHatInsights/insights-core/pull/4519))
+- fix: compatibility of version_compare ([PR 4518](https://github.com/RedHatInsights/insights-core/pull/4518))
+- fix: arguments passed to rpm.labelCompare ([PR 4516](https://github.com/RedHatInsights/insights-core/pull/4516))
+- fix: rpm_vercmp can't compare pkgs with different version length ([PR 4515](https://github.com/RedHatInsights/insights-core/pull/4515))
+- fix(spec): limit to last 10 files for eap_json_reports ([PR 4509](https://github.com/RedHatInsights/insights-core/pull/4509))
+- chore(rpmcmp): use rpm.labelCompare first ([PR 4501](https://github.com/RedHatInsights/insights-core/pull/4501))
+- fix: ComplianceClient support general data collection ([PR 4503](https://github.com/RedHatInsights/insights-core/pull/4503))
+- fix: use tempfile.gettempdir as default tmpdir for obfuscation reports ([PR 4496](https://github.com/RedHatInsights/insights-core/pull/4496))
+- chore: enhance YAMLParser to parse yaml files containing = as value ([PR 4508](https://github.com/RedHatInsights/insights-core/pull/4508))
+- fix: subman.identity supports multiple languages ([PR 4505](https://github.com/RedHatInsights/insights-core/pull/4505))
+- perf(client): add check before retrieving report ([PR 4502](https://github.com/RedHatInsights/insights-core/pull/4502))
+- chore(ci/cd): update the codecov actions to v5 ([PR 4504](https://github.com/RedHatInsights/insights-core/pull/4504))
+
 # [insights-core-3.6.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.2) (2025-07-17)
 
 - fix: add missed optional deps for ls datasources ([PR 4495](https://github.com/RedHatInsights/insights-core/pull/4495))
