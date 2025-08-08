@@ -47,6 +47,7 @@ A minimal set of environment variables for use in subprocess calls
 """
 if "LANG" in os.environ:
     SAFE_ENV["LANG"] = os.environ["LANG"]
+PATH_ENV_OVERRIDER = "PATH=%s:$PATH" % SAFE_ENV["PATH"]
 
 safe_open, encoding = (open, "utf-8") if six.PY3 else (codecs.open, None)
 
@@ -274,9 +275,7 @@ class TextFileProvider(FileProvider):
         if isinstance(self.ctx, HostContext) and self._filters:
             # Pre-filtering ONLY when collecting data
             log.debug("Pre-filtering %s", self.relative_path)
-            args.append(
-                ["grep", "-F", "--", "\n".join(self._filters.keys()), self.path]
-            )
+            args.append(["grep", "-F", "--", "\n".join(self._filters.keys()), self.path])
 
         return args
 
@@ -503,7 +502,8 @@ class ContainerProvider(CommandOutputProvider):
 
 class ContainerFileProvider(ContainerProvider):
     def _misc_settings(self):
-        engine, _, container_id, _, path = self.cmd.split(None, 4)
+        # cmd: <podman|docker> exec -e <env> container_id cat path
+        engine, _, _, _, container_id, _, path = self.cmd.split(None, 6)
         self.engine = os.path.basename(engine)
         self.container_id = container_id
         self.relative_path = os.path.join(container_id, path.lstrip('/'))
@@ -514,7 +514,14 @@ class ContainerFileProvider(ContainerProvider):
 
 class ContainerCommandProvider(ContainerProvider):
     def _misc_settings(self):
-        engine, _, container_id, cmd = self.cmd.split(None, 3)
+        # cmd: <podman|docker> exec -e <env> container_id \
+        #               bash -c "command -v cmd_exec > /dev/null && cmd"
+        engine, _, _, _, container_id, _cmd = self.cmd.split(None, 5)
+        cmd = (
+            _cmd.split('&&', 1)[-1].strip(' "')
+            if _cmd.startswith('bash -c "command -v ') and ' && ' in _cmd
+            else _cmd
+        )
         self.engine = os.path.basename(engine)
         self.container_id = container_id
         self.relative_path = os.path.join(container_id, "insights_commands", mangle_command(cmd))
@@ -1363,8 +1370,16 @@ class container_execute(foreach_execute):
                 image, engine, cid, args = e[0], e[1], e[2], e[3:]
                 # handle command with args
                 cmd = self.cmd % args if args else self.cmd
-                # the_cmd = <podman|docker> exec container_id cmd
-                the_cmd = "/usr/bin/%s exec %s %s" % (engine, cid, cmd)
+                # wrap cmd with existence pre_check
+                cmd_exec = self.cmd.split(None, 1)[0]
+                wrapped_cmd = 'bash -c "command -v %s > /dev/null && %s"' % (cmd_exec, cmd)
+                # the_cmd = <podman|docker> exec -e <env> container_id wrapped_cmd
+                the_cmd = '/usr/bin/%s exec -e "%s" %s %s' % (
+                    engine,
+                    PATH_ENV_OVERRIDER,
+                    cid,
+                    wrapped_cmd,
+                )
                 ccp = ContainerCommandProvider(
                     the_cmd,
                     ctx,
@@ -1453,16 +1468,16 @@ class container_collect(foreach_execute):
         for e in source:
             try:
                 # e       = (image, <podman|docker>, container_id, <path>)
-                image, e = e[0], e[1:]
-                if self.cmd is None or self.cmd == '%s':
-                    # path is provided by `provider`
-                    e, path = e[:-1], e[-1]
-                else:
-                    # path is provided by self.cmd
-                    e, path = e, self.cmd
-                # e       = (<podman|docker>, container_id)
-                # the_cmd = <podman|docker> exec container_id cat path
-                the_cmd = ("/usr/bin/%s exec %s cat " % e) + path
+                image, engine, cid = e[0], e[1], e[2]
+                # path is provided by `provider` or by self.cmd
+                path = e[-1] if self.cmd is None or self.cmd == '%s' else self.cmd
+                # the_cmd = <podman|docker> exec -e <env> container_id cat path
+                the_cmd = '/usr/bin/%s exec -e "%s" %s cat %s' % (
+                    engine,
+                    PATH_ENV_OVERRIDER,
+                    cid,
+                    path,
+                )
                 cfp = ContainerFileProvider(
                     the_cmd,
                     ctx,
