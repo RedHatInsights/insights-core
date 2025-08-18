@@ -489,20 +489,28 @@ class DefaultSpecs(Specs):
     lpstat_p = simple_command("/usr/bin/lpstat -p")
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
     lpstat_queued_jobs_count = lpstat.lpstat_queued_jobs_count
-    ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, keep_rc=True)
+    ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, save_as='ls_la', keep_rc=True)
     ls_la_filtered = command_with_args(
-        '/bin/ls -la %s', ls.list_with_la_filtered, keep_rc=True
+        '/bin/ls -la %s', ls.list_with_la_filtered, save_as='ls_la_filtered', keep_rc=True
     )  # Result is filtered
-    ls_lan = command_with_args('/bin/ls -lan %s', ls.list_with_lan, keep_rc=True)
+    ls_lan = command_with_args('/bin/ls -lan %s', ls.list_with_lan, save_as='ls_lan', keep_rc=True)
     ls_lan_filtered = command_with_args(
-        '/bin/ls -lan %s', ls.list_with_lan_filtered, keep_rc=True
+        '/bin/ls -lan %s', ls.list_with_lan_filtered, save_as='ls_lan_filtered', keep_rc=True
     )  # Result is filtered
-    ls_lanL = command_with_args('/bin/ls -lanL %s', ls.list_with_lanL, keep_rc=True)
-    ls_lanR = command_with_args('/bin/ls -lanR %s', ls.list_with_lanR, keep_rc=True)
-    ls_lanRL = command_with_args('/bin/ls -lanRL %s', ls.list_with_lanRL, keep_rc=True)
-    ls_laRZ = command_with_args('/bin/ls -laRZ %s', ls.list_with_laRZ, keep_rc=True)
-    ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, keep_rc=True)
-    lsattr = command_with_args("/bin/lsattr %s", lsattr.paths_to_lsattr)
+    ls_lanL = command_with_args(
+        '/bin/ls -lanL %s', ls.list_with_lanL, save_as='ls_lanL', keep_rc=True
+    )
+    ls_lanR = command_with_args(
+        '/bin/ls -lanR %s', ls.list_with_lanR, save_as='ls_lanR', keep_rc=True
+    )
+    ls_lanRL = command_with_args(
+        '/bin/ls -lanRL %s', ls.list_with_lanRL, save_as='ls_lanRL', keep_rc=True
+    )
+    ls_laRZ = command_with_args(
+        '/bin/ls -laRZ %s', ls.list_with_laRZ, save_as='ls_laRZ', keep_rc=True
+    )
+    ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, save_as='ls_laZ', keep_rc=True)
+    lsattr = command_with_args("/bin/lsattr %s", lsattr.paths_to_lsattr, save_as='lsattr')
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command(
         "/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO"
@@ -857,7 +865,8 @@ class DefaultSpecs(Specs):
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     sssd_conf_d = glob_file("/etc/sssd/conf.d/*.conf")
     subscription_manager_facts = simple_command(
-        "/usr/sbin/subscription-manager facts", override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"}
+        "/usr/sbin/subscription-manager facts",
+        override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"},
     )
     subscription_manager_id = simple_command(
         "/usr/sbin/subscription-manager identity",  # use "/usr/sbin" here, BZ#1690529
@@ -867,7 +876,8 @@ class DefaultSpecs(Specs):
         r"/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;"
     )
     subscription_manager_status = simple_command(
-        "/usr/sbin/subscription-manager status", override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"}
+        "/usr/sbin/subscription-manager status",
+        override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"},
     )
     sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
     swift_proxy_server_conf = first_file(
