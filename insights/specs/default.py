@@ -474,20 +474,15 @@ class DefaultSpecs(Specs):
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
     lpstat_queued_jobs_count = lpstat.lpstat_queued_jobs_count
     lru_gen_enabled = simple_file("/sys/kernel/mm/lru_gen/enabled")
-    ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, keep_rc=True)
+    ls_files = command_with_args('/bin/ls -lH %s', ls.list_files_with_lH, save_as='ls_files', keep_rc=True)
+    ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, save_as='ls_la', keep_rc=True)
     ls_la_filtered = command_with_args(
-        '/bin/ls -la %s', ls.list_with_la_filtered, keep_rc=True
+        '/bin/ls -la %s', ls.list_with_la_filtered, save_as='ls_la_filtered', keep_rc=True
     )  # Result is filtered
-    ls_lan = command_with_args('/bin/ls -lan %s', ls.list_with_lan, keep_rc=True)
+    ls_lan = command_with_args('/bin/ls -lan %s', ls.list_with_lan, save_as='ls_lan', keep_rc=True)
     ls_lan_filtered = command_with_args(
-        '/bin/ls -lan %s', ls.list_with_lan_filtered, keep_rc=True
+        '/bin/ls -lan %s', ls.list_with_lan_filtered, save_as='ls_lan_filtered', keep_rc=True
     )  # Result is filtered
-    ls_lanL = command_with_args('/bin/ls -lanL %s', ls.list_with_lanL, keep_rc=True)
-    ls_lanR = command_with_args('/bin/ls -lanR %s', ls.list_with_lanR, keep_rc=True)
-    ls_lanRL = command_with_args('/bin/ls -lanRL %s', ls.list_with_lanRL, keep_rc=True)
-    ls_laRZ = command_with_args('/bin/ls -laRZ %s', ls.list_with_laRZ, keep_rc=True)
-    ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, keep_rc=True)
-    ls_files = command_with_args('/bin/ls -lH %s', ls.list_files_with_lH, keep_rc=True)
     lsattr = command_with_args("/bin/lsattr %s", lsattr.paths_to_lsattr)
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command(
