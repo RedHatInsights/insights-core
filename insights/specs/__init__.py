@@ -48,7 +48,7 @@ class Specs(SpecSet):
     basic_auth_insights_client = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     bdi_read_ahead_kb = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     bios_uuid = RegistryPoint()
-    blkid = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    blkid = RegistryPoint(no_obfuscate=['ip'])
     bond = RegistryPoint(multi_output=True)
     bond_dynamic_lb = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     boot_loader_entries = RegistryPoint(multi_output=True)
