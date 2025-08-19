@@ -350,7 +350,6 @@ def collect_and_output(client, config):
         if resp:
             if config.to_json:
                 print(json.dumps(resp))
-            client.show_inventory_deep_link()
 
     client.delete_cached_branch_info()
 
