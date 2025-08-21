@@ -921,6 +921,7 @@ class Specs(SpecSet):
     vmware_tools_conf = RegistryPoint()
     vsftpd = RegistryPoint()
     vsftpd_conf = RegistryPoint(filterable=True)
+    watchdog_conf = RegistryPoint(filterable=True)
     watchdog_logs = RegistryPoint(filterable=True, multi_output=True)
     wc_proc_1_mountinfo = RegistryPoint()
     x86_ibpb_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
