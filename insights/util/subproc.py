@@ -45,7 +45,14 @@ class Pipeline(object):
 
         self.bufsize = kwargs.get("bufsize", -1)
         self.env = kwargs.get("env", os.environ)
-        self.max_failure_output = int(self.env.get("MAX_FAILURE_OUTPUT", "1024"))
+        max_failure_output_env = self.env.get("MAX_FAILURE_OUTPUT", "1024")
+        try:
+            max_failure_output = int(max_failure_output_env)
+            if max_failure_output <= 0:
+                raise ValueError
+        except (ValueError, TypeError):
+            max_failure_output = 1024
+        self.max_failure_output = max_failure_output
         timeout = kwargs.get("timeout")
         signum = kwargs.get("signum", signal.SIGKILL)
 
