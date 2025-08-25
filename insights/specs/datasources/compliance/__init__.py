@@ -244,14 +244,16 @@ class ComplianceClient:
         response = getattr(self.conn.session, opt)(full_url)
         logger.debug("Content of the response {0} - {1}".format(response, response.content))
 
+        operation = "unassigned" if opt == "delete" else "assigned"
         if response.status_code == 202:
-            logger.info("System successfully assigned to policy.\n")
+            logger.info("Successfully {0} policy (ID {1}).\n".format(operation, policy_id))
             return 0
         else:
             logger.error(
-                "Policy ID {0} can not be assigned. "
+                "Policy ID {0} can not be {1}. "
                 "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
-                    policy_id
+                    policy_id,
+                    operation,
                 )
             )
             return constants.sig_kill_bad
