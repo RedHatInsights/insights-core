@@ -4,7 +4,7 @@ import six
 import mock
 import pytest
 from .helpers import insights_upload_conf
-from mock.mock import patch, Mock
+from mock.mock import patch, Mock, call
 from insights.client.collection_rules import correct_format, load_yaml, verify_permissions
 
 
@@ -30,7 +30,10 @@ def test_correct_format_ok_validtypes():
     proper keys and lists of strings are specified
     '''
     # files and commands (file-redaction.yaml)
-    parsed_data = {'commands': ['/bin/test', '/bin/test2'], 'files': ['/var/lib/aaa', '/var/lib/nnn']}
+    parsed_data = {
+        'commands': ['/bin/test', '/bin/test2'],
+        'files': ['/var/lib/aaa', '/var/lib/nnn'],
+    }
     expected_keys = ('commands', 'files')
     err, msg = correct_format(parsed_data, expected_keys, conf_file_redaction_file)
     assert not err
@@ -204,6 +207,7 @@ def test_verify_permissions_bad(os_stat, s_imode):
         verify_permissions('test')
     assert 'Invalid permissions' in str(e.value)
 
+
 # @patch_isfile(True)
 # def test_config_filtering(isfile):
 #     '''
@@ -221,9 +225,11 @@ def patch_isfile(isfile):
     """
     Makes isfile return the passed result.
     """
+
     def decorator(old_function):
         patcher = patch("insights.client.collection_rules.os.path.isfile", return_value=isfile)
         return patcher(old_function)
+
     return decorator
 
 
@@ -231,10 +237,14 @@ def patch_raw_config_parser(items):
     """
     Mocks RawConfigParser so it returns the passed items.
     """
+
     def decorator(old_function):
-        patcher = patch("insights.client.collection_rules.ConfigParser.RawConfigParser",
-                        **{"return_value.items.return_value": items})
+        patcher = patch(
+            "insights.client.collection_rules.ConfigParser.RawConfigParser",
+            **{"return_value.items.return_value": items}
+        )
         return patcher(old_function)
+
     return decorator
 
 
@@ -334,6 +344,141 @@ def test_rm_conf_old_load_ok(isfile, verify):
     assert result["files"] == ["/etc/test"]
     assert result["patterns"] == ["abc123", "def456"]
     assert result["keywords"] == ["key1", "key2", "key3"]
+
+
+@patch(
+    'insights.client.collection_rules.InsightsUploadConf.load_redaction_file',
+    return_value={"files": "/etc/insights-client/machine-id"},
+)
+@patch("insights.client.collection_rules.logger.warning")
+def test_rm_conf_skipped_machine_id_files(warning, config):
+    '''
+    Verify that '/etc/insights-client/machine-id' is set in file-redaction.yaml[files]
+    '''
+    upload_conf = insights_upload_conf()
+    upload_conf.get_rm_conf()
+    warning.assert_called_once_with(
+        "WARNING: Spec %s will be skipped for redaction; as it would cause issues, please remove it from %s.",
+        "machine_id",
+        "/etc/insights-client/file-redaction.yaml",
+    )
+
+
+@patch(
+    'insights.client.collection_rules.InsightsUploadConf.load_redaction_file',
+    return_value={"files": "machine_id"},
+)
+@patch("insights.client.collection_rules.logger.warning")
+def test_rm_conf_skipped_machine_id_files_symname(warning, config):
+    '''
+    Verify that 'machine_id' is set in file-redaction.yaml[files]
+    '''
+    upload_conf = insights_upload_conf()
+    upload_conf.get_rm_conf()
+    warning.assert_called_once_with(
+        "WARNING: Spec %s will be skipped for redaction; as it would cause issues, please remove it from %s.",
+        "machine_id",
+        "/etc/insights-client/file-redaction.yaml",
+    )
+
+
+@patch(
+    'insights.client.collection_rules.InsightsUploadConf.load_redaction_file',
+    return_value={"components": "insights.specs.default.DefaultSpecs.machine_id"},
+)
+@patch("insights.client.collection_rules.logger.warning")
+def test_rm_conf_skipped_machine_id_components(warning, config):
+    '''
+    Verify that 'insights.specs.default.DefaultSpecs.machine_id' is set in file-redaction.yaml[components]
+    '''
+    upload_conf = insights_upload_conf()
+    upload_conf.get_rm_conf()
+    warning.assert_called_once_with(
+        "WARNING: Spec %s will be skipped for redaction; as it would cause issues, please remove it from %s.",
+        "machine_id",
+        "/etc/insights-client/file-redaction.yaml",
+    )
+
+
+@patch(
+    'insights.client.collection_rules.InsightsUploadConf.load_redaction_file',
+    return_value={"commands": "/usr/sbin/subscription-manager identity"},
+)
+@patch("insights.client.collection_rules.logger.warning")
+def test_rm_conf_skipped_subman_id_commands(warning, config):
+    '''
+    Verify that '/usr/sbin/subscription-manager identity' is set in file-redaction.yaml[commands]
+    '''
+    upload_conf = insights_upload_conf()
+    upload_conf.get_rm_conf()
+    warning.assert_called_once_with(
+        "WARNING: Spec %s will be skipped for redaction; as it would cause issues, please remove it from %s.",
+        "subscription_manager_id",
+        "/etc/insights-client/file-redaction.yaml",
+    )
+
+
+@patch(
+    'insights.client.collection_rules.InsightsUploadConf.load_redaction_file',
+    return_value={"commands": "subscription_manager_id"},
+)
+@patch("insights.client.collection_rules.logger.warning")
+def test_rm_conf_skipped_subman_id_commands_symname(warning, config):
+    '''
+    Verify that 'subscription_manager_id' is set in file-redaction.yaml[commands]
+    '''
+    upload_conf = insights_upload_conf()
+    upload_conf.get_rm_conf()
+    warning.assert_called_once_with(
+        "WARNING: Spec %s will be skipped for redaction; as it would cause issues, please remove it from %s.",
+        "subscription_manager_id",
+        "/etc/insights-client/file-redaction.yaml",
+    )
+
+
+@patch(
+    'insights.client.collection_rules.InsightsUploadConf.load_redaction_file',
+    return_value={"components": "insights.specs.default.DefaultSpecs.subscription_manager_id"},
+)
+@patch("insights.client.collection_rules.logger.warning")
+def test_rm_conf_skipped_subman_id_components(warning, config):
+    '''
+    Verify that 'insights.specs.default.DefaultSpecs.subscription_manager_id' is set in file-redaction.yaml[components]
+    '''
+    upload_conf = insights_upload_conf()
+    upload_conf.get_rm_conf()
+    warning.assert_called_once_with(
+        "WARNING: Spec %s will be skipped for redaction; as it would cause issues, please remove it from %s.",
+        "subscription_manager_id",
+        "/etc/insights-client/file-redaction.yaml",
+    )
+
+
+@patch(
+    'insights.client.collection_rules.InsightsUploadConf.load_redaction_file',
+    return_value={"commands": "/usr/sbin/subscription-manager identity", "files": "machine_id"},
+)
+@patch("insights.client.collection_rules.logger.warning")
+def test_rm_conf_skipped_both_id(warning, config):
+    '''
+    Verify that 'insights.specs.default.DefaultSpecs.subscription_manager_id' is set in file-redaction.yaml[components]
+    and 'machine_id' is set in file-redaction.yaml[files]
+    '''
+    upload_conf = insights_upload_conf()
+    upload_conf.get_rm_conf()
+    calls = [
+        call(
+            "WARNING: Spec %s will be skipped for redaction; as it would cause issues, please remove it from %s.",
+            "machine_id",
+            "/etc/insights-client/file-redaction.yaml",
+        ),
+        call(
+            "WARNING: Spec %s will be skipped for redaction; as it would cause issues, please remove it from %s.",
+            "subscription_manager_id",
+            "/etc/insights-client/file-redaction.yaml",
+        ),
+    ]
+    warning.assert_has_calls(calls, any_order=True)
 
 
 # @patch('insights.client.collection_rules.verify_permissions', return_value=True)
