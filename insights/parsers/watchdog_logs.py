@@ -5,11 +5,16 @@ WatchDogLog - file ``/var/log/watchdog/*.std*``
 
 from insights import LogFileOutput, parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.watchdog_logs)
 class WatchDogLog(LogFileOutput):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.watchdog.WatchDogLog` instead.
+
     Class for parsing ``/var/log/watchdog/*.std*`` files.
 
     Sample Input::
@@ -30,5 +35,9 @@ class WatchDogLog(LogFileOutput):
 
         DEBUG:root:0
     """
+
+    def __init__(self, *args, **kwargs):
+        deprecated(WatchDogLog, "Please use the :class:`insights.parsers.watchdog.WatchDogLog` instead.", "3.8.0")
+        super(WatchDogLog, self).__init__(*args, **kwargs)
 
     time_format = None
