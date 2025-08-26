@@ -7,6 +7,7 @@ from insights.core.exceptions import SkipComponent, ContentException
 from insights.core.spec_factory import ContainerCommandProvider
 from insights.specs.datasources.container.nginx_conf import LocalSpecs, nginx_conf
 
+CONTAINER_CMD = '%s exec -e "PATH=$PATH" %s bash -c "command -v find && find /etc/ /opt/ *.conf"'
 
 find_list = [
     '/etc/nginx/nginx.conf',
@@ -43,12 +44,8 @@ find_result_empty = ContentException(
 )
 def test_nginx_conf(validate, load, find_l):
     find_nginx_confs = [
-        ContainerCommandProvider(
-            'podman exec 03e2861336a7 find /etc/ /opt/ *.conf', None, 'rhel8_nginx'
-        ),
-        ContainerCommandProvider(
-            'docker exec 03e2861336a8 find /etc/ /opt/ *.conf', None, 'rhel7_nginx'
-        ),
+        ContainerCommandProvider(CONTAINER_CMD % ("podman", "03e2861336a7"), None, 'rhel8_nginx'),
+        ContainerCommandProvider(CONTAINER_CMD % ("docker", "03e2861336a8"), None, 'rhel7_nginx'),
     ]
     broker = {LocalSpecs.container_find_etc_opt_conf: find_nginx_confs, HostContext: None}
 
@@ -72,12 +69,8 @@ def test_nginx_conf(validate, load, find_l):
 )
 def test_nginx_conf_empty(validate, load, find_l):
     find_nginx_confs_ng = [
-        ContainerCommandProvider(
-            'podman exec 03e2861336a7 find /etc/ /opt/ *.conf', None, 'rhel8_nginx'
-        ),
-        ContainerCommandProvider(
-            'docker exec 03e2861336a8 find /etc/ /opt/ *.conf', None, 'rhel7_nginx'
-        ),
+        ContainerCommandProvider(CONTAINER_CMD % ("podman", "03e2861336a7"), None, 'rhel8_nginx'),
+        ContainerCommandProvider(CONTAINER_CMD % ("docker", "03e2861336a8"), None, 'rhel7_nginx'),
     ]
     broker = {LocalSpecs.container_find_etc_opt_conf: find_nginx_confs_ng, HostContext: None}
 
@@ -95,18 +88,10 @@ def test_nginx_conf_empty(validate, load, find_l):
 )
 def test_nginx_conf_on_cmd_error(validate, load, find_l):
     find_nginx_confs = [
-        ContainerCommandProvider(
-            'podman exec 03e2861336a5 find /etc/ /opt/ *.conf', None, 'rhel8_nginx'
-        ),
-        ContainerCommandProvider(
-            'docker exec 03e2861336a6 find /etc/ /opt/ *.conf', None, 'rhel7_nginx'
-        ),
-        ContainerCommandProvider(
-            'podman exec 03e2861336a7 find /etc/ /opt/ *.conf', None, 'rhel8_nginx'
-        ),
-        ContainerCommandProvider(
-            'docker exec 03e2861336a8 find /etc/ /opt/ *.conf', None, 'rhel7_nginx'
-        ),
+        ContainerCommandProvider(CONTAINER_CMD % ("podman", "03e2861336a5"), None, 'rhel8_nginx'),
+        ContainerCommandProvider(CONTAINER_CMD % ("docker", "03e2861336a6"), None, 'rhel7_nginx'),
+        ContainerCommandProvider(CONTAINER_CMD % ("podman", "03e2861336a7"), None, 'rhel8_nginx'),
+        ContainerCommandProvider(CONTAINER_CMD % ("docker", "03e2861336a8"), None, 'rhel7_nginx'),
     ]
     broker = {LocalSpecs.container_find_etc_opt_conf: find_nginx_confs, HostContext: None}
 
