@@ -27,6 +27,7 @@ class Pipeline(object):
     >>> output = p()
     >>> p.write("pythons.txt")
     """
+
     def __init__(self, *cmds, **kwargs):
         """
         cmds (list): one or more commands. Each command will be shlex.split if
@@ -44,6 +45,14 @@ class Pipeline(object):
 
         self.bufsize = kwargs.get("bufsize", -1)
         self.env = kwargs.get("env", os.environ)
+        max_failure_output_env = self.env.get("MAX_FAILURE_OUTPUT", "1024")
+        try:
+            max_failure_output = int(max_failure_output_env)
+            if max_failure_output <= 0:
+                raise ValueError
+        except (ValueError, TypeError):
+            max_failure_output = 1024
+        self.max_failure_output = max_failure_output
         timeout = kwargs.get("timeout")
         signum = kwargs.get("signum", signal.SIGKILL)
 
@@ -62,15 +71,43 @@ class Pipeline(object):
     def _build_pipes(self, out_stream=PIPE):
         log.debug("Executing: %s" % str(self.cmds))
         if len(self.cmds) == 1:
-            return Popen(self.cmds[0], bufsize=self.bufsize, stdin=DEVNULL, stderr=STDOUT, stdout=out_stream, env=self.env)
+            return Popen(
+                self.cmds[0],
+                bufsize=self.bufsize,
+                stdin=DEVNULL,
+                stderr=STDOUT,
+                stdout=out_stream,
+                env=self.env,
+            )
 
-        stdout = Popen(self.cmds[0], bufsize=self.bufsize, stdin=DEVNULL, stderr=STDOUT, stdout=PIPE, env=self.env).stdout
+        stdout = Popen(
+            self.cmds[0],
+            bufsize=self.bufsize,
+            stdin=DEVNULL,
+            stderr=STDOUT,
+            stdout=PIPE,
+            env=self.env,
+        ).stdout
         last = len(self.cmds) - 2
         for i, arg in enumerate(self.cmds[1:]):
             if i < last:
-                stdout = Popen(arg, bufsize=self.bufsize, stdin=stdout, stderr=STDOUT, stdout=PIPE, env=self.env).stdout
+                stdout = Popen(
+                    arg,
+                    bufsize=self.bufsize,
+                    stdin=stdout,
+                    stderr=STDOUT,
+                    stdout=PIPE,
+                    env=self.env,
+                ).stdout
             else:
-                return Popen(arg, bufsize=self.bufsize, stdin=stdout, stderr=STDOUT, stdout=out_stream, env=self.env)
+                return Popen(
+                    arg,
+                    bufsize=self.bufsize,
+                    stdin=stdout,
+                    stderr=STDOUT,
+                    stdout=out_stream,
+                    env=self.env,
+                )
 
     def __call__(self, keep_rc=False):
         """
@@ -89,7 +126,8 @@ class Pipeline(object):
         if keep_rc:
             return (rc, output)
         if rc:
-            raise CalledProcessError(rc, self.cmds[0], output)
+            # it's enough for trobuleshooting to keep the first 1024 charactersof the failure output
+            raise CalledProcessError(rc, self.cmds[0], output[: self.max_failure_output])
         return output
 
     def write(self, output, mode="w", keep_rc=False):
@@ -133,12 +171,7 @@ class Pipeline(object):
                 raise CalledProcessError(rc, self.cmds[0], "")
 
 
-def call(cmd,
-         timeout=None,
-         signum=signal.SIGKILL,
-         keep_rc=False,
-         encoding="utf-8",
-         env=os.environ):
+def call(cmd, timeout=None, signum=signal.SIGKILL, keep_rc=False, encoding="utf-8", env=os.environ):
     """
     Execute a cmd or list of commands with an optional timeout in seconds.
 
