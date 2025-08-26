@@ -215,6 +215,7 @@ class DefaultSpecs(Specs):
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
     cmdline = simple_file("/proc/cmdline")
     cni_podman_bridge_conf = simple_file("/etc/cni/net.d/87-podman-bridge.conflist")
+    compliance_enabled_policies = compliance_ds.compliance_advisor_rule_enabled
     convert2rhel_facts = simple_file("/etc/rhsm/facts/convert2rhel.facts")
     corosync = simple_file("/etc/sysconfig/corosync")
     corosync_cmapctl = foreach_execute(corosync_ds.corosync_cmapctl_cmds, "%s")
@@ -353,7 +354,6 @@ class DefaultSpecs(Specs):
     gluster_v_info = simple_command("/usr/sbin/gluster volume info")
     greenboot_status = simple_command("/usr/libexec/greenboot/greenboot-status")  # used by puptoo
     group_info = command_with_args("/usr/bin/getent group %s", user_group.group_filters)
-    grub1_config_perms = simple_command("/bin/ls -lH /boot/grub/grub.conf")  # RHEL6
     grub2_cfg = simple_file("/boot/grub2/grub.cfg")
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
     grubby_default_index = simple_command(
@@ -362,9 +362,6 @@ class DefaultSpecs(Specs):
     grubby_default_kernel = simple_command("/sbin/grubby --default-kernel")
     grubby_info_all = simple_command("/usr/sbin/grubby --info=ALL")
     grub_conf = simple_file("/boot/grub/grub.conf")
-    grub_config_perms = simple_command(
-        "/bin/ls -lH /boot/grub2/grub.cfg"
-    )  # only RHEL7 and updwards
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
     grubenv = simple_command("/usr/bin/grub2-editenv list", keep_rc=True)
     haproxy_cfg = first_file(
@@ -474,7 +471,9 @@ class DefaultSpecs(Specs):
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
     lpstat_queued_jobs_count = lpstat.lpstat_queued_jobs_count
     lru_gen_enabled = simple_file("/sys/kernel/mm/lru_gen/enabled")
-    ls_files = command_with_args('/bin/ls -lH %s', ls.list_files_with_lH, save_as='ls_files', keep_rc=True)
+    ls_files = command_with_args(
+        '/bin/ls -lH %s', ls.list_files_with_lH, save_as='ls_files', keep_rc=True
+    )
     ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, save_as='ls_la', keep_rc=True)
     ls_la_filtered = command_with_args(
         '/bin/ls -la %s', ls.list_with_la_filtered, save_as='ls_la_filtered', keep_rc=True
@@ -839,12 +838,12 @@ class DefaultSpecs(Specs):
     ssh_config_d = glob_file(r"/etc/ssh/ssh_config.d/*.conf")
     sshd_config = simple_file("/etc/ssh/sshd_config")
     sshd_config_d = glob_file(r"/etc/ssh/sshd_config.d/*.conf")
-    sshd_config_perms = simple_command("/bin/ls -lH /etc/ssh/sshd_config")
     sshd_test_mode = simple_command("/usr/sbin/sshd -T")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     sssd_conf_d = glob_file("/etc/sssd/conf.d/*.conf")
     subscription_manager_facts = simple_command(
-        "/usr/sbin/subscription-manager facts", override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"}
+        "/usr/sbin/subscription-manager facts",
+        override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"},
     )
     subscription_manager_id = simple_command(
         "/usr/sbin/subscription-manager identity",  # use "/usr/sbin" here, BZ#1690529
@@ -854,7 +853,8 @@ class DefaultSpecs(Specs):
         r"/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;"
     )
     subscription_manager_status = simple_command(
-        "/usr/sbin/subscription-manager status", override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"}
+        "/usr/sbin/subscription-manager status",
+        override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"},
     )
     subscription_manager_syspurpose = simple_command(
         "/usr/sbin/subscription-manager syspurpose --show",
