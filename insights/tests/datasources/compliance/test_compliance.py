@@ -401,7 +401,7 @@ def test_policy_link_assign(config, log):
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.patch.assert_called_with(url)
-    log.info.assert_called_with("System successfully assigned to policy.\n")
+    log.info.assert_called_with("Successfully assigned policy (ID {0}).\n".format(policy_id))
 
 
 @patch('insights.specs.datasources.compliance.logger')
@@ -440,7 +440,7 @@ def test_policy_link_unassign(config, log):
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.delete.assert_called_with(url)
-    log.info.assert_called_with("System successfully assigned to policy.\n")
+    log.info.assert_called_with("Successfully unassigned policy (ID {0}).\n".format(policy_id))
 
 
 @patch('insights.specs.datasources.compliance.logger')
@@ -458,7 +458,7 @@ def test_policy_link_unassign_invalid_policy_id(config, log):
     )
     compliance_client.conn.session.delete.assert_called_with(url)
     log.error.assert_called_with(
-        "Policy ID {0} can not be assigned. "
+        "Policy ID {0} can not be unassigned. "
         "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
             policy_id
         )
