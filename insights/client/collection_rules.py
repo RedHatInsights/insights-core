@@ -245,9 +245,9 @@ class InsightsUploadConf(object):
 
     def get_rm_conf(self):
         '''
-        Try to load the the "new" version of
-        remove.conf (file-redaction.yaml and file-content-redaction.yaml)
+        Try to load the file-redaction.yaml and file-content-redaction.yaml
         '''
+
         rm_conf = {}
         redact_conf = self.load_redaction_file(self.redaction_file)
         content_redact_conf = self.load_redaction_file(self.content_redaction_file)
@@ -263,15 +263,27 @@ class InsightsUploadConf(object):
             # remove Nones, empty strings, and empty lists
             self.rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
 
-        if self.rm_conf and (
-            '/etc/insights-client/machine-id' in self.rm_conf.get('files', [])
-            or 'insights.specs.default.DefaultSpecs.machine_id'
-            in self.rm_conf.get('components', [])
-        ):
-            logger.warning(
-                "WARNING: Spec machine_id will be skipped for redaction; as it would cause issues, please remove it from %s.",
-                self.redaction_file,
-            )
+        if self.rm_conf:
+            # WARNING for missing HBI required specs
+            required = {
+                'machine_id': ('files', '/etc/insights-client/machine-id'),
+                'subscription_manager_id': ('commands', '/usr/sbin/subscription-manager identity'),
+            }
+            _prefix = 'insights.specs.default.DefaultSpecs.'
+            for spec, (kind, cp) in required.items():
+                if (
+                    # symbolic name / spec name
+                    any(spec in self.rm_conf.get(_k, []) for _k in ['files', 'commands'])
+                    # file path / command line
+                    or cp in self.rm_conf.get(kind, [])
+                    # insights component module
+                    or _prefix + spec in self.rm_conf.get('components', [])
+                ):
+                    logger.warning(
+                        "WARNING: Spec %s will be skipped for redaction; as it would cause issues, please remove it from %s.",
+                        spec,
+                        self.redaction_file,
+                    )
         # return the RAW rm_conf
         return self.rm_conf
 
