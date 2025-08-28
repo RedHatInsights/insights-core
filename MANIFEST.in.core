@@ -8,7 +8,6 @@ include insights/compliance_obfuscations.yaml
 include insights/defaults.yaml
 include insights/filters.yaml
 include insights/revoked_playbooks.yaml
-prune insights/parsers/tests
 prune insights/parsr/examples/tests
 prune insights/parsr/query/tests
 prune insights/parsr/tests
