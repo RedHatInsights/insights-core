@@ -127,6 +127,7 @@ class Specs(SpecSet):
     cpuinfo = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     cpupower_frequency_info = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     cpuset_cpus = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    crictl_ps = RegistryPoint()
     crictl_logs = RegistryPoint(multi_output=True, filterable=True)
     crio_conf = RegistryPoint(multi_output=True)
     cron_daily_rhsmd = RegistryPoint(filterable=True)
