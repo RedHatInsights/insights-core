@@ -2,6 +2,21 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.4) (2025-08-29)
+
+- chore: print warning when 'subscription_manager_id' is skipped for redaction ([PR 4527](https://github.com/RedHatInsights/insights-core/pull/4527))
+- chore: update MANIFEST.in accordingly ([PR 4531](https://github.com/RedHatInsights/insights-core/pull/4531))
+- fix: container spec exec with env and cmd precheck ([PR 4513](https://github.com/RedHatInsights/insights-core/pull/4513))
+- fix: console messsags for --compliance-unassign ([PR 4530](https://github.com/RedHatInsights/insights-core/pull/4530))
+- feat: Add parser and spec for compliance_policies_enabled ([PR 4498](https://github.com/RedHatInsights/insights-core/pull/4498))
+- chore: Move parser "WatchDogLog" to "watchdog.py" file ([PR 4529](https://github.com/RedHatInsights/insights-core/pull/4529))
+- fix: reduce the size of CalledProcessError exception ([PR 4528](https://github.com/RedHatInsights/insights-core/pull/4528))
+- chore(spec): remove unused *_config_perms from collection ([PR 4526](https://github.com/RedHatInsights/insights-core/pull/4526))
+- feat: New spec "/etc/watchdog.conf" and the parser ([PR 4523](https://github.com/RedHatInsights/insights-core/pull/4523))
+- feat(client): suppress link message after upload ([PR 4517](https://github.com/RedHatInsights/insights-core/pull/4517))
+- fix: hostname obfuscation issue in particular specs ([PR 4511](https://github.com/RedHatInsights/insights-core/pull/4511))
+- fix: override LANG to 'C.UTF-8' for subscription-manager ([PR 4506](https://github.com/RedHatInsights/insights-core/pull/4506))
+
 # [insights-core-3.6.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.3) (2025-08-07)
 
 - feat(client): Exclude vendor libs from coverage stats ([PR 4520](https://github.com/RedHatInsights/insights-core/pull/4520))

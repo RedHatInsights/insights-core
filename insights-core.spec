@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.6.3
+Version:        3.6.4
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,31 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Fri Aug 29 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.4-1
+- chore: print warning when 'subscription_manager_id' is skipped for redaction
+  (#4527) (xiangceliu@redhat.com)
+- chore: update MANIFEST.in accordingly (#4531) (xiangceliu@redhat.com)
+- fix: container spec exec with env and cmd precheck (#4513)
+  (xiaoxwan@redhat.com)
+- fix: console messsags for --compliance-unassign (#4530)
+  (xiangceliu@redhat.com)
+- feat: Add parser and spec for compliance_policies_enabled (#4498)
+  (jiazhang@redhat.com)
+- chore: Move parser "WatchDogLog" to "watchdog.py" file (#4529)
+  (44796653+huali027@users.noreply.github.com)
+- fix: reduce the size of CalledProcessError exception (#4528)
+  (xiangceliu@redhat.com)
+- chore(spec): remove unused *_config_perms from collection (#4526)
+  (xiangceliu@redhat.com)
+- feat: New spec "/etc/watchdog.conf" and the parser (#4523)
+  (44796653+huali027@users.noreply.github.com)
+- feat(client): suppress link message after upload (#4517)
+  (pschrimp@redhat.com)
+- fix: hostname obfuscation issue in particular specs (#4511)
+  (xiangceliu@redhat.com)
+- fix: override LANG to 'C.UTF-8' for subscription-manager (#4506)
+  (xiangceliu@redhat.com)
+
 * Thu Aug 07 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.3-1
 - feat(client): Exclude vendor libs from coverage stats (#4520)
   (pschrimp@redhat.com)
