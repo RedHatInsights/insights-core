@@ -1,8 +1,14 @@
 %define distro redhat
 %global debug_package %{nil}
 %global modulename insights_core
-%global selinux_policy_version 42.1.1
+%if 0%{?with_selinux}
 %global selinuxtype targeted
+%if 0%{?rhel} == 9
+%global selinux_policy_version 38.1.60
+%elif 0%{?rhel} == 10
+%global selinux_policy_version 42.1.1
+%endif
+%endif
 
 Name:           insights-core
 Version:        3.0.8
@@ -11,9 +17,11 @@ Summary:        Insights Core is a data collection and analysis framework.
 
 License:        Apache-2.0
 URL:            https://github.com/RedHatInsights/insights-core
-Source0:        https://github.com/RedHatInsights/insights-core/archive/refs/tags/%{name}-%{version}.tar.gz
 %if 0%{?with_selinux}
-Source1:        https://github.com/xiangce/insights-core-selinux/archive/refs/tags/%{name}-selinux-%{version}.tar.gz
+Source0:        %{name}-%{version}.tar.gz
+Source1:        %{name}-selinux-%{version}.tar.gz
+%else
+Source0:        %{modulename}-%{version}.tar.gz
 %endif
 
 BuildArch:      noarch
@@ -56,7 +64,7 @@ Insights Core is a data collection and analysis framework.
 %if 0%{?with_selinux}
 %setup -q -n %{name}-%{version} -a 1
 %else
-%setup -q -n %{name}-%{version}
+%setup -q -n %{modulename}-%{version}
 %endif
 
 %if 0%{?with_selinux}
