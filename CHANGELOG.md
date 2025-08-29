@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.0-3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0-3) (2025-08-29)
+
+- fix: reduce the size of CalledProcessError exception ([PR 4528](https://github.com/RedHatInsights/insights-core/pull/4528))
+- fix: override LANG to 'C.UTF-8' for subscription-manager ([PR 4506](https://github.com/RedHatInsights/insights-core/pull/4506))
+- chore: do not collect ls_dev anymore in core collection ([PR 4453](https://github.com/RedHatInsights/insights-core/pull/4453))
+- chore: stop collecting ls_boot/ls_sys_firmware ([PR 4406](https://github.com/RedHatInsights/insights-core/pull/4406))
+
 # [insights-core-3.5.0-2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0-2) (2025-03-06)
 
 - Support non-RHEL systems for Core updates ([PR 4345](https://github.com/RedHatInsights/insights-core/pull/4345))

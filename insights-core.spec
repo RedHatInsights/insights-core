@@ -1,6 +1,6 @@
 Name:           insights-core
 Version:        3.5.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
 License:        ASL 2.0
@@ -50,6 +50,16 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Fri Aug 29 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.0-3
+- fix: reduce the size of CalledProcessError exception (#4528)
+  (xiangceliu@redhat.com)
+- fix: override LANG to 'C.UTF-8' for subscription-manager (#4510)
+  (xiangceliu@redhat.com)
+- chore: do not collect ls_dev anymore in core collection (#4453)
+  (xiangceliu@redhat.com)
+- chore: stop collecting ls_boot/ls_sys_firmware (#4406)
+  (xiangceliu@redhat.com)
+
 * Thu Jan 02 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.0-2
 - Support non-RHEL systems for Core updates (#4345) (mhorky@redhat.com)
 
