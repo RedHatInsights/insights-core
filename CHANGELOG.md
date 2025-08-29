@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.0-3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0-3) (2025-08-29)
+
+- chore: do not collect ls_dev anymore in core collection ([PR 4453](https://github.com/RedHatInsights/insights-core/pull/4453))
+- chore: stop collecting ls_boot/ls_sys_firmware ([PR 4406](https://github.com/RedHatInsights/insights-core/pull/4406))
+- fix: override LANG to 'C.UTF-8' for subscription-manager ([PR 4510](https://github.com/RedHatInsights/insights-core/pull/4510))
+
 # [insights-core-3.5.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0) (2025-01-02)
 
 - fix: typo options to the ls_lanRL spec ([PR 4323](https://github.com/RedHatInsights/insights-core/pull/4323))
