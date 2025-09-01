@@ -190,6 +190,7 @@ class GrubConf(object):
                     # grub2
                     if 'grub' not in rpms and 'grub2' in rpms and _grub2:
                         self.grub = _grub2
+                # Check grub version via the booted CmdLine
                 if self.grub is None and cmdline:
                     # grub1
                     if "BOOT_IMAGE" not in cmdline:

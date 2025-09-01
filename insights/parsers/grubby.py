@@ -193,7 +193,7 @@ class GrubbyInfoAll(CommandParser):
 
     @staticmethod
     def parse_entry_args(args):
-        parsed_args = dict()
+        parsed_args = {}
         for el in args.split():
             key, value = el, True
             if "=" in el:

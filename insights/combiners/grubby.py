@@ -54,8 +54,8 @@ class Grubby(object):
             )
 
         self.version = self._version = 2  # GRUB2
-        self._kernel_initrds = "not set yet"  # lazy load
-        self._is_kdump_iommu_enabled = "not set yet"  # lazy load
+        self._kernel_initrds = None  # lazy load
+        self._is_kdump_iommu_enabled = None  # lazy load
         self._expand_with_grubenv(grubenv) if grubenv else None
         self.boot_entries = list(self._boot_entries[idx] for idx in sorted(self._boot_entries))
 
@@ -92,9 +92,8 @@ class Grubby(object):
                     "\\$tuned_params", grubenv.get("tuned_params", ""), entry['cmdline']
                 ).strip()
                 if_reload_args = True
-            entry['args'] = (
-                GrubbyInfoAll.parse_entry_args(entry['cmdline']) if if_reload_args else None
-            )
+            if if_reload_args:
+                entry['args'] = GrubbyInfoAll.parse_entry_args(entry['cmdline'])
 
             if "$tuned_initrd" in entry.get('initrd', ''):
                 entry['initrd'] = re.sub(
@@ -115,7 +114,7 @@ class Grubby(object):
             To tell the default kernel path or entry, use the provided
             attribute `default_kernel` or `default_boot_entry` directly.
         """
-        if self._kernel_initrds == "not set yet":
+        if self._kernel_initrds is None:
             grub_kernels = []
             grub_initrds = []
             for entry in self._boot_entries.values():
@@ -142,7 +141,7 @@ class Grubby(object):
         Returns:
             bool: ``True`` when 'intel_iommu=on' is set, otherwise ``False``
         """
-        if self._is_kdump_iommu_enabled == "not set yet":
+        if self._is_kdump_iommu_enabled is None:
             self._is_kdump_iommu_enabled = False
             for entry in self._boot_entries.values():
                 if "intel_iommu=on" in entry.get('cmdline', ''):
