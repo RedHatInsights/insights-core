@@ -199,6 +199,7 @@ def test_grubby_info_all():
             'quiet': [True],
             'retbleed': ['stuff'],
         },
+        raw_args="ro crashkernel=1G-4G:192M,4G-64G:256M,64G-:512M resume=/dev/mapper/rhel-swap rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet retbleed=stuff",
         root="/dev/mapper/rhel-root",
         initrd="/boot/initramfs-5.14.0-162.6.1.el9_1.x86_64.img",
         title="Red Hat Enterprise Linux (5.14.0-162.6.1.el9_1.x86_64) 9.1 (Plow)",
