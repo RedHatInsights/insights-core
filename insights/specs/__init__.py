@@ -109,7 +109,6 @@ class Specs(SpecSet):
     cni_podman_bridge_conf = RegistryPoint()
     cobbler_modules_conf = RegistryPoint()
     cobbler_settings = RegistryPoint()
-    compliance_enabled_policies = RegistryPoint()
     containers_policy = RegistryPoint()
     controller_manager_log = RegistryPoint(multi_output=True)
     convert2rhel_facts = RegistryPoint()
