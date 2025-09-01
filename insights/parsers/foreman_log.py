@@ -31,6 +31,8 @@ ForemanSSLAccessLog - file ``/var/log/httpd/foreman-ssl_access_ssl.log``
 ForemanSSLErrorLog - file ``/var/log/httpd/foreman-ssl_error_ssl.log``
 ----------------------------------------------------------------------
 
+ForemanLog - file ``/var/log/foreman-installer/foreman.log``
+------------------------------------------------------------
 """
 from datetime import datetime
 
@@ -50,6 +52,11 @@ class ProxyLog(LogFileOutput):
 @parser(Specs.foreman_satellite_log)
 class SatelliteLog(LogFileOutput):
     """Class for parsing ``foreman-installer/satellite.log`` file."""
+    pass
+
+@parser(Specs.foreman_log)
+class ForemanLog(LogFileOutput):
+    """Class for parsing ``/var/log/foreman-installer/foreman.log` file."""
     pass
 
 
