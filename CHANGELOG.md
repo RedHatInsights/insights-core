@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.5) (2025-09-01)
+
+- Revert "feat: Add parser and spec for compliance_policies_enabled (4498)" ([PR 4534](https://github.com/RedHatInsights/insights-core/pull/4534))
+
 # [insights-core-3.6.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.4) (2025-08-29)
 
 - chore: print warning when 'subscription_manager_id' is skipped for redaction ([PR 4527](https://github.com/RedHatInsights/insights-core/pull/4527))
