@@ -54,9 +54,10 @@ class SatelliteLog(LogFileOutput):
     """Class for parsing ``foreman-installer/satellite.log`` file."""
     pass
 
+
 @parser(Specs.foreman_log)
 class ForemanLog(LogFileOutput):
-    """Class for parsing ``/var/log/foreman-installer/foreman.log` file."""
+    """Class for parsing ``/var/log/foreman-installer/foreman.log`` file."""
     pass
 
 
