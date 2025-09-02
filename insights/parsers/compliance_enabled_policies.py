@@ -21,11 +21,13 @@ class ComplianceEnabledPolicies(JSONParser):
                 {
                     "id":"12345678-aaaa-bbbb-cccc-1234567890ab",
                     "title":"advisor rule test - CIS Red Hat Enterprise Linux 8 Benchmark for Level 1 - Server",
+                    "ref_id":"xccdf_org.ssgproject.content_profile_cis_server_l1",
                     "description":"This profile defines a baseline that aligns to the Level 1 - Server"
                 },
                 {
                     "id":"12345678-aaaa-bbbb-cccc-1234567890xy",
                     "title":"CIS Red Hat Enterprise Linux 8 Benchmark for Level 2 - Server",
+                    "ref_id":"xccdf_org.ssgproject.content_profile_cis_server_l2",
                     "description":"This profile defines a baseline that aligns to the Level 2 - Server"
                 }
             ],

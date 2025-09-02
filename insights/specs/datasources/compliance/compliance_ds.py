@@ -310,5 +310,5 @@ def compliance_advisor_rule_enabled(broker):
             relative_path='insights_datasources/compliance_enabled_policies'
         )
 
-    except Exception as err:
+    except Exception:
         raise SkipComponent

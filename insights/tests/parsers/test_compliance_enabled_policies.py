@@ -67,6 +67,12 @@ def test_compliance_enabled_policies_skip():
     assert "Empty output." in str(ex)
 
 
+def test_compliance_enabled_policies_malformed_json():
+    malformed_json = "{not: valid, json:}"
+    with pytest.raises(Exception):
+        ComplianceEnabledPolicies(context_wrap(malformed_json))
+
+
 def test_compliance_enabled_policies():
     compliance_enabled_policies_info = ComplianceEnabledPolicies(context_wrap(COMPLIANCE_ENABLE_POLICIES))
     assert compliance_enabled_policies_info['enabled_policies'][0]['ref_id'] == 'xccdf_org.ssgproject.content_profile_cis_server_l1'
