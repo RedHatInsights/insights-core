@@ -5,9 +5,18 @@ from insights.parsers.foreman_log import CandlepinLog, ProxyLog
 from insights.parsers.foreman_log import CandlepinErrorLog
 from insights.parsers.foreman_log import ForemanSSLAccessLog
 from insights.parsers.foreman_log import ForemanSSLErrorLog
+from insights.parsers.foreman_log import ForemanLog
 from datetime import datetime
 import doctest
 
+FOREMAN_LOG = """
+2024-09-05 07:40:42 [NOTICE] [root] Loading installer configuration. This will take some time.
+2024-09-05 07:40:46 [NOTICE] [root] Running installer with log based terminal output at level NOTICE.
+2024-09-05 07:40:46 [NOTICE] [root] Use -l to set the terminal output log level to ERROR, WARN, NOTICE, INFO, or DEBUG. See --full-help for definitions.
+2024-09-05 07:40:53 [NOTICE] [configure] Starting system configuration.
+2024-09-05 07:40:57 [ERROR ] [configure] Evaluation Error: Error while evaluating a Function Call, Could not find template 'mosquitto/mosquitto.conf' (file: /usr/share/foreman-installer/modules/mosquitto/manifests/config.pp, line: 26, column: 16) on node santro8-stream-xx-foreman-xx-irig.torso.example.com
+2024-09-05 07:40:57 [NOTICE] [configure] System configuration has finished.
+""".strip()
 
 PRODUCTION_LOG = """
 2015-11-13 03:30:07 [I] Completed 200 OK in 1783ms (Views: 0.2ms | ActiveRecord: 172.9ms)
@@ -187,6 +196,14 @@ FOREMAN_SSL_ERROR_SSL_LOG = """
 [Mon Aug 09 11:02:23.229609 2021] [proxy_http:error] [pid 749] (20014)Internal error: [client 10.72.44.126:47920] AH01102: error reading status line from remote server yyy
 [Mon Aug 09 11:17:52.204503 2021] [proxy_http:error] [pid 5854] (20014)Internal error: [client 10.72.44.126:48016] AH01102: error reading status line from remote server yyy
 """.strip()
+
+
+def test_foreman_log():
+    foremanlog = ForemanLog(context_wrap(FOREMAN_LOG))
+    assert "System configuration has finished" in foremanlog
+    assert "Starting system configuration." in foremanlog.get("Starting system configuration")[0]["raw_message"]
+    assert len(list(foremanlog.get_after(datetime(2024, 8, 5, 12, 12, 12)))) == 6
+    assert len(list(foremanlog.get_after(datetime(2024, 9, 5, 7, 40, 56)))) == 2
 
 
 def test_production_log():
