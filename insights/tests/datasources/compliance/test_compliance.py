@@ -68,6 +68,21 @@ def test_get_system_policies_error(legacy_upload):
     compliance_client.conn.session.get.assert_called_with(url)
 
 
+@mark.parametrize("legacy_upload", [True, False])
+@patch("insights.specs.datasources.compliance.ComplianceClient.inventory_id")
+def test_get_system_policies_error_none_inventory_id(id, legacy_upload):
+    config = InsightsConfig(
+        legacy_upload=legacy_upload, base_url='localhost/app', systemid='', proxy=None
+    )
+    if legacy_upload:
+        constants.base_url = config.base_url
+    compliance_client = ComplianceClient(config=config)
+    compliance_client.inventory_id = None
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=500))
+    assert compliance_client.get_system_policies() == []
+    compliance_client.conn.session.get.assert_not_called()
+
+
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_profile_files(config):
     compliance_client = ComplianceClient(config=config)
@@ -304,16 +319,17 @@ def test_build_oscap_command_append_tailoring_path(config):
     )
 
 
+@patch('insights.specs.datasources.compliance.logger')
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
-def test__inventory_id(config):
+def test__inventory_id(config, log):
     compliance_client = ComplianceClient(config=config)
     compliance_client.conn._fetch_system_by_machine_id = lambda: None
-    with raises(SystemExit):
-        compliance_client.inventory_id
+    assert compliance_client.inventory_id is None
+    log.debug.assert_called_with("Failed to find system in Inventory")
 
     compliance_client.conn._fetch_system_by_machine_id = lambda: {}
-    with raises(SystemExit):
-        compliance_client.inventory_id
+    assert compliance_client.inventory_id is None
+    log.debug.assert_called_with("Failed to find system in Inventory")
 
     compliance_client.conn._fetch_system_by_machine_id = lambda: {'id': '12345'}
     assert compliance_client.inventory_id == '12345'
@@ -402,6 +418,22 @@ def test_policy_link_assign(config, log):
     )
     compliance_client.conn.session.patch.assert_called_with(url)
     log.info.assert_called_with("Successfully assigned policy (ID {0}).\n".format(policy_id))
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.specs.datasources.compliance.ComplianceClient.inventory_id")
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_policy_link_assign_none_inventory_id(config, id, log):
+    compliance_client = ComplianceClient(config=config)
+    compliance_client.inventory_id = None
+    policy_id = "d83ddbac-ab56-420b-9e71-878795375af5"
+    compliance_client.conn.session.patch = Mock(
+        return_value=Mock(status_code=202, json=Mock(return_value={}))
+    )
+    assert compliance_client.policy_link(policy_id, 'patch') == constants.sig_kill_bad
+    compliance_client.conn.session.patch.assert_not_called()
+    log.error.assert_called_with("Failed to find system in Inventory")
+    log.debug.assert_not_called()
 
 
 @patch('insights.specs.datasources.compliance.logger')
