@@ -1613,8 +1613,8 @@ def deserialize_command_output(_type, data, root, ctx, ds):
     res = SerializedOutputProvider(rel, root=root, ctx=ctx, ds=ds)
 
     res.rc = data["rc"]
-    res.cmd = data["cmd"]
-    res.args = data["args"]
+    res.cmd = data.get("cmd")
+    res.args = data.get("args")
     return res
 
 
@@ -1740,8 +1740,8 @@ def deserialize_container_command(_type, data, root, ctx, ds):
     rel = data["relative_path"]
     res = SerializedOutputProvider(rel, root=root, ctx=ctx, ds=ds)
     res.rc = data["rc"]
-    res.cmd = data["cmd"]
-    res.args = data["args"]
+    res.cmd = data.get("cmd")
+    res.args = data.get("args")
     res.image = data["image"]
     res.engine = data["engine"]
     res.container_id = data["container_id"]
