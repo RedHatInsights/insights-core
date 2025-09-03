@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.6.5
+Version:        3.6.6
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Wed Sep 03 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.6-1
+- fix: revert the cmd&args key for CommandOutputProvider in meta_data (#4539)
+  (xiangceliu@redhat.com)
+
 * Mon Sep 01 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.5-1
 - Revert "feat: Add parser and spec for compliance_policies_enabled (#4498)"
   (#4534) (xiangceliu@redhat.com)

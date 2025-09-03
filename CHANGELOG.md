@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.6) (2025-09-03)
+
+- fix: revert the cmd&args key for CommandOutputProvider in meta_data ([PR 4539](https://github.com/RedHatInsights/insights-core/pull/4539))
+
 # [insights-core-3.6.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.5) (2025-09-01)
 
 - Revert "feat: Add parser and spec for compliance_policies_enabled (4498)" ([PR 4534](https://github.com/RedHatInsights/insights-core/pull/4534))
