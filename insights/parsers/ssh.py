@@ -79,7 +79,9 @@ class SshDConfig(Parser):
 
     def parse_content(self, content):
         self.lines = []
-        for line in get_active_lines(content):
+        for line in content:
+            if not line.strip() or line.strip().startswith("#"):
+                continue
             line_splits = [s.strip() for s in re.split(r"[\s=]+", line, 1)]
             kw, val = line_splits[0], line_splits[1].strip('"') if \
                 len(line_splits) == 2 else ''
