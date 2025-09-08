@@ -23,6 +23,40 @@ AllowUsers
 Protocol 1
 """.strip()
 
+SSHD_CONFIG_INLINE_COMMENTS = """
+# Full line comment
+Port 22   # ssh port
+
+HostKey /etc/ssh/ssh_host_rsa_key   # main host key
+PermitRootLogin no    # disable root login
+""".strip()
+
+
+def test_sshd_config_inline_comments_preserved():
+    config = SshDConfig(context_wrap(SSHD_CONFIG_INLINE_COMMENTS))
+    assert config is not None
+
+    # Full line comment should not appear as a key
+    assert "# Full line comment" not in config
+
+    # Keys should exist
+    assert "Port" in config
+    assert "HostKey" in config
+    assert "PermitRootLogin" in config
+
+    # Inline comments should be preserved in values
+    port_value = config.get("Port")[0].value
+    assert port_value == "22   # ssh port"
+    assert "# ssh port" in port_value
+
+    hostkey_value = config.get("HostKey")[0].value
+    assert hostkey_value == "/etc/ssh/ssh_host_rsa_key   # main host key"
+    assert "# main host key" in hostkey_value
+
+    permit_value = config.get("PermitRootLogin")[0].value
+    assert permit_value == "no    # disable root login"
+    assert "# disable root login" in permit_value
+
 
 def test_sshd_config():
     sshd_config = SshDConfig(context_wrap(SSHD_CONFIG_INPUT))
