@@ -209,8 +209,7 @@ class ComplianceClient:
             self._inventory_id = system.get('id')
             return self._inventory_id
         else:
-            logger.error('Failed to find system in Inventory')
-            exit(constants.sig_kill_bad)
+            logger.debug('Failed to find system in Inventory')
 
     def assignable_policies(self):
         url = "{0}/compliance/v2/policies?filter=(os_major_version={1} and os_minor_version={2})&limit=100"
@@ -238,6 +237,10 @@ class ComplianceClient:
             return constants.sig_kill_bad
 
     def policy_link(self, policy_id, opt):
+        if self.inventory_id is None:
+            # return SIGKIL directly when inventory_id cannot be found
+            logger.error('Failed to find system in Inventory')
+            return constants.sig_kill_bad
         url = "{0}/compliance/v2/policies/{1}/systems/{2}"
         full_url = url.format(self.conn.base_url, policy_id, self.inventory_id)
         logger.debug("Fetching: {0}".format(full_url))
@@ -259,6 +262,9 @@ class ComplianceClient:
             return constants.sig_kill_bad
 
     def get_system_policies(self):
+        if self.inventory_id is None:
+            # return empty directly when inventory_id cannot be found
+            return []
         url = "{0}/compliance/v2/systems/{1}/policies".format(self.conn.base_url, self.inventory_id)
         logger.debug("Fetching policies with: {0}".format(url))
         response = self.conn.session.get(url)
