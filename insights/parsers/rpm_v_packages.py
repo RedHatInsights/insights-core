@@ -54,10 +54,15 @@ class RpmVPackage(CommandParser):
         self.error_lines = []
         self.discrepancies = []
         self.package_name = self.file_name.split('_')[-1] if self.file_name else None
+        is_error_info = False
 
         for line in content:
             if line.startswith("error: "):
                 self.error_lines.append(line)
+                is_error_info = True
+                continue
+
+            if is_error_info:
                 continue
 
             line_parts = line.split()
