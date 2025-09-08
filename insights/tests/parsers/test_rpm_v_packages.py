@@ -25,6 +25,14 @@ error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal erro
 error: cannot open Packages index using db5 - (-30973)
 """
 
+TEST_RPM_V_PACKAGE_4 = """
+error: rpmdb: BDB0113 Thread/process 259/139 failed: BDB1507 Thread died in Berkeley DB library
+error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal error, run database recovery
+error: cannot open Packages index using db5 - (-30973)
+
+package sudo is not installed
+"""
+
 CONTEXT_PATH_1 = "insights_commands/rpm_-V_sudo"
 
 
@@ -75,10 +83,18 @@ def test_rpm_pkg_erros():
     assert len(rpm_pkg.error_lines) == 3
 
 
+def test_rpm_pkg_erros_other_lines():
+    rpm_pkg = RpmVPackage(context_wrap(TEST_RPM_V_PACKAGE_4, CONTEXT_PATH_1))
+    assert rpm_pkg.package_name == 'sudo'
+    assert rpm_pkg.discrepancies == []
+    assert len(rpm_pkg.error_lines) == 3
+    assert "package sudo is not installed" not in rpm_pkg.error_lines
+
+
 def test_rpm_pkg_not_installed():
     with pytest.raises(SkipComponent) as exc:
         RpmVPackage(context_wrap(TEST_RPM_V_PACKAGE_2, CONTEXT_PATH_1))
-    assert 'Invalid Contents' in str(exc)
+    assert 'Package is not installed' in str(exc)
 
 
 def test_doc_examples():
