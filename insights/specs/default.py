@@ -481,6 +481,19 @@ class DefaultSpecs(Specs):
     ls_lan_filtered = command_with_args(
         '/bin/ls -lan %s', ls.list_with_lan_filtered, save_as='ls_lan_filtered', keep_rc=True
     )  # Result is filtered
+    ls_lanL = command_with_args(
+        '/bin/ls -lanL %s', ls.list_with_lanL, save_as='ls_lanL', keep_rc=True
+    )
+    ls_lanR = command_with_args(
+        '/bin/ls -lanR %s', ls.list_with_lanR, save_as='ls_lanR', keep_rc=True
+    )
+    ls_lanRL = command_with_args(
+        '/bin/ls -lanRL %s', ls.list_with_lanRL, save_as='ls_lanRL', keep_rc=True
+    )
+    ls_laRZ = command_with_args(
+        '/bin/ls -laRZ %s', ls.list_with_laRZ, save_as='ls_laRZ', keep_rc=True
+    )
+    ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, save_as='ls_laZ', keep_rc=True)
     lsattr = command_with_args("/bin/lsattr %s", lsattr.paths_to_lsattr)
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command(
