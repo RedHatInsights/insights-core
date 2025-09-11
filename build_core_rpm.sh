@@ -1,5 +1,5 @@
 #!/bin/bash
-set -xe
+set -euxo pipefail
 
 # Take "python" by default
 PYTHON=${1:-python}
@@ -24,8 +24,8 @@ if [ "$TARGET" == "internal" ]; then
     echo "Building insights-core RPM for internal usage."
     BUILDTARGET="for_internal 1"
     MANIFEST="MANIFEST.in.core"
-elif [ "$TARGET" == "client" ] || [ "$TARGET" == "testing" ]; then
-    if [ "$TARGET" == "client" ]; then
+elif [ "$TARGET" == "release" ] || [ "$TARGET" == "testing" ]; then
+    if [ "$TARGET" == "release" ]; then
         # for RPM release
         echo "Building insights-core RPM for insights-client."
         BUILDTARGET="with_selinux 1"
@@ -40,19 +40,25 @@ elif [ "$TARGET" == "client" ] || [ "$TARGET" == "testing" ]; then
     # - remove entrypoints for data processing
     sed -i -e '/insights =/d' -e '/insights-dupkey/d' -e '/insights-run/d' -e '/insights-inspect/d' -e '/mangle =/d' pyproject.toml setup.py
 else
-    echo "Error: invalid build target: '$TARGET'. Use 'internal', 'client', or 'testing'"
+    echo "Error: invalid build target: '$TARGET'. Use 'internal', 'release', or 'testing'"
     exit 1
 fi
 
 rm -rf BUILD BUILDROOT RPMS SRPMS insights_core.egg-info
-# Prepare the tarbal
+# Prepare the tarball
 git rev-parse --short HEAD > insights/COMMIT
 cp $MANIFEST MANIFEST.in
+# Build tarball in venv
+DATE=$(date +%Y-%m-%d-%H%M)
+rm -fr .venv_${DATE}
+$PYTHON -m venv .venv_${DATE}
+source .venv_${DATE}/bin/activate
+pip install --upgrade pip build
+python -m build --sdist
+deactivate
+rm -fr .venv_${DATE}
 
-$PYTHON -m pip install build
-$PYTHON -m build --sdist
-
-if [ "$TARGET" == "client" ]; then
+if [ "$TARGET" == "release" ]; then
     # keep compatible with old&new setuptools
     VERSION=`cat insights/VERSION`
     pushd dist
