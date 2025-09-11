@@ -59,6 +59,7 @@ from insights.specs.datasources import (
     ipcs,
     kernel,
     leapp,
+    logrotate,
     lpstat,
     ls,
     lsattr,
@@ -463,7 +464,7 @@ class DefaultSpecs(Specs):
     localectl_status = simple_command("/usr/bin/localectl status")
     localtime = simple_command("/usr/bin/file -L /etc/localtime")
     login_pam_conf = simple_file("/etc/pam.d/login")
-    logrotate_conf = glob_file(["/etc/logrotate.conf", "/etc/logrotate.d/*"])
+    logrotate_conf = foreach_collect(logrotate.logrotate_conf_list, "%s")
     losetup = simple_command("/usr/sbin/losetup -l")
     lpfc_max_luns = simple_file("/sys/module/lpfc/parameters/lpfc_max_luns")
     lpstat_p = simple_command("/usr/bin/lpstat -p")

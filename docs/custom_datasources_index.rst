@@ -151,6 +151,15 @@ insights.specs.datasources.leapp
     :undoc-members:
 
 
+insights.specs.datasources.logrotate
+------------------------------------
+
+.. automodule:: insights.specs.datasources.logrotate
+    :members: logrotate_conf_list
+    :show-inheritance:
+    :undoc-members:
+
+
 insights.specs.datasources.ls
 -----------------------------
 
