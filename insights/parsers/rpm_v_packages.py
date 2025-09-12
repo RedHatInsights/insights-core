@@ -24,6 +24,9 @@ class RpmVPackage(CommandParser):
         discrepancies (list of dictionaries): Every dictionary contains information about one entry
         error_lines (list of strings): The error messages from the command `rpm -V <package>`
 
+    Raises:
+        SkipComponents: When a package is not installed and no error is reported.
+
     Sample output of this command is::
 
         ..?......  c /etc/sudoers
@@ -64,8 +67,13 @@ class RpmVPackage(CommandParser):
             if not line_parts:
                 continue
 
+            entry = {}
             if "package" in line_parts[0]:
-                raise SkipComponent("Invalid Contents")
+                if not self.error_lines:
+                    # Skip the parser only when:
+                    # - The package is not installed
+                    # - No error is reported
+                    raise SkipComponent("Package is not installed")
 
             if "missing" in line_parts[0]:
                 entry = {"line": line.strip(), "attributes": None, "mark": None, "file": None}
@@ -76,14 +84,15 @@ class RpmVPackage(CommandParser):
                     "mark": line_parts[1],
                     "file": line_parts[2],
                 }
-            else:
+            elif len(line_parts) == 2:
                 entry = {
                     "line": line.strip(),
                     "attributes": line_parts[0],
                     "mark": None,
                     "file": line_parts[1],
                 }
-            self.discrepancies.append(entry)
+            if entry:
+                self.discrepancies.append(entry)
 
         if not self.discrepancies and not self.error_lines:
             raise SkipComponent("Empty result")
