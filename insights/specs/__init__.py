@@ -468,6 +468,7 @@ class Specs(SpecSet):
     md5chk_files = RegistryPoint(multi_output=True)
     mdadm_D = RegistryPoint()
     mdadm_E = RegistryPoint(multi_output=True)
+    mdatp_managed = RegistryPoint()
     mdstat = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     meminfo = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     messages = RegistryPoint(filterable=True)
