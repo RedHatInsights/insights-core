@@ -51,6 +51,14 @@ insights.specs.datasources.cloud_init
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.compliance.compliance_ds
+---------------------------------------------------
+
+.. automodule:: insights.specs.datasources.compliance.compliance_ds
+    :members: compliance_enabled, compliance_policies_enabled, compliance_assign_enabled, compliance_unassign_enabled, os_version, package_check, compliance, compliance_policies, compliance_assign, compliance_unassign, compliance_advisor_rule_enabled
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.container
 ------------------------------------
 
