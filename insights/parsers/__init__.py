@@ -66,6 +66,7 @@ def optlist_to_dict(optlist, opt_sep=',', kv_sep='=', strip_quotes=False):
         >>> optlist_to_dict(optlist)
         {'rw': True, 'ro': True, 'rsize': '32168', 'xyz': True}
     """
+
     def make_kv(opt):
         if kv_sep is not None and kv_sep in opt:
             k, v = opt.split(kv_sep, 1)
@@ -80,7 +81,43 @@ def optlist_to_dict(optlist, opt_sep=',', kv_sep='=', strip_quotes=False):
     return dict(make_kv(opt) for opt in optlist.split(opt_sep))
 
 
-def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=", use_partition=False, ordered=False):
+def parse_cmdline_args(args_str, opt_sep=' '):
+    """Parse a list of arguments into a dictionary.
+
+    Takes a list of arguments separated by ``opt_sep`` and places them into
+    a dictionary with the default value of ``True``.
+    This is for parsing arguments such as command line optarguments, eg.
+    ``ro rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet retbleed=stuff``.
+
+    Parameters:
+        args_str (str): String of arguments to parse.
+        opt_sep (str): Separater used to split options, default to ' '
+
+    Returns:
+        dict: Returns a dictionary with arguments name as key, and a list of
+            arguments value as value if argument be assigned with value, else,
+            each key will have a default value of `True`.
+
+    Examples:
+        >>> args = 'ro rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet retbleed=stuff'
+        >>> parse_cmdline_args(args)
+        {'ro': [True], 'rd.lvm.lv': ['rhel/root', 'rhel/swap'], 'rhgb': [True],
+        'quiet': [True], 'retbleed': ['stuff']}
+    """
+    parsed_args = {}
+    for el in args_str.split(opt_sep):
+        key, value = el, True
+        if "=" in el:
+            key, value = el.split("=", 1)
+        if key not in parsed_args:
+            parsed_args[key] = []
+        parsed_args[key].append(value)
+    return parsed_args
+
+
+def split_kv_pairs(
+    lines, comment_char="#", filter_string=None, split_on="=", use_partition=False, ordered=False
+):
     """Split lines of a list into key/value pairs
 
     Use this function to filter and split all lines of a list of strings into
@@ -276,11 +313,9 @@ def calc_offset(lines, target, invert_search=False, require_all=False):
         return 0
 
 
-def parse_fixed_table(table_lines,
-                      heading_ignore=[],
-                      header_substitute=[],
-                      trailing_ignore=[],
-                      empty_exception=False):
+def parse_fixed_table(
+    table_lines, heading_ignore=[], header_substitute=[], trailing_ignore=[], empty_exception=False
+):
     """
     Function to parse table data containing column headings in the first row and
     data in fixed positions in each remaining row of table data.
@@ -338,9 +373,9 @@ def parse_fixed_table(table_lines,
 
     first_line = calc_offset(table_lines, heading_ignore)
     try:
-        last_line = len(table_lines) - calc_offset(reversed(table_lines),
-                                                   trailing_ignore,
-                                                   invert_search=True)
+        last_line = len(table_lines) - calc_offset(
+            reversed(table_lines), trailing_ignore, invert_search=True
+        )
     except ValueError:
         last_line = len(table_lines)
 
@@ -353,7 +388,7 @@ def parse_fixed_table(table_lines,
     idx_pairs = [(c, col_index[i + 1]) for i, c in enumerate(col_index) if c is not None]
 
     table_data = []
-    for line in table_lines[first_line + 1:last_line]:
+    for line in table_lines[first_line + 1 : last_line]:
         if line.strip():
             col_data = {}
             for i, (s, e) in enumerate(idx_pairs):
@@ -366,15 +401,17 @@ def parse_fixed_table(table_lines,
     return table_data
 
 
-def parse_delimited_table(table_lines,
-                          delim=None,
-                          max_splits=-1,
-                          strip=True,
-                          header_delim='same as delimiter',
-                          heading_ignore=None,
-                          header_substitute=None,
-                          trailing_ignore=None,
-                          raw_line_key=None):
+def parse_delimited_table(
+    table_lines,
+    delim=None,
+    max_splits=-1,
+    strip=True,
+    header_delim='same as delimiter',
+    heading_ignore=None,
+    header_substitute=None,
+    trailing_ignore=None,
+    raw_line_key=None,
+):
     """
     Parses table-like text.  Uses the first (non-ignored) row as the list of
     column names, which cannot contain the delimiter.  Fields cannot contain
@@ -425,7 +462,7 @@ def parse_delimited_table(table_lines,
     try:
         # Ignore everything before the heading in this search
         last_line = len(table_lines) - calc_offset(
-            reversed(table_lines[first_line + 1:]), trailing_ignore, invert_search=True
+            reversed(table_lines[first_line + 1 :]), trailing_ignore, invert_search=True
         )
     except ValueError:
         # We seem to have run out of content before we found something we
@@ -439,7 +476,7 @@ def parse_delimited_table(table_lines,
         for old_val, new_val in header_substitute:
             header = header.replace(old_val, new_val)
 
-    content = table_lines[first_line + 1:last_line]
+    content = table_lines[first_line + 1 : last_line]
     headings = [c.strip() if strip else c for c in header.split(header_delim)]
     r = []
     for line in content:
@@ -559,10 +596,7 @@ def keyword_search(rows, parent=None, row_keys_change=False, **kwargs):
 
         # Now build the 'transformed' key - the search keywords we recognise -
         # out of the keys we found.
-        txkeys = dict(
-            (key.replace(' ', '_').replace('-', '_'), key)
-            for key in all_keys
-        )
+        txkeys = dict((key.replace(' ', '_').replace('-', '_'), key) for key in all_keys)
         if parent is not None:
             setattr(parent, txform_cache_attr, txkeys)
 
@@ -588,9 +622,7 @@ def keyword_search(rows, parent=None, row_keys_change=False, **kwargs):
         # a coding error.
         if data_key not in txkeys:
             return []
-        search_terms.append((
-            txkeys[data_key], matcher, matchers[matcher], value
-        ))
+        search_terms.append((txkeys[data_key], matcher, matchers[matcher], value))
 
     def key_match(row, data_key, matcher, matcher_fn, value):
         if matcher == 'equals':

@@ -14,6 +14,7 @@ import re
 from insights.combiners import IsUEFIBoot
 from insights.core.exceptions import ParseException
 from insights.core.plugins import combiner
+from insights.parsers import parse_cmdline_args
 from insights.parsers.grub_conf import BootEntry
 from insights.parsers.grubby import GrubbyDefaultIndex, GrubbyInfoAll
 from insights.parsers.grubenv import GrubEnv
@@ -74,7 +75,7 @@ class Grubby(object):
         }
         new_entry_data.update(entry_data)
         if entry_data.get('root') and entry_data.get('args'):
-            new_entry_data['args'] = GrubbyInfoAll.parse_entry_args(new_entry_data['cmdline'])
+            new_entry_data['args'] = parse_cmdline_args(new_entry_data['cmdline'])
             new_entry_data.pop('raw_args')
         return BootEntry(new_entry_data)
 
@@ -96,7 +97,7 @@ class Grubby(object):
                 ).strip()
                 if_reload_args = True
             if if_reload_args:
-                entry['args'] = GrubbyInfoAll.parse_entry_args(entry['cmdline'])
+                entry['args'] = parse_cmdline_args(entry['cmdline'])
 
             if "$tuned_initrd" in entry.get('initrd', ''):
                 entry['initrd'] = re.sub(
