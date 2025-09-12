@@ -22,8 +22,7 @@ parsers/combiners:
 import re
 
 from insights import SkipComponent
-from insights.combiners import IsUEFIBoot
-from insights.combiners.grubby import Grubby
+from insights.combiners.grubby import Grubby, IsUEFIBoot
 from insights.core.plugins import combiner
 from insights.parsers.cmdline import CmdLine
 from insights.parsers.grub_conf import (

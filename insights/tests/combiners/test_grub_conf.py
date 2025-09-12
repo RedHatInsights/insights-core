@@ -1,6 +1,5 @@
-from insights.combiners import IsUEFIBoot
 from insights.combiners.grub_conf import GrubConf, BootLoaderEntries
-from insights.combiners.grubby import Grubby
+from insights.combiners.grubby import Grubby, IsUEFIBoot
 from insights.parsers.grub_conf import (
     Grub1Config,
     Grub2Config,

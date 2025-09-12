@@ -1,5 +1,4 @@
-from insights.combiners import IsUEFIBoot
-from insights.combiners.grubby import Grubby
+from insights.combiners.grubby import Grubby, IsUEFIBoot
 from insights.core.exceptions import ParseException
 from insights.parsers.grubby import GrubbyInfoAll, GrubbyDefaultIndex
 from insights.parsers.grubenv import GrubEnv
