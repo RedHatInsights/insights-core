@@ -10,6 +10,14 @@ DEFAULT_INDEX_1 = '0'
 DEFAULT_INDEX_2 = '1'
 ABDEFAULT_INDEX_EMPTY = ''
 DEFAULT_INDEX_AB = '-2'
+DEFAULT_INDEX_W_ERR_MSG = """
+/usr/libexec/grubby/grubby-bls: line 37: /etc/machine-id: No such file or directory
+0
+""".strip()
+DEFAULT_INDEX_AB_W_ERR_MSG = """
+/usr/libexec/grubby/grubby-bls: line 37: /etc/machine-id: No such file or directory
+some-other-not-index-line
+""".strip()
 
 DEFAULT_KERNEL = "/boot/vmlinuz-2.6.32-573.el6.x86_64"
 DEFAULT_KERNEL_EMPTY = ""
@@ -43,6 +51,10 @@ DEFAULT_KERNEL_WITH_ERRORS_MSGS_4 = """
 /etc/os-release: line 5: VERSION_ID-Peter=8.7: command not found
 /etc/os-release: line 6: PLATFORM_ID-Peter=platform:el8: command not found
 /boot/vmlinuz-4.18.0-425.10.1.el8_7.x86_64
+""".strip()
+DEFAULT_KERNEL_WITH_ERRORS_MSGS_5 = """
+/usr/libexec/grubby/grubby-bls: line 37: /etc/machine-id: No such file or directory
+/boot/vmlinuz-4.18.0-553.56.1.el8_10.x86_64
 """.strip()
 
 GRUBBY_INFO_ALL_1 = """
@@ -114,6 +126,9 @@ def test_grubby_default_index():
     res = GrubbyDefaultIndex(context_wrap(DEFAULT_INDEX_2))
     assert res.default_index == 1
 
+    res = GrubbyDefaultIndex(context_wrap(DEFAULT_INDEX_W_ERR_MSG))
+    assert res.default_index == 0
+
 
 def test_grubby_default_index_ab():
     with pytest.raises(SkipComponent) as excinfo:
@@ -122,6 +137,10 @@ def test_grubby_default_index_ab():
 
     with pytest.raises(ParseException) as excinfo:
         GrubbyDefaultIndex(context_wrap(DEFAULT_INDEX_AB))
+    assert 'Invalid output:' in str(excinfo.value)
+
+    with pytest.raises(ParseException) as excinfo:
+        GrubbyDefaultIndex(context_wrap(DEFAULT_INDEX_AB_W_ERR_MSG))
     assert 'Invalid output:' in str(excinfo.value)
 
 
@@ -134,6 +153,7 @@ def test_grubby_default_kernel():
         DEFAULT_KERNEL_WITH_ERRORS_MSGS_2,
         DEFAULT_KERNEL_WITH_ERRORS_MSGS_3,
         DEFAULT_KERNEL_WITH_ERRORS_MSGS_4,
+        DEFAULT_KERNEL_WITH_ERRORS_MSGS_5,
     ]
     for content in content_with_error_msgs:
         this_res = GrubbyDefaultKernel(context_wrap(content))
