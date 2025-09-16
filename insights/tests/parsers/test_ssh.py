@@ -37,25 +37,25 @@ def test_sshd_config_inline_comments_preserved():
     assert config is not None
 
     # Full line comment should not appear as a key
-    assert "# Full line comment" not in config
+    assert "# Full line comment" not in [kv.line for kv in config.lines]
 
     # Keys should exist
     assert "Port" in config
     assert "HostKey" in config
     assert "PermitRootLogin" in config
 
-    # Inline comments should be preserved in values
-    port_value = config.get("Port")[0].value
-    assert port_value == "22   # ssh port"
-    assert "# ssh port" in port_value
+    # Inline comments should be preserved in the 'line' field
+    port_line = config.get("Port")[0].line
+    assert port_line == "Port 22   # ssh port"
+    assert "# ssh port" in port_line
 
-    hostkey_value = config.get("HostKey")[0].value
-    assert hostkey_value == "/etc/ssh/ssh_host_rsa_key   # main host key"
-    assert "# main host key" in hostkey_value
+    hostkey_line = config.get("HostKey")[0].line
+    assert hostkey_line == "HostKey /etc/ssh/ssh_host_rsa_key   # main host key"
+    assert "# main host key" in hostkey_line
 
-    permit_value = config.get("PermitRootLogin")[0].value
-    assert permit_value == "no    # disable root login"
-    assert "# disable root login" in permit_value
+    permit_line = config.get("PermitRootLogin")[0].line
+    assert permit_line == "PermitRootLogin no    # disable root login"
+    assert "# disable root login" in permit_line
 
 
 def test_sshd_config():

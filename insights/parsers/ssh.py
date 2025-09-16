@@ -26,9 +26,9 @@ class SshDConfig(Parser):
     Parsing for ``/etc/ssh/sshd_config`` file.
 
     The ``ssh`` module provides parsing for the ``sshd_config``
-    file.  The ``SshDConfig`` class implements the parsing and
+    file. The ``SshDConfig`` class implements the parsing and
     provides a ``list`` of all configuration lines present in
-    the file.
+    the file, preserving inline comments in the ``line`` field.
 
     Sample input is provided in the *Examples*.
 
@@ -57,7 +57,7 @@ class SshDConfig(Parser):
         '10.110.0.1,10.110.1.1'
 
     Properties:
-        lines (list): List of `KeyValue` namedtupules for each line in
+        lines (list): List of `KeyValue` namedtuples for each line in
             the configuration file.
         keywords (set): Set of keywords present in the configuration
             file, each keyword has been converted to lowercase.
@@ -79,16 +79,22 @@ class SshDConfig(Parser):
 
     def parse_content(self, content):
         self.lines = []
-        for line in content:
-            if not line.strip() or line.strip().startswith("#"):
-                continue
+        content_iter = iter(content)
+        for line in get_active_lines(content):
+            raw_line = next(
+                (r for r in content_iter if r.lstrip().startswith(line.split()[0])),
+                line
+            )
             line_splits = [s.strip() for s in re.split(r"[\s=]+", line, 1)]
-            kw, val = line_splits[0], line_splits[1].strip('"') if \
-                len(line_splits) == 2 else ''
+            kw = line_splits[0]
+            val = line_splits[1].strip('"') if len(line_splits) == 2 else ''
             self.lines.append(self.KeyValue(
-                kw, val, kw.lower(), line
+                kw,
+                val,
+                kw.lower(),
+                raw_line.rstrip()
             ))
-        self.keywords = set([k.kw_lower for k in self.lines])
+        self.keywords = {k.kw_lower for k in self.lines}
 
     def __contains__(self, keyword):
         """
