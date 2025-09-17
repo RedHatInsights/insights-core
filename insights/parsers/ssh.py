@@ -11,6 +11,7 @@ SshDConfigD - file ``/etc/ssh/sshd_config.d/*.conf``
 SshdTestMode - command ``sshd -T``
 ----------------------------------
 """
+
 from collections import namedtuple
 from .. import Parser, parser, get_active_lines
 from insights.specs import Specs
@@ -26,9 +27,9 @@ class SshDConfig(Parser):
     Parsing for ``/etc/ssh/sshd_config`` file.
 
     The ``ssh`` module provides parsing for the ``sshd_config``
-    file.  The ``SshDConfig`` class implements the parsing and
+    file. The ``SshDConfig`` class implements the parsing and
     provides a ``list`` of all configuration lines present in
-    the file.
+    the file, preserving inline comments in the ``line`` field.
 
     Sample input is provided in the *Examples*.
 
@@ -57,7 +58,7 @@ class SshDConfig(Parser):
         '10.110.0.1,10.110.1.1'
 
     Properties:
-        lines (list): List of `KeyValue` namedtupules for each line in
+        lines (list): List of `KeyValue` namedtuples for each line in
             the configuration file.
         keywords (set): Set of keywords present in the configuration
             file, each keyword has been converted to lowercase.
@@ -79,14 +80,19 @@ class SshDConfig(Parser):
 
     def parse_content(self, content):
         self.lines = []
-        for line in get_active_lines(content):
-            line_splits = [s.strip() for s in re.split(r"[\s=]+", line, 1)]
-            kw, val = line_splits[0], line_splits[1].strip('"') if \
-                len(line_splits) == 2 else ''
-            self.lines.append(self.KeyValue(
-                kw, val, kw.lower(), line
-            ))
-        self.keywords = set([k.kw_lower for k in self.lines])
+
+        for line in content:
+            raw_line = line.strip()
+            if raw_line and not raw_line.startswith('#'):
+                line_no_comment = raw_line.split('#', 1)[0].strip()
+                if not line_no_comment:
+                    continue
+                line_splits = [s.strip() for s in re.split(r"[\s=]+", line_no_comment, 1)]
+                kw = line_splits[0]
+                val = line_splits[1].strip('"') if len(line_splits) == 2 else ''
+                self.lines.append(self.KeyValue(kw, val, kw.lower(), raw_line))
+
+        self.keywords = {kv.kw_lower for kv in self.lines}
 
     def __contains__(self, keyword):
         """
@@ -174,9 +180,7 @@ class SshDConfig(Parser):
         if lines:
             return lines[-1].line
         else:
-            return "{keyword} {value}  # Implicit default".format(
-                keyword=keyword, value=default
-            )
+            return "{keyword} {value}  # Implicit default".format(keyword=keyword, value=default)
 
     def line_uses_plus(self, keyword):
         """
@@ -263,6 +267,7 @@ class SshdTestMode(Parser, dict):
         >>> sshd_test_mode.get("ciphers")
         ['aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes128-gcm@openssh.com,aes128-ctr']
     """
+
     def parse_content(self, content):
         result = {}
         for line in get_active_lines(content):
@@ -298,4 +303,5 @@ class SshDConfigD(SshDConfig):
         keywords (set): Set of keywords present in the configuration
             file, each keyword has been converted to lowercase.
     """
+
     pass
