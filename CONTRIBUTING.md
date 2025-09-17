@@ -208,11 +208,13 @@ from [insights-core-3.6.6](https://github.com/RedHatInsights/insights-core/relea
   `3.0_egg` branch after the PR is reviewed and before it's merged.
   Below is suggested backport steps:
 
-        git checkout branch_of_the_existing_PR && git rev-parse --short HEAD # get the commit-id
+        git checkout <branch_of_the_existing_PR>
+        BRANCH_NM=$(git rev-parse --abbrev-ref HEAD)  # branch name
+        COMMIT_ID=$(git rev-parse --short HEAD)       # commit-id
         git fetch upstream 3.0_egg
-        git checkout 3.0_egg && git checkout -b new_branch
-        git cherry-pick commit_id_got_above
-        git push origin new_branch
+        git checkout -b ${BRANCH_NM}_egg upstream/3.0_egg
+        git cherry-pick -x ${COMMIT_ID}               # NOTE "-x" is recommended
+        git push origin ${BRANCH_NM}_egg
 
 
 ## Review Checklist
