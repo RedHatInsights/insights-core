@@ -535,6 +535,7 @@ class DefaultSpecs(Specs):
     )
     md5chk_files = foreach_execute(md5chk.files, "/usr/bin/md5sum %s", keep_rc=True)
     mdadm_D = command_with_args("/usr/sbin/mdadm -D %s", mdadm.raid_devices, keep_rc=True)
+    mdatp_managed = simple_file("/etc/opt/microsoft/mdatp/managed/mdatp_managed.json")
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
