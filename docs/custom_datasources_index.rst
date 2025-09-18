@@ -39,7 +39,7 @@ insights.specs.datasources.client_metadata
 ------------------------------------------
 
 .. automodule:: insights.specs.datasources.client_metadata
-    :members: ansible_host, basic_auth_insights_client, blacklist_report, blacklisted_specs, branch_info, display_name, egg_release, tags, version_info,
+    :members: ansible_host, basic_auth_insights_client, blacklist_report, blacklisted_specs, branch_info, display_name, tags, version_info,
     :show-inheritance:
     :undoc-members:
 

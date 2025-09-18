@@ -179,34 +179,6 @@ def display_name(broker):
 
 
 @datasource(HostContext)
-def egg_release(broker):
-    """
-    Custom datasource for ``display_name`` getting from insights-client
-    configuration.
-
-    Raises:
-        SkipComponent: When cannot get the `egg_release`.
-
-    Returns:
-        str: The JSON strings
-    """
-    egg_release = ''
-    try:
-        with open(constants.egg_release_file) as fil:
-            egg_release = fil.read()
-    except (IOError, MemoryError) as e:
-        logger.debug('Could not read the egg release file: %s', str(e))
-    try:
-        os.remove(constants.egg_release_file)
-    except OSError as e:
-        logger.debug('Could not remove the egg release file: %s', str(e))
-
-    if egg_release:
-        return DatasourceProvider(content=egg_release, relative_path='egg_release')
-    raise SkipComponent
-
-
-@datasource(HostContext)
 def tags(broker):
     """
     Custom datasource for ``tags`` getting from insights-client configuration.
