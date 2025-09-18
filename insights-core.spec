@@ -11,8 +11,8 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.7
-Release:        2%{?dist}
+Version:        3.6.7.1
+Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
 License:        Apache-2.0
@@ -129,7 +129,7 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
-* Thu Sep 18 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.7-2
+* Thu Sep 18 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.7.1-1
 - fix(parser/sshd_config): keep inline comments when parsing config lines
   (#4546) (tayushi1610@gmail.com)
 - feat: New parser MdatpManaged and the spec (#4562)
