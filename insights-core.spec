@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.6
+Version:        3.6.7
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,36 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Sep 18 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.7-1
+- fix(parser/sshd_config): keep inline comments when parsing config lines
+  (#4570) (tayushi1610@gmail.com)
+- feat: New parser MdatpManaged and the spec (#4569)
+  (39508521+shlao@users.noreply.github.com)
+- fix(doc): add required configuration for readthedocs (#4568)
+  (xiangceliu@redhat.com)
+- chore(doc): update the guide steps for PR to 3.0_egg (#4567)
+  (xiangceliu@redhat.com)
+- fix: handle error lines of spec grubby_default_index (#4564)
+  (xiaoxwan@redhat.com)
+- fix: Skip RpmVPackage only when no error and no installed (#4560)
+  (39508521+shlao@users.noreply.github.com)
+- feat: Add spec and parser for compliance_policies_enabled (#4559)
+  (jiazhang@redhat.com)
+- fix: revert the ls specs removed by mistake (#4555) (xiangceliu@redhat.com)
+- fix: exclude irrelevant logrotate configuration files (#4556)
+  (xiangceliu@redhat.com)
+- doc: add RPM delivery notes to contributing (#4549) (xiangceliu@redhat.com)
+- fix: don't immediately exit collection when inventory_id is unavailable
+  (#4543) (xiangceliu@redhat.com)
+- chore: sync the tito required file to master (#4548) (xiangceliu@redhat.com)
+- chore: sync the changelog with the 3.0 branch (#4540) (xiangceliu@redhat.com)
+- chore: update RPM building scripts and spec file (#4533)
+  (xiangceliu@redhat.com)
+- feat: New spec and parser for '/var/log/foreman-installer/foreman.log'
+  (#4535) (143097963+atewari-rh@users.noreply.github.com)
+- chore: merge the two RPM build scripts (#4532) (xiangceliu@redhat.com)
+- feat: new script to build insights-core RPM (#4507) (xiangceliu@redhat.com)
+
 * Wed Sep 03 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.6-1
 - fix: revert the cmd&args key for CommandOutputProvider in meta_data (#4539)
   (xiangceliu@redhat.com)

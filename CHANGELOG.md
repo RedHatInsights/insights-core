@@ -2,6 +2,26 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.7) (2025-09-18)
+
+- fix(parser/sshd_config): keep inline comments when parsing config lines ([PR 4570](https://github.com/RedHatInsights/insights-core/pull/4570))
+- feat: New parser MdatpManaged and the spec ([PR 4569](https://github.com/RedHatInsights/insights-core/pull/4569))
+- fix(doc): add required configuration for readthedocs ([PR 4568](https://github.com/RedHatInsights/insights-core/pull/4568))
+- chore(doc): update the guide steps for PR to 3.0_egg ([PR 4567](https://github.com/RedHatInsights/insights-core/pull/4567))
+- fix: handle error lines of spec grubby_default_index ([PR 4564](https://github.com/RedHatInsights/insights-core/pull/4564))
+- fix: Skip RpmVPackage only when no error and no installed ([PR 4560](https://github.com/RedHatInsights/insights-core/pull/4560))
+- feat: Add spec and parser for compliance_policies_enabled ([PR 4559](https://github.com/RedHatInsights/insights-core/pull/4559))
+- fix: revert the ls specs removed by mistake ([PR 4555](https://github.com/RedHatInsights/insights-core/pull/4555))
+- fix: exclude irrelevant logrotate configuration files ([PR 4556](https://github.com/RedHatInsights/insights-core/pull/4556))
+- doc: add RPM delivery notes to contributing ([PR 4549](https://github.com/RedHatInsights/insights-core/pull/4549))
+- fix: don't immediately exit collection when inventory_id is unavailable ([PR 4543](https://github.com/RedHatInsights/insights-core/pull/4543))
+- chore: sync the tito required file to master ([PR 4548](https://github.com/RedHatInsights/insights-core/pull/4548))
+- chore: sync the changelog with the 3.0 branch ([PR 4540](https://github.com/RedHatInsights/insights-core/pull/4540))
+- chore: update RPM building scripts and spec file ([PR 4533](https://github.com/RedHatInsights/insights-core/pull/4533))
+- feat: New spec and parser for '/var/log/foreman-installer/foreman.log' ([PR 4535](https://github.com/RedHatInsights/insights-core/pull/4535))
+- chore: merge the two RPM build scripts ([PR 4532](https://github.com/RedHatInsights/insights-core/pull/4532))
+- feat: new script to build insights-core RPM ([PR 4507](https://github.com/RedHatInsights/insights-core/pull/4507))
+
 # [insights-core-3.6.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.6) (2025-09-03)
 
 - fix: revert the cmd&args key for CommandOutputProvider in meta_data ([PR 4539](https://github.com/RedHatInsights/insights-core/pull/4539))
