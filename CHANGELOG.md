@@ -2,7 +2,7 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
-# [insights-core-3.6.7-2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.7-2) (2025-09-18)
+# [insights-core-3.6.7.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.7.1) (2025-09-18)
 
 - fix(parser/sshd_config): keep inline comments when parsing config lines ([PR 4546](https://github.com/RedHatInsights/insights-core/pull/4546))
 - feat: New parser MdatpManaged and the spec ([PR 4562](https://github.com/RedHatInsights/insights-core/pull/4562))
