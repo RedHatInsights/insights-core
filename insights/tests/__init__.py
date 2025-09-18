@@ -19,6 +19,11 @@ try:
 except ImportError:
     from io import StringIO
 
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
+
 import insights
 
 from insights import apply_filters
@@ -28,9 +33,6 @@ from insights.core.plugins import make_none
 from insights.specs import Specs
 
 
-# Use yaml.SafeLoader only when pytesting, as the yaml.CSafeLoader does not
-# work well with coverage test.
-insights.core.SafeLoader = SafeLoader
 # we intercept the add_filter call during integration testing so we can ensure
 # that rules add filters to datasources that *should* be filterable
 ADDED_FILTERS = defaultdict(set)
@@ -447,7 +449,12 @@ def archive_provider(component, test_func=deep_compare, stride=1):
     [1] insights.tests.deep_compare()
     """
 
-    def _wrap(func):
+    # Use yaml.SafeLoader only when pytesting, as the yaml.CSafeLoader does not
+    # work well with coverage test.
+    @patch("insights.core._PatchedSafeLoader")
+    def _wrap(loader, func):
+        loader = SafeLoader  # noqa: F841
+
         @six.wraps(func)
         def __wrap(stride=stride):
             for input_data, expected in itertools.islice(func(), None, None, stride):
