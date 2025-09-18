@@ -123,8 +123,9 @@ def test_grubby():
             'quiet': [True],
             'retbleed': ['stuff'],
             'root': ['/dev/mapper/rhel-root'],
+            '/boot/vmlinuz-5.14.0-162.6.1.el9_1.x86_64': [True],
         },
-        cmdline="root=/dev/mapper/rhel-root ro "
+        cmdline="/boot/vmlinuz-5.14.0-162.6.1.el9_1.x86_64 root=/dev/mapper/rhel-root ro "
         "crashkernel=1G-4G:192M,4G-64G:256M,64G-:512M "
         "resume=/dev/mapper/rhel-swap rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap "
         "rhgb quiet retbleed=stuff",
@@ -188,8 +189,9 @@ def test_grubby_extend_with_grubenv():
             'root': ['/dev/mapper/rhel-root'],
             'selinux': ['0'],
             'transparent_hugepages': ['never'],
+            '/boot/vmlinuz-5.14.0-570.30.1.el9_6.x86_64': [True],
         },
-        cmdline='root=/dev/mapper/rhel-root ro audit=1 '
+        cmdline='/boot/vmlinuz-5.14.0-570.30.1.el9_6.x86_64 root=/dev/mapper/rhel-root ro audit=1 '
         'crashkernel=1G-4G:192M,4G-64G:256M,64G-:512M rd.lvm.lv=rhel/root '
         'rhgb quiet selinux=0 audit_backlog_limit=8192 '
         'transparent_hugepages=never',
@@ -215,8 +217,10 @@ def test_grubby_extend_with_grubenv():
         'console': ['tty0', 'ttyS0,115200'],
         'noapic': [True],
         'transparent_hugepages': ['never'],
+        '/boot/vmlinuz-0-rescue-1234567890abcdefffffffffffffffff': [True],
     }
     assert result.boot_entries[1]['cmdline'] == (
+        "/boot/vmlinuz-0-rescue-1234567890abcdefffffffffffffffff "
         "root=/dev/mapper/rhel-root ro audit=1 console=tty0 "
         "console=ttyS0,115200 noapic transparent_hugepages=never"
     )

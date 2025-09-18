@@ -101,6 +101,7 @@ class Grubby(object):
             'name': entry_data.get('title', ''),
             'cmdline': " ".join(
                 [
+                    entry_data.get('kernel', ''),
                     "root=%s" % entry_data["root"] if entry_data.get('root') else '',
                     entry_data.get('raw_args', ''),
                 ]
