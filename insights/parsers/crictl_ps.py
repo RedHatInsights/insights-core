@@ -177,3 +177,7 @@ class CrictlPs(CommandParser, list):
             'pod_id': remaining[-2],
             'pod': remaining[-1]
         }
+
+    @property
+    def container_ids(self):
+        return [record['container_id'] for record in self]
