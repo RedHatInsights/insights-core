@@ -11,8 +11,8 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.6
-Release:        1%{?dist}
+Version:        3.6.7
+Release:        2%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
 License:        Apache-2.0
@@ -129,6 +129,42 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Sep 18 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.7-2
+- fix(parser/sshd_config): keep inline comments when parsing config lines
+  (#4546) (tayushi1610@gmail.com)
+- feat: New parser MdatpManaged and the spec (#4562)
+  (39508521+shlao@users.noreply.github.com)
+- fix(doc): add required configuration for readthedocs (#4565)
+  (xiangceliu@redhat.com)
+- chore(doc): update the guide steps for PR to 3.0_egg (#4566)
+  (xiangceliu@redhat.com)
+- fix: handle error lines of spec grubby_default_index (#4538)
+  (xiaoxwan@redhat.com)
+- fix: Skip RpmVPackage only when no error and no installed (#4550)
+  (39508521+shlao@users.noreply.github.com)
+- feat: Add spec and parser for compliance_policies_enabled (#4536)
+  (jiazhang@redhat.com)
+- chore(script): update RPM script to use Python virtual env (#4561)
+  (xiangceliu@redhat.com)
+- fix: revert the ls specs removed by mistake (#4554) (xiangceliu@redhat.com)
+- fix: exclude irrelevant logrotate configuration files (#4551)
+  (xiangceliu@redhat.com)
+- doc: add RPM delivery notes to contributing (#4545) (xiangceliu@redhat.com)
+- fix: don't immediately exit collection when inventory_id is unavailable
+  (#4537) (xiangceliu@redhat.com)
+- chore: sync the tito required file to master (#4547) (xiangceliu@redhat.com)
+- feat: onboard packit for build RPM on master branch (#4542)
+  (xiangceliu@redhat.com)
+- fix(client): Suppress link message after upload (#4544) (mhorky@redhat.com)
+- chore: sync the changelog with the 3.0 branch (#4540) (xiangceliu@redhat.com)
+- chore: update RPM building scripts and spec file (#4533)
+  (xiangceliu@redhat.com)
+- feat: New spec and parser for '/var/log/foreman-installer/foreman.log'
+  (#4535) (143097963+atewari-rh@users.noreply.github.com)
+- chore: merge the two RPM build scripts (#4532) (xiangceliu@redhat.com)
+- feat: new script to build insights-core RPM (#4507) (xiangceliu@redhat.com)
+- chore: Introduce Client phase v2 (#4512) (mhorky@redhat.com)
+
 * Wed Sep 03 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.6-1
 - fix: revert the cmd&args key for CommandOutputProvider in meta_data (#4539)
   (xiangceliu@redhat.com)
