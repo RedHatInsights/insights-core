@@ -63,15 +63,16 @@ Examples:
 Raises:
     ParseException: If the input content is invalid or doesn't contain the expected
         header line with "CONTAINER" keyword.
+    SkipComponent: If no container records are found after parsing.
 """  # noqa: E501
 from insights.core import CommandParser
 from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import ParseException, SkipComponent
 
 
 @parser(Specs.crictl_ps)
-class CrictlPs(CommandParser):
+class CrictlPs(CommandParser, list):
     """
     Parser for the output of ``crictl ps --quiet`` command.
 
@@ -80,7 +81,7 @@ class CrictlPs(CommandParser):
     information.
 
     Attributes:
-        data (list): List of dicts, each dict containing one row of the table
+        self (list): List of dicts, each dict containing one row of the table
             with container information including container_id, image, created,
             state, name, attempt, pod_id, and pod fields.
     """
@@ -94,11 +95,13 @@ class CrictlPs(CommandParser):
 
         Raises:
             ParseException: If the content is invalid or doesn't contain the expected header.
+            SkipComponent: If no container records are found after parsing.
         """
         if len(content) < 1 or "CONTAINER" not in content[0]:
             raise ParseException("invalid content: {0}".format(content) if content else 'empty file')
 
-        self.data = []
+        # Clear any existing data
+        self.clear()
 
         # Skip the header line
         for line in content[1:]:
@@ -109,7 +112,11 @@ class CrictlPs(CommandParser):
             # Parse each line manually to handle the space-containing "created" field
             parsed = self._parse_line(line)
             if parsed:
-                self.data.append(parsed)
+                self.append(parsed)
+
+        # Raise SkipComponent if no containers were found
+        if not self:
+            raise SkipComponent("No container records found")
 
     def _parse_line(self, line):
         """
@@ -142,10 +149,6 @@ class CrictlPs(CommandParser):
         # The structure is:
         # container_id image created_parts... state name attempt pod_id pod
 
-        # First two parts are always container_id and image
-        container_id = parts[0]
-        image = parts[1]
-
         # Find the state field (it's always a single word like "Running", "Exited", etc.)
         # Look for common state values
         state_keywords = ['Running', 'Exited', 'Created', 'Unknown', 'ContainerCreating', 'Pending']
@@ -158,44 +161,19 @@ class CrictlPs(CommandParser):
         if state_index is None:
             return None
 
-        # Everything between image and state is the "created" field
-        created_parts = parts[2:state_index]
-        created = ' '.join(created_parts)
-
         # The remaining parts after state
         remaining = parts[state_index + 1:]
 
         if len(remaining) < 4:
             return None
 
-        # The last 4 parts are: name, attempt, pod_id, pod
-        name = remaining[-4]
-        attempt = remaining[-3]
-        pod_id = remaining[-2]
-        pod = remaining[-1]
-
-        # The state is at state_index
-        state = parts[state_index]
-
         return {
-            'container_id': container_id,
-            'image': image,
-            'created': created,
-            'state': state,
-            'name': name,
-            'attempt': attempt,
-            'pod_id': pod_id,
-            'pod': pod
+            'container_id': parts[0],  # First two parts are always container_id and image
+            'image': parts[1],
+            'created': ' '.join(parts[2:state_index]),  # Everything between image and state is the "created" field
+            'state': parts[state_index],  # The state is at state_index
+            'name': remaining[-4],  # The last 4 parts are: name, attempt, pod_id, pod
+            'attempt': remaining[-3],
+            'pod_id': remaining[-2],
+            'pod': remaining[-1]
         }
-
-    def __getitem__(self, item):
-        """Allow indexing into the data list."""
-        return self.data[item]
-
-    def __contains__(self, item):
-        """Check if an item exists in the data list."""
-        return item in self.data
-
-    def __len__(self):
-        """Return the number of container records."""
-        return len(self.data)

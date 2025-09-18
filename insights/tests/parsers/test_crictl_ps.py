@@ -1,6 +1,6 @@
 from insights.parsers.crictl_ps import CrictlPs
 from insights.tests import context_wrap
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import ParseException, SkipComponent
 import pytest
 
 
@@ -34,10 +34,10 @@ def test_crictl_ps():
     result = CrictlPs(context_wrap(CRICTL_PS))
 
     # Test number of records
-    assert len(result.data) == 3
+    assert len(result) == 3
 
     # Test first record
-    first_record = result.data[0]
+    first_record = result[0]
     assert first_record['container_id'] == '93b10093a8263'
     assert first_record['image'] == 'bea2d277eb71530a376a68be9760260cedb59f2392bb6e7793b05d5350df8d4c'
     assert first_record['created'] == 'About a minute ago'
@@ -48,7 +48,7 @@ def test_crictl_ps():
     assert first_record['pod'] == 'apiserver-7cd97c59ff-dwckz'
 
     # Test second record
-    second_record = result.data[1]
+    second_record = result[1]
     assert second_record['container_id'] == 'e34ce05ade472'
     assert second_record['image'] == '2c96c7c72cf99490b4bdbb7389020b7e4b5bb7dc43ea9cadc4d5af43cb300b3f'
     assert second_record['created'] == '9 days ago'
@@ -59,7 +59,7 @@ def test_crictl_ps():
     assert second_record['pod'] == 'etcd-guard-nah-4jnq5-master-v8z5h-0'
 
     # Test third record
-    third_record = result.data[2]
+    third_record = result[2]
     assert third_record['container_id'] == '471d75b135b5b'
     assert third_record['image'] == '90e50eece96ef2a252b729a76a2ee3360d3623295cceb7d3e623b55cb7aef30a'
     assert third_record['created'] == '9 days ago'
@@ -75,24 +75,24 @@ def test_crictl_ps_different_states():
     result = CrictlPs(context_wrap(CRICTL_PS_WITH_DIFFERENT_STATES))
 
     # Test number of records
-    assert len(result.data) == 4
+    assert len(result) == 4
 
     # Test different states
-    states = [record['state'] for record in result.data]
+    states = [record['state'] for record in result]
     assert 'Running' in states
     assert 'Exited' in states
     assert 'ContainerCreating' in states
     assert 'Unknown' in states
 
     # Test different created formats
-    created_values = [record['created'] for record in result.data]
+    created_values = [record['created'] for record in result]
     assert 'About a minute ago' in created_values
     assert '2 hours ago' in created_values
     assert '1 day ago' in created_values
     assert '3 weeks ago' in created_values
 
     # Test record with different image format (sha256:)
-    sha256_record = result.data[3]
+    sha256_record = result[3]
     assert sha256_record['container_id'] == 'abc123def456'
     assert sha256_record['image'] == 'sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'
     assert sha256_record['state'] == 'Unknown'
@@ -104,10 +104,10 @@ def test_crictl_ps_different_states():
 
 def test_crictl_ps_empty():
     """Test crictl ps parsing with empty data"""
-    result = CrictlPs(context_wrap(CRICTL_PS_EMPTY))
+    with pytest.raises(SkipComponent) as excinfo:
+        CrictlPs(context_wrap(CRICTL_PS_EMPTY))
 
-    # Should have no records
-    assert len(result.data) == 0
+    assert "No container records found" in str(excinfo.value)
 
 
 def test_crictl_ps_invalid_header():
@@ -128,7 +128,7 @@ def test_crictl_ps_container_ids():
         assert result.container_ids == expected_ids
     else:
         # If container_ids property doesn't exist, test manual extraction
-        container_ids = [record['container_id'] for record in result.data]
+        container_ids = [record['container_id'] for record in result]
         expected_ids = ['93b10093a8263', 'e34ce05ade472', '471d75b135b5b']
         assert container_ids == expected_ids
 
@@ -159,12 +159,12 @@ def test_crictl_ps_contains():
     result = CrictlPs(context_wrap(CRICTL_PS))
 
     # Test that records are in the data
-    first_record = result.data[0]
-    assert first_record in result.data
+    first_record = result[0]
+    assert first_record in result
 
     # Test that a non-existent record is not in the data
     fake_record = {'container_id': 'fake', 'image': 'fake', 'created': 'fake', 'state': 'fake', 'name': 'fake', 'attempt': 'fake', 'pod_id': 'fake', 'pod': 'fake'}
-    assert fake_record not in result.data
+    assert fake_record not in result
 
 
 def test_crictl_ps_field_types():
@@ -173,7 +173,7 @@ def test_crictl_ps_field_types():
 
     required_fields = ['container_id', 'image', 'created', 'state', 'name', 'attempt', 'pod_id', 'pod']
 
-    for record in result.data:
+    for record in result:
         # Check all required fields are present
         for field in required_fields:
             assert field in record
@@ -190,9 +190,9 @@ abc123             def456                                                       
 """.strip()
 
     result = CrictlPs(context_wrap(minimal_data))
-    assert len(result.data) == 1
+    assert len(result) == 1
 
-    record = result.data[0]
+    record = result[0]
     assert record['container_id'] == 'abc123'
     assert record['image'] == 'def456'
     assert record['created'] == '1 hour ago'
