@@ -22,7 +22,6 @@ from insights.specs.datasources.client_metadata import (
     blacklisted_specs,
     branch_info,
     display_name,
-    egg_release,
     version_info,
     tags,
 )
@@ -151,18 +150,6 @@ def test_display_name():
     ic = InsightsConfig()
     with pytest.raises(SkipComponent):
         display_name({'client_config': ic})
-
-
-@patch(builtin_open, mock_open(read_data='/testing'))
-def test_egg_release():
-    result = egg_release({})
-    assert result.content == ['/testing']
-
-
-@patch(builtin_open, mock_open(read_data=''))
-def test_egg_release_empty():
-    with pytest.raises(SkipComponent):
-        egg_release({})
 
 
 @patch("yaml.safe_load", return_value=yaml.load(TAGS_YAML, Loader=yaml.Loader))
