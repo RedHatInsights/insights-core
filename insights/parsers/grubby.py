@@ -18,6 +18,7 @@ GrubbyInfoAll - command ``grubby --info=ALL``
 from insights.core import CommandParser
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
+from insights.parsers import parse_cmdline_args
 from insights.specs import Specs
 from insights.util import deprecated
 
@@ -167,17 +168,6 @@ class GrubbyInfoAll(CommandParser):
 
     def parse_content(self, content):
 
-        def _parse_args(args):
-            parsed_args = dict()
-            for el in args.split():
-                key, value = el, True
-                if "=" in el:
-                    key, value = el.split("=", 1)
-                if key not in parsed_args:
-                    parsed_args[key] = []
-                parsed_args[key].append(value)
-            return parsed_args
-
         if not content:
             raise SkipComponent("Empty output")
 
@@ -204,7 +194,8 @@ class GrubbyInfoAll(CommandParser):
                 else:
                     raise ParseException('Invalid index value: {0}'.format(_line))
             elif k == "args":
-                entry_data[k] = _parse_args(v)
+                entry_data["raw_args"] = v
+                entry_data[k] = parse_cmdline_args(v)
             else:
                 entry_data[k] = v
 

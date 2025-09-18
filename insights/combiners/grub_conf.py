@@ -22,7 +22,7 @@ parsers/combiners:
 import re
 
 from insights import SkipComponent
-from insights.core.filters import add_filter
+from insights.combiners.grubby import Grubby, IsUEFIBoot
 from insights.core.plugins import combiner
 from insights.parsers.cmdline import CmdLine
 from insights.parsers.grub_conf import (
@@ -36,24 +36,9 @@ from insights.parsers.grub_conf import (
 )
 from insights.parsers.grubenv import GrubEnv
 from insights.parsers.installed_rpms import InstalledRpms
-from insights.parsers.ls import LSlanFiltered
-from insights.parsers.ls_sys_firmware import LsSysFirmware
-from insights.specs import Specs
-
-add_filter(Specs.ls_lan_filtered_dirs, '/sys/firmware')
-add_filter(Specs.ls_lan_filtered, ['/sys/firmware', 'efi'])
 
 
-def is_uefi_boot(ls_lan, ls_sf):
-    ls = ls_lan or ls_sf
-    if ls:
-        sf_dir = '/sys/firmware'
-        sf_efi_dir = '/sys/firmware/efi'
-        return sf_efi_dir in ls or (sf_dir in ls and ls.dir_contains(sf_dir, 'efi'))
-    return False
-
-
-@combiner(BLE, optional=[GrubEnv, LSlanFiltered, LsSysFirmware])
+@combiner(BLE, optional=[GrubEnv, IsUEFIBoot])
 class BootLoaderEntries(object):
     """
     Combine all :class:`insights.parsers.grub_conf.BootLoaderEntries`
@@ -73,9 +58,9 @@ class BootLoaderEntries(object):
         SkipComponent: when no any BootLoaderEntries Parsers.
     """
 
-    def __init__(self, grub_bles, grubenv, ls_lan, ls_sf):
+    def __init__(self, grub_bles, grubenv, is_uefi):
         self.version = self._version = 2
-        self.is_efi = self._efi = is_uefi_boot(ls_lan, ls_sf)
+        self.is_efi = self._efi = bool(is_uefi)
         self.entries = []
         self.boot_entries = []
         self.is_kdump_iommu_enabled = False
@@ -126,12 +111,13 @@ class BootLoaderEntries(object):
 
 
 @combiner(
-    [Grub1Config, Grub2Config, Grub1EFIConfig, Grub2EFIConfig, BootLoaderEntries],
-    optional=[InstalledRpms, CmdLine, LSlanFiltered, LsSysFirmware],
+    [Grubby, Grub1Config, Grub2Config, Grub1EFIConfig, Grub2EFIConfig, BootLoaderEntries],
+    optional=[InstalledRpms, CmdLine, IsUEFIBoot],
 )
 class GrubConf(object):
     """
-    Process Grub configuration v1, v2, and BLS based on which type is passed in.
+    Process grubby command and Grub configuration v1, v2, and BLS files
+    based on which type is passed in.
 
     Attributes:
         version (int): returns 1 or 2, version of the GRUB configuration
@@ -160,15 +146,20 @@ class GrubConf(object):
         []
     """
 
-    def __init__(self, grub1, grub2, grub1_efi, grub2_efi, grub_bles, rpms, cmdline, ls_lan, ls_sf):
+    def __init__(
+        self, grubby, grub1, grub2, grub1_efi, grub2_efi, grub_bles, rpms, cmdline, is_uefi
+    ):
         self.version = self.is_kdump_iommu_enabled = None
         self.grub = self.kernel_initrds = None
-        self.is_efi = is_uefi_boot(ls_lan, ls_sf)
+        self.is_efi = bool(is_uefi)
+
         _grubs = list(filter(None, [grub1, grub2, grub1_efi, grub2_efi, grub_bles]))
 
-        if len(_grubs) == 1:
+        if grubby:
+            self.grub = grubby
+        elif len(_grubs) == 1:
             self.grub = _grubs[0]
-            self.is_efi = self.is_efi if ls_lan or ls_sf else self.grub._efi
+            self.is_efi = self.is_efi if is_uefi is not None else self.grub._efi
         else:
             _grub1, _grub2 = (grub1_efi, grub2_efi) if self.is_efi else (grub1, grub2)
             if grub_bles and _grub2 and 'blscfg' in _grub2.get('configs', ''):
