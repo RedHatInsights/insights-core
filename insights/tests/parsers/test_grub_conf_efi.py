@@ -67,15 +67,21 @@ menuentry 'Red Hat Enterprise Linux Server (0-rescue-f1340b5dd6ee4c26b5876215661
 """.strip()  # noqa
 
 
-class TestGrub2EFI():
+class TestGrub2EFI:
     def test_get_grub_kernel_initrd(self):
-        expected = {'grub_kernels': ['vmlinuz-3.10.0-514.16.1.el7.x86_64',
-                                     'vmlinuz-3.10.0-514.10.2.el7.x86_64',
-                                     'vmlinuz-3.10.0-514.el7.x86_64',
-                                     'vmlinuz-0-rescue-f1340b5dd6ee4c26b587621566111421'],
-                    'grub_initrds': ['initramfs-3.10.0-514.16.1.el7.x86_64.img',
-                                     'initramfs-3.10.0-514.10.2.el7.x86_64.img',
-                                     'initramfs-3.10.0-514.el7.x86_64.img',
-                                     'initramfs-0-rescue-f1340b5dd6ee4c26b587621566111421.img']}
+        expected = {
+            'grub_kernels': [
+                'vmlinuz-3.10.0-514.16.1.el7.x86_64',
+                'vmlinuz-3.10.0-514.10.2.el7.x86_64',
+                'vmlinuz-3.10.0-514.el7.x86_64',
+                'vmlinuz-0-rescue-f1340b5dd6ee4c26b587621566111421',
+            ],
+            'grub_initrds': [
+                'initramfs-3.10.0-514.16.1.el7.x86_64.img',
+                'initramfs-3.10.0-514.10.2.el7.x86_64.img',
+                'initramfs-3.10.0-514.el7.x86_64.img',
+                'initramfs-0-rescue-f1340b5dd6ee4c26b587621566111421.img',
+            ],
+        }
 
         assert expected == Grub2EFIConfig((context_wrap(GRUB2_EFI_CFG))).kernel_initrds
