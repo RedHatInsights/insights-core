@@ -35,45 +35,45 @@ class CrictlPs(CommandParser, list):
 
     The parser returns a list of dictionaries, each containing one container record with the
     following fields:
-        - container_id (str): The container ID (e.g., '93b10093a8263')
-        - image (str): The container image hash or reference (e.g., 'bea2d277eb71530a...')
-        - created (str): When the container was created (e.g., 'About a minute ago', '9 days ago')
-        - state (str): Current container state (e.g., 'Running', 'Exited', 'ContainerCreating', 'Unknown')
-        - name (str): Container name (e.g., 'oauth-apiserver')
-        - attempt (str): Container restart attempt number (e.g., '185')
-        - pod_id (str): Associated pod ID (e.g., '19d971fe5c478')
-        - pod (str): Associated pod name (e.g., 'apiserver-7cd97c59ff-dwckz')
+    - container_id (str): The container ID (e.g., '93b10093a8263')
+    - image (str): The container image hash or reference (e.g., 'bea2d277eb71530a...')
+    - created (str): When the container was created (e.g., 'About a minute ago', '9 days ago')
+    - state (str): Current container state (e.g., 'Running', 'Exited', 'ContainerCreating', 'Unknown')
+    - name (str): Container name (e.g., 'oauth-apiserver')
+    - attempt (str): Container restart attempt number (e.g., '185')
+    - pod_id (str): Associated pod ID (e.g., '19d971fe5c478')
+    - pod (str): Associated pod name (e.g., 'apiserver-7cd97c59ff-dwckz')
 
     Supported Container States:
-        - Running: Container is currently running
-        - Exited: Container has exited
-        - Created: Container has been created but not started
-        - ContainerCreating: Container is in the process of being created
-        - Unknown: Container state is unknown
-        - Pending: Container is pending (waiting for resources)
+    - Running: Container is currently running
+    - Exited: Container has exited
+    - Created: Container has been created but not started
+    - ContainerCreating: Container is in the process of being created
+    - Unknown: Container state is unknown
+    - Pending: Container is pending (waiting for resources)
 
     Examples:
 
         Basic usage:
-            >>> crictl_ps = CrictlPs(context)
-            >>> len(crictl_ps)
-            3
-            >>> crictl_ps[0]['container_id']
-            '93b10093a8263'
-            >>> crictl_ps[0]['image']
-            'bea2d277eb71530a376a68be9760260cedb59f2392bb6e7793b05d5350df8d4c'
-            >>> crictl_ps[0]['created']
-            'About a minute ago'
-            >>> crictl_ps[0]['state']
-            'Running'
-            >>> crictl_ps[0]['name']
-            'oauth-apiserver'
-            >>> crictl_ps[0]['attempt']
-            '185'
-            >>> crictl_ps[0]['pod_id']
-            '19d971fe5c478'
-            >>> crictl_ps[0]['pod']
-            'apiserver-7cd97c59ff-dwckz'
+        >>> crictl_ps = CrictlPs(context)
+        >>> len(crictl_ps)
+        3
+        >>> crictl_ps[0]['container_id']
+        '93b10093a8263'
+        >>> crictl_ps[0]['image']
+        'bea2d277eb71530a376a68be9760260cedb59f2392bb6e7793b05d5350df8d4c'
+        >>> crictl_ps[0]['created']
+        'About a minute ago'
+        >>> crictl_ps[0]['state']
+        'Running'
+        >>> crictl_ps[0]['name']
+        'oauth-apiserver'
+        >>> crictl_ps[0]['attempt']
+        '185'
+        >>> crictl_ps[0]['pod_id']
+        '19d971fe5c478'
+        >>> crictl_ps[0]['pod']
+        'apiserver-7cd97c59ff-dwckz'
 
     Raises:
         ParseException: If the input content is invalid or doesn't contain the expected
