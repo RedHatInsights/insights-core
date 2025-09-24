@@ -1,9 +1,10 @@
 import datetime
 import pytest
 
+import insights
 from insights.core import YAMLParser
 from insights.core.exceptions import ParseException, SkipComponent
-from insights.tests import context_wrap
+from insights.tests import context_wrap, _PatchedSafeLoader
 
 
 bi_conf_content = """
@@ -101,6 +102,9 @@ def test_empty_content():
 
 
 def test_yaml_parser_with_equal_value():
+    # Ensure original _PatchedSafeLoader is used for this test
+    insights.core._PatchedSafeLoader = _PatchedSafeLoader
+
     ctx = context_wrap("key: =")
     assert FakeYamlParser(ctx).data == {"key": "="}
 
