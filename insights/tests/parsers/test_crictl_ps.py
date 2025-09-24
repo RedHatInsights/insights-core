@@ -122,15 +122,9 @@ def test_crictl_ps_container_ids():
     """Test accessing container IDs"""
     result = CrictlPs(context_wrap(CRICTL_PS))
 
-    # Test container_ids property (if it exists)
-    if hasattr(result, 'container_ids'):
-        expected_ids = ['93b10093a8263', 'e34ce05ade472', '471d75b135b5b']
-        assert result.container_ids == expected_ids
-    else:
-        # If container_ids property doesn't exist, test manual extraction
-        container_ids = [record['container_id'] for record in result]
-        expected_ids = ['93b10093a8263', 'e34ce05ade472', '471d75b135b5b']
-        assert container_ids == expected_ids
+    # Test container_ids property
+    expected_ids = ['93b10093a8263', 'e34ce05ade472', '471d75b135b5b']
+    assert result.container_ids == expected_ids
 
 
 def test_crictl_ps_indexing():
@@ -163,7 +157,11 @@ def test_crictl_ps_contains():
     assert first_record in result
 
     # Test that a non-existent record is not in the data
-    fake_record = {'container_id': 'fake', 'image': 'fake', 'created': 'fake', 'state': 'fake', 'name': 'fake', 'attempt': 'fake', 'pod_id': 'fake', 'pod': 'fake'}
+    fake_record = {
+        'container_id': 'fake', 'image': 'fake', 'created': 'fake',
+        'state': 'fake', 'name': 'fake', 'attempt': 'fake',
+        'pod_id': 'fake', 'pod': 'fake'
+    }
     assert fake_record not in result
 
 
@@ -201,3 +199,19 @@ abc123             def456                                                       
     assert record['attempt'] == '1'
     assert record['pod_id'] == 'pod123'
     assert record['pod'] == 'test-pod'
+
+
+def test_crictl_ps_examples():
+    """Test the examples from the docstring"""
+    result = CrictlPs(context_wrap(CRICTL_PS))
+
+    # Test the examples from the docstring
+    assert len(result) == 3
+    assert result[0]['container_id'] == '93b10093a8263'
+    assert result[0]['image'] == 'bea2d277eb71530a376a68be9760260cedb59f2392bb6e7793b05d5350df8d4c'
+    assert result[0]['created'] == 'About a minute ago'
+    assert result[0]['state'] == 'Running'
+    assert result[0]['name'] == 'oauth-apiserver'
+    assert result[0]['attempt'] == '185'
+    assert result[0]['pod_id'] == '19d971fe5c478'
+    assert result[0]['pod'] == 'apiserver-7cd97c59ff-dwckz'
