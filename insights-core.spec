@@ -6,9 +6,9 @@
 %if 0%{?with_selinux}
 %global selinuxtype targeted
 %if 0%{?rhel} == 9
-%global selinux_policy_version 38.1.60
+%global selinux_policy_version 38.1.66
 %elif 0%{?rhel} == 10
-%global selinux_policy_version 42.1.1
+%global selinux_policy_version 42.1.8
 %endif
 %endif
 
@@ -56,7 +56,7 @@ Requires:       python3-six
 %endif
 
 %if 0%{?with_selinux}
-Requires:       ((%{name}-selinux == %{version}) if selinux-policy-%{selinuxtype})
+Requires:       ((%{name}-selinux = %{version}-%{release}) if selinux-policy-%{selinuxtype})
 %endif
 
 %description
@@ -70,7 +70,7 @@ Insights Core is a data collection and analysis framework.
 %endif
 
 %if 0%{?with_selinux}
-%package -n %{name}-selinux
+%package selinux
 Summary:            Insights Core SELinux policy
 License:            Apache-2.0
 
@@ -86,23 +86,23 @@ Requires(post):     selinux-policy-base >= %{selinux_policy_version}
 Requires(postun):   libselinux-utils
 Requires(postun):   policycoreutils
 
-%description -n %{name}-selinux
+%description selinux
 Insights Core Custom SELinux policy module
 
-%pre -n %{name}-selinux
+%pre selinux
 %selinux_relabel_pre -s %{selinuxtype}
 
-%post -n %{name}-selinux
+%post selinux
 %selinux_modules_install -s %{selinuxtype} %{_datadir}/selinux/packages/%{selinuxtype}/%{modulename}.pp.bz2
 %selinux_relabel_post -s %{selinuxtype}
 
-%postun -n %{name}-selinux
+%postun selinux
 if [ $1 -eq 0 ]; then
     %selinux_modules_uninstall -s %{selinuxtype} %{modulename}
     %selinux_relabel_post -s %{selinuxtype}
 fi
 
-%build -n %{name}-selinux
+%build
 make -f %{_datadir}/selinux/devel/Makefile %{modulename}.pp
 bzip2 -9 %{modulename}.pp
 %endif
@@ -123,7 +123,7 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %license LICENSE
 
 %if 0%{?with_selinux}
-%files -n %{name}-selinux
+%files selinux
 %license LICENSE
 %{_datadir}/selinux/packages/%{selinuxtype}/%{modulename}.pp.*
 %{_datadir}/selinux/devel/include/distributed/%{modulename}.if
