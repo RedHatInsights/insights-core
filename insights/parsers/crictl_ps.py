@@ -100,9 +100,6 @@ class CrictlPs(CommandParser, list):
         if len(content) < 1 or "CONTAINER" not in content[0]:
             raise ParseException("invalid content: {0}".format(content) if content else 'empty file')
 
-        # Clear any existing data
-        self.clear()
-
         # Skip the header line
         for line in content[1:]:
             line = line.strip()
