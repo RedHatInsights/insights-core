@@ -2,9 +2,9 @@ name: Build Egg
 
 on:
   push:
-    branches: [ master, '3.0']
+    branches: [ '3.0_egg']
   pull_request:
-    branches: [ master ]
+    branches: [ '3.0_egg']
 
 jobs:
   build-egg:
@@ -24,4 +24,4 @@ jobs:
       with:
         name: egg
         path: insights.zip
-        retention-days: 7 
+        retention-days: 7
