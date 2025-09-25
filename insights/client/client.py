@@ -422,6 +422,7 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
             os.chmod(constants.lastupload_file, 0o644)
             msg_name = determine_hostname(config.display_name)
             logger.info("Successfully uploaded report for %s.", msg_name)
+            return
         elif upload.status_code in (413, 415):
             pconn.handle_fail_rcs(upload)
             raise RuntimeError('Upload failed.')
