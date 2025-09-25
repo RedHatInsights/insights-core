@@ -7,7 +7,7 @@ from insights.core.exceptions import SkipComponent, ContentException
 from insights.core.spec_factory import ContainerCommandProvider
 from insights.specs.datasources.container.nginx_conf import LocalSpecs, nginx_conf
 
-CONTAINER_CMD = '%s exec -e "PATH=$PATH" %s bash -c "command -v find && find /etc/ /opt/ *.conf"'
+CONTAINER_CMD = '%s exec -e "PATH=$PATH" %s sh -c "command -v find && find /etc/ /opt/ *.conf"'
 
 find_list = [
     '/etc/nginx/nginx.conf',
