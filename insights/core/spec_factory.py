@@ -515,11 +515,11 @@ class ContainerFileProvider(ContainerProvider):
 class ContainerCommandProvider(ContainerProvider):
     def _misc_settings(self):
         # cmd: <podman|docker> exec -e <env> container_id \
-        #               bash -c "command -v cmd_exec > /dev/null && cmd"
+        #               sh -c "command -v cmd_exec > /dev/null && cmd"
         engine, _, _, _, container_id, _cmd = self.cmd.split(None, 5)
         cmd = (
             _cmd.split('&&', 1)[-1].strip(' "')
-            if _cmd.startswith('bash -c "command -v ') and ' && ' in _cmd
+            if _cmd.startswith('sh -c "command -v ') and ' && ' in _cmd
             else _cmd
         )
         self.engine = os.path.basename(engine)
@@ -1372,7 +1372,7 @@ class container_execute(foreach_execute):
                 cmd = self.cmd % args if args else self.cmd
                 # wrap cmd with existence pre_check
                 cmd_exec = self.cmd.split(None, 1)[0]
-                wrapped_cmd = 'bash -c "command -v %s > /dev/null && %s"' % (cmd_exec, cmd)
+                wrapped_cmd = 'sh -c "command -v %s > /dev/null && %s"' % (cmd_exec, cmd)
                 # the_cmd = <podman|docker> exec -e <env> container_id wrapped_cmd
                 the_cmd = '/usr/bin/%s exec -e "%s" %s %s' % (
                     engine,
