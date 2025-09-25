@@ -215,7 +215,22 @@ class FileProvider(ContentProvider):
 
         self.validate()
 
+    def _is_inside_root(self):
+        """Checks that `self.relative_path` does not point outside `self.root`."""
+        resolved = os.path.realpath(self.path)
+
+        # pathlib.Path.is_relative_to() has been added only in Python 3.9
+        resolved_root = os.path.realpath(self.root)
+        if not resolved_root.endswith(os.sep):
+            resolved_root += os.sep
+
+        return resolved.startswith(resolved_root)
+
     def validate(self):
+        if not self._is_inside_root():
+            msg = "Relative path points outside the root: %s"
+            raise ValueError(msg % (self.path))
+
         # 1. No Such File
         if not os.path.exists(self.path):
             raise ContentException("%s does not exist." % self.path)
@@ -225,14 +240,9 @@ class FileProvider(ContentProvider):
             if self._filterable and not self._filters:
                 raise NoFilterException("Skipping %s due to no filters." % dr.get_name(self.ds))
             # 2.2 Customer Prohibits Collection
-            if not blacklist.allow_file("/" + self.relative_path):
-                log.warning("WARNING: Skipping file %s", "/" + self.relative_path)
+            if not blacklist.allow_file(os.sep + self.relative_path):
+                log.warning("WARNING: Skipping file %s", os.sep + self.relative_path)
                 raise BlacklistedSpec()
-
-        resolved = os.path.realpath(self.path)
-        if not resolved.startswith(os.path.realpath(self.root)):
-            msg = "Relative path points outside the root: %s -> %s."
-            raise Exception(msg % (self.path, resolved))
 
         if not os.access(self.path, os.R_OK):
             raise ContentException("Cannot access %s" % self.path)
