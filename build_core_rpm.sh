@@ -73,9 +73,11 @@ if [ "$TARGET" == "release" ]; then
         exit 1
     fi
 fi
+# Place the build target in ".spec" file
+sed -i -e "s/# placeholder/%global ${BUILDTARGET}/g" insights-core.spec
 # Build the RPM/SRPM
-rpmbuild -D "${BUILDTARGET}" -D "_topdir $PWD" -D "_sourcedir $PWD/dist" -ba insights-core.spec
+rpmbuild -D "_topdir $PWD" -D "_sourcedir $PWD/dist" -ba insights-core.spec
 
 # Cleanup
 rm -rf dist BUILD BUILDROOT
-git checkout -- pyproject.toml setup.py MANIFEST.in insights/COMMIT
+git checkout -- pyproject.toml setup.py MANIFEST.in insights/COMMIT insights_core.spec
