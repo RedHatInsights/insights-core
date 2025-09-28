@@ -80,4 +80,4 @@ rpmbuild -D "_topdir $PWD" -D "_sourcedir $PWD/dist" -ba insights-core.spec
 
 # Cleanup
 rm -rf dist BUILD BUILDROOT
-git checkout -- pyproject.toml setup.py MANIFEST.in insights/COMMIT insights_core.spec
+git checkout -- pyproject.toml setup.py MANIFEST.in insights/COMMIT insights-core.spec
