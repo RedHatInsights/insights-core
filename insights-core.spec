@@ -6,9 +6,9 @@
 %if 0%{?with_selinux}
 %global selinuxtype targeted
 %if 0%{?rhel} == 9
-%global selinux_policy_version 38.1.60
+%global selinux_policy_version 38.1.66
 %elif 0%{?rhel} == 10
-%global selinux_policy_version 42.1.1
+%global selinux_policy_version 42.1.8
 %endif
 %endif
 
