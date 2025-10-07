@@ -8,6 +8,7 @@ from logging import getLogger
 from re import findall
 from sys import exit
 
+from insights.client.auto_config import try_auto_configuration
 from insights.client.connection import InsightsConnection
 from insights.client.constants import InsightsConstants as constants
 from insights.util.subproc import call
@@ -35,11 +36,10 @@ class ComplianceClient:
         self.os_major, self.os_minor = os_version if os_version else [None, None]
         self.ssg_version = ssg_version
         config = copy.deepcopy(config)
-        # Do nothing when it's already `legacy_upload=False`
-        if config.legacy_upload:
-            # use legacy_upload=False basic configurations by force
+        if config.legacy_upload is True:
+            # For compliance, use "legacy_upload=False" by force
             config.legacy_upload = False
-            config.base_url = constants.base_url
+            try_auto_configuration(config)
         self.conn = InsightsConnection(config)
 
     def fetch_tailoring_content(self, policy):
