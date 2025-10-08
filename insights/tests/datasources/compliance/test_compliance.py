@@ -32,38 +32,48 @@ def teardown_function(func):
             env.update(TZ=ENV_TZ)
 
 
-@mark.parametrize("legacy_upload", [True, False])
-def test_get_system_policies(legacy_upload):
-    config = InsightsConfig(
-        legacy_upload=legacy_upload, base_url='localhost/app', systemid='', proxy=None
-    )
-    if legacy_upload:
-        constants.base_url = config.base_url
+@mark.parametrize(
+    ("legacy_upload", "base_url", "expected_url"),
+    [
+        (True, "cert-api.access.redhat.com/app", "cert-api.access.redhat.com/app"),
+        (False, "cert-api.access.redhat.com/app", "cert-api.access.redhat.com/app"),
+        # Satellite
+        (True, "localhost/app", "localhost/app"),
+        (False, "localhost/app", "localhost/app"),
+    ],
+)
+def test_get_system_policies(legacy_upload, base_url, expected_url):
+    config = InsightsConfig(legacy_upload=legacy_upload, base_url=base_url, systemid='', proxy=None)
     compliance_client = ComplianceClient(config=config)
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     compliance_client.conn.session.get = Mock(
         return_value=Mock(status_code=200, json=Mock(return_value={'data': ['test']}))
     )
     assert compliance_client.get_system_policies() == ['test']
-    url = "https://localhost/app/compliance/v2/systems/{0}/policies".format(
-        compliance_client.inventory_id
+    url = "https://{0}/compliance/v2/systems/{1}/policies".format(
+        expected_url, compliance_client.inventory_id
     )
     compliance_client.conn.session.get.assert_called_with(url)
 
 
-@mark.parametrize("legacy_upload", [True, False])
-def test_get_system_policies_error(legacy_upload):
-    config = InsightsConfig(
-        legacy_upload=legacy_upload, base_url='localhost/app', systemid='', proxy=None
-    )
-    if legacy_upload:
-        constants.base_url = config.base_url
+@mark.parametrize(
+    ("legacy_upload", "base_url", "expected_url"),
+    [
+        (True, "cert-api.access.redhat.com/app", "cert-api.access.redhat.com/app"),
+        (False, "cert-api.access.redhat.com/app", "cert-api.access.redhat.com/app"),
+        # Satellite
+        (True, "localhost/app", "localhost/app"),
+        (False, "localhost/app", "localhost/app"),
+    ],
+)
+def test_get_system_policies_error(legacy_upload, base_url, expected_url):
+    config = InsightsConfig(legacy_upload=legacy_upload, base_url=base_url, systemid='', proxy=None)
     compliance_client = ComplianceClient(config=config)
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=500))
-    assert compliance_client.get_system_policies() == []
-    url = "https://localhost/app/compliance/v2/systems/{0}/policies".format(
-        compliance_client.inventory_id
+    assert compliance_client.get_system_policies() == []  # empty
+    url = "https://{0}/compliance/v2/systems/{1}/policies".format(
+        expected_url, compliance_client.inventory_id
     )
     compliance_client.conn.session.get.assert_called_with(url)
 
