@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.7.1
+Version:        3.6.8.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -131,6 +131,32 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Mon Oct 13 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.8.1-1
+- chore(spec): Add back spec vmware_tools_conf (#4595) (jiazhang@redhat.com)
+- fix: use try_auto_configuration method for compliance (#4591)
+  (xiangceliu@redhat.com)
+- fix(client): do not retry upload on successful upload (#4586)
+  (pschrimp@redhat.com)
+- chore(script): update the file name typo in last operation (#4588)
+  (xiangceliu@redhat.com)
+- chore: place the build target in spec instead of passing macro (#4587)
+  (xiangceliu@redhat.com)
+- chore: refine the pull request template (#4585) (xiangceliu@redhat.com)
+- fix: Enhance spec 'filefrag' to check initramfs/vmlinuz files (#4574)
+  (39508521+shlao@users.noreply.github.com)
+- fix: add dep ds containers_with_shell for container specs (#4581)
+  (xiaoxwan@redhat.com)
+- chore: remove the unused build scripts (#4577) (xiangceliu@redhat.com)
+- fix: do not collect egg_release file in RPM delivery (#4573)
+  (xiangceliu@redhat.com)
+- chore(ci/cd): do not build Egg for PRs to matser (#4578)
+  (xiangceliu@redhat.com)
+- New parser for sos_commands/crio/crictl_ps (#4497) (aghodake@redhat.com)
+- fix(test): regression issue of yaml.SafeLoader in testing (#4557)
+  (xiangceliu@redhat.com)
+- fix: no valid conf found issue in combiner GrubConf (#4437)
+  (xiaoxwan@redhat.com)
+
 * Thu Sep 18 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.7.1-1
 - fix(parser/sshd_config): keep inline comments when parsing config lines
   (#4546) (tayushi1610@gmail.com)

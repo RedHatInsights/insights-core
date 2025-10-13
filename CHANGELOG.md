@@ -2,6 +2,24 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.8.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.8.1) (2025-10-13)
+
+- chore(spec): Add back spec vmware_tools_conf ([PR 4595](https://github.com/RedHatInsights/insights-core/pull/4595))
+- fix: use try_auto_configuration method for compliance ([PR 4591](https://github.com/RedHatInsights/insights-core/pull/4591))
+- fix(client): do not retry upload on successful upload ([PR 4586](https://github.com/RedHatInsights/insights-core/pull/4586))
+- chore(script): update the file name typo in last operation ([PR 4588](https://github.com/RedHatInsights/insights-core/pull/4588))
+- chore: place the build target in spec instead of passing macro ([PR 4587](https://github.com/RedHatInsights/insights-core/pull/4587))
+- chore: refine the pull request template ([PR 4585](https://github.com/RedHatInsights/insights-core/pull/4585))
+- fix: Enhance spec 'filefrag' to check initramfs/vmlinuz files ([PR 4574](https://github.com/RedHatInsights/insights-core/pull/4574))
+- fix: add dep ds containers_with_shell for container specs ([PR 4581](https://github.com/RedHatInsights/insights-core/pull/4581))
+- chore: remove the unused build scripts ([PR 4577](https://github.com/RedHatInsights/insights-core/pull/4577))
+- fix: do not collect egg_release file in RPM delivery ([PR 4573](https://github.com/RedHatInsights/insights-core/pull/4573))
+- chore(ci/cd): do not build Egg for PRs to matser ([PR 4578](https://github.com/RedHatInsights/insights-core/pull/4578))
+- New parser for sos_commands/crio/crictl_ps ([PR 4497](https://github.com/RedHatInsights/insights-core/pull/4497))
+- fix(test): regression issue of yaml.SafeLoader in testing ([PR 4557](https://github.com/RedHatInsights/insights-core/pull/4557))
+- fix: no valid conf found issue in combiner GrubConf ([PR 4437](https://github.com/RedHatInsights/insights-core/pull/4437))
+- fix(ver): don't use package RELEASE for RPM version up ([PR 4572](https://github.com/RedHatInsights/insights-core/pull/4572))
+
 # [insights-core-3.6.7.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.7.1) (2025-09-18)
 
 - fix(parser/sshd_config): keep inline comments when parsing config lines ([PR 4546](https://github.com/RedHatInsights/insights-core/pull/4546))
