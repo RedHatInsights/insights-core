@@ -922,7 +922,7 @@ class Specs(SpecSet):
     virtlogd_conf = RegistryPoint(filterable=True)
     vma_ra_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     vmcore_dmesg = RegistryPoint(multi_output=True, filterable=True)
-    vmware_tools_conf = RegistryPoint()
+    vmware_tools_conf = RegistryPoint(filterable=True)
     vsftpd = RegistryPoint()
     vsftpd_conf = RegistryPoint(filterable=True)
     watchdog_conf = RegistryPoint(filterable=True)

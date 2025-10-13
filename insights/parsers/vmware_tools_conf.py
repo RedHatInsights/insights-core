@@ -1,41 +1,36 @@
 """
-VMwareToolsConf - file ``/etc/vmware-tools/tools.conf``
+VmwareToolsConf - file ``/etc/vmware-tools/tools.conf``
 =======================================================
+This parser is used to parse the content of file ``/etc/vmware-tools/tools.conf``.
 """
+
 from insights.core import IniConfigFile
+from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.specs import Specs
 
+add_filter(Specs.vmware_tools_conf, ["["])
+
 
 @parser(Specs.vmware_tools_conf)
-class VMwareToolsConf(IniConfigFile):
+class VmwareToolsConf(IniConfigFile):
     """
-    The VMware tools configuration file ``/etc/vmware-tools/tools.conf``
-    is in the standard 'ini' format and is read by the IniConfigFile
-    parser. ``vmtoolsd.service`` provided by ``open-vm-tools`` package is
-    configured using ``/etc/vmware-tools/tools.conf``.
+    Parse the ``/etc/vmware-tools/tools.conf`` configuration file.
 
-    Sample ``/etc/vmware-tools/tools.conf`` file::
+    Sample configuration::
 
-        [guestinfo]
-        disable-query-diskinfo = true
+         [servicediscovery]
+         disabled=false
 
-        [logging]
-        log = true
-        vmtoolsd.level = debug
-        vmtoolsd.handler = file
-        vmtoolsd.data = /tmp/vmtoolsd.log
+         [gueststoreupgrade]
+         poll-interval=3600
 
     Examples:
-        >>> type(conf)
-        <class 'insights.parsers.vmware_tools_conf.VMwareToolsConf'>
-        >>> list(conf.sections()) == [u'guestinfo', u'logging']
+        >>> type(vmware_tools_conf_parser)
+        <class 'insights.parsers.vmware_tools_conf.VmwareToolsConf'>
+        >>> vmware_tools_conf_parser.has_option("servicediscovery", "disabled")
         True
-        >>> conf.has_option('guestinfo', 'disable-query-diskinfo')
+        >>> vmware_tools_conf_parser.get("servicediscovery", "disabled") == "false"
         True
-        >>> conf.getboolean('guestinfo', 'disable-query-diskinfo')
-        True
-        >>> conf.get('logging', 'vmtoolsd.data')
-        '/tmp/vmtoolsd.log'
     """
     pass
