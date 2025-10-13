@@ -973,6 +973,7 @@ class DefaultSpecs(Specs):
     virsh_list_all = simple_command("/usr/bin/virsh --readonly list --all")
     virt_what = simple_command("/usr/sbin/virt-what")
     vma_ra_enabled = simple_file("/sys/kernel/mm/swap/vma_ra_enabled")
+    vmware_tools_conf = simple_file("/etc/vmware-tools/tools.conf")
     vsftpd = simple_file("/etc/pam.d/vsftpd")
     vsftpd_conf = simple_file("/etc/vsftpd/vsftpd.conf")
     watchdog_conf = simple_file("/etc/watchdog.conf")
