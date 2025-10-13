@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.7
+Version:        3.6.8
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,25 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Mon Oct 13 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.8-1
+- chore(spec): Add back spec vmware_tools_conf (#4596) (jiazhang@redhat.com)
+- fix: use try_auto_configuration method for compliance (#4592)
+  (xiangceliu@redhat.com)
+- fix(client): do not retry upload on successful upload (#4590)
+  (pschrimp@redhat.com)
+- fix: add dep ds containers_with_shell for container specs (#4583)
+  (xiaoxwan@redhat.com)
+- fix: Enhance spec 'filefrag' to check initramfs/vmlinuz files (#4582)
+  (39508521+shlao@users.noreply.github.com)
+- chore(ci/cd): build Egg for PRs to 3.0_egg only (#4579)
+  (xiangceliu@redhat.com)
+- New parser for sos_commands/crio/crictl_ps (#4497) (#4576)
+  (xiangceliu@redhat.com)
+- fix(test): regression issue of yaml.SafeLoader in testing (#4563)
+  (xiangceliu@redhat.com)
+- fix: no valid conf found issue in combiner GrubConf (#4575)
+  (xiaoxwan@redhat.com)
+
 * Thu Sep 18 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.7-1
 - fix(parser/sshd_config): keep inline comments when parsing config lines
   (#4570) (tayushi1610@gmail.com)

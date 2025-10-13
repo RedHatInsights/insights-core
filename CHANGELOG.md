@@ -2,6 +2,18 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.8](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.8) (2025-10-13)
+
+- chore(spec): Add back spec vmware_tools_conf ([PR 4596](https://github.com/RedHatInsights/insights-core/pull/4596))
+- fix: use try_auto_configuration method for compliance ([PR 4592](https://github.com/RedHatInsights/insights-core/pull/4592))
+- fix(client): do not retry upload on successful upload ([PR 4590](https://github.com/RedHatInsights/insights-core/pull/4590))
+- fix: add dep ds containers_with_shell for container specs ([PR 4583](https://github.com/RedHatInsights/insights-core/pull/4583))
+- fix: Enhance spec 'filefrag' to check initramfs/vmlinuz files ([PR 4582](https://github.com/RedHatInsights/insights-core/pull/4582))
+- chore(ci/cd): build Egg for PRs to 3.0_egg only ([PR 4579](https://github.com/RedHatInsights/insights-core/pull/4579))
+- New parser for sos_commands/crio/crictl_ps (4497) ([PR 4576](https://github.com/RedHatInsights/insights-core/pull/4576))
+- fix(test): regression issue of yaml.SafeLoader in testing ([PR 4563](https://github.com/RedHatInsights/insights-core/pull/4563))
+- fix: no valid conf found issue in combiner GrubConf ([PR 4575](https://github.com/RedHatInsights/insights-core/pull/4575))
+
 # [insights-core-3.6.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.7) (2025-09-18)
 
 - fix(parser/sshd_config): keep inline comments when parsing config lines ([PR 4570](https://github.com/RedHatInsights/insights-core/pull/4570))
