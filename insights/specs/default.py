@@ -119,6 +119,7 @@ class DefaultSpecs(Specs):
     malware_detection = malware_detection_ds.malware_detection
 
     # Regular collection specs
+    ansible_telemetry = simple_command("/usr/share/ansible/telemetry/telemetry.py")
     abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
     alternatives_display_python = simple_command("/usr/sbin/alternatives --display python")
@@ -317,7 +318,9 @@ class DefaultSpecs(Specs):
     fapolicyd_rules = glob_file(r"/etc/fapolicyd/rules.d/*.rules")
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
     files_dirs_number = ls.files_dirs_number
-    filefrag = simple_command("/sbin/filefrag /boot/grub2/grubenv /boot/initramfs*.img /boot/vmlinuz*", keep_rc=True)
+    filefrag = simple_command(
+        "/sbin/filefrag /boot/grub2/grubenv /boot/initramfs*.img /boot/vmlinuz*", keep_rc=True
+    )
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
