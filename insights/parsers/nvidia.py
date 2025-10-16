@@ -7,12 +7,25 @@ NvidiaSmiL - command ``/usr/bin/nvidia-smi -L``
 
 NvidiaSmiActiveClocksEventReasons - command ``/usr/bin/nvidia-smi --query-gpu=name,clocks_event_reasons.active --format=csv,noheader``
 --------------------------------------------------------------------------------------------------------------------------------------
+
+NvidiaSmiQueryGPU - command ``/usr/bin/nvidia-smi --query-gpu=index,name,uuid,memory.total --format=csv,noheader``
+------------------------------------------------------------------------------------------------------------------
 """
 
+from collections import namedtuple
 from insights.core import Parser
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.util import deprecated
+
+
+NvidiaGPUInfo = namedtuple(
+    "NvidiaGPUInfo",
+    ['index', 'model', 'uuid', 'memory_total'],
+)
+"""namedtuple: Represents the information parsed from ``nvidia-smi --query-gpu`` command output."""
+
 
 # Refer to the following doc for the detailed bitmask of active clock event reasons:
 # - https://docs.nvidia.com/deploy/nvml-api/group__nvmlClocksEventReasons.html
@@ -33,6 +46,11 @@ BITMASK = {
 @parser(Specs.nvidia_smi_l)
 class NvidiaSmiL(Parser, list):
     """
+
+    .. warning::
+        This class is deprecated and will be removed from 3.8.0.
+        Please use the :class:`insights.parsers.nvidia.NvidiaSmiQueryGPU` instead.
+
     Prase for output of command `/usr/bin/nvidia-smi -L`. This command lists
     each of the NVIDIA GPUs in the system, along with their UUIDs.
 
@@ -58,6 +76,14 @@ class NvidiaSmiL(Parser, list):
         >>> gpus[0]
         {'model': 'NVIDIA A100-PCIE-40GB', 'uuid': 'GPU-63110aaa-3561-c8f5-e125-4ab40bbcf838'}
     """
+
+    def __init__(self, context):
+        deprecated(
+            NvidiaSmiL,
+            "Please use the :class:`insights.parsers.nvidia.NvidiaSmiQueryGPU` instead.",
+            "3.8.0",
+        )
+        super(NvidiaSmiL, self).__init__(context)
 
     def parse_content(self, content):
         if not content:
@@ -155,3 +181,69 @@ class NvidiaSmiActiveClocksEventReasons(Parser, list):
                 else:
                     data[key] = bm & bitmask == bm
             self.append(data)
+
+
+@parser(Specs.nvidia_smi_query_gpu)
+class NvidiaSmiQueryGPU(Parser, list):
+    """
+    Parser for the output of command
+    `/usr/bin/nvidia-smi --query-gpu=index,name,uuid,memory.total --format=csv,noheader`.
+    This command lists each of the NVIDIA GPUs info in the system.
+
+    The GPU info shown in each line will be parsed to a namedtuple ``NvidiaGPUInfo``
+    contains the follows info::
+
+        index (str):        The gpu index
+        model (str):        The gpu model
+        uuid (str):         The gpu uuid
+        memory_total(str):  The gpu total memory
+
+    Raises:
+        ParseException: When run into an unparsable line
+        SkipComponent: When content is empty
+
+    Sample Content::
+
+        0, NVIDIA L4, GPU-24598a07-f97d-fc79-86de-485c4c82d01c, 23034 MiB
+        1, NVIDIA A1, GPU-63110aaa-3561-c8f5-e125-4ab40bbcf838, 16280 MiB
+        2, NVIDIA H1, GPU-c9bd25dc-c0c4-3ab6-8f7f-3ad16d6bde4a, 24564 MiB
+
+    Examples::
+        >>> gpus_info.gpu_count
+        3
+        >>> "NVIDIA L4" in gpus_info.gpu_models
+        True
+        >>> type(gpus_info[0])
+        <class 'insights.parsers.nvidia.NvidiaGPUInfo'>
+        >>> gpus_info[0].uuid
+        'GPU-24598a07-f97d-fc79-86de-485c4c82d01c'
+        >>> gpus_info[0].memory_total
+        '23034 MiB'
+    """
+
+    _columns = NvidiaGPUInfo._fields
+
+    def parse_content(self, content):
+        for line in content:
+            items = [v.strip() for v in line.strip().split(",")]
+            if len(items) == len(self._columns) and all(items):
+                self.append(NvidiaGPUInfo(*items))
+            else:
+                raise ParseException("Not an expected command output: %s" % line)
+
+        if len(self) == 0:
+            raise SkipComponent
+
+    @property
+    def gpu_count(self):
+        """
+        str: Returns the GPU count
+        """
+        return len(self)
+
+    @property
+    def gpu_models(self):
+        """
+        str: Returns the GPUs model set
+        """
+        return set([gpu.model for gpu in self])
