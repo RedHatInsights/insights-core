@@ -1,10 +1,13 @@
 import doctest
+
 import pytest
+
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import nvidia
-from insights.parsers.nvidia import NvidiaSmiL
-from insights.parsers.nvidia import NvidiaSmiActiveClocksEventReasons
+from insights.parsers.nvidia import NvidiaSmiActiveClocksEventReasons, NvidiaSmiL, NvidiaSmiQueryGPU
 from insights.tests import context_wrap
+
+# ### test on NvidiaSmiL
 
 NVIDIA_SMI_L_INPUT_1 = """
 GPU 0: NVIDIA A100-PCIE-40GB (UUID: GPU-63110aaa-3561-c8f5-e125-4ab40bbcf838)
@@ -108,6 +111,8 @@ def test_nvidia_smi_l_exceptions():
     assert "Unparsable GPU line:" in str(err)
 
 
+# ### test on NvidiaSmiActiveClocksEventReasons
+
 ACTIVE_CLOCKS_EVENT_REASONS = """
 NVIDIA L4, 0x0000000000000001
 NVIDIA A1, 0x0000000000000000
@@ -177,12 +182,69 @@ def test_nvidia_smi_active_clocks_event_reasons_exceptions():
     assert "Empty content." in str(err)
 
 
+# ### test on NvidiaSmiQueryGPU
+
+NVIDIA_SMI_QUERY_GPU_DATA_1 = """
+0, NVIDIA L4, GPU-24598a07-f97d-fc79-86de-485c4c82d01c, 23034 MiB
+1, NVIDIA A1, GPU-63110aaa-3561-c8f5-e125-4ab40bbcf838, 16280 MiB
+2, NVIDIA H1, GPU-c9bd25dc-c0c4-3ab6-8f7f-3ad16d6bde4a, 24564 MiB
+"""
+NVIDIA_SMI_QUERY_GPU_DATA_EX_EXTRA_SPACE = """
+0,   NVIDIA L4  , GPU-24598a07-f97d-fc79-86de-485c4c82d01c, 23034 MiB
+1, NVIDIA A1, GPU-63110aaa-3561-c8f5-e125-4ab40bbcf838, 16280 MiB
+"""
+
+NVIDIA_SMI_QUERY_GPU_DATA_EX_1 = """
+0 NVIDIA L4, GPU-24598a07-f97d-fc79-86de-485c4c82d01c, 23034 MiB
+"""
+NVIDIA_SMI_QUERY_GPU_DATA_EX_MISSING_FIELD = """
+0, NVIDIA L4, GPU-24598a07-f97d-fc79-86de-485c4c82d01c
+1, NVIDIA A1, GPU-63110aaa-3561-c8f5-e125-4ab40bbcf838, 16280 MiB
+"""
+NVIDIA_SMI_QUERY_GPU_DATA_EX_EMPTY_FIELD = """
+0, NVIDIA L4, , 23034 MiB
+1, NVIDIA A1, GPU-63110aaa-3561-c8f5-e125-4ab40bbcf838, 16280 MiB
+"""
+
+
+def test_nvidia_smi_query_gpu():
+    gpus = NvidiaSmiQueryGPU(context_wrap(NVIDIA_SMI_QUERY_GPU_DATA_1))
+    assert len(gpus) == 3
+    assert gpus.gpu_count == 3
+    assert gpus[0].index == '0'
+    assert gpus[0].model == 'NVIDIA L4'
+    assert gpus[0].uuid == 'GPU-24598a07-f97d-fc79-86de-485c4c82d01c'
+    assert gpus[0].memory_total == '23034 MiB'
+    assert gpus[2].model == 'NVIDIA H1'
+
+    gpus = NvidiaSmiQueryGPU(context_wrap(NVIDIA_SMI_QUERY_GPU_DATA_EX_EXTRA_SPACE))
+    assert len(gpus) == 2
+
+
+def test_nvidia_smi_query_gpu_exceptions():
+    with pytest.raises(SkipComponent) as err:
+        NvidiaSmiQueryGPU(context_wrap(""))
+
+    with pytest.raises(ParseException) as err:
+        NvidiaSmiQueryGPU(context_wrap(NVIDIA_SMI_QUERY_GPU_DATA_EX_1))
+    assert "Not an expected command output: " in str(err)
+
+    with pytest.raises(ParseException) as err:
+        NvidiaSmiQueryGPU(context_wrap(NVIDIA_SMI_QUERY_GPU_DATA_EX_MISSING_FIELD))
+    assert "Not an expected command output: " in str(err)
+
+    with pytest.raises(ParseException) as err:
+        NvidiaSmiQueryGPU(context_wrap(NVIDIA_SMI_QUERY_GPU_DATA_EX_EMPTY_FIELD))
+    assert "Not an expected command output: " in str(err)
+
+
 def test_nvidia_doc_examples():
     env = {
         'gpus': NvidiaSmiL(context_wrap(NVIDIA_SMI_L_INPUT_1)),
         'active_clocks_event_reasons': NvidiaSmiActiveClocksEventReasons(
             context_wrap(ACTIVE_CLOCKS_EVENT_REASONS)
         ),
+        'gpus_info': NvidiaSmiQueryGPU(context_wrap(NVIDIA_SMI_QUERY_GPU_DATA_1)),
     }
     failed, total = doctest.testmod(nvidia, globs=env)
     assert failed == 0
