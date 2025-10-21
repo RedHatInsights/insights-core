@@ -16,7 +16,7 @@ import signal
 # - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
-from insights.components.rhel_version import IsGtOrRhel84, IsGtOrRhel86
+from insights.components.rhel_version import IsGtOrRhel84
 from insights.components.satellite import (
     IsSatellite,
     IsSatellite611,
@@ -130,7 +130,6 @@ class DefaultSpecs(Specs):
     audispd_conf = simple_file("/etc/audisp/audispd.conf")
     ausearch_insights = simple_command(
         "/usr/sbin/ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts recent",
-        deps=[IsGtOrRhel86],
         keep_rc=True,
     )
     aws_instance_id_doc = command_with_args(
