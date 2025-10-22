@@ -10,7 +10,6 @@ import time
 from functools import cmp_to_key
 
 from insights import datasource, HostContext, SkipComponent
-from insights.components.rhel_version import IsRhel7, IsRhel8, IsRhel9
 from insights.core.spec_factory import DatasourceProvider
 from insights.util.rpm_vercmp import version_compare
 
@@ -255,7 +254,9 @@ except ImportError:
         UpdatesManager = None
 
 
-@datasource(HostContext, [IsRhel7, IsRhel8, IsRhel9], timeout=0)
+# This datasource is fit for all supported RHEL releases:
+# - Oct 2025: 7/8/9/10
+@datasource(HostContext, timeout=0)
 def yum_updates(broker):
     """
     This datasource provides a list of available updates on the system.
