@@ -9,10 +9,11 @@ object model for commonly useful unstructured and semi-structured data.
 
 .. code-block:: python
 
-    >>> from insights import run
+    >>> from insights import load_default_plugins, run
     >>> from insights.parsers import installed_rpms as rpm
     >>> lower = rpm.Rpm("bash-4.4.11-1.fc26")
     >>> upper = rpm.Rpm("bash-4.4.22-1.fc26")
+    >>> load_default_plugins()
     >>> results = run(rpm.Installed)
     >>> rpms = results[rpm.Installed]
     >>> rpms.newest("bash")
