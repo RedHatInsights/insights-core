@@ -330,7 +330,7 @@ class Specs(SpecSet):
     ip_netns_exec_namespace_lsof = RegistryPoint(
         multi_output=True, filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac']
     )
-    ip_route_show_table_all = RegistryPoint(no_obfuscate=['hostname'])
+    ip_route_show_table_all = RegistryPoint(filterable=True, no_obfuscate=['hostname'])
     ip_s_link = RegistryPoint(no_obfuscate=['hostname'])
     ipa_default_conf = RegistryPoint()
     ipaupgrade_log = RegistryPoint(filterable=True)
