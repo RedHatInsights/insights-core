@@ -22,15 +22,15 @@ except ImportError:
 import insights
 
 from insights import apply_filters
-from insights.core import dr, filters, spec_factory
+from insights.core import dr, filters, spec_factory, _PatchedSafeLoader  # noqa: F401
 from insights.core.context import Context
 from insights.core.plugins import make_none
 from insights.specs import Specs
 
 
-# Use yaml.SafeLoader only when pytesting, as the yaml.CSafeLoader does not
-# work well with coverage test.
-insights.core.SafeLoader = SafeLoader
+# Use yaml.SafeLoader when testing plugins, as the yaml.CSafeLoader
+# does not work well with coverage test.
+insights.core._PatchedSafeLoader = SafeLoader
 # we intercept the add_filter call during integration testing so we can ensure
 # that rules add filters to datasources that *should* be filterable
 ADDED_FILTERS = defaultdict(set)
@@ -164,7 +164,9 @@ COMPONENT_FILTERED_PARSERS = {
         'insights.parsers.rhsm_conf.RHSMConf',
         'insights.parsers.subscription_manager.SubscriptionManagerFacts',
     ],
+    'Grubby': ['insights.specs.Specs.ls_lan_filtered'],
     'GrubConf': ['insights.specs.Specs.ls_lan_filtered'],
+    'IsUEFIBoot': ['insights.specs.Specs.ls_lan_filtered'],
     'OSRelease': ['insights.parsers.dmesg.DmesgLineList'],
     'Sap': ['insights.parsers.saphostctrl.SAPHostCtrlInstances'],
     'SELinux': ['insights.specs.Specs.ls_lan_filtered'],

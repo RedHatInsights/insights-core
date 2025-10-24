@@ -1,17 +1,19 @@
 %define distro redhat
 %global debug_package %{nil}
 %global modulename insights_core
+# placeholder
+
 %if 0%{?with_selinux}
 %global selinuxtype targeted
 %if 0%{?rhel} == 9
-%global selinux_policy_version 38.1.60
+%global selinux_policy_version 38.1.66
 %elif 0%{?rhel} == 10
-%global selinux_policy_version 42.1.1
+%global selinux_policy_version 42.1.8
 %endif
 %endif
 
 Name:           insights-core
-Version:        3.6.6
+Version:        3.6.8.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -54,7 +56,7 @@ Requires:       python3-six
 %endif
 
 %if 0%{?with_selinux}
-Requires:       ((%{name}-selinux == %{version}) if selinux-policy-%{selinuxtype})
+Requires:       ((%{name}-selinux = %{version}-%{release}) if selinux-policy-%{selinuxtype})
 %endif
 
 %description
@@ -68,7 +70,7 @@ Insights Core is a data collection and analysis framework.
 %endif
 
 %if 0%{?with_selinux}
-%package -n %{name}-selinux
+%package selinux
 Summary:            Insights Core SELinux policy
 License:            Apache-2.0
 
@@ -84,23 +86,23 @@ Requires(post):     selinux-policy-base >= %{selinux_policy_version}
 Requires(postun):   libselinux-utils
 Requires(postun):   policycoreutils
 
-%description -n %{name}-selinux
+%description selinux
 Insights Core Custom SELinux policy module
 
-%pre -n %{name}-selinux
+%pre selinux
 %selinux_relabel_pre -s %{selinuxtype}
 
-%post -n %{name}-selinux
+%post selinux
 %selinux_modules_install -s %{selinuxtype} %{_datadir}/selinux/packages/%{selinuxtype}/%{modulename}.pp.bz2
 %selinux_relabel_post -s %{selinuxtype}
 
-%postun -n %{name}-selinux
+%postun selinux
 if [ $1 -eq 0 ]; then
     %selinux_modules_uninstall -s %{selinuxtype} %{modulename}
     %selinux_relabel_post -s %{selinuxtype}
 fi
 
-%build -n %{name}-selinux
+%build
 make -f %{_datadir}/selinux/devel/Makefile %{modulename}.pp
 bzip2 -9 %{modulename}.pp
 %endif
@@ -121,7 +123,7 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %license LICENSE
 
 %if 0%{?with_selinux}
-%files -n %{name}-selinux
+%files selinux
 %license LICENSE
 %{_datadir}/selinux/packages/%{selinuxtype}/%{modulename}.pp.*
 %{_datadir}/selinux/devel/include/distributed/%{modulename}.if
@@ -129,6 +131,68 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Mon Oct 13 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.8.1-1
+- chore(spec): Add back spec vmware_tools_conf (#4595) (jiazhang@redhat.com)
+- fix: use try_auto_configuration method for compliance (#4591)
+  (xiangceliu@redhat.com)
+- fix(client): do not retry upload on successful upload (#4586)
+  (pschrimp@redhat.com)
+- chore(script): update the file name typo in last operation (#4588)
+  (xiangceliu@redhat.com)
+- chore: place the build target in spec instead of passing macro (#4587)
+  (xiangceliu@redhat.com)
+- chore: refine the pull request template (#4585) (xiangceliu@redhat.com)
+- fix: Enhance spec 'filefrag' to check initramfs/vmlinuz files (#4574)
+  (39508521+shlao@users.noreply.github.com)
+- fix: add dep ds containers_with_shell for container specs (#4581)
+  (xiaoxwan@redhat.com)
+- chore: remove the unused build scripts (#4577) (xiangceliu@redhat.com)
+- fix: do not collect egg_release file in RPM delivery (#4573)
+  (xiangceliu@redhat.com)
+- chore(ci/cd): do not build Egg for PRs to matser (#4578)
+  (xiangceliu@redhat.com)
+- New parser for sos_commands/crio/crictl_ps (#4497) (aghodake@redhat.com)
+- fix(test): regression issue of yaml.SafeLoader in testing (#4557)
+  (xiangceliu@redhat.com)
+- fix: no valid conf found issue in combiner GrubConf (#4437)
+  (xiaoxwan@redhat.com)
+
+* Thu Sep 18 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.7.1-1
+- fix(parser/sshd_config): keep inline comments when parsing config lines
+  (#4546) (tayushi1610@gmail.com)
+- feat: New parser MdatpManaged and the spec (#4562)
+  (39508521+shlao@users.noreply.github.com)
+- fix(doc): add required configuration for readthedocs (#4565)
+  (xiangceliu@redhat.com)
+- chore(doc): update the guide steps for PR to 3.0_egg (#4566)
+  (xiangceliu@redhat.com)
+- fix: handle error lines of spec grubby_default_index (#4538)
+  (xiaoxwan@redhat.com)
+- fix: Skip RpmVPackage only when no error and no installed (#4550)
+  (39508521+shlao@users.noreply.github.com)
+- feat: Add spec and parser for compliance_policies_enabled (#4536)
+  (jiazhang@redhat.com)
+- chore(script): update RPM script to use Python virtual env (#4561)
+  (xiangceliu@redhat.com)
+- fix: revert the ls specs removed by mistake (#4554) (xiangceliu@redhat.com)
+- fix: exclude irrelevant logrotate configuration files (#4551)
+  (xiangceliu@redhat.com)
+- doc: add RPM delivery notes to contributing (#4545) (xiangceliu@redhat.com)
+- fix: don't immediately exit collection when inventory_id is unavailable
+  (#4537) (xiangceliu@redhat.com)
+- chore: sync the tito required file to master (#4547) (xiangceliu@redhat.com)
+- feat: onboard packit for build RPM on master branch (#4542)
+  (xiangceliu@redhat.com)
+- fix(client): Suppress link message after upload (#4544) (mhorky@redhat.com)
+- chore: sync the changelog with the 3.0 branch (#4540) (xiangceliu@redhat.com)
+- chore: update RPM building scripts and spec file (#4533)
+  (xiangceliu@redhat.com)
+- feat: New spec and parser for '/var/log/foreman-installer/foreman.log'
+  (#4535) (143097963+atewari-rh@users.noreply.github.com)
+- chore: merge the two RPM build scripts (#4532) (xiangceliu@redhat.com)
+- feat: new script to build insights-core RPM (#4507) (xiangceliu@redhat.com)
+- chore: Introduce Client phase v2 (#4512) (mhorky@redhat.com)
+
 * Wed Sep 03 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.6-1
 - fix: revert the cmd&args key for CommandOutputProvider in meta_data (#4539)
   (xiangceliu@redhat.com)

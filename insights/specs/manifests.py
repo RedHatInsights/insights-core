@@ -205,10 +205,6 @@ plugins:
     - name: insights.parsers.iris.IrisCpf
       enabled: true
 
-    # needed for ausearch_insights
-    - name: insights.components.rhel_version.IsGtOrRhel86
-      enabled: true
-
     # needed for spec: subscription_manager_syspurpose
     - name: insights.components.rhel_version.IsGtOrRhel84
       enabled: true
