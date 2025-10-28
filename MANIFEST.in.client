@@ -1,3 +1,4 @@
+graft insights/client
 include LICENSE
 include NOTICE
 include insights/COMMIT
