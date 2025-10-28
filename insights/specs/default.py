@@ -119,7 +119,7 @@ class DefaultSpecs(Specs):
     malware_detection = malware_detection_ds.malware_detection
 
     # Regular collection specs
-    ansible_telemetry = simple_command("/usr/share/ansible/telemetry/telemetry.py")
+    # ansible_telemetry = simple_command("/usr/share/ansible/telemetry/telemetry.py")
     abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
     alternatives_display_python = simple_command("/usr/sbin/alternatives --display python")
