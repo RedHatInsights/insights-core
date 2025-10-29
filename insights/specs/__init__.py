@@ -20,6 +20,7 @@ class Specs(SpecSet):
     malware_detection = RegistryPoint()
 
     # Regular collection specs
+    ansible_telemetry = RegistryPoint()
     abrt_ccpp_conf = RegistryPoint(
         filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
@@ -127,6 +128,7 @@ class Specs(SpecSet):
     cpuinfo = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     cpupower_frequency_info = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     cpuset_cpus = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    crictl_ps = RegistryPoint()
     crictl_logs = RegistryPoint(multi_output=True, filterable=True)
     crio_conf = RegistryPoint(multi_output=True)
     cron_daily_rhsmd = RegistryPoint(filterable=True)
@@ -438,12 +440,8 @@ class Specs(SpecSet):
     lsblk_pairs = RegistryPoint()
     lscpu = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     lsinitrd = RegistryPoint(filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac'])
-    lsinitrd_kdump_image = RegistryPoint(
-        filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac']
-    )
-    lsinitrd_lvm_conf = RegistryPoint(
-        filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac']
-    )
+    lsinitrd_kdump_image = RegistryPoint(filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac'])
+    lsinitrd_lvm_conf = RegistryPoint(filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac'])
     lsmod = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     lsof = RegistryPoint(filterable=True)
     lspci = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
@@ -814,9 +812,7 @@ class Specs(SpecSet):
         no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
     subscription_manager_status = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    subscription_manager_syspurpose = RegistryPoint(
-        no_obfuscate=['ipv4', 'ipv6', 'mac']
-    )
+    subscription_manager_syspurpose = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     sudoers = RegistryPoint(multi_output=True, filterable=True)
     swift_conf = RegistryPoint()
     swift_log = RegistryPoint(filterable=True)

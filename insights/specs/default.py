@@ -16,7 +16,7 @@ import signal
 # - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
-from insights.components.rhel_version import IsGtOrRhel84, IsGtOrRhel86
+from insights.components.rhel_version import IsGtOrRhel84
 from insights.components.satellite import (
     IsSatellite,
     IsSatellite611,
@@ -107,7 +107,6 @@ class DefaultSpecs(Specs):
     blacklisted_specs = client_metadata.blacklisted_specs
     branch_info = client_metadata.branch_info
     display_name = client_metadata.display_name
-    egg_release = client_metadata.egg_release
     tags = client_metadata.tags
     version_info = client_metadata.version_info
 
@@ -119,6 +118,7 @@ class DefaultSpecs(Specs):
     malware_detection = malware_detection_ds.malware_detection
 
     # Regular collection specs
+    # ansible_telemetry = simple_command("/usr/share/ansible/telemetry/telemetry.py")
     abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
     alternatives_display_python = simple_command("/usr/sbin/alternatives --display python")
@@ -130,7 +130,6 @@ class DefaultSpecs(Specs):
     audispd_conf = simple_file("/etc/audisp/audispd.conf")
     ausearch_insights = simple_command(
         "/usr/sbin/ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts recent",
-        deps=[IsGtOrRhel86],
         keep_rc=True,
     )
     aws_instance_id_doc = command_with_args(
@@ -317,7 +316,9 @@ class DefaultSpecs(Specs):
     fapolicyd_rules = glob_file(r"/etc/fapolicyd/rules.d/*.rules")
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
     files_dirs_number = ls.files_dirs_number
-    filefrag = simple_command("/sbin/filefrag /boot/grub2/grubenv", keep_rc=True)
+    filefrag = simple_command(
+        "/sbin/filefrag /boot/grub2/grubenv /boot/initramfs*.img /boot/vmlinuz*", keep_rc=True
+    )
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
@@ -973,6 +974,7 @@ class DefaultSpecs(Specs):
     virsh_list_all = simple_command("/usr/bin/virsh --readonly list --all")
     virt_what = simple_command("/usr/sbin/virt-what")
     vma_ra_enabled = simple_file("/sys/kernel/mm/swap/vma_ra_enabled")
+    vmware_tools_conf = simple_file("/etc/vmware-tools/tools.conf")
     vsftpd = simple_file("/etc/pam.d/vsftpd")
     vsftpd_conf = simple_file("/etc/vsftpd/vsftpd.conf")
     watchdog_conf = simple_file("/etc/watchdog.conf")
