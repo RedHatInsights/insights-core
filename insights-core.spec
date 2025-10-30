@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.8
+Version:        3.6.9
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,22 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Oct 30 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.9-1
+- Alter malware code to use locally stored yara rules for the 3rd party feature
+  (#4610) (63891960+mtclinton@users.noreply.github.com)
+- chore(spec): change ip_route_show_table_all to filterable=True (#4608)
+  (xiangceliu@redhat.com)
+- fix: collect yum_updates on all supported RHEL (#4609)
+  (xiangceliu@redhat.com)
+- chore(spec): do not collect ansible_telemetry before it's GA (#4606)
+  (xiangceliu@redhat.com)
+- fix(doc): fix homepage example in README (#4605) (xiangceliu@redhat.com)
+- feat: add parser for spec.nvidia_smi_query_gpu (#4604) (xiaoxwan@redhat.com)
+- feat(spec/parser): new spec and parser for AnsibleTelemetry (#4598)
+  (xiangceliu@redhat.com)
+- fix: FileProvider.validate() leaked files outside root (#4593)
+  (71874510+jholecek-rh@users.noreply.github.com)
+
 * Mon Oct 13 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.8-1
 - chore(spec): Add back spec vmware_tools_conf (#4596) (jiazhang@redhat.com)
 - fix: use try_auto_configuration method for compliance (#4592)

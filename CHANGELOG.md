@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.9](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.9) (2025-10-30)
+
+- Alter malware code to use locally stored yara rules for the 3rd party feature ([PR 4610](https://github.com/RedHatInsights/insights-core/pull/4610))
+- chore(spec): change ip_route_show_table_all to filterable=True ([PR 4608](https://github.com/RedHatInsights/insights-core/pull/4608))
+- fix: collect yum_updates on all supported RHEL ([PR 4609](https://github.com/RedHatInsights/insights-core/pull/4609))
+- chore(spec): do not collect ansible_telemetry before it's GA ([PR 4606](https://github.com/RedHatInsights/insights-core/pull/4606))
+- fix(doc): fix homepage example in README ([PR 4605](https://github.com/RedHatInsights/insights-core/pull/4605))
+- feat: add parser for spec.nvidia_smi_query_gpu ([PR 4604](https://github.com/RedHatInsights/insights-core/pull/4604))
+- feat(spec/parser): new spec and parser for AnsibleTelemetry ([PR 4598](https://github.com/RedHatInsights/insights-core/pull/4598))
+- fix: FileProvider.validate() leaked files outside root ([PR 4593](https://github.com/RedHatInsights/insights-core/pull/4593))
+
 # [insights-core-3.6.8](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.8) (2025-10-13)
 
 - chore(spec): Add back spec vmware_tools_conf ([PR 4596](https://github.com/RedHatInsights/insights-core/pull/4596))
