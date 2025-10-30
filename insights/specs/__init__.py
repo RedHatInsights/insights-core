@@ -373,6 +373,7 @@ class Specs(SpecSet):
     kernel_crash_kexec_post_notifiers = RegistryPoint(
         no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
+    keyctl_show = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     kexec_crash_loaded = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     kexec_crash_size = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     keystone_conf = RegistryPoint()
