@@ -2,6 +2,20 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.9.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.9.1) (2025-10-30)
+
+- chore(spec): change ip_route_show_table_all to filterable=True ([PR 4597](https://github.com/RedHatInsights/insights-core/pull/4597))
+- Alter malware code to use locally stored yara rules for the 3rd party feature ([PR 4571](https://github.com/RedHatInsights/insights-core/pull/4571))
+- fix: collect yum_updates on all supported RHEL ([PR 4607](https://github.com/RedHatInsights/insights-core/pull/4607))
+- fix(MANIFEST): add the 'public.gpg' required by playbook_verifier ([PR 4602](https://github.com/RedHatInsights/insights-core/pull/4602))
+- chore(spec): do not collect ansible_telemetry before it's GA ([PR 4601](https://github.com/RedHatInsights/insights-core/pull/4601))
+- fix: remove the deps from insights_ausearch spec ([PR 4603](https://github.com/RedHatInsights/insights-core/pull/4603))
+- fix(doc): fix homepage example in README ([PR 4599](https://github.com/RedHatInsights/insights-core/pull/4599))
+- fix(rpm-spec): fix "Requires:" of selinux-policy ([PR 4580](https://github.com/RedHatInsights/insights-core/pull/4580))
+- feat: add parser for spec.nvidia_smi_query_gpu ([PR 4600](https://github.com/RedHatInsights/insights-core/pull/4600))
+- feat(spec/parser): new spec and parser for AnsibleTelemetry ([PR 4589](https://github.com/RedHatInsights/insights-core/pull/4589))
+- fix: FileProvider.validate() leaked files outside root ([PR 4474](https://github.com/RedHatInsights/insights-core/pull/4474))
+
 # [insights-core-3.6.8.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.8.1) (2025-10-13)
 
 - chore(spec): Add back spec vmware_tools_conf ([PR 4595](https://github.com/RedHatInsights/insights-core/pull/4595))
