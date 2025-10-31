@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.8.1
+Version:        3.6.9.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -131,6 +131,28 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Oct 30 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.9.1-1
+- chore(spec): change ip_route_show_table_all to filterable=True (#4597)
+  (xiangceliu@redhat.com)
+- Alter malware code to use locally stored yara rules for the 3rd party feature
+  (#4571) (63891960+mtclinton@users.noreply.github.com)
+- fix: collect yum_updates on all supported RHEL (#4607)
+  (xiangceliu@redhat.com)
+- fix(MANIFEST): add the 'public.gpg' required by playbook_verifier (#4602)
+  (xiangceliu@redhat.com)
+- chore(spec): do not collect ansible_telemetry before it's GA (#4601)
+  (xiangceliu@redhat.com)
+- fix: remove the deps from insights_ausearch spec (#4603)
+  (xiangceliu@redhat.com)
+- fix(doc): fix homepage example in README (#4599) (xiangceliu@redhat.com)
+- fix(rpm-spec): fix "Requires:" of selinux-policy (#4580)
+  (xiangceliu@redhat.com)
+- feat: add parser for spec.nvidia_smi_query_gpu (#4600) (xiaoxwan@redhat.com)
+- feat(spec/parser): new spec and parser for AnsibleTelemetry (#4589)
+  (xiangceliu@redhat.com)
+- fix: FileProvider.validate() leaked files outside root (#4474)
+  (71874510+jholecek-rh@users.noreply.github.com)
+
 * Mon Oct 13 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.8.1-1
 - chore(spec): Add back spec vmware_tools_conf (#4595) (jiazhang@redhat.com)
 - fix: use try_auto_configuration method for compliance (#4591)
