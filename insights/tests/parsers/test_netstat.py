@@ -3,7 +3,16 @@ import pytest
 
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import netstat
-from insights.parsers.netstat import Netstat, NetstatAGN, NetstatS, Netstat_I, SsTULPN, SsTUPNA, ProcNsat
+from insights.parsers.netstat import (
+    Netstat,
+    NetstatAGN,
+    NetstatS,
+    Netstat_I,
+    Ss,
+    SsTULPN,
+    SsTUPNA,
+    ProcNsat,
+)
 from insights.tests import context_wrap
 
 
@@ -111,105 +120,120 @@ Ip:
 '''
 
 
-class TestNetstats():
+class TestNetstats:
     def test_netstat_s(self):
         info = NetstatS(context_wrap(NETSTAT_S)).data
 
-        assert info['ip'] == {'total_packets_received': '3405107',
-                              'forwarded': '0',
-                              'incoming_packets_discarded': '0',
-                              'incoming_packets_delivered': '2900146',
-                              'requests_sent_out': '2886201',
-                              'outgoing_packets_dropped': '456',
-                              'fragments_received_ok': '4',
-                              'fragments_created': '8'}
-        assert info['icmp'] == {'icmp_messages_received': '114',
-                                'input_icmp_message_failed': '0',
-                                'icmp_input_histogram': {
-                                    'destination_unreachable': '107',
-                                    'echo_requests': '4',
-                                    'echo_replies': '3',
-                                },
-                                'icmp_messages_sent': '261',
-                                'icmp_messages_failed': '0',
-                                'icmp_output_histogram': {
-                                    'destination_unreachable': '254',
-                                    'echo_request': '3',
-                                    'echo_replies': '4'
-                                }
-                                }
-        assert info['icmpmsg'] == {'intype0': '3',
-                                   'intype3': '107',
-                                   'intype8': '4',
-                                   'outtype0': '4',
-                                   'outtype3': '254',
-                                   'outtype8': '3'}
-        assert info['tcp'] == {'active_connections_openings': '1648',
-                               'passive_connection_openings': '1525',
-                               'failed_connection_attempts': '105',
-                               'connection_resets_received': '69',
-                               'connections_established': '139',
-                               'segments_received': '2886370',
-                               'segments_send_out': '2890303',
-                               'segments_retransmited': '428',
-                               'bad_segments_received': '0',
-                               'resets_sent': '212'}
-        assert info['udp'] == {'packets_received': '4901',
-                               'packets_to_unknown_port_received': '107',
-                               'packet_receive_errors': '0',
-                               'packets_sent': '1793',
-                               'receive_buffer_errors': '0',
-                               'send_buffer_errors': '0'}
+        assert info['ip'] == {
+            'total_packets_received': '3405107',
+            'forwarded': '0',
+            'incoming_packets_discarded': '0',
+            'incoming_packets_delivered': '2900146',
+            'requests_sent_out': '2886201',
+            'outgoing_packets_dropped': '456',
+            'fragments_received_ok': '4',
+            'fragments_created': '8',
+        }
+        assert info['icmp'] == {
+            'icmp_messages_received': '114',
+            'input_icmp_message_failed': '0',
+            'icmp_input_histogram': {
+                'destination_unreachable': '107',
+                'echo_requests': '4',
+                'echo_replies': '3',
+            },
+            'icmp_messages_sent': '261',
+            'icmp_messages_failed': '0',
+            'icmp_output_histogram': {
+                'destination_unreachable': '254',
+                'echo_request': '3',
+                'echo_replies': '4',
+            },
+        }
+        assert info['icmpmsg'] == {
+            'intype0': '3',
+            'intype3': '107',
+            'intype8': '4',
+            'outtype0': '4',
+            'outtype3': '254',
+            'outtype8': '3',
+        }
+        assert info['tcp'] == {
+            'active_connections_openings': '1648',
+            'passive_connection_openings': '1525',
+            'failed_connection_attempts': '105',
+            'connection_resets_received': '69',
+            'connections_established': '139',
+            'segments_received': '2886370',
+            'segments_send_out': '2890303',
+            'segments_retransmited': '428',
+            'bad_segments_received': '0',
+            'resets_sent': '212',
+        }
+        assert info['udp'] == {
+            'packets_received': '4901',
+            'packets_to_unknown_port_received': '107',
+            'packet_receive_errors': '0',
+            'packets_sent': '1793',
+            'receive_buffer_errors': '0',
+            'send_buffer_errors': '0',
+        }
         assert info['udplite'] == {}
-        assert info['tcpext'] == {'tcp_sockets_finished_time_wait_in_fast_timer': '1239',
-                                  'delayed_acks_sent': '295934',
-                                  'delayed_acks_further_delayed_because_of_locked_socket': '6',
-                                  'quick_ack_mode_was_activated_times': '9',
-                                  'packets_directly_queued_to_recvmsg_prequeue': '999263',
-                                  'bytes_directly_in_process_context_from_backlog': '8266',
-                                  'bytes_directly_received_in_process_context_from_prequeue': '104052505',
-                                  'packet_headers_predicted': '122927',
-                                  'packets_header_predicted_and_directly_queued_to_user': '339500',
-                                  'acknowledgments_not_containing_data_payload_received': '253351',
-                                  'predicted_acknowledgments': '711851',
-                                  'times_recovered_from_packet_loss_by_selective_acknowledgements': '1',
-                                  'congestion_windows_recovered_without_slow_start_after_partial_ack': '1',
-                                  'fast_retransmits': '3',
-                                  'other_tcp_timeouts': '54',
-                                  'tcplossprobes': '12',
-                                  'tcplossproberecovery': '12',
-                                  'dsacks_sent_for_old_packets': '9',
-                                  'dsacks_received': '13',
-                                  'connections_reset_due_to_unexpected_data': '72',
-                                  'connections_reset_due_to_early_user_close': '4',
-                                  'connections_aborted_due_to_timeout': '53',
-                                  'tcpdsackignorednoundo': '13',
-                                  'tcpspuriousrtos': '1',
-                                  'tcpsackshiftfallback': '6',
-                                  'tcpdeferacceptdrop': '537',
-                                  'ipreversepathfilter': '1',
-                                  'tcprcvcoalesce': '2610',
-                                  'tcpofoqueue': '595',
-                                  'tcpchallengeack': '3',
-                                  'tcpspuriousrtxhostqueues': '3'}
-        assert info['ipext'] == {'innoroutes': '9',
-                                 'inmcastpkts': '406',
-                                 'inbcastpkts': '517437',
-                                 'inoctets': '865450302',
-                                 'outoctets': '812810111',
-                                 'inmcastoctets': '12992',
-                                 'inbcastoctets': '46402081'}
+        assert info['tcpext'] == {
+            'tcp_sockets_finished_time_wait_in_fast_timer': '1239',
+            'delayed_acks_sent': '295934',
+            'delayed_acks_further_delayed_because_of_locked_socket': '6',
+            'quick_ack_mode_was_activated_times': '9',
+            'packets_directly_queued_to_recvmsg_prequeue': '999263',
+            'bytes_directly_in_process_context_from_backlog': '8266',
+            'bytes_directly_received_in_process_context_from_prequeue': '104052505',
+            'packet_headers_predicted': '122927',
+            'packets_header_predicted_and_directly_queued_to_user': '339500',
+            'acknowledgments_not_containing_data_payload_received': '253351',
+            'predicted_acknowledgments': '711851',
+            'times_recovered_from_packet_loss_by_selective_acknowledgements': '1',
+            'congestion_windows_recovered_without_slow_start_after_partial_ack': '1',
+            'fast_retransmits': '3',
+            'other_tcp_timeouts': '54',
+            'tcplossprobes': '12',
+            'tcplossproberecovery': '12',
+            'dsacks_sent_for_old_packets': '9',
+            'dsacks_received': '13',
+            'connections_reset_due_to_unexpected_data': '72',
+            'connections_reset_due_to_early_user_close': '4',
+            'connections_aborted_due_to_timeout': '53',
+            'tcpdsackignorednoundo': '13',
+            'tcpspuriousrtos': '1',
+            'tcpsackshiftfallback': '6',
+            'tcpdeferacceptdrop': '537',
+            'ipreversepathfilter': '1',
+            'tcprcvcoalesce': '2610',
+            'tcpofoqueue': '595',
+            'tcpchallengeack': '3',
+            'tcpspuriousrtxhostqueues': '3',
+        }
+        assert info['ipext'] == {
+            'innoroutes': '9',
+            'inmcastpkts': '406',
+            'inbcastpkts': '517437',
+            'inoctets': '865450302',
+            'outoctets': '812810111',
+            'inmcastoctets': '12992',
+            'inbcastoctets': '46402081',
+        }
 
     def test_netstat_s_w(self):
         info = NetstatS(context_wrap(NETSTAT_S_W)).data
 
         assert len(info) == 1
-        assert info['ip'] == {'total_packets_received': "6440",
-                              "with_invalid_addresses": "3",
-                              "forwarded": "0",
-                              "incoming_packets_discarded": "0",
-                              "incoming_packets_delivered": "6437",
-                              "requests_sent_out": "4777"}
+        assert info['ip'] == {
+            'total_packets_received': "6440",
+            "with_invalid_addresses": "3",
+            "forwarded": "0",
+            "incoming_packets_discarded": "0",
+            "incoming_packets_delivered": "6437",
+            "requests_sent_out": "4777",
+        }
 
 
 TEST_NETSTAT_AGN = """
@@ -232,11 +256,13 @@ def test_get_netstat_agn():
     assert len(result["eth0"]) == 3
     assert result["lo"] == [
         {"refcnt": "1", "group": "224.0.0.1"},
-        {"refcnt": "3", "group": "ff02::1"}]
+        {"refcnt": "3", "group": "ff02::1"},
+    ]
     assert result["eth0"] == [
         {"refcnt": "1", "group": "224.0.0.1"},
         {"refcnt": "4", "group": "ff02::1"},
-        {"refcnt": "1", "group": "ff01::1"}]
+        {"refcnt": "1", "group": "ff01::1"},
+    ]
 
 
 NETSTAT_DOCS = '''
@@ -286,19 +312,33 @@ def test_get_netstat():
     nsdl = ns.datalist[netstat.ACTIVE_INTERNET_CONNECTIONS]
     assert len(nsdl) == 6
     assert nsdl[0] == {
-        'Proto': 'tcp', 'Recv-Q': '0', 'Send-Q': '0',
-        'Local Address': '192.168.0.1:53', 'Local IP': '192.168.0.1',
-        'Port': '53', 'Foreign Address': '192.168.0.53:53',
-        'State': 'ESTABLISHED', 'User': '0', 'Inode': '1817',
-        'PID/Program name': '12/dnsd', 'PID': '12', 'Program name': 'dnsd',
+        'Proto': 'tcp',
+        'Recv-Q': '0',
+        'Send-Q': '0',
+        'Local Address': '192.168.0.1:53',
+        'Local IP': '192.168.0.1',
+        'Port': '53',
+        'Foreign Address': '192.168.0.53:53',
+        'State': 'ESTABLISHED',
+        'User': '0',
+        'Inode': '1817',
+        'PID/Program name': '12/dnsd',
+        'PID': '12',
+        'Program name': 'dnsd',
         'Timer': 'off (0.00/0/0)',
     }
     # tcp        0      0 10.24.1.245:80          10.24.36.145:32790      SYN_RECV    0          0          -                    on (0.79/0/0)
     assert nsdl[5] == {
-        'Proto': 'tcp', 'Recv-Q': '0', 'Send-Q': '0',
-        'Local Address': '10.24.1.245:80', 'Local IP': '10.24.1.245',
-        'Port': '80', 'Foreign Address': '10.24.36.145:32790',
-        'State': 'SYN_RECV', 'User': '0', 'Inode': '0',
+        'Proto': 'tcp',
+        'Recv-Q': '0',
+        'Send-Q': '0',
+        'Local Address': '10.24.1.245:80',
+        'Local IP': '10.24.1.245',
+        'Port': '80',
+        'Foreign Address': '10.24.36.145:32790',
+        'State': 'SYN_RECV',
+        'User': '0',
+        'Inode': '0',
         'PID/Program name': '-',
         'Timer': 'on (0.79/0/0)',
     }
@@ -318,55 +358,52 @@ def test_get_netstat_keyword_search():
 
     # Search with one search_list item searches that list
     assert ns.search(
-        search_list=[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS],
-        State__contains='LISTEN'
+        search_list=[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS], State__contains='LISTEN'
     ) == [
-               ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
-               ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
-           ]
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
+    ]
 
     # Search with a string
-    assert ns.search(
-        search_list=netstat.ACTIVE_UNIX_DOMAIN_SOCKETS,
-        State__contains='LISTEN'
-    ) == [
-               ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
-               ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
-           ]
+    assert ns.search(search_list=netstat.ACTIVE_UNIX_DOMAIN_SOCKETS, State__contains='LISTEN') == [
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
+    ]
 
     # Search with neither string nor list
-    assert ns.search(
-        search_list={'foo': 1},
-        State__contains='LISTEN'
-    ) == []
+    assert ns.search(search_list={'foo': 1}, State__contains='LISTEN') == []
 
     # Search with a non-matching string
-    assert ns.search(
-        search_list='foo',
-        State__contains='LISTEN'
-    ) == []
+    assert ns.search(search_list='foo', State__contains='LISTEN') == []
 
     # Search with a non-matching list
-    assert ns.search(
-        search_list=['foo'],
-        State__contains='LISTEN'
-    ) == []
+    assert ns.search(search_list=['foo'], State__contains='LISTEN') == []
 
 
 def test_listening_pid():
     ns = Netstat(context_wrap(NETSTAT))
     assert len(ns.data) == 2
-    assert ns.listening_pid['12387'] == {'addr': '127.0.0.1', 'name': 'Passenger Rac', 'port': '53644'}
+    assert ns.listening_pid['12387'] == {
+        'addr': '127.0.0.1',
+        'name': 'Passenger Rac',
+        'port': '53644',
+    }
     assert ns.listening_pid['1272'] == {'addr': '0.0.0.0', 'name': 'qdrouterd', 'port': '5646'}
 
 
 def test_get_original_line():
     ns = Netstat(context_wrap(NETSTAT))
     assert len(ns.data) == 2
-    assert NETSTAT.splitlines()[4].strip() == ns.get_original_line(netstat.ACTIVE_INTERNET_CONNECTIONS, 1)
-    assert NETSTAT.splitlines()[5].strip() == ns.get_original_line(netstat.ACTIVE_INTERNET_CONNECTIONS, 2)
+    assert NETSTAT.splitlines()[4].strip() == ns.get_original_line(
+        netstat.ACTIVE_INTERNET_CONNECTIONS, 1
+    )
+    assert NETSTAT.splitlines()[5].strip() == ns.get_original_line(
+        netstat.ACTIVE_INTERNET_CONNECTIONS, 2
+    )
     assert ns.get_original_line("Fabulous Green", 1) is None
-    assert NETSTAT.splitlines()[11].strip() == ns.get_original_line(netstat.ACTIVE_UNIX_DOMAIN_SOCKETS, 0)
+    assert NETSTAT.splitlines()[11].strip() == ns.get_original_line(
+        netstat.ACTIVE_UNIX_DOMAIN_SOCKETS, 0
+    )
 
 
 NETSTAT_NOMATCH1 = """
@@ -527,14 +564,30 @@ def test_get_netstat_i():
     result = Netstat_I(context_wrap(NETSTAT_I)).group_by_iface
     assert len(result) == 7
     assert result["bond0"] == {
-        "MTU": "1500", "Met": "0", "RX-OK": "845265", "RX-ERR": "0",
-        "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1753", "TX-ERR": "0",
-        "TX-DRP": "0", "TX-OVR": "0", "Flg": "BMmRU"
+        "MTU": "1500",
+        "Met": "0",
+        "RX-OK": "845265",
+        "RX-ERR": "0",
+        "RX-DRP": "0",
+        "RX-OVR": "0",
+        "TX-OK": "1753",
+        "TX-ERR": "0",
+        "TX-DRP": "0",
+        "TX-OVR": "0",
+        "Flg": "BMmRU",
     }
     assert result["eth0"] == {
-        "MTU": "1500", "Met": "0", "RX-OK": "422518", "RX-ERR": "0",
-        "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1703", "TX-ERR": "0",
-        "TX-DRP": "0", "TX-OVR": "0", "Flg": "BMsRU"
+        "MTU": "1500",
+        "Met": "0",
+        "RX-OK": "422518",
+        "RX-ERR": "0",
+        "RX-DRP": "0",
+        "RX-OVR": "0",
+        "TX-OK": "1703",
+        "TX-ERR": "0",
+        "TX-DRP": "0",
+        "TX-OVR": "0",
+        "Flg": "BMsRU",
     }
 
 
@@ -584,15 +637,6 @@ tcp   ESTAB      0      0         192.168.0.106:739    192.168.0.105:2049
 tcp   LISTEN     0      128                  :::111               :::*      users:(("rpcbind",483,11))
 tcp   LISTEN     0      128                  :::22                :::*      users:(("sshd",1231,4))
 tcp   LISTEN     0      100                 ::1:25                :::*      users:(("master",1326,14))
-""".strip()
-
-SS_TUPNA_DOCS_2 = """
-Netid State      Recv-Q Send-Q    Local Address:Port    Peer Address:Port
-tcp   UNCONN     0      0                     *:68                 *:*      users:(("dhclient",1171,6))
-tcp   LISTEN     0      100           127.0.0.1:25                 *:*      users:(("master",1326,13))
-tcp   ESTAB      0      0         192.168.0.106:22     192.168.0.101:59232  users:(("sshd",11427,3))
-tcp   ESTAB      0      0         192.168.0.106:739    192.168.0.105:2049
-tcp   LISTEN     0      128                  :::111               :::*      users:(("rpcbind",483,11))
 """.strip()
 
 SS_TUPNA_2 = """
@@ -684,10 +728,16 @@ IpExt: 100 200 300 400 18223 0 10468977960762 8092447661930 432 0 3062938 0 0 12
 
 
 def test_ss_tulpn_data():
-    ss = SsTULPN(context_wrap(Ss_TULPN)).data
+    ss = SsTULPN(context_wrap(Ss_TULPN))
     assert len(ss) == 13
-    assert ss[0] == {'Netid': 'udp', 'Peer-Address-Port': '*:*', 'Send-Q': '0', 'Local-Address-Port': '*:55898',
-                     'State': 'UNCONN', 'Recv-Q': '0'}
+    assert ss[0] == {
+        'Netid': 'udp',
+        'Peer-Address-Port': '*:*',
+        'Send-Q': '0',
+        'Local-Address-Port': '*:55898',
+        'State': 'UNCONN',
+        'Recv-Q': '0',
+    }
     assert ss[1].get("Netid") == "udp"
     assert ss[9].get("Process") is None
     assert "sshd" in ss[-1].get("Process")
@@ -696,24 +746,67 @@ def test_ss_tulpn_data():
 
 def test_ss_tulpn_get_service():
     ss = SsTULPN(context_wrap(Ss_TULPN))
-    exp = [{'Netid': 'udp', 'Process': 'users:(("rpcbind",pid=953,fd=9))', 'Peer-Address-Port': '*:*', 'Send-Q': '0',
-            'Local-Address-Port': '*:111', 'State': 'UNCONN', 'Recv-Q': '0'},
-           {'Netid': 'udp', 'Process': 'users:(("rpcbind",pid=953,fd=11))', 'Peer-Address-Port': ':::*', 'Send-Q': '0',
-            'Local-Address-Port': ':::111', 'State': 'UNCONN', 'Recv-Q': '0'}]
+    exp = [
+        {
+            'Netid': 'udp',
+            'Process': 'users:(("rpcbind",pid=953,fd=9))',
+            'Peer-Address-Port': '*:*',
+            'Send-Q': '0',
+            'Local-Address-Port': '*:111',
+            'State': 'UNCONN',
+            'Recv-Q': '0',
+        },
+        {
+            'Netid': 'udp',
+            'Process': 'users:(("rpcbind",pid=953,fd=11))',
+            'Peer-Address-Port': ':::*',
+            'Send-Q': '0',
+            'Local-Address-Port': ':::111',
+            'State': 'UNCONN',
+            'Recv-Q': '0',
+        },
+    ]
     assert ss.get_service("rpcbind") == exp
 
 
 def test_ss_tulpn_get_port():
     ss = SsTULPN(context_wrap(Ss_TULPN))
-    exp01 = [{'Netid': 'tcp', 'Process': 'users:(("sshd",pid=1416,fd=4))', 'Peer-Address-Port': ':::*', 'Send-Q': '128',
-              'Local-Address-Port': ':::2223', 'State': 'LISTEN', 'Recv-Q': '0'}]
+    exp01 = [
+        {
+            'Netid': 'tcp',
+            'Process': 'users:(("sshd",pid=1416,fd=4))',
+            'Peer-Address-Port': ':::*',
+            'Send-Q': '128',
+            'Local-Address-Port': ':::2223',
+            'State': 'LISTEN',
+            'Recv-Q': '0',
+        }
+    ]
     assert ss.get_localport("2223") == exp01
-    exp02 = [{'Netid': 'udp', 'Process': 'users:(("rpc.statd",pid=29559,fd=10))', 'Peer-Address-Port': ':::12345',
-              'Send-Q': '0', 'Local-Address-Port': ':::37968', 'State': 'UNCONN', 'Recv-Q': '0'}]
+    exp02 = [
+        {
+            'Netid': 'udp',
+            'Process': 'users:(("rpc.statd",pid=29559,fd=10))',
+            'Peer-Address-Port': ':::12345',
+            'Send-Q': '0',
+            'Local-Address-Port': ':::37968',
+            'State': 'UNCONN',
+            'Recv-Q': '0',
+        }
+    ]
     assert ss.get_peerport("12345") == exp02
     assert ss.get_port("12345") == exp02
-    exp03 = [{'Netid': 'tcp', 'Process': 'users:(("sshd",1231,3))', 'Peer-Address-Port': '*:*', 'Send-Q': '128',
-              'Local-Address-Port': '*:22', 'State': 'LISTEN', 'Recv-Q': '0'}]
+    exp03 = [
+        {
+            'Netid': 'tcp',
+            'Process': 'users:(("sshd",1231,3))',
+            'Peer-Address-Port': '*:*',
+            'Send-Q': '128',
+            'Local-Address-Port': '*:22',
+            'State': 'LISTEN',
+            'Recv-Q': '0',
+        }
+    ]
     assert ss.get_localport("22") == exp03
     assert ss.get_peerport("22") == []
     assert ss.get_port("22") == exp03
@@ -727,9 +820,8 @@ def test_netstat_doc_examples():
         'multicast': NetstatAGN(context_wrap(TEST_NETSTAT_AGN)),
         'ns': Netstat(context_wrap(NETSTAT_DOCS)),
         'traf': Netstat_I(context_wrap(NETSTAT_I)),
-        'ss': SsTULPN(context_wrap(SS_TUPNA_DOCS)),
-        'ssa': SsTUPNA(context_wrap(SS_TUPNA_DOCS_2)),
-        'pnstat': ProcNsat(context_wrap(PROC_NETSTAT))
+        'ss': Ss(context_wrap(SS_TUPNA_DOCS)),
+        'pnstat': ProcNsat(context_wrap(PROC_NETSTAT)),
     }
     failed, total = doctest.testmod(netstat, globs=env)
     assert failed == 0
@@ -737,34 +829,48 @@ def test_netstat_doc_examples():
 
 def test_ss_tupna_get_port():
     ssa = SsTUPNA(context_wrap(Ss_TUPNA))
-    exp01 = [{'Netid': 'tcp', 'Peer-Address-Port': '192.168.0.105:2049', 'Send-Q': '0',
-              'Local-Address-Port': '192.168.0.106:739', 'State': 'ESTAB', 'Recv-Q': '0'}]
+    exp01 = [
+        {
+            'Netid': 'tcp',
+            'Peer-Address-Port': '192.168.0.105:2049',
+            'Send-Q': '0',
+            'Local-Address-Port': '192.168.0.106:739',
+            'State': 'ESTAB',
+            'Recv-Q': '0',
+        }
+    ]
     assert len(ssa.data) == 15
     assert ssa.get_peerport("2049") == exp01
     assert ssa.get_localport("2049") == []
     assert ssa.get_port("2049") == exp01
 
-
-def test_ss_tupnla_get_port():
     # Added test cases for testing two parser for one spec.
-    # Used data from spec ss -tulpn and run parser SsTULPN(ss -tulpn)
-    ssl = SsTULPN(context_wrap(SS_TULPN_2))
-    exp02 = [{'Netid': 'udp', 'Peer-Address-Port': '0.0.0.0:*', 'Send-Q': '0', 'Local-Address-Port': '0.0.0.0:34453',
-              'State': 'UNCONN', 'Recv-Q': '0'}]
+    ssl = SsTUPNA(context_wrap(SS_TULPN_2))
+    exp02 = [
+        {
+            'Netid': 'udp',
+            'Peer-Address-Port': '0.0.0.0:*',
+            'Send-Q': '0',
+            'Local-Address-Port': '0.0.0.0:34453',
+            'State': 'UNCONN',
+            'Recv-Q': '0',
+        }
+    ]
     assert len(ssl.data) == 22
     assert ssl.get_localport("34453") == exp02
 
     # Used data from spec ss -tupna and run parser SsTULPN(ss -tulpn)
-    ssl = SsTULPN(context_wrap(SS_TUPNA_2))
-    exp02 = [{'Netid': 'udp', 'Peer-Address-Port': '0.0.0.0:*', 'Send-Q': '0', 'Local-Address-Port': '0.0.0.0:34453',
-              'State': 'UNCONN', 'Recv-Q': '0'}]
-    assert len(ssl.data) == 22
-    assert ssl.get_localport("34453") == exp02
-
-    # Used data from spec ss -tupna and run parser SsTUPNA(ss -tupna)
     ssl = SsTUPNA(context_wrap(SS_TUPNA_2))
-    exp02 = [{'Netid': 'udp', 'Peer-Address-Port': '0.0.0.0:*', 'Send-Q': '0', 'Local-Address-Port': '0.0.0.0:34453',
-              'State': 'UNCONN', 'Recv-Q': '0'}]
+    exp02 = [
+        {
+            'Netid': 'udp',
+            'Peer-Address-Port': '0.0.0.0:*',
+            'Send-Q': '0',
+            'Local-Address-Port': '0.0.0.0:34453',
+            'State': 'UNCONN',
+            'Recv-Q': '0',
+        }
+    ]
     assert len(ssl.data) == 33
     assert ssl.get_localport("34453") == exp02
 
