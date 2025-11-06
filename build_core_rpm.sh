@@ -36,9 +36,9 @@ elif [ "$TARGET" == "release" ] || [ "$TARGET" == "testing" ]; then
     fi
     MANIFEST="MANIFEST.in.client"
     # - remove depedencies for data processing
-    sed -i -e '/cachecontrol/d' -e '/defusedxml/d' -e '/jinja2/d' -e '/lockfile/d' -e '/redis/d' -e '/setuptools;/d' pyproject.toml setup.py
+    sed -i -e '/cachecontrol/d' -e '/defusedxml/d' -e '/jinja2/d' -e '/lockfile/d' -e '/redis/d' -e '/setuptools;/d' pyproject.toml
     # - remove entrypoints for data processing
-    sed -i -e '/insights =/d' -e '/insights-dupkey/d' -e '/insights-run/d' -e '/insights-inspect/d' -e '/mangle =/d' pyproject.toml setup.py
+    sed -i -e '/insights =/d' -e '/insights-dupkey/d' -e '/insights-run/d' -e '/insights-inspect/d' -e '/mangle =/d' pyproject.toml
 else
     echo "Error: invalid build target: '$TARGET'. Use 'internal', 'release', or 'testing'"
     exit 1
@@ -46,18 +46,7 @@ fi
 
 rm -rf BUILD BUILDROOT RPMS SRPMS insights_core.egg-info
 # Prepare the tarball
-git rev-parse --short HEAD > insights/COMMIT
-cp $MANIFEST MANIFEST.in
-# Build tarball in venv
-DATE=$(date +%Y-%m-%d-%H%M)
-rm -fr .venv_${DATE}
-$PYTHON -m venv .venv_${DATE}
-source .venv_${DATE}/bin/activate
-pip install --upgrade pip build
-python -m build --sdist
-deactivate
-rm -fr .venv_${DATE}
-
+# - insights-core-selinux.x.y.z.1.tar.gz
 if [ "$TARGET" == "release" ]; then
     # keep compatible with old&new setuptools
     VERSION=`cat insights/VERSION`
@@ -72,7 +61,25 @@ if [ "$TARGET" == "release" ]; then
         echo "Error: Source tarbal archive 'insights-core-${VERSION}.tar.gz' doesn't exist."
         exit 1
     fi
+elif [ "$TARGET" == "testing" ]; then
+    # For testing, release = "dev"
+    # - e.g. x.y.z.1-dev
+    echo "dev" > insights/RELEASE
+    sed -i -e "s/1%{?dist}/dev%{?dist}/g" insights-core.spec
 fi
+# - insights-core.x.y.z.1.tar.gz
+git rev-parse --short HEAD > insights/COMMIT
+cp $MANIFEST MANIFEST.in
+# Build tarball in venv
+DATE=$(date +%Y-%m-%d-%H%M)
+rm -fr .venv_${DATE}
+$PYTHON -m venv .venv_${DATE}
+source .venv_${DATE}/bin/activate
+pip install --upgrade pip build
+python -m build --sdist
+deactivate
+rm -fr .venv_${DATE}
+
 # Place the build target in ".spec" file
 sed -i -e "s/# placeholder/%global ${BUILDTARGET}/g" insights-core.spec
 # Build the RPM/SRPM
@@ -80,4 +87,4 @@ rpmbuild -D "_topdir $PWD" -D "_sourcedir $PWD/dist" -ba insights-core.spec
 
 # Cleanup
 rm -rf dist BUILD BUILDROOT
-git checkout -- pyproject.toml setup.py MANIFEST.in insights/COMMIT insights-core.spec
+git checkout -- pyproject.toml MANIFEST.in insights-core.spec insights/COMMIT insights/RELEASE
