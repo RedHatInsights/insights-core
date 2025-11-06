@@ -2,7 +2,7 @@
 import doctest
 
 from insights.parsers import ls as ls_module
-from insights.parsers.ls import FileListing, LSlan, LSlHFiles
+from insights.parsers.ls import FileListing, LSlan, LSlHFiles, FileListingNoHeader
 from insights.tests import context_wrap
 
 SINGLE_DIRECTORY = """
@@ -144,6 +144,16 @@ brw-rw----. 1 root  disk 252, 1 May 16 01:30 /dev/vda1
 # devices without a major/minor number?  Or non-devices that have a comma in
 # the size?  Permissions that don't make sense?  Dates that don't make sense
 # but still fit the patterns?  What should the parser do with such entries?
+
+LS_FILE_NO_HEADER_DOC = '''
+ls: cannot access '/dev/socketfile': No such file or directory
+dr-xr-xr-x. 5 root root     4096 May 30 06:57 /boot
+drwx------. 4 root root       83 Nov  6  2024 /boot/grub2
+-rw-------. 1 root root     6658 Dec 20  2023 /boot/grub2/grub.cfg
+crw--w----. 1 root tty  136,   0 Nov 17 01:28 /dev/stderr
+brw-rw----. 1 root disk 252,   0 Nov 16 03:19 /dev/vda
+crw-------. 1 root root  10, 137 Nov  6  2024 /dev/vhci
+'''
 
 
 def test_single_directory():
@@ -439,6 +449,7 @@ def test_doc_example():
     env = {
         'ls_lan': LSlan(context_wrap(FILE_LISTING_DOC)),
         'ls_files': LSlHFiles(context_wrap(LS_FILE_PERMISSIONS_DOC)),
+        'ls_files_no_header': FileListingNoHeader(context_wrap(LS_FILE_NO_HEADER_DOC)),
     }
     failed, total = doctest.testmod(ls_module, globs=env)
     assert failed == 0
