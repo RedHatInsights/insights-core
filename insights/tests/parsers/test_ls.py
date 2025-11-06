@@ -301,6 +301,7 @@ LS_LH = """
 -rw-------. 1 root root 1024 May 30 06:56 /boot/grub2/grubenv
 """
 
+
 def test_ls_la():
     ls = LSla(context_wrap(LS_LA))
     assert '/boot' in ls

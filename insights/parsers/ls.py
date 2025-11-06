@@ -412,7 +412,8 @@ class FileListingNoHeader(CommandParser, dict):
     """
     Parses a flat, long-listing format where each entry includes an
     absolute path and no directory headers are present. Stores all
-    information for each successfully parsed entry, containing:
+    information for each successfully parsed entry, containing::
+
         - type: The type indicator (d, c, b, l or -)
         - perms_owner: Owner permissions, e.g. 'rwx'
         - perms_group: Group permissions
