@@ -182,6 +182,7 @@ class DefaultSpecs(Specs):
     bond_dynamic_lb = glob_file("/sys/class/net/*/bonding/tlb_dynamic_lb")
     boot_loader_entries = glob_file("/boot/loader/entries/*.conf")
     bootc_status = simple_command("/usr/bin/bootc status --json")
+    bootctl_status = simple_command("/usr/bin/bootctl status")
     buddyinfo = simple_file("/proc/buddyinfo")
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
