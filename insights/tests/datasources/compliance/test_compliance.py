@@ -2,12 +2,8 @@
 import os
 import six
 
-try:
-    from unittest.mock import patch, Mock, mock_open
-except Exception:
-    from mock import patch, Mock, mock_open
-
 from pytest import raises, mark
+from unittest.mock import patch, Mock, mock_open
 
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants

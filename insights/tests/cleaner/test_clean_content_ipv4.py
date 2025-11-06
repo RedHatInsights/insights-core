@@ -1,4 +1,4 @@
-from mock.mock import patch
+from unittest.mock import patch
 from pytest import mark
 
 from insights.client.config import InsightsConfig

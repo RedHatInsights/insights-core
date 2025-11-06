@@ -1,8 +1,4 @@
-try:
-    from unittest.mock import patch
-except Exception:
-    from mock import patch
-
+from unittest.mock import patch
 
 from insights.specs.datasources.logrotate import logrotate_conf_list
 

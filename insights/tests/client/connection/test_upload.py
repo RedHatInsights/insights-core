@@ -1,4 +1,4 @@
-from mock.mock import Mock, patch
+from unittest.mock import Mock, patch
 from insights.client.connection import InsightsConnection
 
 

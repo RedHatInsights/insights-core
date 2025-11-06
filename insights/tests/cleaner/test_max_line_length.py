@@ -1,4 +1,4 @@
-from mock.mock import patch
+from unittest.mock import patch
 
 from insights.cleaner import Cleaner
 from insights.client.config import InsightsConfig

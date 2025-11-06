@@ -1,14 +1,8 @@
 import json
 import pytest
 
-try:
-    from unittest.mock import patch
-    builtin_open = "builtins.open"
-except Exception:
-    from mock import patch
-    builtin_open = "__builtin__.open"
-
 from os import path
+from unittest.mock import patch
 
 from insights.core.exceptions import SkipComponent, ContentException
 from insights.specs.datasources.leapp import leapp_report, migration_results
@@ -249,7 +243,7 @@ MIGRATION_RESULTS_NG_1 = json.loads("""
 
 @patch("json.load", return_value=LEAPP_REPORT_OK)
 @patch("os.path.isfile", return_value=True)
-@patch(builtin_open)
+@patch("builtins.open")
 def test_leapp_report_ok(m_open, m_isfile, m_load):
     result = leapp_report({})
     result_json = json.loads(''.join(result.content).strip())
@@ -260,7 +254,7 @@ def test_leapp_report_ok(m_open, m_isfile, m_load):
 
 @patch("json.load", return_value=LEAPP_REPORT_NG_1)
 @patch("os.path.isfile", return_value=True)
-@patch(builtin_open)
+@patch("builtins.open")
 def test_leapp_report_nothing(m_open, m_isfile, m_load):
     with pytest.raises(SkipComponent) as ce:
         leapp_report({})
@@ -269,7 +263,7 @@ def test_leapp_report_nothing(m_open, m_isfile, m_load):
 
 @patch("json.load", return_value=LEAPP_REPORT_NG_2)
 @patch("os.path.isfile", return_value=True)
-@patch(builtin_open)
+@patch("builtins.open")
 def test_leapp_report_ng_2(m_open, m_isfile, m_load):
     with pytest.raises(ContentException) as ce:
         leapp_report({})
@@ -284,7 +278,7 @@ def test_leapp_report_no_file(isfile):
 
 @patch("json.load", return_value=MIGRATION_RESULTS_OK_1)
 @patch("os.path.isfile", return_value=True)
-@patch(builtin_open)
+@patch("builtins.open")
 def test_leapp_migration_results_ok(m_open, m_isfile, m_load):
     result = migration_results({})
     result_json = json.loads(''.join(result.content).strip())
@@ -295,7 +289,7 @@ def test_leapp_migration_results_ok(m_open, m_isfile, m_load):
 
 @patch("json.load", return_value=MIGRATION_RESULTS_OK_2)
 @patch("os.path.isfile", return_value=True)
-@patch(builtin_open)
+@patch("builtins.open")
 def test_c2r_migration_results_ok(m_open, m_isfile, m_load):
     result = migration_results({})
     result_json = json.loads(''.join(result.content).strip())
@@ -306,7 +300,7 @@ def test_c2r_migration_results_ok(m_open, m_isfile, m_load):
 
 @patch("json.load", return_value=MIGRATION_RESULTS_NG_1)
 @patch("os.path.isfile", return_value=True)
-@patch(builtin_open)
+@patch("builtins.open")
 def test_leapp_migration_results_nothing(m_open, m_isfile, m_load):
     with pytest.raises(SkipComponent) as ce:
         migration_results({})
@@ -315,7 +309,7 @@ def test_leapp_migration_results_nothing(m_open, m_isfile, m_load):
 
 @patch("json.load", return_value=MIGRATION_RESULTS_NG_2)
 @patch("os.path.isfile", return_value=True)
-@patch(builtin_open)
+@patch("builtins.open")
 def test_leapp_migration_results_ng_2(m_open, m_isfile, m_load):
     with pytest.raises(ContentException) as ce:
         migration_results({})

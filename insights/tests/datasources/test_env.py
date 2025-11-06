@@ -1,5 +1,5 @@
 import pytest
-from mock.mock import patch, mock_open
+from unittest.mock import patch, mock_open
 from insights.core.dr import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs.datasources.env import ld_library_path_global_conf
