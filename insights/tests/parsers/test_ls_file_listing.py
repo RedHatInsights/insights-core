@@ -2,7 +2,7 @@
 import doctest
 
 from insights.parsers import ls as ls_module
-from insights.parsers.ls import FileListing, LSlan, LSlHFiles
+from insights.parsers.ls import FileListing, FileListingNoHeader, LSlan, LSlHFiles
 from insights.tests import context_wrap
 
 SINGLE_DIRECTORY = """
@@ -433,6 +433,16 @@ def test_files_created_with_selinux_disabled():
         'dir': '/dev/mapper',
         'size': 7,
     }
+
+
+def test_FileListingNoHeader():
+    dirs = FileListingNoHeader(context_wrap(LS_FILE_PERMISSIONS_DOC))
+
+    # Test the things we expect to be different:
+    assert '/etc/redhat-release' in dirs
+    listing = dirs['/etc/redhat-release']
+    assert listing.type == '-'
+    assert listing.line == '-rw-r--r--. 1 root  root      46 Apr 24  2024 /etc/redhat-release'
 
 
 def test_doc_example():

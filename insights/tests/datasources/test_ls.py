@@ -24,6 +24,7 @@ from insights.specs.datasources.ls import (
     list_with_lanRL,
     list_with_laRZ,
     list_with_laZ,
+    list_with_ld,
 )
 from insights.tests import context_wrap
 
@@ -97,6 +98,8 @@ def setup_function(func):
         filters.add_filter(
             Specs.ls_lH_files, ["/etc/redhat-release", '/var/log/messages', 'fstab_mounted.devices']
         )
+    if func is test_ld_with_fstab_mounted_filter:
+        filters.add_filter(Specs.ls_ld_dirs, ["/", '/boot', 'fstab_mounted.dirs'])
 
 
 def teardown_function(func):
@@ -188,3 +191,13 @@ def test_lH_files_fstab_blkid(_):
         ret
         == '/dev/mapper/rhel-home /dev/mapper/rhel-root /dev/mapper/rhel-var /dev/sdb2 /etc/redhat-release /var/log/messages'
     )
+
+
+def test_ld_with_fstab_mounted_filter():
+    ret = list_with_ld({})
+    assert ret == '/ /boot fstab_mounted.dirs'
+
+    fstab = FSTab(context_wrap(FSTAB_CONTEXT))
+    broker = {FSTab: fstab}
+    ret = list_with_ld(broker)
+    assert ret == '/ /boot /hana/data'

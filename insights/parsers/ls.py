@@ -31,6 +31,9 @@ LSlaRZ - command ``ls -lanRZ <dirs>``
 LSlaZ - command ``ls -lanZ <dirs>``
 -----------------------------------
 
+LSld - command ``ls -ld  <dirs>``
+---------------------------------
+
 LSlHFiles - spec ``ls_files`` -  command ``ls -lH  <files>``
 ------------------------------------------------------------
 """
@@ -405,16 +408,24 @@ class LSlaZ(FileListing):
     pass
 
 
-@parser(Specs.ls_files)
-class LSlHFiles(CommandParser, dict):
+class FileListingNoHeader(CommandParser, dict):
     """
-    Parses file information of ``ls -lH`` command.
+    Parses a flat, long-listing format where each entry includes an
+    absolute path and no directory headers are present. Stores all
+    information for each successfully parsed entry, containing:
+        - type: The type indicator (d, c, b, l or -)
+        - perms_owner: Owner permissions, e.g. 'rwx'
+        - perms_group: Group permissions
+        - perms_other: Other permissions
+        - owner: Owner user name
+        - group: Owner group name
+        - path: Full path to file
 
-    .. note::
+    Sample output::
 
-        To parse a specific file, its full path should be added to the
-        `ls_lH_files` spec via `add_filter`.
-        Only paths point to files are acceptable.
+        -rw-r--r--. 1 root  root      46 Apr 24  2024 /etc/redhat-release
+        -rw-r--r--. 1 liuxc wheel 664118 Feb 20 14:40 /var/log/messages
+        brw-rw----. 1 root  disk 252, 1 May 16 01:30 /dev/vda1
 
     Examples:
         >>> from insights.core.filters import add_filter
@@ -441,3 +452,29 @@ class LSlHFiles(CommandParser, dict):
                 pass
         if not self:
             raise SkipComponent
+
+
+@parser(Specs.ls_files)
+class LSlHFiles(FileListingNoHeader):
+    """
+    Parses file information of ``ls -lH`` command.
+    See :py:class:`FileListingNoHeader` for more information.
+
+    .. note::
+
+        To parse a specific file, its full path should be added to the
+        `ls_lH_files` spec via `add_filter`.
+        Only paths point to files are acceptable.
+
+    """
+    pass
+
+
+@parser(Specs.ls_ld)
+class LSld(FileListingNoHeader):
+    """
+    Parses output of ``ls -ld`` command.
+    See :py:class:`FileListingNoHeader` for more information.
+    """
+
+    pass
