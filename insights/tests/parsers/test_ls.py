@@ -294,6 +294,10 @@ LS_LD = """
 dr-xr-xr-x. 5 root root 4096 May 30 06:57 /boot
 drwx------. 4 root root   83 Nov  6  2024 /boot/grub2
 -rwxr-xr-x. 1 root root  991 Nov  6  2024 noxfile.py
+lrwxrwxrwx. 1 root root 15 Nov  6  2024 /dev/stderr -> /proc/self/fd/2
+brw-rw----. 1 root disk 252, 0 Nov  6 08:17 /dev/vda
+crw-------. 1 root root 10, 137 Nov  6  2024 /dev/vhci
+srw-------. 1 root root 0 May 30 07:04 /dev/socketfile
 """
 
 LS_LH = """
@@ -568,7 +572,7 @@ def test_ls_lH():
 def test_ls_ld():
     ls = LSld(context_wrap(LS_LD))
     assert '/boot' in ls
-    assert len(ls.keys()) == 3
+    assert len(ls.keys()) == 7
 
     assert ls['/boot'].type == 'd'
     assert ls['/boot'].line == 'dr-xr-xr-x. 5 root root 4096 May 30 06:57 /boot'
@@ -581,3 +585,17 @@ def test_ls_ld():
     assert grub2_files.type == 'd'
     assert grub2_files.perms_owner == 'rwx'
     assert grub2_files.owner == 'root'
+    # Block device
+    assert ls['/dev/vda'].type == 'b'
+    assert ls['/dev/vda'].owner == 'root'
+    assert ls['/dev/vda'].path == '/dev/vda'
+
+    # Character device
+    assert ls['/dev/vhci'].type == 'c'
+    assert ls['/dev/vhci'].owner == 'root'
+    assert ls['/dev/vhci'].path == '/dev/vhci'
+
+    # Socket
+    assert ls['/dev/socketfile'].type == 's'
+    assert ls['/dev/socketfile'].owner == 'root'
+    assert ls['/dev/socketfile'].path == '/dev/socketfile'
