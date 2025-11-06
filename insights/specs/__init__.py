@@ -61,6 +61,7 @@ class Specs(SpecSet):
     )
     boot_loader_entries = RegistryPoint(multi_output=True)
     bootc_status = RegistryPoint(no_obfuscate=['hostname'])
+    bootctl_status = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     brctl_show = RegistryPoint()
     buddyinfo = RegistryPoint()
     candlepin_broker = RegistryPoint()
