@@ -1,6 +1,4 @@
 import doctest
-import sys
-
 import pytest
 
 from insights.parsers import spamassassin_channels
@@ -34,7 +32,10 @@ TWO_IN_FILE = """
 """.strip()
 
 EXPECTED_TWO_IN_FILE = {
-    "/etc/mail/spamassassin/channel.d/sought.conf": ["sought.rules.yerp.org", "sought2.rules.yerp.org"],
+    "/etc/mail/spamassassin/channel.d/sought.conf": [
+        "sought.rules.yerp.org",
+        "sought2.rules.yerp.org",
+    ],
     "/etc/mail/spamassassin/channel.d/spamassassin-official.conf": ["updates.spamassassin.org"],
 }
 
@@ -63,7 +64,6 @@ def test_exception():
         SpamassassinChannels(context_wrap(INVALID))
 
 
-@pytest.mark.xfail(sys.version_info > (3, 11), reason="Broken in Python 3.12+")
 def test_doc_examples():
     env = {
         "spamassassin_channels": SpamassassinChannels(context_wrap(DEFAULT)),

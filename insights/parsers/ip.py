@@ -22,7 +22,6 @@ IPs - command ``hostname -I``
 
 from __future__ import print_function
 
-import six
 import socket
 
 from collections import defaultdict, deque
@@ -115,7 +114,7 @@ def parse_interface(line):
         "virtual": virtual,
         "flags": split_content[2].strip("<>").split(","),
         "addr": [],
-        "vf_enabled": False
+        "vf_enabled": False,
     }
     # extract properties
     for i in range(4, len(split_content), 2):
@@ -133,20 +132,16 @@ def parse_link(line, d):
     elif len(split_content) >= 2:
         d["mac"] = split_content[1]
         if "promiscuity" in split_content:
-            d["promiscuity"] = split_content[
-                split_content.index('promiscuity') + 1]
+            d["promiscuity"] = split_content[split_content.index('promiscuity') + 1]
 
 
 def parse_inet(line, d):
     split_content = line.split()
     p2p = "peer" in split_content
     addr, mask = split_content[3 if p2p else 1].split("/")
-    d["addr"].append({
-        "addr": addr,
-        "mask": mask,
-        "local_addr": split_content[1] if p2p else None,
-        "p2p": p2p
-    })
+    d["addr"].append(
+        {"addr": addr, "mask": mask, "local_addr": split_content[1] if p2p else None, "p2p": p2p}
+    )
 
 
 def parse_rx_stats(line, d):
@@ -345,15 +340,11 @@ class RouteDevices(CommandParser):
         True
 
     """
+
     SAVED_TYPES = set(["unicast", "multicast", 'local'])
 
     # Why have types we ignore?
-    IGNORE_TYPES = set(["broadcast",
-                        "throw",
-                        "unreachable",
-                        "prohibit",
-                        "blackhole",
-                        "nat"])
+    IGNORE_TYPES = set(["broadcast", "throw", "unreachable", "prohibit", "blackhole", "nat"])
 
     @property
     def by_prefix(self):
@@ -483,12 +474,12 @@ class RouteDevices(CommandParser):
         if ip is None:
             return
         routes = self.by_type.get('None', [])
-        addr = ipaddress.ip_address(six.u(ip))
+        addr = ipaddress.ip_address(u'{0}'.format(ip))
         # Iterate through by descending netmask, so first found is most precise
         for route in sorted(routes, key=lambda r: r.netmask, reverse=True):
             if route.prefix == "default":
                 continue
-            net = ipaddress.ip_network(six.u(route.prefix))
+            net = ipaddress.ip_network(u'{0}'.format(route.prefix))
             # Only test containment if this is the same verison of IP address.
             if addr.version != net.version:
                 continue
@@ -574,42 +565,35 @@ class IpNeighParser(CommandParser):
             split_result = line.split()
             # Need at least IP address, something, and reachability
             if len(split_result) < 2:
-                self.unparsed_lines.append({
-                    'line': line,
-                    'reason': "not enough words"
-                })
+                self.unparsed_lines.append({'line': line, 'reason': "not enough words"})
                 continue
             # Total words needs to be even: beginning + 2*keyvals + ending
             if len(split_result) % 2 == 1:
-                self.unparsed_lines.append({
-                    'line': line,
-                    'reason': "odd number of words"
-                })
+                self.unparsed_lines.append({'line': line, 'reason': "odd number of words"})
                 continue
             # Don't parse this line if the first thing isn't an
             # IP address
             try:
-                addr = ipaddress.ip_address(six.u(split_result[0]))
+                addr = ipaddress.ip_address(u'{0}'.format(split_result[0]))
             except ValueError:
-                self.unparsed_lines.append({
-                    'line': line,
-                    'reason': "can't convert address '" + split_result[0] + "'"
-                })
+                self.unparsed_lines.append(
+                    {'line': line, 'reason': "can't convert address '" + split_result[0] + "'"}
+                )
                 continue
             # Don't parse this line if the last item doesn't seem to be a
             # neighbour unreachability state
             if split_result[-1] not in self.VALID_NUD_STATES:
-                self.unparsed_lines.append({
-                    'line': line,
-                    'reason': split_result[-1] + " is not a valid state"
-                })
+                self.unparsed_lines.append(
+                    {'line': line, 'reason': split_result[-1] + " is not a valid state"}
+                )
                 continue
 
             # OK, good to go, split everything in the middle up
             key_value_content = split_result[1:-1]
             if len(key_value_content) >= 2:
-                entry = dict((k, v) for k, v in zip(key_value_content[0::2],
-                                                    key_value_content[1::2]))
+                entry = dict(
+                    (k, v) for k, v in zip(key_value_content[0::2], key_value_content[1::2])
+                )
             else:
                 entry = {}
             entry["nud"] = split_result[-1]
@@ -634,6 +618,7 @@ class Ipv4Neigh(IpNeighParser):
     """
     Class to parse ``ip -4 neigh show nud all`` command output.
     """
+
     pass
 
 
@@ -642,6 +627,7 @@ class Ipv6Neigh(IpNeighParser):
     """
     Class to parse ``ip -6 neigh show nud all`` command output.
     """
+
     pass
 
 
@@ -650,6 +636,7 @@ class IpNeighShow(IpNeighParser):
     """
     Class to parse ``ip neigh show`` or ``ip -s -s neigh show`` command output.
     """
+
     pass
 
 
@@ -741,6 +728,7 @@ class IpLinkInfo(IpAddr):
         TX packets: 12
         TX dropped: 0
     """
+
     pass
 
 
@@ -766,13 +754,16 @@ class IPs(CommandParser):
             "10.10.121.131",
         ]
     """
+
     def parse_content(self, content):
         def valid_ipv4_address_or_None(addr):
-            """ str: Returns the input value if it is a valid IPV4 address """
+            """str: Returns the input value if it is a valid IPV4 address"""
             try:
                 socket.inet_pton(socket.AF_INET, addr)
                 return addr
             except socket.error:
                 return None
 
-        self.ipv4_addresses = list(filter(None, [valid_ipv4_address_or_None(addr) for addr in content[0].rstrip().split()]))
+        self.ipv4_addresses = list(
+            filter(None, [valid_ipv4_address_or_None(addr) for addr in content[0].rstrip().split()])
+        )

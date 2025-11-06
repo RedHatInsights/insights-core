@@ -29,13 +29,11 @@ Examples:
     True
 
 """
+
+from collections import abc
+
 from insights.core.plugins import combiner
 from insights.parsers.nfs_exports import NFSExports, NFSExportsD
-
-try:
-    from six.moves import collections_abc
-except ImportError:
-    import collections as collections_abc
 
 
 @combiner(NFSExports, optional=[NFSExportsD])
@@ -63,6 +61,7 @@ class AllNFSExports(object):
             exported path, with the lines stored by defining file.
 
     """
+
     def __init__(self, nfsexports, nfsexportsd):
         self.files = []
         self.exports = {}
@@ -72,7 +71,7 @@ class AllNFSExports(object):
         sources = [nfsexports]
         # Make sure exports are stored in the order they're parsed -
         # alphabetically by file name.  Ignore it if nfsexportsd isn't valid.
-        if isinstance(nfsexportsd, collections_abc.Iterable):
+        if isinstance(nfsexportsd, abc.Iterable):
             sources.extend(sorted(nfsexportsd, key=lambda f: f.file_path))
 
         def add_paths_to_dict(src_path, src_dict, dest_dict):

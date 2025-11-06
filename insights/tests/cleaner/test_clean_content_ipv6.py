@@ -1,4 +1,3 @@
-import six
 from pytest import mark
 
 try:
@@ -79,26 +78,13 @@ def test_obfuscate_ipv6_the_same(obfuscation_list):
         obf_ips = pp.obfuscate.get('ipv6').mapping()
         assert len(obf_ips) == 4
         # But they are all the same - 1: in result
-        ret_ip = ipaddress.ip_address(
-            ret0[0].split()[0] if six.PY3 else u'{0}'.format(ret0[0].split()[0])
-        )
-        assert ret_ip == ipaddress.ip_address(
-            ret0[1].split()[0] if six.PY3 else u'{0}'.format(ret0[1].split()[0])
-        )
-        assert ret_ip == ipaddress.ip_address(
-            ret0[2].split()[-1] if six.PY3 else u'{0}'.format(ret0[2].split()[-1])
-        )
-        assert ret_ip == ipaddress.ip_address(
-            ret0[3].split()[-1] if six.PY3 else u'{0}'.format(ret0[3].split()[-1])
-        )
+        ret_ip = ipaddress.ip_address(ret0[0].split()[0])
+        assert ret_ip == ipaddress.ip_address(ret0[1].split()[0])
+        assert ret_ip == ipaddress.ip_address(ret0[2].split()[-1])
+        assert ret_ip == ipaddress.ip_address(ret0[3].split()[-1])
         # But they are all the same - 2: in mapping
         for ip in obf_ips:
-            assert (
-                ipaddress.ip_address(
-                    ip['obfuscated'] if six.PY3 else u'{0}'.format(ip['obfuscated'])
-                )
-                == ret_ip
-            )
+            assert ipaddress.ip_address(ip['obfuscated']) == ret_ip
     else:
         assert ip_changed == 0
         assert len_changed == 0

@@ -2,6 +2,7 @@
 SpamassassinChannels - command ``/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d``
 =========================================================================================================
 """
+
 import re
 from collections import OrderedDict
 
@@ -27,9 +28,12 @@ class SpamassassinChannels(CommandParser):
     Examples:
         >>> type(spamassassin_channels)
         <class 'insights.parsers.spamassassin_channels.SpamassassinChannels'>
-        >>> spamassassin_channels.channels
-        OrderedDict([('/etc/mail/spamassassin/channel.d/sought.conf', ['sought.rules.yerp.org']), ('/etc/mail/spamassassin/channel.d/spamassassin-official.conf', ['updates.spamassassin.org'])])
+        >>> spamassassin_channels.channels['/etc/mail/spamassassin/channel.d/sought.conf']
+        ['sought.rules.yerp.org']
+        >>> spamassassin_channels.channels['/etc/mail/spamassassin/channel.d/spamassassin-official.conf']
+        ['updates.spamassassin.org']
     """
+
     def __init__(self, *args, **kwargs):
         self.channels = OrderedDict()
         super(SpamassassinChannels, self).__init__(*args, **kwargs)

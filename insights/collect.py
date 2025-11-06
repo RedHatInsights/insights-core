@@ -16,7 +16,7 @@ import sys
 import tempfile
 import yaml
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from insights import apply_configs, apply_default_enabled, get_pool
 from insights.cleaner import Cleaner
@@ -24,7 +24,7 @@ from insights.core import blacklist, dr, filters
 from insights.core.serde import Hydration
 from insights.core.spec_factory import SAFE_ENV
 from insights.specs.manifests import manifests
-from insights.util import fs, utc
+from insights.util import fs
 from insights.util.hostname import determine_hostname
 from insights.util.subproc import call
 
@@ -163,7 +163,7 @@ def generate_archive_name():
     Creates the archive directory to store the component output.
     """
     hostname = determine_hostname()
-    suffix = datetime.now(utc).strftime("%Y%m%d%H%M%S")
+    suffix = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
     return "insights-%s-%s" % (hostname, suffix)
 
 

@@ -6,18 +6,12 @@ import inspect
 import itertools
 import json
 import logging
-import six
-import six.moves
 
 from collections import defaultdict
 from functools import wraps
+from io import StringIO
 from operator import eq
 from yaml import SafeLoader
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
 
 import insights
 
@@ -235,9 +229,9 @@ def context_wrap(
     strip=True,
     split=True,
     filtered_spec=None,
-    **kwargs
+    **kwargs,
 ):
-    if isinstance(lines, six.string_types):
+    if isinstance(lines, str):
         if strip:
             lines = lines.strip()
         if split:
@@ -254,7 +248,7 @@ def context_wrap(
         version=version.split("."),
         machine_id=machine_id,
         relative_path=path,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -450,7 +444,7 @@ def archive_provider(component, test_func=deep_compare, stride=1):
     """
 
     def _wrap(func):
-        @six.wraps(func)
+        @wraps(func)
         def __wrap(stride=stride):
             for input_data, expected in itertools.islice(func(), None, None, stride):
                 yield component, test_func, input_data, expected

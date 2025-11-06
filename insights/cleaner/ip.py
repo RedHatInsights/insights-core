@@ -15,7 +15,6 @@ import hashlib
 import logging
 import os
 import re
-import six
 import socket
 import struct
 
@@ -184,7 +183,7 @@ class IPv6(object):
             if _hex:
                 n_0_hex = _hex.lstrip('0').lower()
                 if n_0_hex:
-                    old_hex = n_0_hex.encode('utf-8') if six.PY3 else n_0_hex
+                    old_hex = n_0_hex.encode('utf-8')
                     new_hex = hashlib.sha1(old_hex).hexdigest()[: len(old_hex)]
                     return '0' * (len(_hex) - len(n_0_hex)) + new_hex
                 return '0' * len(_hex)

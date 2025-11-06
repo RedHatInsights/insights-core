@@ -1,18 +1,16 @@
 import logging
-import six
 import sys
 
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 
-from ..formats import Formatter
-from ..specs import Specs
-from ..combiners.hostname import Hostname as combiner_hostname
-from ..parsers.client_metadata import BranchInfo
-from ..util import utc
-from . import dr, plugins
-from .context import ExecutionContext
 import insights
+from insights.combiners.hostname import Hostname as combiner_hostname
+from insights.core import dr, plugins
+from insights.core.context import ExecutionContext
+from insights.formats import Formatter
+from insights.parsers.client_metadata import BranchInfo
+from insights.specs import Specs
 
 log = logging.getLogger(__name__)
 
@@ -94,17 +92,16 @@ class SingleEvaluator(Evaluator):
 
     def get_response(self):
         r = dict(self.metadata_keys)
-        r.update({
-            "system": {
-                "metadata": self.metadata,
-                "hostname": self.hostname
-            },
-            "reports": self.results["rule"],
-            "fingerprints": self.results["fingerprint"],
-            "skips": self.rule_skips,
-        })
+        r.update(
+            {
+                "system": {"metadata": self.metadata, "hostname": self.hostname},
+                "reports": self.results["rule"],
+                "fingerprints": self.results["fingerprint"],
+                "skips": self.rule_skips,
+            }
+        )
 
-        for k, v in six.iteritems(self.results):
+        for k, v in self.results.items():
             if k not in ("rule", "fingerprint"):
                 r[k] = v
 
@@ -114,9 +111,9 @@ class SingleEvaluator(Evaluator):
 
         r["analysis_metadata"] = {
             "start": self.start_time.isoformat(),
-            "finish": datetime.now(utc).isoformat(),
+            "finish": datetime.now(timezone.utc).isoformat(),
             "execution_context": ctx,
-            "plugin_sets": insights.RULES_STATUS
+            "plugin_sets": insights.RULES_STATUS,
         }
 
         return r
@@ -133,15 +130,19 @@ class SingleEvaluator(Evaluator):
         else:
             response_id = "%s_id" % r.response_type
             key = r.get_key()
-            self.results[type_].append(self.format_result({
-                response_id: "{0}|{1}".format(get_simple_module_name(plugin), key),
-                "component": dr.get_name(plugin),
-                "type": type_,
-                "key": key,
-                "details": r,
-                "tags": list(dr.get_tags(plugin)),
-                "links": dr.get_delegate(plugin).links or {}
-            }))
+            self.results[type_].append(
+                self.format_result(
+                    {
+                        response_id: "{0}|{1}".format(get_simple_module_name(plugin), key),
+                        "component": dr.get_name(plugin),
+                        "type": type_,
+                        "key": key,
+                        "details": r,
+                        "tags": list(dr.get_tags(plugin)),
+                        "links": dr.get_delegate(plugin).links or {},
+                    }
+                )
+            )
 
 
 class InsightsEvaluator(SingleEvaluator):
@@ -155,10 +156,18 @@ class InsightsEvaluator(SingleEvaluator):
 
     def observer(self, comp, broker):
         super(InsightsEvaluator, self).observer(comp, broker)
-        if self.system_id is None and Specs.machine_id in broker and broker[Specs.machine_id].content:
+        if (
+            self.system_id is None
+            and Specs.machine_id in broker
+            and broker[Specs.machine_id].content
+        ):
             self.system_id = broker[Specs.machine_id].content[0].strip()
 
-        if self.release is None and Specs.redhat_release in broker and broker[Specs.redhat_release].content:
+        if (
+            self.release is None
+            and Specs.redhat_release in broker
+            and broker[Specs.redhat_release].content
+        ):
             self.release = broker[Specs.redhat_release].content[0].strip()
 
         if not self.branch_info and BranchInfo in broker:
