@@ -215,4 +215,3 @@ def test_ld_with_fstab_mounted_filter():
     broker = {FSTab: fstab}
     ret = list_with_ld(broker)
     assert ret == '/ /boot /hana/data'
-
