@@ -476,6 +476,11 @@ class LSld(FileListingNoHeader):
     """
     Parses output of ``ls -ld`` command.
     See :py:class:`FileListingNoHeader` for more information.
+
+    .. note::
+
+        To parse a specific file, its full path should be added to the
+        `ls_ld_items` spec via `add_filter`.
     """
 
     pass

@@ -431,7 +431,7 @@ class Specs(SpecSet):
     ls_laZ = RegistryPoint()
     ls_laZ_dirs = RegistryPoint(filterable=True)
     ls_ld = RegistryPoint()
-    ls_ld_dirs = RegistryPoint(filterable=True)
+    ls_ld_items = RegistryPoint(filterable=True)
     # Useful for SoS
     ls_boot = RegistryPoint()
     ls_dev = RegistryPoint()

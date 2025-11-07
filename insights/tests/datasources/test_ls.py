@@ -108,7 +108,7 @@ def setup_function(func):
             Specs.ls_lH_files, ["/etc/redhat-release", '/var/log/messages', 'fstab_mounted.devices']
         )
     if func is test_ld_with_fstab_mounted_filter:
-        filters.add_filter(Specs.ls_ld_dirs, ["/", '/boot', 'fstab_mounted.dirs'])
+        filters.add_filter(Specs.ls_ld_items, ["/", '/boot', 'fstab_mounted.dirs'])
 
 
 def teardown_function(func):
@@ -209,9 +209,9 @@ def test_ld_with_fstab_mounted_filter():
     fstab = FSTab(context_wrap(FSTAB_CONTEXT))
     broker = {FSTab: fstab}
     ret = list_with_ld(broker)
-    assert ret == '/ /boot /hana/data'
+    assert ret == '/ /boot /hana/data/rhel7-hana1 /hana/data/rhel7-hana2 /hana/data/rhel7-hana3'
 
     fstab = FSTab(context_wrap(FSTAB_DUPLICATE_CONTEXT))
     broker = {FSTab: fstab}
     ret = list_with_ld(broker)
-    assert ret == '/ /boot /hana/data'
+    assert ret == '/ /boot /hana/data/rhel7-hana1'
