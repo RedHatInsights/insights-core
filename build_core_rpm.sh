@@ -45,29 +45,15 @@ else
 fi
 
 rm -rf BUILD BUILDROOT RPMS SRPMS insights_core.egg-info
-# Prepare the tarball
-# - insights-core-selinux.x.y.z.1.tar.gz
-if [ "$TARGET" == "release" ]; then
-    # keep compatible with old&new setuptools
-    VERSION=`cat insights/VERSION`
-    pushd dist
-    if [ -f insights_core-${VERSION}.tar.gz ]; then
-        tar xf insights_core-${VERSION}.tar.gz
-        rename _ - insights_core-${VERSION}
-        tar zcf insights-core-${VERSION}.tar.gz insights-core-${VERSION}
-    fi
-    popd
-    if [ ! -f dist/insights-core-${VERSION}.tar.gz ]; then
-        echo "Error: Source tarbal archive 'insights-core-${VERSION}.tar.gz' doesn't exist."
-        exit 1
-    fi
-elif [ "$TARGET" == "testing" ]; then
-    # For testing, release = "dev"
-    # - e.g. x.y.z.1-dev
-    echo "dev" > insights/RELEASE
-    sed -i -e "s/1%{?dist}/dev%{?dist}/g" insights-core.spec
+if [ "$TARGET" == "testing" ]; then
+    # For testing, release = $branch_name
+    # - e.g. x.y.z.1-$branch_name
+    BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+    echo $BRANCH_NAME > insights/RELEASE
+    sed -i -e "s/\(.\)%{?dist}/\1.${BRANCH_NAME}%{?dist}/g" insights-core.spec
 fi
-# - insights-core.x.y.z.1.tar.gz
+# Prepare the tarball
+# - dist/insights-core.x.y.z.1.tar.gz
 git rev-parse --short HEAD > insights/COMMIT
 cp $MANIFEST MANIFEST.in
 # Build tarball in venv
@@ -79,6 +65,19 @@ pip install --upgrade pip build
 python -m build --sdist
 deactivate
 rm -fr .venv_${DATE}
+# - to keep compatible with both old&new setuptools
+VERSION=`cat insights/VERSION`
+pushd dist
+if [ -f insights_core-${VERSION}.tar.gz ]; then
+    tar xf insights_core-${VERSION}.tar.gz
+    rename _ - insights_core-${VERSION}
+    tar zcf insights-core-${VERSION}.tar.gz insights-core-${VERSION}
+fi
+popd
+if [ ! -f dist/insights-core-${VERSION}.tar.gz ]; then
+    echo "Error: Source tarball archive 'insights-core-${VERSION}.tar.gz' doesn't exist."
+    exit 1
+fi
 
 # Place the build target in ".spec" file
 sed -i -e "s/# placeholder/%global ${BUILDTARGET}/g" insights-core.spec
