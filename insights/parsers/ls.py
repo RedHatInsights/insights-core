@@ -31,7 +31,7 @@ LSlaRZ - command ``ls -lanRZ <dirs>``
 LSlaZ - command ``ls -lanZ <dirs>``
 -----------------------------------
 
-LSld - command ``ls -ld  <dirs>``
+LSld - command ``ls -ld  <items>``
 ---------------------------------
 
 LSlHFiles - spec ``ls_files`` -  command ``ls -lH  <files>``
