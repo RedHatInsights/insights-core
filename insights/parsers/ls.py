@@ -32,7 +32,7 @@ LSlaZ - command ``ls -lanZ <dirs>``
 -----------------------------------
 
 LSld - command ``ls -ld  <items>``
----------------------------------
+----------------------------------
 
 LSlHFiles - spec ``ls_files`` -  command ``ls -lH  <files>``
 ------------------------------------------------------------
@@ -481,6 +481,6 @@ class LSld(FileListingNoHeader):
 
         To parse a specific file, its full path should be added to the
         `ls_ld_items` spec via `add_filter`.
-    """
 
+    """
     pass
