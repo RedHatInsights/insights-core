@@ -25,6 +25,7 @@ from insights.specs.datasources.ls import (
     list_with_laRZ,
     list_with_laZ,
     list_with_ldH,
+    list_with_ldZ,
 )
 from insights.tests import context_wrap
 
@@ -107,8 +108,21 @@ def setup_function(func):
         filters.add_filter(
             Specs.ls_lH_files, ["/etc/redhat-release", '/var/log/messages', 'fstab_mounted.devices']
         )
-    if func is test_ld_with_fstab_mounted_filter:
-        filters.add_filter(Specs.ls_ldH_items, ["/", '/boot', 'fstab_mounted.dirs'])
+    if func is test_ldH_files:
+        filters.add_filter(
+            Specs.ls_ldH_items,
+            ["/etc/redhat-release", '/var/log/messages', 'fstab_mounted.devices', 'pvs.devices'],
+        )
+    if func is test_ldH_files_pvs:
+        filters.add_filter(
+            Specs.ls_ldH_items, ["/etc/redhat-release", '/var/log/messages', 'pvs.devices']
+        )
+    if func is test_ldH_files_fstab_blkid:
+        filters.add_filter(
+            Specs.ls_ldH_items, ["/etc/redhat-release", '/var/log/messages', 'fstab_mounted.devices']
+        )
+    if func is test_ldZ_with_fstab_mounted_filter:
+        filters.add_filter(Specs.ls_ldZ_items, ["/", '/mnt', 'fstab_mounted.dirs'])
 
 
 def teardown_function(func):
@@ -202,16 +216,45 @@ def test_lH_files_fstab_blkid(_):
     )
 
 
-def test_ld_with_fstab_mounted_filter():
+def test_ldH_files():
     ret = list_with_ldH({})
-    assert ret == '/ /boot fstab_mounted.dirs'
+    assert ret == '/etc/redhat-release /var/log/messages fstab_mounted.devices pvs.devices'
+
+
+def test_ldH_files_pvs():
+    pvs_info = Pvs(context_wrap(PVS_DATA))
+    broker = {Pvs: pvs_info}
+    ret = list_with_ldH(broker)
+    assert ret == '/dev/vda1 /dev/vda2 /etc/redhat-release /var/log/messages'
+
+
+def test_ldH_files_fstab_blkid():
+    fstab_info = FSTab(context_wrap(FSTAB_DATA))
+    blkid_info = BlockIDInfo(context_wrap(BLKID_DATA))
+    broker = {FSTab: fstab_info, BlockIDInfo: blkid_info}
+    ret = list_with_ldH(broker)
+    assert (
+        ret
+        == '/dev/mapper/rhel-home /dev/mapper/rhel-root /dev/mapper/rhel-var /dev/sdb2 /etc/redhat-release /var/log/messages'
+    )
+
+
+def test_ldZ_with_fstab_mounted_filter():
+    ret = list_with_ldZ({})
+    assert ret == '/ /mnt fstab_mounted.dirs'
 
     fstab = FSTab(context_wrap(FSTAB_CONTEXT))
     broker = {FSTab: fstab}
-    ret = list_with_ldH(broker)
-    assert ret == '/ /boot /hana/data/rhel7-hana1 /hana/data/rhel7-hana2 /hana/data/rhel7-hana3'
+    ret = list_with_ldZ(broker)
+    assert ret == '/ /boot /hana/data/rhel7-hana1 /hana/data/rhel7-hana2 /hana/data/rhel7-hana3 /mnt'
 
     fstab = FSTab(context_wrap(FSTAB_DUPLICATE_CONTEXT))
     broker = {FSTab: fstab}
-    ret = list_with_ldH(broker)
-    assert ret == '/ /boot /hana/data/rhel7-hana1'
+    ret = list_with_ldZ(broker)
+    assert ret == '/ /boot /hana/data/rhel7-hana1 /mnt'
+
+
+def test_ldZ_empty_filter():
+    with pytest.raises(SkipComponent) as e:
+        list_with_ldZ({})
+    assert 'SkipComponent' in str(e)
