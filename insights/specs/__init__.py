@@ -433,6 +433,8 @@ class Specs(SpecSet):
     ls_laZ_dirs = RegistryPoint(filterable=True)
     ls_ldH = RegistryPoint()
     ls_ldH_items = RegistryPoint(filterable=True)
+    ls_ldZ = RegistryPoint()
+    ls_ldZ_items = RegistryPoint(filterable=True)
     # Useful for SoS
     ls_boot = RegistryPoint()
     ls_dev = RegistryPoint()
