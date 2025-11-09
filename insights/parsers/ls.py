@@ -521,7 +521,7 @@ class FileListingNoHeadSelinux(CommandParser, dict):
     @property
     def listing_dirs(self):
         """
-        The list of all directory.
+        The list of all directories.
         """
         return self['dirs']
 

@@ -574,3 +574,5 @@ def test_ls_ldZ():
 
     assert ls.raw_entry_of('/dev/vda') == 'brw-rw----. 1 root disk system_u:object_r:fixed_disk_device_t:s0 252, 0 Nov  7 09:51 /dev/vda'
     assert ls.raw_entry_of('/dev/vdb') is None
+    assert ls.raw_entry_of('/boot/grub2/grub.cfg') == '-rw-------. 1 root root system_u:object_r:boot_t:s0 6658 Dec 20  2023 /boot/grub2/grub.cfg'
+    assert ls.raw_entry_of('/dev/stderr') == 'lrwxrwxrwx. 1 root root system_u:object_r:device_t:s0 15 Nov  6  2024 /dev/stderr -> /proc/self/fd/2'

@@ -196,3 +196,9 @@ def test_lH_files_fstab_blkid(_):
 def test_ldZ():
     ret = list_with_ldZ({})
     assert ret == '/ /mnt'
+
+
+def test_ldZ_empty_filter():
+    with pytest.raises(SkipComponent) as e:
+        list_with_ldZ({})
+    assert 'SkipComponent' in str(e)
