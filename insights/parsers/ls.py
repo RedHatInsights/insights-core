@@ -31,6 +31,9 @@ LSlaRZ - command ``ls -lanRZ <dirs>``
 LSlaZ - command ``ls -lanZ <dirs>``
 -----------------------------------
 
+LSldZ - command ``ls -ldZ <items>``
+-----------------------------------
+
 LSlHFiles - spec ``ls_files`` -  command ``ls -lH  <files>``
 ------------------------------------------------------------
 """
@@ -441,3 +444,157 @@ class LSlHFiles(CommandParser, dict):
                 pass
         if not self:
             raise SkipComponent
+
+
+class FileListingNoHeadSelinux(CommandParser, dict):
+    """
+    Parses a flat, long-listing with SELinux context information
+    where each entry represents an absolute path and no directory
+    headers are present. Stores all information for each successfully
+    parsed entry, containing::
+
+        - type:     File type indicator ('d', '-', 'l', 'b', 'c')
+        - perms:    Permission bits, e.g. 'rw-r--r--.'
+        - links:    Number of hard links
+        - owner:    Owner user name
+        - group:    Owner group name
+        - size:     File size in bytes (if applicable)
+        - major:    Device major number (for block/char devices)
+        - minor:    Device minor number (for block/char devices)
+        - se_user:  SELinux user
+        - se_role:  SELinux role
+        - se_type:  SELinux type
+        - se_mls:   SELinux level
+        - name:     Full absolute path to the file
+        - date:     Modification date/time string
+        - link:     Target path (if the entry is a symlink)
+        - dir:      Parent directory (if applicable)
+
+    Attributes::
+
+        listing_files (list): The list of all non-special files (i.e. not block or character devices).
+        listing_dirs (list): The list of all directories parsed from the listing.
+        listing_entries (dict): A mapping of all parsed entries, keyed by their absolute paths.
+        listing_specials (list): The list of all special files (block and character devices).
+
+    Sample output::
+
+        dr-xr-xr-x. 5 root root system_u:object_r:boot_t:s0                  4096 May 30 06:57 /boot
+        -rw-------. 1 root root system_u:object_r:boot_t:s0                  6658 Dec 20  2023 /boot/grub2/grub.cfg
+        lrwxrwxrwx. 1 root root system_u:object_r:device_t:s0                  15 Nov  6  2024 /dev/stderr -> /proc/self/fd/2
+        brw-rw----. 1 root disk system_u:object_r:fixed_disk_device_t:s0 252,   0 Nov  7 09:51 /dev/vda
+        crw-------. 1 root root system_u:object_r:vhost_device_t:s0       10, 137 Nov  6  2024 /dev/vhci
+
+    Examples::
+
+        >>> from insights.core.filters import add_filter
+        >>> from insights.specs import Specs
+        >>> add_filter(Specs.ls_ldZ_items, ['/boot', '/boot/grub2/grub.cfg', '/dev/stderr', '/dev/vda', '/dev/vhci'])
+        >>> type(ls_files_se)
+        <class 'insights.parsers.ls.FileListingNoHeadSelinux'>
+        >>> len(ls_files_se.entries.keys())
+        5
+        >>> "/boot/grub2/grub.cfg" in ls_files_se.listing_files
+        True
+        >>> ls_files_se.listing_dirs
+        ['/boot']
+        >>> "/dev/vda" in ls_files_se.listing_specials
+        True
+        >>> ls_files_se.entries['/boot']['perms']
+        'r-xr-xr-x.'
+    """
+
+    def parse_content(self, content):
+        """
+        Parses a file/directory listing with SELinux information from the
+        provided content and updates the dictionary with all parsed entries.
+        """
+        self.update(ls_parser.parse(content, None)[None])
+
+    @property
+    def listing_files(self):
+        """
+        The list of all non-special files (i.e. not block or character files).
+        """
+        return self['files']
+
+    @property
+    def listing_dirs(self):
+        """
+        The list of all directory.
+        """
+        return self['dirs']
+
+    @property
+    def entries(self):
+        """
+        The listing of all entries.
+        Entries that can be parsed then have fields as described in the class
+        description above.
+
+        .. note::
+            The 'raw_entry' key is removed from the return value.  Use the
+            `raw_entry_of` method instead.
+        """
+        return self['entries']
+
+    @property
+    def listing_specials(self):
+        """
+        The list of all block and character special files.
+        """
+        return self['specials']
+
+    def raw_entry_of(self, target):
+        """
+        Returns the raw line entry of the ``target`` listed in
+        'ls' command output.
+
+        Parameters:
+            target (string): Name of the directory or file to get
+                information for.
+
+        Returns:
+            str: The re-constructed rough line if found or None if not found.
+
+        .. note::
+            As it's re-constructed according to the serialized items, it's not
+            identical with the original line.
+        """
+        entries = self['entries']
+        if target in entries:
+            tgt = entries[target]
+            raw_line = ' '.join([tgt['type'] + tgt['perms']])
+            if 'links' in tgt:
+                raw_line += ' ' + str(tgt['links'])
+            raw_line += ' ' + ' '.join([tgt['owner'], tgt['group']])
+            if 'se_user' in tgt:
+                raw_line += ' ' + ':'.join(
+                    [tgt['se_user'], tgt['se_role'], tgt['se_type'], tgt['se_mls']]
+                )
+            if 'size' in tgt:
+                raw_line += ' ' + str(tgt['size'])
+            if 'major' in tgt:
+                raw_line += ' ' + ', '.join([str(tgt['major']), str(tgt['minor'])])
+            if 'date' in tgt:
+                raw_line += ' ' + tgt['date']
+            raw_line += ' ' + tgt['name']
+            if tgt['type'] == 'l' and 'link' in tgt:
+                raw_line += ' -> ' + tgt['link']
+            return raw_line
+        return None
+
+
+@parser(Specs.ls_ldZ)
+class LSldZ(FileListingNoHeadSelinux):
+    """
+        Parses output of ``ls -ldZ`` command.
+        See :py:class:`FileListingNoHeadSelinux` for more information.
+
+    .. note::
+
+        To parse a specific file, its full path should be added to the
+        `ls_ldZ_items` spec via `add_filter`.
+
+    """
+    pass

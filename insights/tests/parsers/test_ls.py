@@ -1,6 +1,6 @@
 from insights.parsers.ls import (
     LSla, LSlaFiltered, LSlan, LSlanFiltered,
-    LSlanL, LSlanR, LSlanRL, LSlaRZ, LSlaZ
+    LSlanL, LSlanR, LSlanRL, LSlaRZ, LSlaZ, LSldZ
 )
 from insights.tests import context_wrap
 
@@ -290,6 +290,15 @@ drwxr-xr-x. 19 root root system_u:object_r:device_t:s0         3180 May 10 09:54
 crw-rw-rw-.  1 root root system_u:object_r:vfio_device_t:s0 10, 196 May 10 09:54 vfio -> false_link_2
 """
 
+LS_LDZ = """
+dr-xr-xr-x. 5 root root system_u:object_r:boot_t:s0                  4096 May 30 06:57 /boot
+-rw-------. 1 root root system_u:object_r:boot_t:s0                  6658 Dec 20  2023 /boot/grub2/grub.cfg
+lrwxrwxrwx. 1 root root system_u:object_r:device_t:s0                  15 Nov  6  2024 /dev/stderr -> /proc/self/fd/2
+brw-rw----. 1 root disk system_u:object_r:fixed_disk_device_t:s0 252,   0 Nov  7 09:51 /dev/vda
+crw-------. 1 root root system_u:object_r:vhost_device_t:s0       10, 137 Nov  6  2024 /dev/vhci
+-rw-------. 1 root root system_u:object_r:var_log_t:s0             275652 Nov  7 10:20 /var/log/messages
+"""
+
 
 def test_ls_la():
     ls = LSla(context_wrap(LS_LA))
@@ -537,3 +546,31 @@ def test_ls_laZ_on_dev():
     dev_listings = ls.listing_of('/dev/vfio')
     assert 'vfio' in dev_listings
     assert dev_listings["vfio"]['link'] == 'false_link_2'
+
+
+def test_ls_ldZ():
+    ls = LSldZ(context_wrap(LS_LDZ))
+    assert ls.listing_dirs == ['/boot']
+    assert '/boot/grub2/grub.cfg' in ls.listing_files
+    assert len(ls.listing_files) == 3
+    assert '/dev/vda' in ls.listing_specials
+
+    assert ls['entries']['/boot/grub2/grub.cfg']['type'] == '-'
+    assert ls['entries']['/boot/grub2/grub.cfg']['perms'] == 'rw-------.'
+    assert ls['entries']['/boot/grub2/grub.cfg']['links'] == 1
+    assert ls['entries']['/boot/grub2/grub.cfg']['owner'] == 'root'
+    assert ls['entries']['/boot/grub2/grub.cfg']['group'] == 'root'
+    assert ls['entries']['/boot/grub2/grub.cfg']['size'] == 6658
+    assert ls['entries']['/boot/grub2/grub.cfg']['se_user'] == 'system_u'
+    assert ls['entries']['/boot/grub2/grub.cfg']['se_role'] == 'object_r'
+    assert ls['entries']['/boot/grub2/grub.cfg']['se_type'] == 'boot_t'
+    assert ls['entries']['/boot/grub2/grub.cfg']['se_mls'] == 's0'
+    assert ls['entries']['/boot/grub2/grub.cfg']['name'] == '/boot/grub2/grub.cfg'
+    assert ls['entries']['/boot/grub2/grub.cfg']['date'] == 'Dec 20  2023'
+
+    assert ls.entries['/dev/vda']['type'] == 'b'
+    assert ls.entries['/dev/vda']['owner'] == 'root'
+    assert ls.entries['/dev/vda']['name'] == '/dev/vda'
+
+    assert ls.raw_entry_of('/dev/vda') == 'brw-rw----. 1 root disk system_u:object_r:fixed_disk_device_t:s0 252, 0 Nov  7 09:51 /dev/vda'
+    assert ls.raw_entry_of('/dev/vdb') is None

@@ -2,7 +2,7 @@
 import doctest
 
 from insights.parsers import ls as ls_module
-from insights.parsers.ls import FileListing, LSlan, LSlHFiles
+from insights.parsers.ls import FileListing, LSlan, LSlHFiles, FileListingNoHeadSelinux
 from insights.tests import context_wrap
 
 SINGLE_DIRECTORY = """
@@ -144,6 +144,14 @@ brw-rw----. 1 root  disk 252, 1 May 16 01:30 /dev/vda1
 # devices without a major/minor number?  Or non-devices that have a comma in
 # the size?  Permissions that don't make sense?  Dates that don't make sense
 # but still fit the patterns?  What should the parser do with such entries?
+
+LS_FILE_LISTING_NO_HEAD_SELINUX_DOC = """
+dr-xr-xr-x. 5 root root system_u:object_r:boot_t:s0                  4096 May 30 06:57 /boot
+-rw-------. 1 root root system_u:object_r:boot_t:s0                  6658 Dec 20  2023 /boot/grub2/grub.cfg
+lrwxrwxrwx. 1 root root system_u:object_r:device_t:s0                  15 Nov  6  2024 /dev/stderr -> /proc/self/fd/2
+brw-rw----. 1 root disk system_u:object_r:fixed_disk_device_t:s0 252,   0 Nov  7 09:51 /dev/vda
+crw-------. 1 root root system_u:object_r:vhost_device_t:s0       10, 137 Nov  6  2024 /dev/vhci
+"""
 
 
 def test_single_directory():
@@ -439,6 +447,7 @@ def test_doc_example():
     env = {
         'ls_lan': LSlan(context_wrap(FILE_LISTING_DOC)),
         'ls_files': LSlHFiles(context_wrap(LS_FILE_PERMISSIONS_DOC)),
+        'ls_files_se': FileListingNoHeadSelinux(context_wrap(LS_FILE_LISTING_NO_HEAD_SELINUX_DOC)),
     }
     failed, total = doctest.testmod(ls_module, globs=env)
     assert failed == 0
