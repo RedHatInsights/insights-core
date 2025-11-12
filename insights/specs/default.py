@@ -499,6 +499,7 @@ class DefaultSpecs(Specs):
         '/bin/ls -laRZ %s', ls.list_with_laRZ, save_as='ls_laRZ', keep_rc=True
     )
     ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, save_as='ls_laZ', keep_rc=True)
+    ls_ldZ = command_with_args('/bin/ls -ldZ %s', ls.list_with_ldZ, save_as='ls_ldZ', keep_rc=True)
     lsattr = command_with_args("/bin/lsattr %s", lsattr.paths_to_lsattr)
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command(

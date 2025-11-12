@@ -162,3 +162,8 @@ def files_dirs_number(broker):
             relative_path='insights_datasources/files_dirs_number',
         )
     raise SkipComponent
+
+
+@datasource(HostContext)
+def list_with_ldZ(broker):
+    return ' '.join(_list_items(Specs.ls_ldZ_items))
