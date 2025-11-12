@@ -1,6 +1,6 @@
 from insights.parsers.ls import (
     LSla, LSlaFiltered, LSlan, LSlanFiltered,
-    LSlanL, LSlanR, LSlanRL, LSlaRZ, LSlaZ
+    LSlanL, LSlanR, LSlanRL, LSlaRZ, LSlaZ, LSld, LSlHFiles
 )
 from insights.tests import context_wrap
 
@@ -290,6 +290,23 @@ drwxr-xr-x. 19 root root system_u:object_r:device_t:s0         3180 May 10 09:54
 crw-rw-rw-.  1 root root system_u:object_r:vfio_device_t:s0 10, 196 May 10 09:54 vfio -> false_link_2
 """
 
+LS_LD = """
+dr-xr-xr-x. 5 root root 4096 May 30 06:57 /boot
+drwx------. 4 root root   83 Nov  6  2024 /boot/grub2
+-rwxr-xr-x. 1 root root  991 Nov  6  2024 noxfile.py
+lrwxrwxrwx. 1 root root 15 Nov  6  2024 /dev/stderr -> /proc/self/fd/2
+brw-rw----. 1 root disk 252, 0 Nov  6 08:17 /dev/vda
+crw-------. 1 root root 10, 137 Nov  6  2024 /dev/vhci
+srw-------. 1 root root 0 May 30 07:04 /dev/socketfile
+"""
+
+LS_LH = """
+-rw-------. 1 root root 6658 Dec 20  2023 /boot/grub2/grub.cfg
+-rw-------. 1 root root 1024 May 30 06:56 /boot/grub2/grubenv
+crw-------. 1 root root 10, 137 Nov  6  2024 /dev/vhci
+brw-rw----. 1 root disk 252, 0 Nov  6 08:32 /dev/vda
+"""
+
 
 def test_ls_la():
     ls = LSla(context_wrap(LS_LA))
@@ -537,3 +554,59 @@ def test_ls_laZ_on_dev():
     dev_listings = ls.listing_of('/dev/vfio')
     assert 'vfio' in dev_listings
     assert dev_listings["vfio"]['link'] == 'false_link_2'
+
+
+def test_ls_lH():
+    ls = LSlHFiles(context_wrap(LS_LH))
+    assert '/boot/grub2/grub.cfg' in ls
+    assert '/boot/grub2/grubenv' in ls
+    assert len(ls.keys()) == 4
+
+    assert ls['/boot/grub2/grub.cfg'].type == '-'
+    assert ls['/boot/grub2/grub.cfg'].line == '-rw-------. 1 root root 6658 Dec 20  2023 /boot/grub2/grub.cfg'
+    assert ls['/boot/grub2/grub.cfg'].perms_owner == 'rw-'
+    assert ls['/boot/grub2/grub.cfg'].perms_group == '---'
+    assert ls['/boot/grub2/grub.cfg'].perms_other == '---'
+    assert ls['/boot/grub2/grub.cfg'].owner == 'root'
+    assert ls['/boot/grub2/grub.cfg'].path == '/boot/grub2/grub.cfg'
+
+    assert ls['/dev/vda'].type == 'b'
+    assert ls['/dev/vda'].owner == 'root'
+    assert ls['/dev/vda'].path == '/dev/vda'
+
+    # Character device
+    assert ls['/dev/vhci'].type == 'c'
+    assert ls['/dev/vhci'].owner == 'root'
+    assert ls['/dev/vhci'].path == '/dev/vhci'
+
+
+def test_ls_ld():
+    ls = LSld(context_wrap(LS_LD))
+    assert '/boot' in ls
+    assert len(ls.keys()) == 7
+
+    assert ls['/boot'].type == 'd'
+    assert ls['/boot'].line == 'dr-xr-xr-x. 5 root root 4096 May 30 06:57 /boot'
+    assert ls['/boot'].perms_owner == 'r-x'
+    assert ls['/boot'].perms_group == 'r-x'
+    assert ls['/boot'].perms_other == 'r-x'
+    assert ls['/boot'].owner == 'root'
+    assert ls['/boot'].path == '/boot'
+    grub2_files = ls['/boot/grub2']
+    assert grub2_files.type == 'd'
+    assert grub2_files.perms_owner == 'rwx'
+    assert grub2_files.owner == 'root'
+    # Block device
+    assert ls['/dev/vda'].type == 'b'
+    assert ls['/dev/vda'].owner == 'root'
+    assert ls['/dev/vda'].path == '/dev/vda'
+
+    # Character device
+    assert ls['/dev/vhci'].type == 'c'
+    assert ls['/dev/vhci'].owner == 'root'
+    assert ls['/dev/vhci'].path == '/dev/vhci'
+
+    # Socket
+    assert ls['/dev/socketfile'].type == 's'
+    assert ls['/dev/socketfile'].owner == 'root'
+    assert ls['/dev/socketfile'].path == '/dev/socketfile'
