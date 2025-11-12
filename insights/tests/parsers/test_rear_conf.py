@@ -3,7 +3,7 @@ import pytest
 
 from insights.core.exceptions import SkipComponent
 from insights.parsers import rear_conf
-from insights.parsers.rear_conf import RearLocalConf
+from insights.parsers.rear_conf import RearLocalConf, RearDefaultConf
 from insights.tests import context_wrap
 
 RDMA_CONFIG = """
@@ -31,21 +31,33 @@ BACKUP_RESTORE_MOVE_AWAY_FILES=( /boot/grub/grubenv /boot/grub2/grubenv )
 REAR_CONF_EMPTY = """
 """.strip()
 
+REAR_DEFAULT_CONF = """
+COPY_AS_IS_EXCLUDE=( $VAR_DIR/output/ dev/.udev dev/shm dev/shm/ dev/oracleasm dev/mapper dev/watchdog )
+""".strip()
+
 
 def test_rdma_config():
     local_conf = RearLocalConf(context_wrap(RDMA_CONFIG))
     assert len(local_conf.lines) == 1
     assert local_conf.lines[0] == "BACKUP_RESTORE_MOVE_AWAY_FILES=( /boot/grub/grubenv /boot/grub2/grubenv )"
 
+    default_conf = RearDefaultConf(context_wrap(REAR_DEFAULT_CONF))
+    assert len(default_conf.lines) == 1
+    assert default_conf.lines[0] == "COPY_AS_IS_EXCLUDE=( $VAR_DIR/output/ dev/.udev dev/shm dev/shm/ dev/oracleasm dev/mapper dev/watchdog )"
+
 
 def test_rdma_config_empty():
     with pytest.raises(SkipComponent):
         RearLocalConf(context_wrap(REAR_CONF_EMPTY))
 
+    with pytest.raises(SkipComponent):
+        RearDefaultConf(context_wrap(REAR_CONF_EMPTY))
+
 
 def test_rdma_config_doc():
     env = {
             'local_conf': RearLocalConf(context_wrap(RDMA_CONFIG)),
+            'default_conf': RearDefaultConf(context_wrap(REAR_DEFAULT_CONF)),
           }
     failed, total = doctest.testmod(rear_conf, globs=env)
     assert failed == 0
