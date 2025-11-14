@@ -17,12 +17,23 @@ ILAB_MODULE_LIST = """
 +-----------------------------------+---------------------+---------+
 """.strip()
 
+ILAB_MODULE_LIST_V2 = """
+time="2025-11-05T08:20:28Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
+time="2025-11-05T08:20:28Z" level=warning msg="A second log line for testing"
++----------------------------+---------------------+---------+------------------------------------------------------------+
+| Model Name                 | Last Modified       | Size    | Absolute path                                              |
++----------------------------+---------------------+---------+------------------------------------------------------------+
+| granite-7b-lab-Q4_K_M.gguf | 2025-11-05 08:16:33 |  3.8 GB | /root/.cache/instructlab/models/granite-7b-lab-Q4_K_M.gguf |
+| granite-7b-redhat-lab      | 2024-08-09 14:28:40 | 12.6 GB | /root/.cache/instructlab/models/granite-7b-redhat-lab.gguf |
++----------------------------+---------------------+---------+------------------------------------------------------------+
+"""
+
 ILAB_MODULE_LIST_ISSUE_FORMAT = """
 +-----------------------------------+---------------------+
 | Model Name                        | Last Modified       |
 +-----------------------------------+---------------------+
 | models/mixtral-8x7b-instruct-v0-1 | 2024-08-09 13:28:24 |
-| models/granite-7b-redhat-lab      | 2024-08-09 14:28:40 |
+|                                   | 2024-08-09 14:28:40 |
 | models/granite-7b-starter         | 2024-08-09 14:40:35 |
 +-----------------------------------+---------------------+
 """.strip()
@@ -36,6 +47,22 @@ Please run `ilab config init` or point to a valid configuration file using `--co
 """.strip()
 
 ILAB_MODULE_LIST_EMPTY = ""
+
+ILAB_MODULE_LIST_MISSING_HEADER = """
+time="2025-11-05T08:20:28Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
++----------------------------+---------------------+---------+------------------------------------------------------------+
+| granite-7b-lab-Q4_K_M.gguf | 2025-11-05 08:16:33 |  3.8 GB | /root/.cache/instructlab/models/granite-7b-lab-Q4_K_M.gguf |
+| granite-7b-redhat-lab      | 2024-08-09 14:28:40 | 12.6 GB | /root/.cache/instructlab/models/granite-7b-redhat-lab.gguf |
++----------------------------+---------------------+---------+------------------------------------------------------------+
+"""
+
+ILAB_MODULE_LIST_MISSING_CONTENT = """
+time="2025-11-05T08:20:28Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
++----------------------------+---------------------+---------+------------------------------------------------------------+
+| Model Name                 | Last Modified       | Size    | Absolute path                                              |
++----------------------------+---------------------+---------+------------------------------------------------------------+
++----------------------------+---------------------+---------+------------------------------------------------------------+
+"""
 
 ILAB_CONFIG_SHOW = """
 time="2025-04-15T08:23:44Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
@@ -71,19 +98,47 @@ ILAB_CONFIG_SHOW_EMPTY = ILAB_MODULE_LIST_EMPTY
 def test_ilab_model_list():
     ilab_module_list_info = IlabModuleList(context_wrap(ILAB_MODULE_LIST))
     assert len(ilab_module_list_info) == 4
-    assert ilab_module_list_info[0]["model_name"] == "models/prometheus-8x7b-v2-0"
+    assert ilab_module_list_info[0]["model_name"] == "prometheus-8x7b-v2-0"
     assert ilab_module_list_info[1]["last_modified"] == "2024-08-09 13:28:24"
     assert ilab_module_list_info[2]["size"] == "12.6 GB"
-    assert ilab_module_list_info.models == ["models/prometheus-8x7b-v2-0", "models/mixtral-8x7b-instruct-v0-1", "models/granite-7b-redhat-lab", "models/granite-7b-starter"]
+    assert ilab_module_list_info.models == [
+        "prometheus-8x7b-v2-0",
+        "mixtral-8x7b-instruct-v0-1",
+        "granite-7b-redhat-lab",
+        "granite-7b-starter",
+    ]
 
-    with pytest.raises(SkipComponent):
+    ilab_module_list_info = IlabModuleList(context_wrap(ILAB_MODULE_LIST_V2))
+    assert len(ilab_module_list_info) == 2
+    assert ilab_module_list_info[0]["model_name"] == "granite-7b-lab-Q4_K_M.gguf"
+    assert (
+        ilab_module_list_info[0]["absolute_path"]
+        == "/root/.cache/instructlab/models/granite-7b-lab-Q4_K_M.gguf"
+    )
+    assert ilab_module_list_info[1]["last_modified"] == "2024-08-09 14:28:40"
+    assert ilab_module_list_info[1]["size"] == "12.6 GB"
+    assert ilab_module_list_info.models == ["granite-7b-lab-Q4_K_M.gguf", "granite-7b-redhat-lab"]
+    assert len(ilab_module_list_info.unparsed_lines) == 2
+
+    with pytest.raises(SkipComponent) as err:
         IlabModuleList(context_wrap(ILAB_MODULE_LIST_EMPTY))
+    assert "Empty content" in str(err)
 
-    with pytest.raises(ParseException):
+    with pytest.raises(SkipComponent) as err:
         IlabModuleList(context_wrap(ILAB_MODULE_LIST_ERROR))
+    assert "Empty table after parsing" in str(err)
 
-    with pytest.raises(ParseException):
+    with pytest.raises(ParseException) as err:
         IlabModuleList(context_wrap(ILAB_MODULE_LIST_ISSUE_FORMAT))
+    assert "Unexpected parsed model line:" in str(err)
+
+    with pytest.raises(ParseException) as err:
+        IlabModuleList(context_wrap(ILAB_MODULE_LIST_MISSING_HEADER))
+    assert "Unparsable table line:" in str(err)
+
+    with pytest.raises(SkipComponent) as err:
+        IlabModuleList(context_wrap(ILAB_MODULE_LIST_MISSING_CONTENT))
+    assert "Empty table after parsing" in str(err)
 
 
 def test_ilab_config_show():
@@ -101,7 +156,7 @@ def test_ilab_config_show():
 def test_ilab_doc_examples():
     env = {
         'ilab_model_list_info': IlabModuleList(context_wrap(ILAB_MODULE_LIST)),
-        'ilab_config_show_info': IlabConfigShow(context_wrap(ILAB_CONFIG_SHOW))
+        'ilab_config_show_info': IlabConfigShow(context_wrap(ILAB_CONFIG_SHOW)),
     }
     failed, total = doctest.testmod(ilab, globs=env)
     assert failed == 0
