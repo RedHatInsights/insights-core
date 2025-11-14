@@ -9,6 +9,7 @@ IlabModuleList - command ``/usr/bin/ilab model list``
 IlabConfigShow - command ``/usr/bin/ilab config show``
 ------------------------------------------------------
 """
+
 from insights.core import CommandParser, YAMLParser
 from insights.core.plugins import parser
 from insights.core.exceptions import SkipComponent, ParseException
@@ -35,30 +36,44 @@ class IlabModuleList(CommandParser, list):
         >>> type(ilab_model_list_info)
         <class 'insights.parsers.ilab.IlabModuleList'>
         >>> ilab_model_list_info[0]["model_name"]
-        'models/prometheus-8x7b-v2-0'
+        'prometheus-8x7b-v2-0'
 
     Attributes:
         models (list): list of model names
+        unparsed_lines (list): the not table content lines in command output
 
     """
+
     def parse_content(self, content):
         if not content:
-            raise SkipComponent("Empty")
-        if not content[0].startswith("+-"):
-            raise ParseException("Unexpected format: %s" % content[0])
-        for line in content:
-            if line.startswith("|") and "Model Name" not in line:
-                split_items = line.split("|")
-                if len(split_items) == 5:
-                    self.append(
-                        {
-                            "model_name": split_items[1].strip(),
-                            "last_modified": split_items[2].strip(),
-                            "size": split_items[3].strip(),
-                        }
-                    )
+            raise SkipComponent("Empty content")
+
+        self.unparsed_lines = []
+        headings = None
+        for _line in content:
+            line = _line.strip()
+            if line.startswith("|") and line.endswith("|"):
+                # a table content line
+                linesp = [_.strip() for _ in line.strip('|').split('|')]
+                if "Model Name" in line:
+                    headings = ['_'.join(h.lower().split()) for h in linesp]
+                elif headings and len(linesp) == len(headings):
+                    parsed_row = dict(zip(headings, linesp))
+                    # drop the leading "models/" if present
+                    if parsed_row["model_name"].startswith("models/"):
+                        parsed_row["model_name"] = parsed_row["model_name"][7:]
+                    if not parsed_row["model_name"]:
+                        raise ParseException("Unexpected parsed model line: %s" % line)
+                    self.append(parsed_row)
                 else:
-                    raise ParseException("Unexpected format: %s" % line)
+                    raise ParseException("Unparsable table line: %s" % line)
+
+            elif not line.startswith("+--------"):
+                self.unparsed_lines.append(_line)
+
+        if not self:
+            raise SkipComponent("Empty table after parsing")
+
         self.models = [m['model_name'] for m in self]
 
 
@@ -100,4 +115,5 @@ class IlabConfigShow(CommandParser, YAMLParser):
     Attributes:
         data(dict): The ilab config information
     """
+
     ignore_lines = ['time=']
