@@ -17,15 +17,16 @@ Netstat - command ``netstat -neopa``
 Netstat_I - command ``netstat -i``
 ----------------------------------
 
+ProcNsat - File ``/proc/net/netstat``
+-------------------------------------
+
 SsTULPN - command ``ss -tulpn``
 -------------------------------
 
 SsTUPNA - command ``ss -tupna``
 -------------------------------
-
-ProcNsat - File ``/proc/net/netstat``
--------------------------------------
 """
+
 from collections import defaultdict
 
 from insights.core import CommandParser, LegacyItemAccess, Parser
@@ -40,8 +41,27 @@ ACTIVE_INTERNET_CONNECTIONS = 'Active Internet connections (servers and establis
 ACTIVE_UNIX_DOMAIN_SOCKETS = 'Active UNIX domain sockets (servers and established)'
 "str: The key in Netstat data  UNIX domain socket information"
 NETSTAT_SECTION_ID = {
-    ACTIVE_INTERNET_CONNECTIONS: ['Proto', 'Recv-Q', 'Send-Q', 'Local Address', 'Foreign Address', 'State', 'User', 'Inode', 'PID/Program name', 'Timer'],
-    ACTIVE_UNIX_DOMAIN_SOCKETS: ['RefCnt', 'Flags', 'Type', 'State', 'I-Node', 'PID/Program name', 'Path']
+    ACTIVE_INTERNET_CONNECTIONS: [
+        'Proto',
+        'Recv-Q',
+        'Send-Q',
+        'Local Address',
+        'Foreign Address',
+        'State',
+        'User',
+        'Inode',
+        'PID/Program name',
+        'Timer',
+    ],
+    ACTIVE_UNIX_DOMAIN_SOCKETS: [
+        'RefCnt',
+        'Flags',
+        'Type',
+        'State',
+        'I-Node',
+        'PID/Program name',
+        'Path',
+    ],
 }
 
 
@@ -122,6 +142,7 @@ class NetstatS(LegacyItemAccess, CommandParser):
         '254'
 
     """
+
     def parse_content(self, content):
         self.data = {}
         session = None
@@ -258,7 +279,9 @@ class NetstatAGN(CommandParser):
         """
         result = defaultdict(list)
         for entry in self.data:
-            result[entry["interface"]].append(dict((k.lower(), v) for (k, v) in entry.items() if k in ["refcnt", "group"]))
+            result[entry["interface"]].append(
+                dict((k.lower(), v) for (k, v) in entry.items() if k in ["refcnt", "group"])
+            )
         return dict(result)
 
     def parse_content(self, content):
@@ -303,14 +326,14 @@ class NetstatSection(object):
         i = 1
         from_index = 0
         while i < len(indexes):
-            self.data[i - 1].append(line[from_index: indexes[i]].strip())
+            self.data[i - 1].append(line[from_index : indexes[i]].strip())
             from_index = indexes[i]
             i += 1
-        self.data[i - 1].append(line[indexes[i - 1]:])
+        self.data[i - 1].append(line[indexes[i - 1] :])
 
-        self.datalist.append(dict((m, d) for m, d in zip(
-            NETSTAT_SECTION_ID[self.name], [r[-1] for r in self.data]
-        )))
+        self.datalist.append(
+            dict((m, d) for m, d in zip(NETSTAT_SECTION_ID[self.name], [r[-1] for r in self.data]))
+        )
         # For convenience, unpack 'PID/Program name' into 'PID' and 'Program name'
         # This field must exist because of NETSTAT_SECTION_ID and the
         # exception in add_meta_data
@@ -323,7 +346,9 @@ class NetstatSection(object):
         if 'Local Address' in self.datalist[-1]:
             local_addr = self.datalist[-1]['Local Address']
             if ':' not in local_addr:
-                raise ParseException('Local Address is expected to have a colon separating address and port')
+                raise ParseException(
+                    'Local Address is expected to have a colon separating address and port'
+                )
             # Remember, IPv6 addresses have colons in them.  The port
             # is the last part.
             parts = local_addr.split(':')
@@ -347,7 +372,7 @@ class NetstatSection(object):
 @parser(Specs.netstat)
 class Netstat(CommandParser):
     """
-    Parsing the ``/bin/netstat -neopa`` command output.
+    Parsing the ``netstat -neopa`` command output.
 
     Example output::
 
@@ -502,13 +527,13 @@ class Netstat(CommandParser):
     @property
     def listening_pid(self):
         """
-            Find PIDs of all LISTEN processes
+        Find PIDs of all LISTEN processes
 
-            Returns:
-                dict: If any are found, they are returned in a dictionary
-                following the format::
+        Returns:
+            dict: If any are found, they are returned in a dictionary
+            following the format::
 
-                    {'pid': ("addr": ip_address, 'port': port, 'name': process_name)}
+                {'pid': ("addr": ip_address, 'port': port, 'name': process_name)}
         """
         pids = {}
         # Is it possible to have a machine that has no active connections?
@@ -563,14 +588,10 @@ class Netstat(CommandParser):
             search_list = []
             if isinstance(kwargs['search_list'], list):
                 # Compile a list from matching strings
-                search_list = [
-                    l
-                    for l in kwargs['search_list']
-                    if l in NETSTAT_SECTION_ID
-                ]
+                search_list = [l for l in kwargs['search_list'] if l in NETSTAT_SECTION_ID]
             elif (
-                isinstance(kwargs['search_list'], str) and
-                kwargs['search_list'] in NETSTAT_SECTION_ID
+                isinstance(kwargs['search_list'], str)
+                and kwargs['search_list'] in NETSTAT_SECTION_ID
             ):
                 # Just use this string
                 search_list = [kwargs['search_list']]
@@ -583,9 +604,7 @@ class Netstat(CommandParser):
 
         found = []
         for l in search_list:
-            found.extend(keyword_search(
-                self.datalist[l], parent=self._dataobjs[l], **kwargs
-            ))
+            found.extend(keyword_search(self.datalist[l], parent=self._dataobjs[l], **kwargs))
         return found
 
 
@@ -634,37 +653,37 @@ class Netstat_I(CommandParser):
         table = parse_delimited_table(content, heading_ignore=['Iface'])
         self.data = [dict((k, v) for (k, v) in item.items()) for item in table]
         for entry in self.data:
-            self._group_by_iface[entry["Iface"]] = \
-                dict((k, v) for (k, v) in entry.items() if k != 'Iface')
+            self._group_by_iface[entry["Iface"]] = dict(
+                (k, v) for (k, v) in entry.items() if k != 'Iface'
+            )
         return
 
 
-@parser(Specs.ss)
-class SsTULPN(CommandParser):
+class Ss(CommandParser, list):
     """
-    Parse the output of the ``/usr/sbin/ss -tulpn`` command.
+    Parse the output of the ``ss -p...`` command.
 
     This class parse the input as a table with header:
         "Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"
 
     Sample input data looks like::
 
-        Netid  State      Recv-Q Send-Q Local Address:Port               Peer Address:Port
-        udp    UNCONN     0      0                  *:55898                 *:*
-        udp    UNCONN     0      0          127.0.0.1:904                   *:*                   users:(("rpc.statd",pid=29559,fd=7))
-        udp    UNCONN     0      0                  *:111                   *:*                   users:(("rpcbind",pid=953,fd=9))
-        udp    UNCONN     0      0                 :::37968                :::12345               users:(("rpc.statd",pid=29559,fd=10))
-        tcp    LISTEN     0      128                *:111                   *:*                   users:(("rpcbind",pid=1139,fd=5),("systemd",pid=1,fd=41))
+        Netid  State   Recv-Q Send-Q Local Address:Port  Peer Address:Port   Process
+        udp    UNCONN  0      0                  *:55898            *:*
+        udp    UNCONN  0      0          127.0.0.1:904              *:*      users:(("rpc.statd",pid=29559,fd=7))
+        udp    UNCONN  0      0                  *:111              *:*      users:(("rpcbind",pid=953,fd=9))
+        udp    UNCONN  0      0                 :::37968           :::12345  users:(("rpc.statd",pid=29559,fd=10))
+        tcp    LISTEN  0      128                *:111              *:*      users:(("rpcbind",pid=1139,fd=5),("systemd",pid=1,fd=41))
 
     Examples:
 
         >>> type(ss)
-        <class 'insights.parsers.netstat.SsTULPN'>
-        >>> sorted(ss.data[1].keys())  # Rows stored by column headings
-        ['Local-Address-Port', 'Netid', 'Peer-Address-Port', 'Process', 'Recv-Q', 'Send-Q', 'State']
-        >>> ss.data[0]['Local-Address-Port']
+        <class 'insights.parsers.netstat.Ss'>
+        >>> len(ss[1].keys())
+        7
+        >>> ss[0]['Local-Address-Port']
         '*:55898'
-        >>> ss.data[0]['State']
+        >>> ss[0]['State']
         'UNCONN'
         >>> rpcbind = ss.get_service("rpcbind")  # All connections opened by rpcbind
         >>> len(rpcbind)
@@ -686,74 +705,62 @@ class SsTULPN(CommandParser):
         True
     """
 
+    SS_TABLE_HEADER = ["Netid State Recv-Q Send-Q Local-Address-Port Peer-Address-Port Process"]
+
     def parse_content(self, content):
         # Use headings without spaces and colons
-        SSTULPN_TABLE_HEADER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
-        content = [line for line in content if (('UNCONN' in line) or ('LISTEN' in line))]
-        self.data = parse_delimited_table(SSTULPN_TABLE_HEADER + content)
+        self.extend(parse_delimited_table(self.SS_TABLE_HEADER + content[1:]))
+        del content
 
     def get_service(self, service):
-        return [l for l in self.data if l.get("Process", None) and service in l["Process"]]
+        return [l for l in self if l.get("Process", None) and service in l["Process"]]
 
     def get_localport(self, port):
         list_conn = []
-        for line in self.data:
+        for line in self:
             local_port = line.get('Local-Address-Port')
-            if local_port and ':*' not in local_port and\
-                    int(port) == int(local_port.split(':')[-1]):
+            if (
+                local_port
+                and ':*' not in local_port
+                and int(port) == int(local_port.split(':')[-1])
+            ):
                 list_conn.append(line)
         return list_conn
 
     def get_peerport(self, port):
         list_conn = []
-        for line in self.data:
+        for line in self:
             peer_port = line.get('Peer-Address-Port')
-            if peer_port and ':*' not in peer_port and\
-                    int(port) == int(peer_port.split(':')[-1]):
+            if peer_port and ':*' not in peer_port and int(port) == int(peer_port.split(':')[-1]):
                 list_conn.append(line)
         return list_conn
 
     def get_port(self, port):
         return self.get_localport(port) + self.get_peerport(port)
 
+    @property
+    def data(self):
+        """
+        .. warning::
+
+            Attribute "data" is deprecated. The parser result is a list instead.
+        """
+        return self
+
 
 @parser(Specs.ss)
-class SsTUPNA(SsTULPN):
+class SsTUPNA(Ss):
     """
-    Parse the output of the ``/usr/sbin/ss -tupna`` command.
+    Parse the output of the ``ss -tupna`` command.
 
-    This class parse the input as a table with header:
-        "Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"
-
-    Sample input data looks like::
-
-        Netid State      Recv-Q Send-Q    Local Address:Port    Peer Address:Port
-        tcp   UNCONN     0      0                     *:68                 *:*      users:(("dhclient",1171,6))
-        tcp   LISTEN     0      100           127.0.0.1:25                 *:*      users:(("master",1326,13))
-        tcp   ESTAB      0      0         192.168.0.106:22     192.168.0.101:59232  users:(("sshd",11427,3))
-        tcp   ESTAB      0      0         192.168.0.106:739    192.168.0.105:2049
-        tcp   LISTEN     0      128                  :::111               :::*      users:(("rpcbind",483,11))
-
-    Examples:
-
-        >>> type(ssa)
-        <class 'insights.parsers.netstat.SsTUPNA'>
-        >>> sorted(ssa.data[2].items())
-        [('Local-Address-Port', '192.168.0.106:22'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.101:59232'), ('Process', 'users:(("sshd",11427,3))'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
-        >>> sorted(ssa.get_service("sshd")[0].items())  # All connections opened by rpcbind
-        [('Local-Address-Port', '192.168.0.106:22'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.101:59232'), ('Process', 'users:(("sshd",11427,3))'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
-        >>> sorted(ssa.get_port("2049")[0].items())  # Both local and peer port searched
-        [('Local-Address-Port', '192.168.0.106:739'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.105:2049'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
-        >>> sorted(ssa.get_localport("739")[0].items())  # local port searched
-        [('Local-Address-Port', '192.168.0.106:739'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.105:2049'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
-        >>> sorted(ssa.get_peerport("59232")[0].items())  # peer port searched
-        [('Local-Address-Port', '192.168.0.106:22'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.101:59232'), ('Process', 'users:(("sshd",11427,3))'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
+    Refer to the super class :py:class:`Ss` for details.
     """
 
-    def parse_content(self, content):
-        # Use headings without spaces and colons
-        SSTUPNA_TABLE_HEADER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
-        self.data = parse_delimited_table(SSTUPNA_TABLE_HEADER + content[1:])
+    pass
+
+
+# SsTULPN is SsTUPNA
+SsTULPN = SsTUPNA
 
 
 @parser(Specs.proc_netstat)
