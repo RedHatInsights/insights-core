@@ -56,7 +56,7 @@ Requires:       python3-six
 %endif
 
 %if 0%{?with_selinux}
-Requires:       ((%{name}-selinux = %{version}-%{release}) if selinux-policy-%{selinuxtype})
+Requires:       ((%{name}-selinux >= %{version}-%{release}) if selinux-policy-%{selinuxtype})
 %endif
 
 %description
