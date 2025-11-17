@@ -5,7 +5,7 @@ import os
 import pytest
 
 from insights.client import InsightsClient
-from insights.client.client import get_file_handler, RotatingFileHandlerWithUMask, FileHandlerWithUMask
+from insights.client.client import upload, get_file_handler, RotatingFileHandlerWithUMask, FileHandlerWithUMask
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
 from insights.client.connection import InsightsConnection
@@ -912,3 +912,22 @@ def test_checkin_offline():
     result = client.checkin()
     assert result is None
     client.connection.checkin.assert_not_called()
+
+@patch('insights.client.client.os.chmod')
+@patch('insights.client.client.write_to_disk')
+@patch('insights.client.client.determine_hostname')
+@patch("insights.client.client.logger")
+def test_no_uploads_after_successful_upload(logger):
+    '''
+    Test that no further upload attempts are made after a successful upload.
+    '''
+    config = InsightsConfig(legacy_upload=False, retries=3, register=False)
+
+    mock_pconn = Mock()
+    mock_pconn.upload_archive.return_value = Mock(status_code=200)
+
+    upload(config, mock_pconn, None, None)
+
+    mock_pconn.upload_archive.assert_called_once()
+    assert mock_pconn.upload_archive.return_value.status_code == 200
+    logger.info.assert_called_with("Successfully uploaded report for %s.", ANY)
