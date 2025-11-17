@@ -455,6 +455,7 @@ class DefaultSpecs(Specs):
     kexec_crash_size = simple_file("/sys/kernel/kexec_crash_size")
     kpatch_list = simple_command("/usr/sbin/kpatch list")
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
+    krb5_localauth_plugin = simple_file("/var/lib/sss/pubconf/krb5.include.d/localauth_plugin")
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
     lastupload = glob_file(
         ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
