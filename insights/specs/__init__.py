@@ -380,6 +380,7 @@ class Specs(SpecSet):
     keystone_log = RegistryPoint(filterable=True)
     kpatch_list = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     krb5 = RegistryPoint(multi_output=True)
+    krb5_localauth_plugin = RegistryPoint()
     ksmstate = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     ktimer_lockless = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     kubelet_conf = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])

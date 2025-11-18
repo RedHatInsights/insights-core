@@ -1,3 +1,6 @@
+import doctest
+
+from insights.combiners import krb5
 from insights.combiners.krb5 import AllKrb5Conf
 from insights.parsers.krb5 import Krb5Configuration
 from insights.tests import context_wrap
@@ -90,6 +93,27 @@ KRB5CONFIG4 = """
 includedir /var/lib/sss/pubconf/krb5.include.d/
 """.strip()
 
+KRB5CONFIG_DOC1 = """
+includedir /etc/krb5.conf.d/
+include /etc/krb5test.conf
+module /etc/krb5test.conf:residual
+
+[logging]
+    default = FILE:/var/log/krb5libs.log
+    kdc = FILE:/var/log/krb5kdc.log
+""".strip()
+
+KRB5CONFIG_DOC2 = """
+[logging]
+    default = FILE:/var/log/krb5.log
+    kdc = FILE:/var/log/krb5.log
+    admin_server = FILE:/var/log/kadmind.log
+
+[realms]
+    dns_lookup_realm = false
+    default_ccache_name = KEYRING:persistent:%{uid}
+""".strip()
+
 
 def test_active_krb5_nest():
     krb51 = Krb5Configuration(context_wrap(KRB5CONFIG, path='/etc/krb5.conf'))
@@ -124,6 +148,16 @@ def test_active_krb5_nest():
 
 def test_active_krb5_nest_2():
     krb51 = Krb5Configuration(context_wrap(KRB5CONFIG, path='/etc/krb5.conf'))
-    krb52 = Krb5Configuration(context_wrap(KRB5CONFIG4, path='/etc/krb5.conf.d/enable_sssd_conf_dir'))
+    krb52 = Krb5Configuration(
+        context_wrap(KRB5CONFIG4, path='/etc/krb5.conf.d/enable_sssd_conf_dir')
+    )
     result = AllKrb5Conf([krb51, krb52])
     assert result.includedir == ['/etc/krb5.conf.d/', '/var/lib/sss/pubconf/krb5.include.d/']
+
+
+def test_doc_examples():
+    krb51 = Krb5Configuration(context_wrap(KRB5CONFIG_DOC1, path='/etc/krb5.conf'))
+    krb52 = Krb5Configuration(context_wrap(KRB5CONFIG_DOC2, path='/etc/krb5.conf.d/krb5_more.conf'))
+    env = {'all_krb5': AllKrb5Conf([krb51, krb52])}
+    failed, total = doctest.testmod(krb5, globs=env)
+    assert failed == 0
