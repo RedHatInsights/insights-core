@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.9
+Version:        3.6.9.3
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,11 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Tue Nov 18 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.9.3-1
+- spec: new spec and parser for krb5_localauth_plugin (#4632)
+  (xiangceliu@redhat.com)
+- chore(uname): Support RHEL 9.7 in Uname (#4631) (jiazhang@redhat.com)
+
 * Thu Oct 30 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.9-1
 - Alter malware code to use locally stored yara rules for the 3rd party feature
   (#4610) (63891960+mtclinton@users.noreply.github.com)

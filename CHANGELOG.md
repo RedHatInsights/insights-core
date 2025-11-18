@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.9.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.9.3) (2025-11-18)
+
+- spec: new spec and parser for krb5_localauth_plugin ([PR 4632](https://github.com/RedHatInsights/insights-core/pull/4632))
+- chore(uname): Support RHEL 9.7 in Uname ([PR 4631](https://github.com/RedHatInsights/insights-core/pull/4631))
+
 # [insights-core-3.6.9](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.9) (2025-10-30)
 
 - Alter malware code to use locally stored yara rules for the 3rd party feature ([PR 4610](https://github.com/RedHatInsights/insights-core/pull/4610))
