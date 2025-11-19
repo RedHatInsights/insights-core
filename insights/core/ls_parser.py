@@ -217,14 +217,18 @@ def parse(lines, root=None):
     """
     doc = {}
     entries = []
+    error_lines = []
     name = None
     total = None
     for line in lines:
         line = line.strip()
         # Skip empty line and non-exist dir line
-        if not line or ': No such file or directory' in line:
+        if not line:
             continue
-        if line and line[0] == "/" and line[-1] == ":":
+        elif "ls: cannot access" in line or "No such file or directory" in line:
+            error_lines.append(line)
+            continue
+        elif line[0] == "/" and line[-1] == ":":
             if name is None:
                 name = line[:-1]
                 if entries:
@@ -246,6 +250,7 @@ def parse(lines, root=None):
     name = name or root
     total = total if total is not None else len(entries)
     doc[name] = Directory(name, total, entries)
+    doc.update(error_lines=error_lines) if error_lines else None
     return doc
 
 
