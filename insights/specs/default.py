@@ -728,6 +728,7 @@ class DefaultSpecs(Specs):
     readlink_e_shift_cert_server = simple_command(
         "/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem"
     )
+    rear_default_conf = simple_file("/usr/share/rear/conf/default.conf")
     rear_local_conf = simple_file("/etc/rear/local.conf")
     redhat_release = simple_file("/etc/redhat-release")
     repquota_agnpuv = simple_command("/usr/sbin/repquota -agnpuv")
