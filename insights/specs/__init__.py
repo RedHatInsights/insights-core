@@ -805,7 +805,6 @@ class Specs(SpecSet):
     sssd_config = RegistryPoint()
     sssd_conf_d = RegistryPoint(multi_output=True)
     sssd_logs = RegistryPoint(multi_output=True, filterable=True)
-    sys_block_queue_stable_writes = RegistryPoint(multi_output=True)
     subscription_manager_facts = RegistryPoint(filterable=True)
     subscription_manager_id = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     subscription_manager_installed_product_ids = RegistryPoint(
@@ -827,6 +826,8 @@ class Specs(SpecSet):
     swift_log = RegistryPoint(filterable=True)
     swift_object_expirer_conf = RegistryPoint()
     swift_proxy_server_conf = RegistryPoint()
+    sys_block_queue_stable_writes = RegistryPoint(multi_output=True)
+    sys_block_queue_max_segment_size = RegistryPoint(multi_output=True)
     sys_fs_cgroup_memory_tasks_number = RegistryPoint(
         no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
