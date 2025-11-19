@@ -133,6 +133,7 @@ rhel_release_map = {
     "5.14.0-611": "9.7",
     # RHEL 10
     "6.12.0-55": "10.0",
+    "6.12.0-124": "10.1",
 }
 
 release_to_kernel_map = dict((v, k) for k, v in rhel_release_map.items())
