@@ -4,14 +4,15 @@ krb5 configuration
 The krb5 files are normally available to rules as a list of
 Krb5Configuration objects.
 """
+
 from copy import deepcopy
-from insights.core import LegacyItemAccess
 from insights.core.plugins import combiner
-from insights.parsers.krb5 import Krb5Configuration, _handle_krb5_bool
+from insights.parsers.krb5 import Krb5Configuration
+from insights.util import parse_bool
 
 
 @combiner(Krb5Configuration)
-class AllKrb5Conf(LegacyItemAccess):
+class AllKrb5Conf(dict):
     """
     Combiner for accessing all the krb5 configuration files, the format is dict.
     There may be multi files for krb5 configuration, and the main config file is
@@ -44,13 +45,14 @@ class AllKrb5Conf(LegacyItemAccess):
                 default_ccache_name = KEYRING:persistent:%{uid}
 
     Examples:
-        >>> all_krb5 = shared[AllKrb5Conf]
+        >>> type(all_krb5)
+        <class 'insights.combiners.krb5.AllKrb5Conf'>
         >>> all_krb5.include
         ['/etc/krb5test.conf']
         >>> all_krb5.sections()
         ['logging', 'realms']
         >>> all_krb5.options('logging')
-        ['default', 'kdc', 'admin_server']
+        ['admin_server', 'default', 'kdc']
         >>> all_krb5['logging']['kdc']
         'FILE:/var/log/krb5kdc.log'
         >>> all_krb5.has_option('logging', 'admin_server')
@@ -58,7 +60,7 @@ class AllKrb5Conf(LegacyItemAccess):
         >>> all_krb5['realms']['dns_lookup_realm']
         'false'
         >>> all_krb5.files
-        ['krb5.conf', 'test.conf', 'test2.conf']
+        ['krb5.conf', 'krb5_more.conf']
 
     Attributes:
         includedir (list): The directory list that `krb5.conf` includes via
@@ -74,8 +76,8 @@ class AllKrb5Conf(LegacyItemAccess):
         realms (set): realm names from [realms] block
 
     """
+
     def __init__(self, krb5configs):
-        self.data = {}
         main_data = {}
         self.includedir = []
         self.include = []
@@ -85,21 +87,21 @@ class AllKrb5Conf(LegacyItemAccess):
         for krb5_parser in krb5configs:
             self.files.append(krb5_parser.file_name)
             if krb5_parser.file_path == "/etc/krb5.conf":
-                main_data = krb5_parser.data
+                main_data = krb5_parser
                 self.includedir = krb5_parser.includedir
                 self.include = krb5_parser.include
                 self.module = krb5_parser.module
             else:
                 self.includedir.extend(krb5_parser.includedir)
-                dict_deep_merge(self.data, krb5_parser.data)
+                _dict_deep_merge(self, krb5_parser)
 
         # Same options in same section from other configuration files will be covered by the option
         # from main configuration, but different options in same section will be kept.
         for key, value in main_data.items():
-            if key in self.data.keys():
-                self.data[key].update(value)
+            if key in self.keys():
+                self[key].update(value)
             else:
-                self.data[key] = value
+                self[key] = value
 
         def _getbool(option, default=None):
             if not self.has_option("libdefaults", option):
@@ -119,7 +121,8 @@ class AllKrb5Conf(LegacyItemAccess):
             for name, value in r.items():
                 if (
                     # realm entries must be dicts
-                    isinstance(value, dict) and
+                    isinstance(value, dict)
+                    and
                     # realm names look like "UPPER-CASE.COM"
                     not any(c.islower() or c == "_" for c in name)
                 ):
@@ -131,40 +134,48 @@ class AllKrb5Conf(LegacyItemAccess):
         """
         Return a list of section names.
         """
-        return self.data.keys()
+        return sorted(self.keys())
 
     def has_section(self, section):
         """
         Indicate whether the named section is present in the configuration.
         Return True if the given section is present, and False if not present.
         """
-        return section in self.data
+        return section in self
 
     def options(self, section):
         """
         Return a list of option names for the given section name.
         """
-        return self.data[section].keys() if self.has_section(section) else []
+        return sorted(self[section].keys()) if self.has_section(section) else []
 
     def has_option(self, section, option):
         """
         Check for the existence of a given option in a given section.
         Return True if the given option is present, and False if not present.
         """
-        if section not in self.data:
-            return False
-        return option in self.data[section]
+        return False if section not in self else option in self[section]
 
     def getboolean(self, section, option):
         """Parse option as bool
 
         Returns None is not a krb5.conf boolean string.
         """
-        value = self.data[section][option]
-        return _handle_krb5_bool(value)
+        return parse_bool(self[section][option], default=None)
+
+    @property
+    def data(self):
+        """
+        Keep backward compatibility. The "data" atrribute is deprecated,
+        the parser itself is dictionary.
+
+        .. warning::
+            This will be removed from 3.8.0.
+        """
+        return self
 
 
-def dict_deep_merge(tgt, src):
+def _dict_deep_merge(tgt, src):
     """
     Utility function to merge the source dictionary `src` to the target
     dictionary recursively
@@ -179,7 +190,7 @@ def dict_deep_merge(tgt, src):
     for k, v in src.items():
         if k in tgt:
             if isinstance(tgt[k], dict) and isinstance(v, dict):
-                dict_deep_merge(tgt[k], v)
+                _dict_deep_merge(tgt[k], v)
             else:
                 tgt[k].extend(deepcopy(v))
         else:

@@ -453,6 +453,7 @@ class DefaultSpecs(Specs):
     kexec_crash_size = simple_file("/sys/kernel/kexec_crash_size")
     kpatch_list = simple_command("/usr/sbin/kpatch list")
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
+    krb5_localauth_plugin = simple_file("/var/lib/sss/pubconf/krb5.include.d/localauth_plugin")
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
     lastupload = glob_file(
         ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
@@ -499,6 +500,7 @@ class DefaultSpecs(Specs):
         '/bin/ls -laRZ %s', ls.list_with_laRZ, save_as='ls_laRZ', keep_rc=True
     )
     ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, save_as='ls_laZ', keep_rc=True)
+    ls_ldH = command_with_args('/bin/ls -ldH %s', ls.list_with_ldH, save_as='ls_ldH', keep_rc=True)
     lsattr = command_with_args("/bin/lsattr %s", lsattr.paths_to_lsattr)
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command(
@@ -724,6 +726,7 @@ class DefaultSpecs(Specs):
     readlink_e_shift_cert_server = simple_command(
         "/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem"
     )
+    rear_default_conf = simple_file("/usr/share/rear/conf/default.conf")
     rear_local_conf = simple_file("/etc/rear/local.conf")
     redhat_release = simple_file("/etc/redhat-release")
     repquota_agnpuv = simple_command("/usr/sbin/repquota -agnpuv")

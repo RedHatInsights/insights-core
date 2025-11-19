@@ -162,3 +162,15 @@ def files_dirs_number(broker):
             relative_path='insights_datasources/files_dirs_number',
         )
     raise SkipComponent
+
+
+@datasource(HostContext, optional=[FSTab])
+def list_with_ldH(broker):
+    filters = set(_list_items(Specs.ls_ldH_items))
+    if 'fstab_mounted.dirs' in filters and FSTab in broker:
+        filters.remove('fstab_mounted.dirs')
+        for mntp in broker[FSTab].mounted_on.keys():
+            filters.add(mntp) if mntp.startswith('/') else None
+    if filters:
+        return ' '.join(sorted(filters))
+    raise SkipComponent
