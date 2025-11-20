@@ -2,6 +2,25 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.10](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.10) (2025-11-20)
+
+- fix(spec): keyctl_show should be a simple_command ([PR 4637](https://github.com/RedHatInsights/insights-core/pull/4637))
+- fix(spec): ignore errors when collecting bootloader data ([PR 4638](https://github.com/RedHatInsights/insights-core/pull/4638))
+- chore: Update the base of SsTUPNA ([PR 4639](https://github.com/RedHatInsights/insights-core/pull/4639))
+- Add new parser & datasource for ls -ldZ ([PR 4646](https://github.com/RedHatInsights/insights-core/pull/4646))
+- fix: enhance IlabModuleList parser on content change ([PR 4633](https://github.com/RedHatInsights/insights-core/pull/4633))
+- Add spec rear_default_conf ([PR 4627](https://github.com/RedHatInsights/insights-core/pull/4627))
+- chore: Uname supports RHEL 10.1 ([PR 4644](https://github.com/RedHatInsights/insights-core/pull/4644))
+- spec: new datasource & parser for ls -ldH ([PR 4640](https://github.com/RedHatInsights/insights-core/pull/4640))
+- chore(spec): add new spec bootctl_status for analytics ([PR 4616](https://github.com/RedHatInsights/insights-core/pull/4616))
+- chore(spec): add new spec mokutil_list_enrolled for analytics ([PR 4615](https://github.com/RedHatInsights/insights-core/pull/4615))
+- chore(spec): add new spec keyctl_show for analytics ([PR 4614](https://github.com/RedHatInsights/insights-core/pull/4614))
+
+# [insights-core-3.6.9.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.9.3) (2025-11-18)
+
+- spec: new spec and parser for krb5_localauth_plugin ([PR 4632](https://github.com/RedHatInsights/insights-core/pull/4632))
+- chore(uname): Support RHEL 9.7 in Uname ([PR 4631](https://github.com/RedHatInsights/insights-core/pull/4631))
+
 # [insights-core-3.6.9](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.9) (2025-10-30)
 
 - Alter malware code to use locally stored yara rules for the 3rd party feature ([PR 4610](https://github.com/RedHatInsights/insights-core/pull/4610))
