@@ -451,7 +451,7 @@ class DefaultSpecs(Specs):
     kernel_crash_kexec_post_notifiers = simple_file(
         "/sys/module/kernel/parameters/crash_kexec_post_notifiers"
     )
-    keyctl_show = simple_file("/usr/bin/keyctl show %:.platform", keep_rc=True)
+    keyctl_show = simple_command("/usr/bin/keyctl show %:.platform", keep_rc=True)
     kexec_crash_size = simple_file("/sys/kernel/kexec_crash_size")
     kpatch_list = simple_command("/usr/sbin/kpatch list")
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
