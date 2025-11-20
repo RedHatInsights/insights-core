@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.9
+Version:        3.6.10
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,25 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Nov 20 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.10-1
+- fix(spec): keyctl_show should be a simple_command (#4637)
+  (xiangceliu@redhat.com)
+- fix(spec): ignore errors when collecting bootloader data (#4638)
+  (xiangceliu@redhat.com)
+- chore: Update the base of SsTUPNA (#4639) (xiangceliu@redhat.com)
+- Add new parser & datasource for ls -ldZ (#4646) (986222045@qq.com)
+- fix: enhance IlabModuleList parser on content change (#4633)
+  (xiaoxwan@redhat.com)
+- Add spec rear_default_conf (#4627) (jiazhang@redhat.com)
+- chore: Uname supports RHEL 10.1 (#4644) (xiangceliu@redhat.com)
+- spec: new datasource & parser for ls -ldH (#4640) (986222045@qq.com)
+- chore(spec): add new spec bootctl_status for analytics (#4616)
+  (xiangceliu@redhat.com)
+- chore(spec): add new spec mokutil_list_enrolled for analytics (#4615)
+  (xiangceliu@redhat.com)
+- chore(spec): add new spec keyctl_show for analytics (#4614)
+  (xiangceliu@redhat.com)
+
 * Thu Oct 30 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.9-1
 - Alter malware code to use locally stored yara rules for the 3rd party feature
   (#4610) (63891960+mtclinton@users.noreply.github.com)
