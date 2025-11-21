@@ -16,6 +16,7 @@ for gathering data in myriad ways and providing a reliable object model for it.
     >>> lower <= rpms.newest("bash") < upper
     True
 """
+
 from __future__ import print_function
 
 import logging
@@ -27,23 +28,54 @@ import yaml
 from collections import defaultdict
 from contextlib import contextmanager
 
-from insights.core import (CommandParser, ContainerParser, IniConfigFile, JSONParser, LegacyItemAccess,  # noqa: F401
-                           LogFileOutput, Parser, Scannable, SysconfigOptions, Syslog, XMLParser, YAMLParser,  # noqa: F401
-                           dr, taglang)
+from insights.core import (
+    CommandParser,
+    ContainerParser,
+    IniConfigFile,
+    JSONParser,
+    LegacyItemAccess,
+    LogFileOutput,
+    Parser,
+    Scannable,
+    SysconfigOptions,
+    Syslog,
+    XMLParser,
+    YAMLParser,
+    dr,
+    taglang,
+)
 from insights.core.archives import COMPRESSION_TYPES, extract
-from insights.core.context import (ClusterArchiveContext, ExecutionContext, HostContext,  # noqa: F401
-                                   HostArchiveContext, SerializedArchiveContext)
-from insights.core.exceptions import InvalidArchive, InvalidContentType, SkipComponent  # noqa: F401
-from insights.core.filters import add_filter, apply_filters, get_filters  # noqa: F401
-from insights.core.hydration import create_context, initialize_broker  # noqa: F401
-from insights.core.plugins import (combiner, condition, datasource, fact, incident, make_fail, make_fingerprint,  # noqa: F401
-                                   make_info, make_metadata, make_none, make_pass, make_response, metadata,
-                                   parser, rule)
+from insights.core.context import (
+    ClusterArchiveContext,
+    ExecutionContext,
+    HostArchiveContext,
+    HostContext,
+    SerializedArchiveContext,
+)
+from insights.core.exceptions import InvalidArchive, InvalidContentType, SkipComponent
+from insights.core.filters import add_filter, apply_filters, get_filters
+from insights.core.hydration import create_context, initialize_broker
+from insights.core.plugins import (
+    combiner,
+    condition,
+    datasource,
+    fact,
+    incident,
+    make_fail,
+    make_fingerprint,
+    make_info,
+    make_metadata,
+    make_none,
+    make_pass,
+    make_response,
+    metadata,
+    parser,
+    rule,
+)
 from insights.core.spec_factory import RawFileProvider, TextFileProvider
 from insights.formats import Formatter as FormatterClass, get_formatter
-from insights.parsers import get_active_lines  # noqa: F401
-from insights.parsers.ls import FileListing  # noqa: F401
-from insights.util import defaults  # noqa: F401
+from insights.parsers import get_active_lines
+from insights.util import defaults
 
 log = logging.getLogger(__name__)
 
@@ -58,9 +90,9 @@ _COLOR = "auto"
 
 
 def get_nvr():
-    return "{0}-{1}-{2}".format(package_info["NAME"],
-                                package_info["VERSION"],
-                                package_info["RELEASE"])
+    return "{0}-{1}-{2}".format(
+        package_info["NAME"], package_info["VERSION"], package_info["RELEASE"]
+    )
 
 
 @contextmanager
@@ -73,6 +105,7 @@ def get_pool(parallel, prefix, kwargs):
     if parallel:
         try:
             from concurrent.futures import ThreadPoolExecutor
+
             with ThreadPoolExecutor(thread_name_prefix=prefix, **kwargs) as pool:
                 yield pool
         except ImportError:
@@ -107,6 +140,7 @@ def process_dir(broker, root, graph, context, inventory=None, parallel=False):
 
     if isinstance(ctx, ClusterArchiveContext):
         from .core.cluster import process_cluster
+
         archives = [f for f in ctx.all_files if f.endswith(COMPRESSION_TYPES)]
         return process_cluster(graph, archives, broker=broker, inventory=inventory)
 
@@ -157,7 +191,9 @@ def _run(broker, graph=None, root=None, context=None, inventory=None, parallel=F
         return process_dir(broker, root, graph, context, inventory=inventory, parallel=parallel)
     else:
         with extract(root) as ex:
-            return process_dir(broker, ex.tmp_dir, graph, context, inventory=inventory, parallel=parallel)
+            return process_dir(
+                broker, ex.tmp_dir, graph, context, inventory=inventory, parallel=parallel
+            )
 
 
 def load_default_plugins():
@@ -267,34 +303,64 @@ def _load_context(path):
     return dr.get_component(path)
 
 
-def run(component=None, root=None, print_summary=False, context=None, inventory=None, print_component=None,
-        store_skips=False):
+def run(
+    component=None,
+    root=None,
+    print_summary=False,
+    context=None,
+    inventory=None,
+    print_component=None,
+    store_skips=False,
+):
     args = None
     formatters = None
 
     if print_summary:
         import argparse
         import logging
+
         p = argparse.ArgumentParser(add_help=False)
         p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
-        p.add_argument("-b", "--bare",
-                       help='Specify "spec=filename[,spec=filename,...]" to use the bare file for the spec', default="")
+        p.add_argument(
+            "-b",
+            "--bare",
+            help='Specify "spec=filename[,spec=filename,...]" to use the bare file for the spec',
+            default="",
+        )
         p.add_argument("-c", "--config", help="Configure components.")
         p.add_argument("-f", "--format", help="Output format.", default="insights.formats.text")
         p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
         p.add_argument("-k", "--pkg-query", help="Expression to select rules by package.")
-        p.add_argument("-p", "--plugins", default="",
-                       help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
+        p.add_argument(
+            "-p",
+            "--plugins",
+            default="",
+            help="Comma-separated list without spaces of package(s) or module(s) containing plugins.",
+        )
         p.add_argument("-s", "--syslog", help="Log results to syslog.", action="store_true")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
         p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
-        p.add_argument("--color", default="auto", choices=["always", "auto", "never"], metavar="[=WHEN]",
-                       help="Choose if and how the color encoding is outputted. When is 'always', 'auto', or 'never'.")
-        p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
-        p.add_argument("--no-load-default", help="Don't load the default plugins.", action="store_true")
+        p.add_argument(
+            "--color",
+            default="auto",
+            choices=["always", "auto", "never"],
+            metavar="[=WHEN]",
+            help="Choose if and how the color encoding is outputted. When is 'always', 'auto', or 'never'.",
+        )
+        p.add_argument(
+            "--context",
+            help="Execution Context. Defaults to HostContext if an archive isn't passed.",
+        )
+        p.add_argument(
+            "--no-load-default", help="Don't load the default plugins.", action="store_true"
+        )
         p.add_argument("--parallel", help="Execute rules in parallel.", action="store_true")
-        p.add_argument("--show-skips", help="Capture skips in the broker for troubleshooting.", action="store_true",
-                       default=False)
+        p.add_argument(
+            "--show-skips",
+            help="Capture skips in the broker for troubleshooting.",
+            action="store_true",
+            default=False,
+        )
         p.add_argument("--tags", help="Expression to select rules by tag.")
 
         class Args(object):
@@ -335,7 +401,9 @@ def run(component=None, root=None, print_summary=False, context=None, inventory=
             formatter = Formatter(args)
             formatters.append(formatter)
 
-        logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO if args.verbose else logging.ERROR)
+        logging.basicConfig(
+            level=logging.DEBUG if args.debug else logging.INFO if args.verbose else logging.ERROR
+        )
         context = _load_context(args.context) or context
         inventory = args.inventory
 
@@ -349,7 +417,7 @@ def run(component=None, root=None, print_summary=False, context=None, inventory=
 
         if args.config:
             with open(args.config) as f:
-                config = (yaml.safe_load(f))
+                config = yaml.safe_load(f)
                 packages_loaded = load_packages(config.get('packages', []))
                 plugins.extend(packages_loaded)
                 apply_default_enabled(config)
@@ -410,7 +478,14 @@ def run(component=None, root=None, print_summary=False, context=None, inventory=
                 if args.bare:
                     broker = dr.run(graph, broker=broker)
                 else:
-                    broker = _run(broker, graph, root, context=context, inventory=inventory, parallel=args.parallel)
+                    broker = _run(
+                        broker,
+                        graph,
+                        root,
+                        context=context,
+                        inventory=inventory,
+                        parallel=args.parallel,
+                    )
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
@@ -421,7 +496,14 @@ def run(component=None, root=None, print_summary=False, context=None, inventory=
                 if args.bare:
                     broker = dr.run(graph, broker=broker)
                 else:
-                    broker = _run(broker, graph, root, context=context, inventory=inventory, parallel=args.parallel)
+                    broker = _run(
+                        broker,
+                        graph,
+                        root,
+                        context=context,
+                        inventory=inventory,
+                        parallel=args.parallel,
+                    )
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
@@ -431,7 +513,14 @@ def run(component=None, root=None, print_summary=False, context=None, inventory=
                 if args.bare:
                     broker = dr.run(graph, broker=broker)
                 else:
-                    broker = _run(broker, graph, root, context=context, inventory=inventory, parallel=args.parallel)
+                    broker = _run(
+                        broker,
+                        graph,
+                        root,
+                        context=context,
+                        inventory=inventory,
+                        parallel=args.parallel,
+                    )
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
