@@ -1,9 +1,9 @@
 import pytest
 
 try:
-    from unittest.mock import patch
+    from unittest.mock import patch, call
 except Exception:
-    from mock import patch
+    from mock import patch, call
 
 from insights.client.config import InsightsConfig
 
@@ -48,7 +48,7 @@ def test_validate_obfuscation_options_conflict_old_warning(egg, rhel, logger):
     with pytest.raises(ValueError) as ve:
         InsightsConfig(obfuscate=False, obfuscate_hostname=True, _print_errors=True)
     assert 'Option `obfuscate_hostname` requires `obfuscate`' in str(ve.value)
-    logger.warning.assert_called_once_with(
+    logger.warning.assert_called_with(
         'WARNING: `obfuscate` and `obfuscate_hostname` are deprecated, please use `obfuscation_list` instead.'
     )
 
@@ -92,12 +92,19 @@ def test_validate_obfuscation_options_conflict_new(
         obfuscation_list=obfuscation_list,
         _print_errors=True,
     )
-    assert c.obfuscation_list == expected_opt
-    logger.warning.assert_called_once_with(
-        'WARNING: Conflicting options: `obfuscation_list` and `obfuscate`, using: "obfuscation_list={0}".'.format(
-            obfuscation_list
+    logger.warning.assert_has_calls(
+        (
+            call(
+                'WARNING: `obfuscate` and `obfuscate_hostname` are deprecated, please use `obfuscation_list` instead.'
+            ),
+            call(
+                'WARNING: Conflicting options: `obfuscation_list` and `obfuscate`, using: "obfuscation_list={0}".'.format(
+                    obfuscation_list
+                )
+            ),
         )
     )
+    assert c.obfuscation_list == expected_opt
 
 
 @patch('insights.client.config.logger')
