@@ -1,6 +1,6 @@
 from insights.parsers.ls import (
     LSla, LSlaFiltered, LSlan, LSlanFiltered,
-    LSlanL, LSlanR, LSlanRL, LSlaRZ, LSlaZ, LSldH
+    LSlanL, LSlanR, LSlanRL, LSlaRZ, LSlaZ, LSldH, LSldZ
 )
 from insights.tests import context_wrap
 
@@ -300,6 +300,15 @@ brw-rw----. 1 root disk 252,   0 Nov 16 03:19 /dev/vda
 crw-------. 1 root root  10, 137 Nov  6  2024 /dev/vhci
 """
 
+LS_LDZ = """
+dr-xr-xr-x. 5 root root system_u:object_r:boot_t:s0                  4096 May 30 06:57 /boot
+-rw-------. 1 root root system_u:object_r:boot_t:s0                  6658 Dec 20  2023 /boot/grub2/grub.cfg
+lrwxrwxrwx. 1 root root system_u:object_r:device_t:s0                  15 Nov  6  2024 /dev/stderr -> /proc/self/fd/2
+brw-rw----. 1 root disk system_u:object_r:fixed_disk_device_t:s0 252,   0 Nov  7 09:51 /dev/vda
+crw-------. 1 root root system_u:object_r:vhost_device_t:s0       10, 137 Nov  6  2024 /dev/vhci
+-rw-------. 1 root root system_u:object_r:var_log_t:s0             275652 Nov  7 10:20 /var/log/messages
+"""
+
 
 def test_ls_la():
     ls = LSla(context_wrap(LS_LA))
@@ -577,3 +586,23 @@ def test_ls_ldH():
         '/boot/grub2/grub.cfg') == '-rw-------. 1 root root 6658 Dec 20  2023 /boot/grub2/grub.cfg'
     assert ls.raw_entry_of(
         '/dev/stderr') == 'crw--w----. 1 root tty 136, 0 Nov 17 01:28 /dev/stderr'
+
+
+def test_ls_ldZ():
+    ls = LSldZ(context_wrap(LS_LDZ))
+    assert ls.dirs == ['/boot']
+    assert '/boot/grub2/grub.cfg' in ls.files
+    assert len(ls.files) == 3
+    assert '/dev/vda' in ls.specials
+
+    assert ls['entries']['/boot/grub2/grub.cfg']['se_user'] == 'system_u'
+    assert ls['entries']['/boot/grub2/grub.cfg']['se_role'] == 'object_r'
+    assert ls['entries']['/boot/grub2/grub.cfg']['se_type'] == 'boot_t'
+    assert ls['entries']['/boot/grub2/grub.cfg']['se_mls'] == 's0'
+
+    assert ls.raw_entry_of('/dev/vda') == 'brw-rw----. 1 root disk system_u:object_r:fixed_disk_device_t:s0 252, 0 Nov  7 09:51 /dev/vda'
+    assert ls.raw_entry_of('/dev/vdb') is None
+    assert ls.raw_entry_of(
+        '/boot/grub2/grub.cfg') == '-rw-------. 1 root root system_u:object_r:boot_t:s0 6658 Dec 20  2023 /boot/grub2/grub.cfg'
+    assert ls.raw_entry_of(
+        '/dev/stderr') == 'lrwxrwxrwx. 1 root root system_u:object_r:device_t:s0 15 Nov  6  2024 /dev/stderr -> /proc/self/fd/2'

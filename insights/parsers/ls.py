@@ -31,6 +31,12 @@ LSlaRZ - command ``ls -lanRZ <dirs>``
 LSlaZ - command ``ls -lanZ <dirs>``
 -----------------------------------
 
+LSldH - command ``ls -ldH <items>``
+-----------------------------------
+
+LSldZ - command ``ls -ldZ <items>``
+-----------------------------------
+
 LSlHFiles - spec ``ls_files`` -  command ``ls -lH  <files>``
 ------------------------------------------------------------
 """
@@ -567,6 +573,21 @@ class LSldH(FileListingNoHeader):
 
         To parse a specific file, its full path should be added to the
         `ls_ldH_items` spec via `add_filter`.
+
+    """
+    pass
+
+
+@parser(Specs.ls_ldZ)
+class LSldZ(FileListingNoHeader):
+    """
+    Parses output of ``ls -ldZ`` command.
+    See :py:class:`FileListingNoHeadSelinux` for more information.
+
+    .. note::
+
+        To parse a specific file, its full path should be added to the
+        `ls_ldZ_items` spec via `add_filter`.
 
     """
     pass
