@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.9.1
+Version:        3.6.10.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -131,6 +131,37 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Fri Nov 21 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.10.1-1
+- fix(spec): ignore errors when collecting bootloader data (#4636)
+  (xiangceliu@redhat.com)
+- fix(spec): keyctl_show should be a simple_command (#4635)
+  (xiangceliu@redhat.com)
+- Add new parser & datasource for ls -ldZ (#4622) (986222045@qq.com)
+- fix: enhance IlabModuleList parser on content change (#4624)
+  (xiaoxwan@redhat.com)
+- chore(spec): don't need strictly version match (#4634)
+  (xiangceliu@redhat.com)
+- chore: Update the base of SsTUPNA (#4619) (xiangceliu@redhat.com)
+- Add spec rear_default_conf (#4625) (jiazhang@redhat.com)
+- chore: Uname supports RHEL 10.1 (#4643) (xiangceliu@redhat.com)
+- spec: new datasource & parser for ls -ldH (#4620) (986222045@qq.com)
+- fix(script): revert to update setup.py (#4623) (xiangceliu@redhat.com)
+- fix(script): tarbal cannot be found when building for testing (#4621)
+  (xiangceliu@redhat.com)
+- chore(script): change release to 'dev' for PR testing builds (#4618)
+  (xiangceliu@redhat.com)
+- chore(spec): add new spec bootctl_status for analytics (#4613)
+  (xiangceliu@redhat.com)
+- chore(spec): add new spec mokutil_list_enrolled for analytics (#4612)
+  (xiangceliu@redhat.com)
+- chore(spec): add new spec keyctl_show for analytics (#4611)
+  (xiangceliu@redhat.com)
+
+* Tue Nov 18 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.9.3-1
+- spec: new spec and parser for krb5_localauth_plugin (#4632)
+  (xiangceliu@redhat.com)
+- chore(uname): Support RHEL 9.7 in Uname (#4631) (jiazhang@redhat.com)
+
 * Thu Oct 30 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.9.1-1
 - chore(spec): change ip_route_show_table_all to filterable=True (#4597)
   (xiangceliu@redhat.com)
