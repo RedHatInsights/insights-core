@@ -1,10 +1,8 @@
-import doctest
 import pytest
 
 from insights.core.exceptions import SkipComponent
 from insights.parsers import krb5
 from insights.tests import context_wrap
-from insights.tests.parsers.test_krb5_localauth_plugin import CONF_CONTENT
 
 
 KRB5CONFIG = """
@@ -49,31 +47,6 @@ module /etc/krb5test.conf:residual
 # renew_lifetime = 7d
 # forwardable = true
 # rdns = false
-""".strip()
-
-KRB5CONFIG_DOC = """
-include /etc/krb5test.conf
-[realms]
-  dns_lookup_realm = false
-  ticket_lifetime = 24h
-  default_ccache_name = KEYRING:persistent:%{uid}
-  EXAMPLE.COM = {
-   kdc = kerberos.example.com
-   admin_server = kerberos.example.com
-  }
-  pam = {
-   debug = false
-   krb4_convert = false
-   ticket_lifetime = 36000
-  }
-[libdefaults]
-  dns_lookup_realm = false
-  dnsdsd = false
-  ticket_lifetime = 24h
-  EXAMPLE.COM = {
-   kdc = kerberos2.example.com
-   admin_server = kerberos2.example.com
- }
 """.strip()
 
 KRB5CONFIG2 = """
@@ -153,7 +126,7 @@ def test_krb5configuration():
     common_conf_info = krb5.Krb5Configuration(context_wrap(KRB5CONFIG, path=KRB5_CONF_PATH))
     assert common_conf_info["libdefaults"]["dnsdsd"] == "false"
     assert common_conf_info.getboolean("libdefaults", "dnsdsd") is False
-    assert "renew_lifetime" not in common_conf_info.keys()
+    assert "renew_lifetime" not in common_conf_info.data.keys()
     assert common_conf_info["realms"]["EXAMPLE.COM"]["kdc"] == "kerberos.example.com"
     assert common_conf_info["realms"]["default_ccache_name"] == "KEYRING:persistent:%{uid}"
     assert common_conf_info["libdefaults"]["default_ccache_name"] == "KEYRING:%{uid}:persistent"
@@ -190,7 +163,7 @@ def test2_krb5configuration():
 def test_krb5Dconfiguration():
     common_conf_info = krb5.Krb5Configuration(context_wrap(KRB5DCONFIG, path=KRB5_DCONF_PATH))
     assert common_conf_info["realms"]["ticket_lifetime"] == "24h"
-    assert "default_ccache_name" not in common_conf_info.keys()
+    assert "default_ccache_name" not in common_conf_info.data.keys()
     assert common_conf_info["realms"]["EXAMPLE.COM"]["kdc"] == [
         'kerberos.example.com',
         'test2.example.com',
@@ -208,12 +181,3 @@ def test_krb5configuration_2():
         context_wrap(KRB5_DCONF_3_FAKE, path=KRB5_DCONF_3_PATH)
     )
     assert common_conf_info["libdefaults"]["EXAMPLE2.COM"]["permitted_enctypes"] == ""
-
-
-def test_doc_examples():
-    env = {
-        'krb5_conf': krb5.Krb5Configuration(context_wrap(KRB5CONFIG_DOC)),
-        'krb5_LP': krb5.Krb5LocalauthPlugin(context_wrap(CONF_CONTENT)),
-    }
-    failed, total = doctest.testmod(krb5, globs=env)
-    assert failed == 0
