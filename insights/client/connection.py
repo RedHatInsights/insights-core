@@ -77,6 +77,22 @@ def _api_request_failed(exception, message='The Insights API could not be reache
         logger.error(message)
 
 
+def _pkg_name_version(name):
+    if sys.version_info >= (3, 10):
+        import importlib.metadata
+        try:
+            pkg = importlib.metadata.distribution(name)
+            return pkg.name, pkg.version
+        except importlib.metadata.PackageNotFoundError:
+            pass
+    else:
+        import pkg_resources
+        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(name))
+        if pkg is not None:
+            return pkg.project_name, pkg.version
+    return None, None
+
+
 class InsightsConnection(object):
 
     """
@@ -233,11 +249,9 @@ class InsightsConnection(object):
         """
         Generates and returns a string suitable for use as a request user-agent
         """
-        import pkg_resources
-        core_version = "insights-core"
-        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(core_version))
+        pkg, ver = _pkg_name_version("insights-core")
         if pkg is not None:
-            core_version = "%s %s" % (pkg.project_name, pkg.version)
+            core_version = "%s %s" % (pkg, ver)
         else:
             core_version = "Core %s" % package_info["VERSION"]
 
@@ -254,9 +268,9 @@ class InsightsConnection(object):
             parent_process = "unknown"
 
         requests_version = None
-        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse("requests"))
+        pkg, ver = _pkg_name_version("requests")
         if pkg is not None:
-            requests_version = "%s %s" % (pkg.project_name, pkg.version)
+            requests_version = "%s %s" % (pkg, ver)
 
         python_version = "%s %s" % (platform.python_implementation(), platform.python_version())
 
@@ -1101,6 +1115,11 @@ class InsightsConnection(object):
         '''
             Retrieve advisor report
         '''
+        if not os.path.isfile(constants.registered_files[0]):
+            raise Exception("Could not retrieve advisor report.\n"
+                            "This host is not registered. Use --register to register this host:\n"
+                            "# insights-client --register")
+
         url = self.inventory_url + "/hosts?insights_id=%s" % generate_machine_id()
         res = self.get(url)
         if res.status_code not in [requests.codes.OK, requests.codes.NOT_MODIFIED]:

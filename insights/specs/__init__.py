@@ -20,6 +20,7 @@ class Specs(SpecSet):
     malware_detection = RegistryPoint()
 
     # Regular collection specs
+    ansible_telemetry = RegistryPoint()
     abrt_ccpp_conf = RegistryPoint(
         filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
@@ -53,13 +54,14 @@ class Specs(SpecSet):
         multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
     bios_uuid = RegistryPoint()
-    blkid = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    blkid = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     bond = RegistryPoint(multi_output=True)
     bond_dynamic_lb = RegistryPoint(
         multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
     boot_loader_entries = RegistryPoint(multi_output=True)
     bootc_status = RegistryPoint(no_obfuscate=['hostname'])
+    bootctl_status = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     brctl_show = RegistryPoint()
     buddyinfo = RegistryPoint()
     candlepin_broker = RegistryPoint()
@@ -109,6 +111,7 @@ class Specs(SpecSet):
     cni_podman_bridge_conf = RegistryPoint()
     cobbler_modules_conf = RegistryPoint()
     cobbler_settings = RegistryPoint()
+    compliance_enabled_policies = RegistryPoint()
     containers_policy = RegistryPoint()
     controller_manager_log = RegistryPoint(multi_output=True)
     convert2rhel_facts = RegistryPoint()
@@ -126,6 +129,7 @@ class Specs(SpecSet):
     cpuinfo = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     cpupower_frequency_info = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     cpuset_cpus = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    crictl_ps = RegistryPoint()
     crictl_logs = RegistryPoint(multi_output=True, filterable=True)
     crio_conf = RegistryPoint(multi_output=True)
     cron_daily_rhsmd = RegistryPoint(filterable=True)
@@ -236,6 +240,7 @@ class Specs(SpecSet):
     foreman_proxy_log = RegistryPoint(filterable=True)
     foreman_rake_db_migrate_status = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     foreman_satellite_log = RegistryPoint(filterable=True)
+    foreman_log = RegistryPoint(filterable=True)
     foreman_ssl_access_ssl_log = RegistryPoint(filterable=True)
     foreman_ssl_error_ssl_log = RegistryPoint(filterable=True)
     foreman_tasks_config = RegistryPoint(filterable=True)
@@ -326,7 +331,7 @@ class Specs(SpecSet):
     ip_netns_exec_namespace_lsof = RegistryPoint(
         multi_output=True, filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac']
     )
-    ip_route_show_table_all = RegistryPoint(no_obfuscate=['hostname'])
+    ip_route_show_table_all = RegistryPoint(filterable=True, no_obfuscate=['hostname'])
     ip_s_link = RegistryPoint(no_obfuscate=['hostname'])
     ipa_default_conf = RegistryPoint()
     ipaupgrade_log = RegistryPoint(filterable=True)
@@ -369,6 +374,7 @@ class Specs(SpecSet):
     kernel_crash_kexec_post_notifiers = RegistryPoint(
         no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
+    keyctl_show = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     kexec_crash_loaded = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     kexec_crash_size = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     keystone_conf = RegistryPoint()
@@ -376,6 +382,7 @@ class Specs(SpecSet):
     keystone_log = RegistryPoint(filterable=True)
     kpatch_list = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     krb5 = RegistryPoint(multi_output=True)
+    krb5_localauth_plugin = RegistryPoint()
     ksmstate = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     ktimer_lockless = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     kubelet_conf = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
@@ -405,6 +412,7 @@ class Specs(SpecSet):
     lru_gen_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     # New `ls` Specs
     ls_files = RegistryPoint()
+    ls_lH_files = RegistryPoint(filterable=True)
     ls_la = RegistryPoint()
     ls_la_dirs = RegistryPoint(filterable=True)
     ls_la_filtered = RegistryPoint(filterable=True)
@@ -423,8 +431,11 @@ class Specs(SpecSet):
     ls_laRZ_dirs = RegistryPoint(filterable=True)
     ls_laZ = RegistryPoint()
     ls_laZ_dirs = RegistryPoint(filterable=True)
-    ls_lH_files = RegistryPoint(filterable=True)
-    # Useful individual `ls` Specs
+    ls_ldH = RegistryPoint()
+    ls_ldH_items = RegistryPoint(filterable=True)
+    ls_ldZ = RegistryPoint()
+    ls_ldZ_items = RegistryPoint(filterable=True)
+    # Useful for SoS
     ls_boot = RegistryPoint()
     ls_dev = RegistryPoint()
     ls_rsyslog_errorfile = RegistryPoint()
@@ -436,12 +447,8 @@ class Specs(SpecSet):
     lsblk_pairs = RegistryPoint()
     lscpu = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     lsinitrd = RegistryPoint(filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac'])
-    lsinitrd_kdump_image = RegistryPoint(
-        filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac']
-    )
-    lsinitrd_lvm_conf = RegistryPoint(
-        filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac']
-    )
+    lsinitrd_kdump_image = RegistryPoint(filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac'])
+    lsinitrd_lvm_conf = RegistryPoint(filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac'])
     lsmod = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     lsof = RegistryPoint(filterable=True)
     lspci = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
@@ -467,6 +474,7 @@ class Specs(SpecSet):
     md5chk_files = RegistryPoint(multi_output=True)
     mdadm_D = RegistryPoint()
     mdadm_E = RegistryPoint(multi_output=True)
+    mdatp_managed = RegistryPoint()
     mdstat = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     meminfo = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     messages = RegistryPoint(filterable=True)
@@ -478,6 +486,7 @@ class Specs(SpecSet):
         filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
     modprobe = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    mokutil_list_enrolled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     mokutil_sbstate = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     mongod_conf = RegistryPoint(multi_output=True, filterable=True)
     mount = RegistryPoint()
@@ -669,6 +678,7 @@ class Specs(SpecSet):
     readlink_e_etc_mtab = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     readlink_e_shift_cert_client = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     readlink_e_shift_cert_server = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    rear_default_conf = RegistryPoint(filterable=True)
     rear_local_conf = RegistryPoint(filterable=True)
     recvq_socket_buffer = RegistryPoint()
     redhat_release = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
@@ -811,9 +821,7 @@ class Specs(SpecSet):
         no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
     subscription_manager_status = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    subscription_manager_syspurpose = RegistryPoint(
-        no_obfuscate=['ipv4', 'ipv6', 'mac']
-    )
+    subscription_manager_syspurpose = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     sudoers = RegistryPoint(multi_output=True, filterable=True)
     swift_conf = RegistryPoint()
     swift_log = RegistryPoint(filterable=True)
@@ -859,8 +867,8 @@ class Specs(SpecSet):
     systemctl_cat_dnsmasq_service = RegistryPoint()
     systemctl_cat_rpcbind_socket = RegistryPoint()
     systemctl_get_default = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    systemctl_list_unit_files = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    systemctl_list_units = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    systemctl_list_unit_files = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
+    systemctl_list_units = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     systemctl_show_all_services = RegistryPoint()
     systemctl_show_all_services_with_limited_properties = RegistryPoint()
     systemctl_show_target = RegistryPoint()
@@ -921,13 +929,14 @@ class Specs(SpecSet):
     vmware_tools_conf = RegistryPoint()
     vsftpd = RegistryPoint()
     vsftpd_conf = RegistryPoint(filterable=True)
+    watchdog_conf = RegistryPoint(filterable=True)
     watchdog_logs = RegistryPoint(filterable=True, multi_output=True)
     wc_proc_1_mountinfo = RegistryPoint()
     x86_ibpb_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     x86_ibrs_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     x86_pti_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     x86_retp_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
-    xfs_info = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    xfs_info = RegistryPoint(multi_output=True, no_obfuscate=['ipv4', 'ipv6', 'mac'])
     xfs_quota_state = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     xinetd_conf = RegistryPoint(multi_output=True)
     yum_conf = RegistryPoint(filterable=True)

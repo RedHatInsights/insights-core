@@ -18,6 +18,7 @@ GrubbyInfoAll - command ``grubby --info=ALL``
 from insights.core import CommandParser
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
+from insights.parsers import parse_cmdline_args
 from insights.specs import Specs
 from insights.util import deprecated
 
@@ -41,14 +42,23 @@ class GrubbyDefaultIndex(CommandParser):
 
     Attributes:
         default_index (int): the numeric index of the current default boot entry, count from 0
+        error_lines (list): the error messages from the grubby command
     """
 
     def parse_content(self, content):
         if not content:
             raise SkipComponent('Empty output')
-        if len(content) != 1 or not content[0].isdigit():
-            raise ParseException('Invalid output: {0}', content)
-        self.default_index = int(content[0])
+
+        self.error_lines = []
+        default_index_line = content[0]
+        if len(content) != 1:
+            default_index_line = content[-1]
+            self.error_lines = content[:-1]
+
+        if not default_index_line.strip().isdigit():
+            raise ParseException('Invalid output: {0}'.format(content))
+
+        self.default_index = int(default_index_line.strip())
 
 
 @parser(Specs.grubby_default_kernel)
@@ -102,12 +112,16 @@ class GrubbyDefaultKernel(CommandParser):
                     if not default_kernel_str:
                         default_kernel_str = line.strip()
                     else:
-                        raise ParseException('Invalid output: duplicate kernel lines: {0}', content)
+                        raise ParseException(
+                            'Invalid output: duplicate kernel lines: {0}'.format(line)
+                        )
 
         if not default_kernel_str:
-            raise ParseException('Invalid output: no kernel line: {0}', content)
+            raise ParseException('Invalid output: no kernel line: {0}'.format(content))
         if len(default_kernel_str.split()) > 1:
-            raise ParseException('Invalid output: unparsable kernel line: {0}', content)
+            raise ParseException(
+                'Invalid output: unparsable kernel line: {0}'.format(default_kernel_str)
+            )
 
         self.default_kernel = default_kernel_str
 
@@ -154,17 +168,6 @@ class GrubbyInfoAll(CommandParser):
 
     def parse_content(self, content):
 
-        def _parse_args(args):
-            parsed_args = dict()
-            for el in args.split():
-                key, value = el, True
-                if "=" in el:
-                    key, value = el.split("=", 1)
-                if key not in parsed_args:
-                    parsed_args[key] = []
-                parsed_args[key].append(value)
-            return parsed_args
-
         if not content:
             raise SkipComponent("Empty output")
 
@@ -189,9 +192,10 @@ class GrubbyInfoAll(CommandParser):
                         self.boot_entries[entry_data["index"]] = entry_data
                     entry_data = {k: int(v)}
                 else:
-                    raise ParseException('Invalid index value: {0}', _line)
+                    raise ParseException('Invalid index value: {0}'.format(_line))
             elif k == "args":
-                entry_data[k] = _parse_args(v)
+                entry_data["raw_args"] = v
+                entry_data[k] = parse_cmdline_args(v)
             else:
                 entry_data[k] = v
 

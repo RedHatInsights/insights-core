@@ -384,6 +384,44 @@ IP_S_LINK_ALL_5 = """
     259638429  543551   0       0       0       0
 """.strip()
 
+IP_D_S_LINK_BOND_1 = """
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00 promiscuity 0 allmulti 0 minmtu 0 maxmtu 0 addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535 tso_max_size 524280 tso_max_segs 65535 gro_max_size 65536 gso_ipv4_max_size 65536 gro_ipv4_max_size 65536
+    RX:  bytes packets errors dropped  missed   mcast
+      42617068  128232      0       0       0       0
+    TX:  bytes packets errors dropped carrier collsns
+      42617068  128232      0       0       0       0
+2: enp1s0: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc fq_codel master bond0 state UP mode DEFAULT group default qlen 1000
+    link/ether 52:54:00:36:37:ea brd ff:ff:ff:ff:ff:ff promiscuity 0 allmulti 0 minmtu 68 maxmtu 65535
+    bond_slave state ACTIVE mii_status UP link_failure_count 0 perm_hwaddr 52:54:00:36:37:ea queue_id 0 prio 0 addrgenmode none numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 gso_ipv4_max_size 65536 gro_ipv4_max_size 65536 parentbus virtio parentdev virtio1
+    RX:  bytes  packets errors dropped  missed   mcast
+    6539676111 45171801      0  505436       0       0
+    TX:  bytes  packets errors dropped carrier collsns
+    3288089549 21839778      0       0       0       0
+    altname enx5254003637ea
+3: enp2s0: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc fq_codel master bond0 state UP mode DEFAULT group default qlen 1000
+    link/ether 52:54:00:36:37:ea brd ff:ff:ff:ff:ff:ff permaddr 52:54:00:c9:b9:47 promiscuity 0 allmulti 0 minmtu 68 maxmtu 65535
+    bond_slave state BACKUP mii_status UP link_failure_count 0 perm_hwaddr 52:54:00:c9:b9:47 queue_id 0 prio 0 addrgenmode none numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 gso_ipv4_max_size 65536 gro_ipv4_max_size 65536 parentbus virtio parentdev virtio2
+    RX:  bytes  packets errors dropped  missed   mcast
+    1174673386 15049986      0 2498170       0       0
+    TX:  bytes  packets errors dropped carrier collsns
+       5705272    46846      0       0       0       0
+    altname enx525400c9b947
+4: bond0: <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 52:54:00:36:37:ea brd ff:ff:ff:ff:ff:ff promiscuity 0 allmulti 0 minmtu 68 maxmtu 65535
+    bond mode active-backup active_slave enp1s0 miimon 100 updelay 0 downdelay 0 peer_notify_delay 0 use_carrier 1 arp_interval 0 arp_missed_max 2 arp_validate none arp_all_targets any primary_reselect always fail_over_mac none xmit_hash_policy layer2 resend_igmp 1 num_grat_arp 1 all_slaves_active 0 min_links 0 lp_interval 1 packets_per_slave 1 lacp_active on lacp_rate slow coupled_control on ad_select stable tlb_dynamic_lb 1 addrgenmode none numtxqueues 16 numrxqueues 16 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 gso_ipv4_max_size 65536 gro_ipv4_max_size 65536
+    RX:  bytes  packets errors dropped  missed   mcast
+    6250225824 49872690      0 3987208       0       0
+    TX:  bytes  packets errors dropped carrier collsns
+    2621949906 17418687      0       8       0       0
+""".strip()
+
+IP_D_S_LINK_MALFORMED_BOND_SLAVE = """
+2: enp2s0: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc fq_codel master bond0 state UP mode DEFAULT group default qlen 1000
+    link/ether 52:54:00:36:37:eb brd ff:ff:ff:ff:ff:ff promiscuity 0 allmulti 0 minmtu 68 maxmtu 65535
+    bond_slave state ACTIVE mii_status
+"""
+
 
 def test_ip_data_Link():
     link_info = ip.IpLinkInfo(context_wrap(IP_S_LINK))
@@ -426,6 +464,8 @@ def test_ip_data_Link():
     assert enp0s3["rx_packets"] == 2244
     assert enp0s3["tx_packets"] == 1407
     assert enp0s3["index"] == 1
+    assert 'bond_options' not in enp0s3.data
+    assert 'bond_slave_options' not in enp0s3.data
 
     enp0s25 = link_info_all["enp0s25"]
     assert enp0s25["mac"] == "1c:75:08:a5:7e:25"
@@ -460,6 +500,29 @@ def test_ip_data_Link():
 
     ens1 = link_info_all_5["ens1"]
     assert ens1["qlen"] == 1000
+
+    link_info_6 = ip.IpLinkInfo(context_wrap(IP_D_S_LINK_BOND_1))
+    assert 'enp1s0' in link_info_6
+    enp1s0_data = link_info_6['enp1s0'].data
+    assert 'bond_slave_options' in enp1s0_data
+    assert 'link_failure_count' in enp1s0_data['bond_slave_options']
+    assert 'bond0' in link_info_6
+    bond0_data = link_info_6['bond0'].data
+    assert 'bond_options' in bond0_data
+    bond0_options = bond0_data['bond_options']
+    assert 'bond mode' in bond0_options
+    assert 'use_carrier' in bond0_options
+
+    link_info_malformed = ip.IpLinkInfo(context_wrap(IP_D_S_LINK_MALFORMED_BOND_SLAVE))
+    assert 'enp2s0' in link_info_malformed
+    enp2s0_data = link_info_malformed['enp2s0'].data
+    # Should still have 'options' key, but may be incomplete
+    assert 'bond_slave_options' in enp2s0_data
+    enp2s0_options = enp2s0_data['bond_slave_options']
+    # 'mii_status' should be present but value may be empty or None
+    assert 'mii_status' in enp2s0_options
+    # 'state' should be present
+    assert 'state' in enp2s0_options
 
 
 IP_ROUTE_SHOW_TABLE_ALL_TEST = """

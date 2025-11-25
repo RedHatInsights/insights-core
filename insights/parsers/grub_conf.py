@@ -348,7 +348,7 @@ class Grub2Config(GrubConfig):
         self.update({'menuentry': self.entries})
 
 
-@parser(Specs.grub2_efi_cfg, [IsRhel6, IsRhel7, IsRhel8])
+@parser(Specs.grub2_efi_cfg, [IsRhel6, IsRhel7, IsRhel8, IsRhel9])
 class Grub2EFIConfig(Grub2Config):
     """Parses grub2 configuration for EFI-based systems"""
     def __init__(self, *args, **kwargs):

@@ -16,7 +16,7 @@ import signal
 # - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
-from insights.components.rhel_version import IsGtOrRhel84, IsGtOrRhel86
+from insights.components.rhel_version import IsGtOrRhel84
 from insights.components.satellite import (
     IsSatellite,
     IsSatellite611,
@@ -59,6 +59,7 @@ from insights.specs.datasources import (
     ipcs,
     kernel,
     leapp,
+    logrotate,
     lpstat,
     ls,
     lsattr,
@@ -106,7 +107,6 @@ class DefaultSpecs(Specs):
     blacklisted_specs = client_metadata.blacklisted_specs
     branch_info = client_metadata.branch_info
     display_name = client_metadata.display_name
-    egg_release = client_metadata.egg_release
     tags = client_metadata.tags
     version_info = client_metadata.version_info
 
@@ -118,6 +118,7 @@ class DefaultSpecs(Specs):
     malware_detection = malware_detection_ds.malware_detection
 
     # Regular collection specs
+    # ansible_telemetry = simple_command("/usr/share/ansible/telemetry/telemetry.py")
     abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
     alternatives_display_python = simple_command("/usr/sbin/alternatives --display python")
@@ -129,7 +130,6 @@ class DefaultSpecs(Specs):
     audispd_conf = simple_file("/etc/audisp/audispd.conf")
     ausearch_insights = simple_command(
         "/usr/sbin/ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts recent",
-        deps=[IsGtOrRhel86],
         keep_rc=True,
     )
     aws_instance_id_doc = command_with_args(
@@ -180,6 +180,7 @@ class DefaultSpecs(Specs):
     bond_dynamic_lb = glob_file("/sys/class/net/*/bonding/tlb_dynamic_lb")
     boot_loader_entries = glob_file("/boot/loader/entries/*.conf")
     bootc_status = simple_command("/usr/bin/bootc status --json")
+    bootctl_status = simple_command("/usr/bin/bootctl status", keep_rc=True)
     buddyinfo = simple_file("/proc/buddyinfo")
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
@@ -215,6 +216,7 @@ class DefaultSpecs(Specs):
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
     cmdline = simple_file("/proc/cmdline")
     cni_podman_bridge_conf = simple_file("/etc/cni/net.d/87-podman-bridge.conflist")
+    compliance_enabled_policies = compliance_ds.compliance_advisor_rule_enabled
     convert2rhel_facts = simple_file("/etc/rhsm/facts/convert2rhel.facts")
     corosync = simple_file("/etc/sysconfig/corosync")
     corosync_cmapctl = foreach_execute(corosync_ds.corosync_cmapctl_cmds, "%s")
@@ -315,7 +317,9 @@ class DefaultSpecs(Specs):
     fapolicyd_rules = glob_file(r"/etc/fapolicyd/rules.d/*.rules")
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
     files_dirs_number = ls.files_dirs_number
-    filefrag = simple_command("/sbin/filefrag /boot/grub2/grubenv", keep_rc=True)
+    filefrag = simple_command(
+        "/sbin/filefrag /boot/grub2/grubenv /boot/initramfs*.img /boot/vmlinuz*", keep_rc=True
+    )
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
@@ -353,7 +357,6 @@ class DefaultSpecs(Specs):
     gluster_v_info = simple_command("/usr/sbin/gluster volume info")
     greenboot_status = simple_command("/usr/libexec/greenboot/greenboot-status")  # used by puptoo
     group_info = command_with_args("/usr/bin/getent group %s", user_group.group_filters)
-    grub1_config_perms = simple_command("/bin/ls -lH /boot/grub/grub.conf")  # RHEL6
     grub2_cfg = simple_file("/boot/grub2/grub.cfg")
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
     grubby_default_index = simple_command(
@@ -362,9 +365,6 @@ class DefaultSpecs(Specs):
     grubby_default_kernel = simple_command("/sbin/grubby --default-kernel")
     grubby_info_all = simple_command("/usr/sbin/grubby --info=ALL")
     grub_conf = simple_file("/boot/grub/grub.conf")
-    grub_config_perms = simple_command(
-        "/bin/ls -lH /boot/grub2/grub.cfg"
-    )  # only RHEL7 and updwards
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
     grubenv = simple_command("/usr/bin/grub2-editenv list", keep_rc=True)
     haproxy_cfg = first_file(
@@ -449,9 +449,11 @@ class DefaultSpecs(Specs):
     kernel_crash_kexec_post_notifiers = simple_file(
         "/sys/module/kernel/parameters/crash_kexec_post_notifiers"
     )
+    keyctl_show = simple_command("/usr/bin/keyctl show %:.platform", keep_rc=True)
     kexec_crash_size = simple_file("/sys/kernel/kexec_crash_size")
     kpatch_list = simple_command("/usr/sbin/kpatch list")
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
+    krb5_localauth_plugin = simple_file("/var/lib/sss/pubconf/krb5.include.d/localauth_plugin")
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
     lastupload = glob_file(
         ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
@@ -467,28 +469,39 @@ class DefaultSpecs(Specs):
     localectl_status = simple_command("/usr/bin/localectl status")
     localtime = simple_command("/usr/bin/file -L /etc/localtime")
     login_pam_conf = simple_file("/etc/pam.d/login")
-    logrotate_conf = glob_file(["/etc/logrotate.conf", "/etc/logrotate.d/*"])
+    logrotate_conf = foreach_collect(logrotate.logrotate_conf_list, "%s")
     losetup = simple_command("/usr/sbin/losetup -l")
     lpfc_max_luns = simple_file("/sys/module/lpfc/parameters/lpfc_max_luns")
     lpstat_p = simple_command("/usr/bin/lpstat -p")
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
     lpstat_queued_jobs_count = lpstat.lpstat_queued_jobs_count
     lru_gen_enabled = simple_file("/sys/kernel/mm/lru_gen/enabled")
-    ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, keep_rc=True)
+    ls_files = command_with_args(
+        '/bin/ls -lH %s', ls.list_files_with_lH, save_as='ls_files', keep_rc=True
+    )
+    ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, save_as='ls_la', keep_rc=True)
     ls_la_filtered = command_with_args(
-        '/bin/ls -la %s', ls.list_with_la_filtered, keep_rc=True
+        '/bin/ls -la %s', ls.list_with_la_filtered, save_as='ls_la_filtered', keep_rc=True
     )  # Result is filtered
-    ls_lan = command_with_args('/bin/ls -lan %s', ls.list_with_lan, keep_rc=True)
+    ls_lan = command_with_args('/bin/ls -lan %s', ls.list_with_lan, save_as='ls_lan', keep_rc=True)
     ls_lan_filtered = command_with_args(
-        '/bin/ls -lan %s', ls.list_with_lan_filtered, keep_rc=True
+        '/bin/ls -lan %s', ls.list_with_lan_filtered, save_as='ls_lan_filtered', keep_rc=True
     )  # Result is filtered
-    ls_lanL = command_with_args('/bin/ls -lanL %s', ls.list_with_lanL, keep_rc=True)
-    ls_lanR = command_with_args('/bin/ls -lanR %s', ls.list_with_lanR, keep_rc=True)
-    ls_lanRL = command_with_args('/bin/ls -lanRL %s', ls.list_with_lanRL, keep_rc=True)
-    ls_laRZ = command_with_args('/bin/ls -laRZ %s', ls.list_with_laRZ, keep_rc=True)
-    ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, keep_rc=True)
-    ls_dev = simple_command("/bin/ls -lanR /dev")  # T.B.D
-    ls_files = command_with_args('/bin/ls -lH %s', ls.list_files_with_lH, keep_rc=True)
+    ls_lanL = command_with_args(
+        '/bin/ls -lanL %s', ls.list_with_lanL, save_as='ls_lanL', keep_rc=True
+    )
+    ls_lanR = command_with_args(
+        '/bin/ls -lanR %s', ls.list_with_lanR, save_as='ls_lanR', keep_rc=True
+    )
+    ls_lanRL = command_with_args(
+        '/bin/ls -lanRL %s', ls.list_with_lanRL, save_as='ls_lanRL', keep_rc=True
+    )
+    ls_laRZ = command_with_args(
+        '/bin/ls -laRZ %s', ls.list_with_laRZ, save_as='ls_laRZ', keep_rc=True
+    )
+    ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, save_as='ls_laZ', keep_rc=True)
+    ls_ldH = command_with_args('/bin/ls -ldH %s', ls.list_with_ldH, save_as='ls_ldH', keep_rc=True)
+    ls_ldZ = command_with_args('/bin/ls -ldZ %s', ls.list_with_ldZ, save_as='ls_ldZ', keep_rc=True)
     lsattr = command_with_args("/bin/lsattr %s", lsattr.paths_to_lsattr)
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command(
@@ -528,11 +541,13 @@ class DefaultSpecs(Specs):
     )
     md5chk_files = foreach_execute(md5chk.files, "/usr/bin/md5sum %s", keep_rc=True)
     mdadm_D = command_with_args("/usr/sbin/mdadm -D %s", mdadm.raid_devices, keep_rc=True)
+    mdatp_managed = simple_file("/etc/opt/microsoft/mdatp/managed/mdatp_managed.json")
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
     modinfo_filtered_modules = command_with_args('modinfo %s', kernel.kernel_module_filters)
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
+    mokutil_list_enrolled = simple_command("/bin/mokutil --list-enrolled", keep_rc=True)
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
     mount = simple_command("/bin/mount")
     mountinfo = simple_file("/proc/self/mountinfo")
@@ -712,6 +727,7 @@ class DefaultSpecs(Specs):
     readlink_e_shift_cert_server = simple_command(
         "/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem"
     )
+    rear_default_conf = simple_file("/usr/share/rear/conf/default.conf")
     rear_local_conf = simple_file("/etc/rear/local.conf")
     redhat_release = simple_file("/etc/redhat-release")
     repquota_agnpuv = simple_command("/usr/sbin/repquota -agnpuv")
@@ -845,27 +861,28 @@ class DefaultSpecs(Specs):
     ssh_config_d = glob_file(r"/etc/ssh/ssh_config.d/*.conf")
     sshd_config = simple_file("/etc/ssh/sshd_config")
     sshd_config_d = glob_file(r"/etc/ssh/sshd_config.d/*.conf")
-    sshd_config_perms = simple_command("/bin/ls -lH /etc/ssh/sshd_config")
     sshd_test_mode = simple_command("/usr/sbin/sshd -T")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     sssd_conf_d = glob_file("/etc/sssd/conf.d/*.conf")
     subscription_manager_facts = simple_command(
-        "/usr/sbin/subscription-manager facts", override_env={"LC_ALL": "C.UTF-8"}
+        "/usr/sbin/subscription-manager facts",
+        override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"},
     )
     subscription_manager_id = simple_command(
         "/usr/sbin/subscription-manager identity",  # use "/usr/sbin" here, BZ#1690529
-        override_env={"LC_ALL": "C.UTF-8"},
+        override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"},
     )
     subscription_manager_installed_product_ids = simple_command(
         r"/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;"
     )
     subscription_manager_status = simple_command(
-        "/usr/sbin/subscription-manager status", override_env={"LC_ALL": "C.UTF-8"}
+        "/usr/sbin/subscription-manager status",
+        override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"},
     )
     subscription_manager_syspurpose = simple_command(
         "/usr/sbin/subscription-manager syspurpose --show",
         deps=[IsGtOrRhel84],
-        override_env={"LC_ALL": "C.UTF-8"},
+        override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"},
     )
     sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
     swift_proxy_server_conf = first_file(
@@ -964,8 +981,10 @@ class DefaultSpecs(Specs):
     virsh_list_all = simple_command("/usr/bin/virsh --readonly list --all")
     virt_what = simple_command("/usr/sbin/virt-what")
     vma_ra_enabled = simple_file("/sys/kernel/mm/swap/vma_ra_enabled")
+    vmware_tools_conf = simple_file("/etc/vmware-tools/tools.conf")
     vsftpd = simple_file("/etc/pam.d/vsftpd")
     vsftpd_conf = simple_file("/etc/vsftpd/vsftpd.conf")
+    watchdog_conf = simple_file("/etc/watchdog.conf")
     watchdog_logs = glob_file("/var/log/watchdog/*.std*")
     wc_proc_1_mountinfo = simple_command("/usr/bin/wc -l /proc/1/mountinfo")
     x86_ibpb_enabled = simple_file("sys/kernel/debug/x86/ibpb_enabled")

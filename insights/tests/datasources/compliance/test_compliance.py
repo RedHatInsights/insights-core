@@ -7,8 +7,9 @@ try:
 except Exception:
     from mock import patch, Mock, mock_open
 
-from pytest import raises
+from pytest import raises, mark
 
+from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.specs.datasources.compliance import ComplianceClient
 
@@ -31,30 +32,65 @@ def teardown_function(func):
             env.update(TZ=ENV_TZ)
 
 
-@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
-def test_get_system_policies(config):
+@mark.parametrize(
+    ("legacy_upload", "base_url", "expected_url"),
+    [
+        (True, "cert-api.access.redhat.com/app", "cert-api.access.redhat.com/app"),
+        (False, "cert-api.access.redhat.com/app", "cert-api.access.redhat.com/app"),
+        # Satellite
+        (True, "localhost/app", "localhost/app"),
+        (False, "localhost/app", "localhost/app"),
+    ],
+)
+def test_get_system_policies(legacy_upload, base_url, expected_url):
+    config = InsightsConfig(legacy_upload=legacy_upload, base_url=base_url, systemid='', proxy=None)
     compliance_client = ComplianceClient(config=config)
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     compliance_client.conn.session.get = Mock(
         return_value=Mock(status_code=200, json=Mock(return_value={'data': ['test']}))
     )
     assert compliance_client.get_system_policies() == ['test']
-    url = "https://localhost/app/compliance/v2/systems/{0}/policies".format(
-        compliance_client.inventory_id
+    url = "https://{0}/compliance/v2/systems/{1}/policies".format(
+        expected_url, compliance_client.inventory_id
     )
     compliance_client.conn.session.get.assert_called_with(url)
 
 
-@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
-def test_get_system_policies_error(config):
+@mark.parametrize(
+    ("legacy_upload", "base_url", "expected_url"),
+    [
+        (True, "cert-api.access.redhat.com/app", "cert-api.access.redhat.com/app"),
+        (False, "cert-api.access.redhat.com/app", "cert-api.access.redhat.com/app"),
+        # Satellite
+        (True, "localhost/app", "localhost/app"),
+        (False, "localhost/app", "localhost/app"),
+    ],
+)
+def test_get_system_policies_error(legacy_upload, base_url, expected_url):
+    config = InsightsConfig(legacy_upload=legacy_upload, base_url=base_url, systemid='', proxy=None)
     compliance_client = ComplianceClient(config=config)
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=500))
-    assert compliance_client.get_system_policies() == []
-    url = "https://localhost/app/compliance/v2/systems/{0}/policies".format(
-        compliance_client.inventory_id
+    assert compliance_client.get_system_policies() == []  # empty
+    url = "https://{0}/compliance/v2/systems/{1}/policies".format(
+        expected_url, compliance_client.inventory_id
     )
     compliance_client.conn.session.get.assert_called_with(url)
+
+
+@mark.parametrize("legacy_upload", [True, False])
+@patch("insights.specs.datasources.compliance.ComplianceClient.inventory_id")
+def test_get_system_policies_error_none_inventory_id(id, legacy_upload):
+    config = InsightsConfig(
+        legacy_upload=legacy_upload, base_url='localhost/app', systemid='', proxy=None
+    )
+    if legacy_upload:
+        constants.base_url = config.base_url
+    compliance_client = ComplianceClient(config=config)
+    compliance_client.inventory_id = None
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=500))
+    assert compliance_client.get_system_policies() == []
+    compliance_client.conn.session.get.assert_not_called()
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
@@ -293,16 +329,17 @@ def test_build_oscap_command_append_tailoring_path(config):
     )
 
 
+@patch('insights.specs.datasources.compliance.logger')
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
-def test__inventory_id(config):
+def test__inventory_id(config, log):
     compliance_client = ComplianceClient(config=config)
     compliance_client.conn._fetch_system_by_machine_id = lambda: None
-    with raises(SystemExit):
-        compliance_client.inventory_id
+    assert compliance_client.inventory_id is None
+    log.debug.assert_called_with("Failed to find system in Inventory")
 
     compliance_client.conn._fetch_system_by_machine_id = lambda: {}
-    with raises(SystemExit):
-        compliance_client.inventory_id
+    assert compliance_client.inventory_id is None
+    log.debug.assert_called_with("Failed to find system in Inventory")
 
     compliance_client.conn._fetch_system_by_machine_id = lambda: {'id': '12345'}
     assert compliance_client.inventory_id == '12345'
@@ -390,7 +427,23 @@ def test_policy_link_assign(config, log):
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.patch.assert_called_with(url)
-    log.info.assert_called_with("System successfully assigned to policy.\n")
+    log.info.assert_called_with("Successfully assigned policy (ID {0}).\n".format(policy_id))
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.specs.datasources.compliance.ComplianceClient.inventory_id")
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_policy_link_assign_none_inventory_id(config, id, log):
+    compliance_client = ComplianceClient(config=config)
+    compliance_client.inventory_id = None
+    policy_id = "d83ddbac-ab56-420b-9e71-878795375af5"
+    compliance_client.conn.session.patch = Mock(
+        return_value=Mock(status_code=202, json=Mock(return_value={}))
+    )
+    assert compliance_client.policy_link(policy_id, 'patch') == constants.sig_kill_bad
+    compliance_client.conn.session.patch.assert_not_called()
+    log.error.assert_called_with("Failed to find system in Inventory")
+    log.debug.assert_not_called()
 
 
 @patch('insights.specs.datasources.compliance.logger')
@@ -409,8 +462,9 @@ def test_policy_link_assign_invalid_policy_id(config, log):
     compliance_client.conn.session.patch.assert_called_with(url)
     log.error.assert_called_with(
         "Policy ID {0} can not be assigned. "
-        "Refer to the /var/log/insights-client/insights-client.log for more details."
-        .format(policy_id)
+        "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
+            policy_id
+        )
     )
 
 
@@ -428,7 +482,7 @@ def test_policy_link_unassign(config, log):
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.delete.assert_called_with(url)
-    log.info.assert_called_with("System successfully assigned to policy.\n")
+    log.info.assert_called_with("Successfully unassigned policy (ID {0}).\n".format(policy_id))
 
 
 @patch('insights.specs.datasources.compliance.logger')
@@ -446,7 +500,8 @@ def test_policy_link_unassign_invalid_policy_id(config, log):
     )
     compliance_client.conn.session.delete.assert_called_with(url)
     log.error.assert_called_with(
-        "Policy ID {0} can not be assigned. "
-        "Refer to the /var/log/insights-client/insights-client.log for more details."
-        .format(policy_id)
+        "Policy ID {0} can not be unassigned. "
+        "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
+            policy_id
+        )
     )

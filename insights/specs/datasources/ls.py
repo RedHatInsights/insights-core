@@ -162,3 +162,33 @@ def files_dirs_number(broker):
             relative_path='insights_datasources/files_dirs_number',
         )
     raise SkipComponent
+
+
+@datasource(HostContext, optional=[FSTab, BlockIDInfo, Pvs])
+def list_with_ldH(broker):
+    filters = set(_list_items(Specs.ls_ldH_items))
+    files = set(_f for _f in filters if not os.path.isdir(_f))
+    if 'fstab_mounted.devices' in filters and FSTab in broker and BlockIDInfo in broker:
+        files.remove('fstab_mounted.devices')
+        fstab_mounts = broker[FSTab]
+        blkid_info = broker[BlockIDInfo]
+        files.update(_get_fstab_mounted_device_files(fstab_mounts, blkid_info))
+    if 'pvs.devices' in filters and Pvs in broker:
+        files.remove('pvs.devices')
+        pvs_info = broker[Pvs]
+        files.update(set([item['PV'] for item in pvs_info]))
+    if files:
+        return ' '.join(sorted(files))
+    raise SkipComponent
+
+
+@datasource(HostContext)
+def list_with_ldZ(broker):
+    filters = set(_list_items(Specs.ls_ldZ_items))
+    if 'fstab_mounted.dirs' in filters and FSTab in broker:
+        filters.remove('fstab_mounted.dirs')
+        for mntp in broker[FSTab].mounted_on.keys():
+            filters.add(mntp) if mntp.startswith('/') else None
+    if filters:
+        return ' '.join(sorted(filters))
+    raise SkipComponent

@@ -24,6 +24,8 @@ from insights.specs.datasources.ls import (
     list_with_lanRL,
     list_with_laRZ,
     list_with_laZ,
+    list_with_ldH,
+    list_with_ldZ,
 )
 from insights.tests import context_wrap
 
@@ -58,6 +60,15 @@ PVS_DATA = """
   WARNING: File locking is disabled.
   LVM2_PV_FMT=''|LVM2_PV_UUID=''|LVM2_DEV_SIZE='1.00g'|LVM2_PV_NAME='/dev/vda1'|LVM2_PV_MAJOR='252'|LVM2_PV_MINOR='1'|LVM2_PV_MDA_FREE='0 '|LVM2_PV_MDA_SIZE='0 '|LVM2_PV_EXT_VSN=''|LVM2_PE_START='0 '|LVM2_PV_SIZE='0 '|LVM2_PV_FREE='0 '|LVM2_PV_USED='0 '|LVM2_PV_ATTR='---'|LVM2_PV_ALLOCATABLE=''|LVM2_PV_EXPORTED=''|LVM2_PV_MISSING=''|LVM2_PV_PE_COUNT='0'|LVM2_PV_PE_ALLOC_COUNT='0'|LVM2_PV_TAGS=''|LVM2_PV_MDA_COUNT='0'|LVM2_PV_MDA_USED_COUNT='0'|LVM2_PV_BA_START='0 '|LVM2_PV_BA_SIZE='0 '|LVM2_PV_IN_USE=''|LVM2_PV_DUPLICATE=''|LVM2_PV_DEVICE_ID=''|LVM2_PV_DEVICE_ID_TYPE=''|LVM2_VG_NAME=''
   LVM2_PV_FMT='lvm2'|LVM2_PV_UUID='D0bk3H-NASe-ncYz-L3T0-mPSH-QbzT-xlPTrh'|LVM2_DEV_SIZE='<127.00g'|LVM2_PV_NAME='/dev/vda2'|LVM2_PV_MAJOR='252'|LVM2_PV_MINOR='2'|LVM2_PV_MDA_FREE='507.50k'|LVM2_PV_MDA_SIZE='1020.00k'|LVM2_PV_EXT_VSN='2'|LVM2_PE_START='1.00m'|LVM2_PV_SIZE='<127.00g'|LVM2_PV_FREE='<54.94g'|LVM2_PV_USED='<72.06g'|LVM2_PV_ATTR='a--'|LVM2_PV_ALLOCATABLE='allocatable'|LVM2_PV_EXPORTED=''|LVM2_PV_MISSING=''|LVM2_PV_PE_COUNT='32511'|LVM2_PV_PE_ALLOC_COUNT='18447'|LVM2_PV_TAGS=''|LVM2_PV_MDA_COUNT='1'|LVM2_PV_MDA_USED_COUNT='1'|LVM2_PV_BA_START='0 '|LVM2_PV_BA_SIZE='0 '|LVM2_PV_IN_USE='used'|LVM2_PV_DUPLICATE=''|LVM2_PV_DEVICE_ID=''|LVM2_PV_DEVICE_ID_TYPE=''|LVM2_VG_NAME='rhel_rhel8'
+""".strip()
+
+FSTAB_DUPLICATE_CONTEXT = """
+/dev/mapper/rhel_rhel8-root /                       xfs     defaults        0 0
+/dev/vda1 /boot                   xfs     defaults        0 0
+/dev/mapper/rhel_rhel8-swap none                    swap    defaults        0 0
+/dev/mapper/rhel_rhel7-hana1 /hana/data/rhel7-hana1                       xfs     defaults        0 0
+/dev/mapper/rhel_rhel7-hana2 /hana/data/rhel7-hana1                       xfs     defaults        0 0
+/dev/mapper/rhel_rhel7-hana3 /hana/data/rhel7-hana1                       xfs     defaults        0 0
 """.strip()
 
 
@@ -97,6 +108,21 @@ def setup_function(func):
         filters.add_filter(
             Specs.ls_lH_files, ["/etc/redhat-release", '/var/log/messages', 'fstab_mounted.devices']
         )
+    if func is test_ldH_files:
+        filters.add_filter(
+            Specs.ls_ldH_items,
+            ["/etc/redhat-release", '/var/log/messages', 'fstab_mounted.devices', 'pvs.devices'],
+        )
+    if func is test_ldH_files_pvs:
+        filters.add_filter(
+            Specs.ls_ldH_items, ["/etc/redhat-release", '/var/log/messages', 'pvs.devices']
+        )
+    if func is test_ldH_files_fstab_blkid:
+        filters.add_filter(
+            Specs.ls_ldH_items, ["/etc/redhat-release", '/var/log/messages', 'fstab_mounted.devices']
+        )
+    if func is test_ldZ_with_fstab_mounted_filter:
+        filters.add_filter(Specs.ls_ldZ_items, ["/", '/mnt', 'fstab_mounted.dirs'])
 
 
 def teardown_function(func):
@@ -188,3 +214,47 @@ def test_lH_files_fstab_blkid(_):
         ret
         == '/dev/mapper/rhel-home /dev/mapper/rhel-root /dev/mapper/rhel-var /dev/sdb2 /etc/redhat-release /var/log/messages'
     )
+
+
+def test_ldH_files():
+    ret = list_with_ldH({})
+    assert ret == '/etc/redhat-release /var/log/messages fstab_mounted.devices pvs.devices'
+
+
+def test_ldH_files_pvs():
+    pvs_info = Pvs(context_wrap(PVS_DATA))
+    broker = {Pvs: pvs_info}
+    ret = list_with_ldH(broker)
+    assert ret == '/dev/vda1 /dev/vda2 /etc/redhat-release /var/log/messages'
+
+
+def test_ldH_files_fstab_blkid():
+    fstab_info = FSTab(context_wrap(FSTAB_DATA))
+    blkid_info = BlockIDInfo(context_wrap(BLKID_DATA))
+    broker = {FSTab: fstab_info, BlockIDInfo: blkid_info}
+    ret = list_with_ldH(broker)
+    assert (
+        ret
+        == '/dev/mapper/rhel-home /dev/mapper/rhel-root /dev/mapper/rhel-var /dev/sdb2 /etc/redhat-release /var/log/messages'
+    )
+
+
+def test_ldZ_with_fstab_mounted_filter():
+    ret = list_with_ldZ({})
+    assert ret == '/ /mnt fstab_mounted.dirs'
+
+    fstab = FSTab(context_wrap(FSTAB_CONTEXT))
+    broker = {FSTab: fstab}
+    ret = list_with_ldZ(broker)
+    assert ret == '/ /boot /hana/data/rhel7-hana1 /hana/data/rhel7-hana2 /hana/data/rhel7-hana3 /mnt'
+
+    fstab = FSTab(context_wrap(FSTAB_DUPLICATE_CONTEXT))
+    broker = {FSTab: fstab}
+    ret = list_with_ldZ(broker)
+    assert ret == '/ /boot /hana/data/rhel7-hana1 /mnt'
+
+
+def test_ldZ_empty_filter():
+    with pytest.raises(SkipComponent) as e:
+        list_with_ldZ({})
+    assert 'SkipComponent' in str(e)

@@ -558,23 +558,6 @@ class InsightsClient(object):
                             "# insights-client --register")
         print(json.dumps(content, indent=1))
 
-    def show_inventory_deep_link(self):
-        """
-        Show a deep link to this host inventory record
-        """
-        system = self.connection._fetch_system_by_machine_id()
-        if system:
-            try:
-                id = system["id"]
-                logger.info("View details about this system on console.redhat.com:")
-                logger.info(
-                    "https://console.redhat.com/insights/inventory/{0}".format(id)
-                )
-            except Exception as e:
-                logger.error(
-                    "Error: malformed system record: {0}: {1}".format(system, e)
-                )
-
     def copy_to_output_dir(self, insights_archive):
         '''
         Copy the collected data from temp to the directory
@@ -661,17 +644,6 @@ class InsightsClient(object):
             return None
 
         return self.connection.checkin()
-
-
-def format_config(config):
-    # Log config except the password
-    # and proxy as it might have a pw as well
-    config_copy = config.copy()
-    try:
-        del config_copy["password"]
-        del config_copy["proxy"]
-    finally:
-        return json.dumps(config_copy, indent=4)
 
 
 def _init_client_config_dirs():

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import doctest
 import pytest
 
@@ -31,7 +32,7 @@ virt.is_guest: True
 """.strip()
 
 ID_NORMAL_1 = """
-system identity: 6655c27c-f561-4c99-a23f-f53e5a1ef311
+system identity: 6655c27c-f561-4c99-a23f-111111111110
 name: rhel7.localdomain
 org name: 1234567
 org ID: 1234567
@@ -39,10 +40,30 @@ org ID: 1234567
 
 ID_with_AB_LINES = """
 You are attempting to use a locale that is not installed.
-system identity: 6655c27c-f561-4c99-a23f-f53e5a1ef311
+system identity: 6655c27c-f561-4c99-a23f-111111111111
 name: rhel7.localdomain
 org name: 1234567
 org ID: 1234567
+""".strip()
+
+ID_with_non_en_1 = """
+identité du système : 6655c27c-f561-4c99-a23f-111111111112
+nom : rhel7.localdomain
+nom de l'organisation : 1234567
+ID de l'organisation : 1234567
+""".strip()
+
+ID_with_non_en_2 = """
+系统身份：6655c27c-f561-4c99-a23f-111111111113
+名称：rhel7.localdomain
+机构名称：1234567
+机构 ID：1234567
+""".strip()
+
+ID_with_no_id = """
+名称：rhel7.localdomain
+机构名称：1234567
+机构 ID：1234567
 """.strip()
 
 INPUT_NG_1 = """
@@ -108,7 +129,7 @@ def test_subman_id():
     for line in ID_NORMAL_1.splitlines():
         key, value = line.split(': ', 1)
         assert ret[key] == value
-    assert ret.identity == '6655c27c-f561-4c99-a23f-f53e5a1ef311'
+    assert ret.identity == '6655c27c-f561-4c99-a23f-111111111110'
 
     ret = SubscriptionManagerID(context_wrap(ID_with_AB_LINES))
     for line in ID_with_AB_LINES.splitlines():
@@ -116,7 +137,25 @@ def test_subman_id():
             continue
         key, value = line.split(': ', 1)
         assert ret[key] == value
-    assert ret.identity == '6655c27c-f561-4c99-a23f-f53e5a1ef311'
+    assert ret.identity == '6655c27c-f561-4c99-a23f-111111111111'
+
+    ret = SubscriptionManagerID(context_wrap(ID_with_non_en_1))
+    for line in ID_with_non_en_1.splitlines():
+        key, value = line.split(': ', 1)
+        assert ret[key.strip()] == value
+    assert ret.identity == '6655c27c-f561-4c99-a23f-111111111112'
+    assert ret.uuid == '6655c27c-f561-4c99-a23f-111111111112'
+    # Chinese with full-width colon
+    ret = SubscriptionManagerID(context_wrap(ID_with_non_en_2))
+    for line in ID_with_non_en_2.splitlines():
+        key, value = line.split('：', 1)
+        assert ret[key.strip()] == value
+    assert ret.identity == '6655c27c-f561-4c99-a23f-111111111113'
+    assert ret.uuid == '6655c27c-f561-4c99-a23f-111111111113'
+    # No ID
+    ret = SubscriptionManagerID(context_wrap(ID_with_no_id))
+    assert ret.identity is None
+    assert ret.uuid is None
 
 
 def test_subman_status():

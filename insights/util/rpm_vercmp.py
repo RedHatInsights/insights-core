@@ -1,5 +1,11 @@
 """
-Nearly direct translation of rpm comparison code in the rpm project at
+RPM Version Comparison
+======================
+Compare the RPM version with `rpm.labelCompare` first, when the `rpm` module is
+not available, try the local `_rpm_vercmp`.
+
+The `_rpm_vercmp` is a nearly direct translation of rpm comparison code in the
+rpm project at:
 https://github.com/rpm-software-management/rpm/blob/master/lib/rpmvercmp.c
 
 Handles all of the cases in the rpm test file, including the "buggy" tests
@@ -122,21 +128,34 @@ def _rpm_vercmp(a, b):
     return 1
 
 
-def rpm_version_compare(left, right):
-    if left is right:
+try:
+    import rpm
+    import six
+    from functools import cmp_to_key
+
+    def version_compare(left, right):
+        # place the single string as 'version' in the middle of the tuple
+        left = ('0', left, '0') if isinstance(left, six.string_types) else left
+        right = ('0', right, '0') if isinstance(right, six.string_types) else right
+
+        _l = cmp_to_key(rpm.labelCompare)(left)
+        _r = cmp_to_key(rpm.labelCompare)(right)
+
+        return -1 if _l < _r else 1 if _l > _r else 0
+
+    def rpm_version_compare(left, right):
+        if left is right:
+            return 0
+        return version_compare(
+            (left.epoch, left.version, left.release), (right.epoch, right.version, right.release)
+        )
+
+except Exception:  # pragma: no cover
+    version_compare = _rpm_vercmp
+
+    def rpm_version_compare(left, right):
+        for attr in ('epoch', 'version', 'release'):
+            rc = _rpm_vercmp(getattr(left, attr, ''), getattr(right, attr, ''))
+            if rc != 0:
+                return rc
         return 0
-
-    le, re = int(left.epoch), int(right.epoch)
-    if le < re:
-        return -1
-    elif le > re:
-        return 1
-
-    rc = _rpm_vercmp(left.version, right.version)
-    if rc != 0:
-        return rc
-
-    return _rpm_vercmp(left.release, right.release)
-
-
-version_compare = _rpm_vercmp

@@ -31,6 +31,12 @@ LSlaRZ - command ``ls -lanRZ <dirs>``
 LSlaZ - command ``ls -lanZ <dirs>``
 -----------------------------------
 
+LSldH - command ``ls -ldH <items>``
+-----------------------------------
+
+LSldZ - command ``ls -ldZ <items>``
+-----------------------------------
+
 LSlHFiles - spec ``ls_files`` -  command ``ls -lH  <files>``
 ------------------------------------------------------------
 """
@@ -41,10 +47,33 @@ from insights.core.filters import add_filter
 from insights.core.ls_parser import FilePermissions
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 # Required basic filters for `LS` specs that the content needs to be filtered
 add_filter(Specs.ls_la_filtered, ['total '])
 add_filter(Specs.ls_lan_filtered, ['total '])
+
+
+def compose_raw_entry(target):
+    if target:
+        raw_line = ' '.join([target['type'] + target['perms']])
+        if 'links' in target:
+            raw_line += ' ' + str(target['links'])
+        raw_line += ' ' + ' '.join([target['owner'], target['group']])
+        if 'se_user' in target:
+            raw_line += ' ' + ':'.join(
+                [target['se_user'], target['se_role'], target['se_type'], target['se_mls']]
+            )
+        if 'size' in target:
+            raw_line += ' ' + str(target['size'])
+        if 'major' in target:
+            raw_line += ' ' + ', '.join([str(target['major']), str(target['minor'])])
+        if 'date' in target:
+            raw_line += ' ' + target['date']
+        raw_line += ' ' + target['name']
+        if target['type'] == 'l' and 'link' in target:
+            raw_line += ' -> ' + target['link']
+        return raw_line
 
 
 class FileListing(CommandParser, dict):
@@ -276,26 +305,7 @@ class FileListing(CommandParser, dict):
         """
         if directory in self:
             de = self[directory]['entries']
-            if target in de:
-                tgt = de[target]
-                raw_line = ' '.join([tgt['type'] + tgt['perms']])
-                if 'links' in tgt:
-                    raw_line += ' ' + str(tgt['links'])
-                raw_line += ' ' + ' '.join([tgt['owner'], tgt['group']])
-                if 'se_user' in tgt:
-                    raw_line += ' ' + ':'.join(
-                        [tgt['se_user'], tgt['se_role'], tgt['se_type'], tgt['se_mls']]
-                    )
-                if 'size' in tgt:
-                    raw_line += ' ' + str(tgt['size'])
-                if 'major' in tgt:
-                    raw_line += ' ' + ', '.join([str(tgt['major']), str(tgt['minor'])])
-                if 'date' in tgt:
-                    raw_line += ' ' + tgt['date']
-                raw_line += ' ' + tgt['name']
-                if tgt['type'] == 'l' and 'link' in tgt:
-                    raw_line += ' -> ' + tgt['link']
-                return raw_line
+            return compose_raw_entry(de.get(target))
 
     def permissions_of(self, directory, target):
         """
@@ -410,23 +420,22 @@ class LSlHFiles(CommandParser, dict):
     """
     Parses file information of ``ls -lH`` command.
 
+    .. warning::
+        This class is deprecated and will be removed from 3.7.0.
+        Please use the :class:`LSldH` instead.
+
     .. note::
 
         To parse a specific file, its full path should be added to the
         `ls_lH_files` spec via `add_filter`.
         Only paths point to files are acceptable.
 
-    Examples:
-        >>> from insights.core.filters import add_filter
-        >>> from insights.specs import Specs
-        >>> add_filter(Specs.ls_lH_files, ['/etc/redhat-release', '/var/log/messages'])
-        >>> type(ls_files)
-        <class 'insights.parsers.ls.LSlHFiles'>
-        >>> "/etc/redhat-release" in ls_files
-        True
-        >>> ls_files["/etc/redhat-release"].all_zero()
-        False
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            LSlHFiles, "Please use the :class:`LSldH` instead.", "3.7.0"
+        )
+        super(LSlHFiles, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         self.error_lines = []
@@ -441,3 +450,144 @@ class LSlHFiles(CommandParser, dict):
                 pass
         if not self:
             raise SkipComponent
+
+
+class FileListingNoHeader(CommandParser, dict):
+    """
+    Parses a flat, long-listing with SELinux context information
+    where each entry represents an absolute path and no directory
+    headers are present. Stores all information for each successfully
+    parsed entry, containing::
+
+        - type:     File type indicator ('d', '-', 'l', 'b', 'c')
+        - perms:    Permission bits, e.g. 'rw-r--r--.'
+        - links:    Number of hard links
+        - owner:    Owner user name
+        - group:    Owner group name
+        - size:     File size in bytes (if applicable)
+        - major:    Device major number (for block/char devices)
+        - minor:    Device minor number (for block/char devices)
+        - se_user:  SELinux user (if applicable)
+        - se_role:  SELinux role (if applicable)
+        - se_type:  SELinux type (if applicable)
+        - se_mls:   SELinux level (if applicable)
+        - name:     Full absolute path to the file
+        - date:     Modification date/time string
+        - link:     Target path (if the entry is a symlink)
+        - dir:      Parent directory (if applicable)
+
+    Attributes::
+
+        entries (dict): A mapping of all parsed entries, keyed by their absolute paths.
+        files (list): The list of all non-special files (i.e. not block or character devices).
+        dirs (list): The list of all directories parsed.
+        specials (list): The list of all special files (block and character devices).
+        error_lines (list): The list of all special files (block and character devices).
+
+    Sample output::
+
+        ls: cannot access '/dev/socketfile': No such file or directory
+        dr-xr-xr-x. 5 root root     4096 May 30 06:57 /boot
+        drwx------. 4 root root       83 Nov  6  2024 /boot/grub2
+        -rw-------. 1 root root     6658 Dec 20  2023 /boot/grub2/grub.cfg
+        crw--w----. 1 root tty  136,   0 Nov 17 01:28 /dev/stderr
+        brw-rw----. 1 root disk 252,   0 Nov 16 03:19 /dev/vda
+        crw-------. 1 root root  10, 137 Nov  6  2024 /dev/vhci
+
+    Examples::
+
+        >>> from insights.core.filters import add_filter
+        >>> from insights.specs import Specs
+        >>> add_filter(Specs.ls_ldH_items, ['/boot', '/boot/grub2/grub.cfg', '/dev/stderr', '/dev/vda', '/dev/vhci'])
+        >>> type(ls_files_no_header)
+        <class 'insights.parsers.ls.FileListingNoHeader'>
+        >>> len(ls_files_no_header.entries.keys())
+        6
+        >>> "/boot/grub2/grub.cfg" in ls_files_no_header.files
+        True
+        >>> ls_files_no_header.dirs
+        ['/boot', '/boot/grub2']
+        >>> "/dev/vda" in ls_files_no_header.specials
+        True
+        >>> ls_files_no_header.entries['/boot']['perms']
+        'r-xr-xr-x.'
+    """
+
+    def parse_content(self, content):
+        """
+        Parses a file/directory listing with SELinux information from the
+        provided content and updates the dictionary with all parsed entries.
+        """
+        result = ls_parser.parse(content, None)
+        self.update(result.get(None))
+        self.error_lines = result.pop('error_lines') if 'error_lines' in result else []
+
+    entries = property(lambda self: self['entries'])
+    files = property(lambda self: self['files'])
+    dirs = property(lambda self: self['dirs'])
+    specials = property(lambda self: self['specials'])
+
+    def raw_entry_of(self, target):
+        """
+        Returns the raw line entry of the ``target`` listed in
+        'ls' command output.
+
+        Parameters:
+            target (string): Name of the directory or file to get
+                information for.
+
+        Returns:
+            str: The re-constructed rough line if found or None if not found.
+
+        .. note::
+            As it's re-constructed according to the serialized items, it's not
+            identical with the original line.
+        """
+        return compose_raw_entry(self['entries'].get(target))
+
+    def permissions_of(self, target):
+        """
+        Returns a FilePermissions object, if found.
+
+        Parameters:
+            directory(string): Full path without trailing slash where to
+                search.
+            target (string): Name of the directory or file to get
+                FilePermissions for.
+
+        Returns:
+            FilePermissions: If found or None if not found.
+        """
+        raw_line = self.raw_entry_of(target)
+        if raw_line:
+            return FilePermissions(raw_line)
+
+
+@parser(Specs.ls_ldH)
+class LSldH(FileListingNoHeader):
+    """
+    Parses output of ``ls -ldH`` command.
+    See :py:class:`FileListingNoHeader` for more information.
+
+    .. note::
+
+        To parse a specific file, its full path should be added to the
+        `ls_ldH_items` spec via `add_filter`.
+
+    """
+    pass
+
+
+@parser(Specs.ls_ldZ)
+class LSldZ(FileListingNoHeader):
+    """
+    Parses output of ``ls -ldZ`` command.
+    See :py:class:`FileListingNoHeadSelinux` for more information.
+
+    .. note::
+
+        To parse a specific file, its full path should be added to the
+        `ls_ldZ_items` spec via `add_filter`.
+
+    """
+    pass

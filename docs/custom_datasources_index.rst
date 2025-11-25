@@ -39,7 +39,7 @@ insights.specs.datasources.client_metadata
 ------------------------------------------
 
 .. automodule:: insights.specs.datasources.client_metadata
-    :members: ansible_host, basic_auth_insights_client, blacklist_report, blacklisted_specs, branch_info, display_name, egg_release, tags, version_info,
+    :members: ansible_host, basic_auth_insights_client, blacklist_report, blacklisted_specs, branch_info, display_name, tags, version_info,
     :show-inheritance:
     :undoc-members:
 
@@ -48,6 +48,14 @@ insights.specs.datasources.cloud_init
 
 .. automodule:: insights.specs.datasources.cloud_init
     :members: cloud_cfg, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.compliance.compliance_ds
+---------------------------------------------------
+
+.. automodule:: insights.specs.datasources.compliance.compliance_ds
+    :members: compliance_enabled, compliance_policies_enabled, compliance_assign_enabled, compliance_unassign_enabled, os_version, package_check, compliance, compliance_policies, compliance_assign, compliance_unassign, compliance_advisor_rule_enabled
     :show-inheritance:
     :undoc-members:
 
@@ -151,11 +159,20 @@ insights.specs.datasources.leapp
     :undoc-members:
 
 
+insights.specs.datasources.logrotate
+------------------------------------
+
+.. automodule:: insights.specs.datasources.logrotate
+    :members: logrotate_conf_list
+    :show-inheritance:
+    :undoc-members:
+
+
 insights.specs.datasources.ls
 -----------------------------
 
 .. automodule:: insights.specs.datasources.ls
-    :members: list_with_la, list_with_la_filtered, list_with_lan, list_with_lan_filtered, list_with_lanL, list_with_lanR, list_with_lanRL, list_with_laRZ, list_with_laZ, files_dirs_number
+    :members: list_with_la, list_with_la_filtered, list_with_lan, list_with_lan_filtered, list_with_lanL, list_with_lanR, list_with_lanRL, list_with_laRZ, list_with_laZ, files_dirs_number, list_with_ldH, list_with_ldZ
     :show-inheritance:
     :undoc-members:
 

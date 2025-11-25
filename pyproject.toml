@@ -31,7 +31,8 @@ dependencies = [
     "pyyaml",
     "redis",
     "requests",
-    "setuptools; python_version >= '3.12'",  # FIXME: remove after removed distutils
+    "rpm; python_version >= '3.6'",
+    "setuptools; python_version < '3.10'", # for pkg_resources
     "six",
 ]
 

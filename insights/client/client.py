@@ -390,11 +390,6 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
                 )
             else:
                 logger.info("Successfully uploaded report for %s.", msg_name)
-            if config.register:
-                # direct to console after register + upload
-                logger.info(
-                    'View the Red Hat Insights console at https://console.redhat.com/insights/'
-                )
             break
 
         elif upload.status_code in (412, 413):
@@ -427,9 +422,6 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
             os.chmod(constants.lastupload_file, 0o644)
             msg_name = determine_hostname(config.display_name)
             logger.info("Successfully uploaded report for %s.", msg_name)
-            if config.register:
-                # direct to console after register + upload
-                display_console_url(config)
             return
         elif upload.status_code in (413, 415):
             pconn.handle_fail_rcs(upload)
@@ -452,10 +444,3 @@ def display_upload_error_and_retry(config, tries, error_message):
         logger.error("All attempts to upload have failed!")
         print("Please see %s for additional information" % config.logging_file)
         raise RuntimeError('Upload failed.')
-
-
-def display_console_url(config):
-    console_url = "https://console.redhat.com/insights/"
-    if "stage" in config.base_url:
-        console_url = "https://console.stage.redhat.com/insights/"
-    logger.info("View the Red Hat Insights console at %s" % console_url)

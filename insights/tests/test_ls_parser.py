@@ -237,7 +237,7 @@ def test_parse_single_directory():
 
 def test_parse_multiple_directories():
     results = parse(MULTIPLE_DIRECTORIES.splitlines(), None)
-    assert len(results) == 2, len(results)
+    assert len(results) == 3, len(results)
     assert results["/etc/sysconfig"]["name"] == "/etc/sysconfig"
     assert results["/etc/sysconfig"]["total"] == 96
     assert results["/etc/rc.d/rc3.d"]["name"] == "/etc/rc.d/rc3.d"
@@ -245,6 +245,7 @@ def test_parse_multiple_directories():
 
     assert results["/etc/sysconfig"]["entries"]["spooler-T"]["perms"] == "-w----r-T"
     assert results["/etc/sysconfig"]["entries"]["spooler-t"]["perms"] == "-w----r-t"
+    assert len(results['error_lines']) == 1
 
     res = results["/etc/sysconfig"]["entries"]["ebtables-config"]
     assert res["type"] == "-"
@@ -259,16 +260,17 @@ def test_parse_multiple_directories():
 
 def test_parse_multiple_directories_with_break():
     results = parse(MULTIPLE_DIRECTORIES_WITH_BREAK.splitlines(), None)
-    assert len(results) == 3, len(results)
-    assert len(results.values()) == 3
-    assert len(results.items()) == 3
-    assert len(list(six.iteritems(results))) == 3
+    assert len(results) == 4, len(results)
+    assert len(results.values()) == 4
+    assert len(results.items()) == 4
+    assert len(list(six.iteritems(results))) == 4
     assert results["/etc"]["name"] == "/etc"
     assert results["/etc"]["total"] == 1652
     assert results["/etc/rc.d/rc3.d"]["name"] == "/etc/rc.d/rc3.d"
     assert results["/etc/rc.d/rc3.d"]["total"] == 4
     assert 'chrony.keys' in results['/etc']['files']
     assert 'cifs-utils' in results['/etc']['dirs']
+    assert len(results['error_lines']) == 1
 
     res = results["/etc"]["entries"]["chrony.conf.20180210135613"]
     assert res["type"] == "-"
@@ -283,7 +285,7 @@ def test_parse_multiple_directories_with_break():
 
 def test_complicated_files():
     results = parse(COMPLICATED_FILES.splitlines(), "/tmp")
-    assert len(results) == 1
+    assert len(results) == 2
     assert results["/tmp"]["total"] == 16, results["/tmp"]["total"]
     assert results["/tmp"]["name"] == "/tmp", results["/tmp"]["name"]
     res = results["/tmp"]["entries"]["dm-10"]
@@ -296,6 +298,7 @@ def test_complicated_files():
     assert res["date"] == "Aug  4 16:56"
     assert res["name"] == "dm-10"
     assert res["dir"] == "/tmp"
+    assert len(results['error_lines']) == 1
 
 
 def test_files_with_selinux_disabled():
