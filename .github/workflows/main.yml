@@ -2,9 +2,9 @@ name: Insights Core Test
 
 on:
   push:
-    branches: [ master, '3.0']
+    branches: [ "3.0_egg" ]
   pull_request:
-    branches: [ master ]
+    branches: [ "3.0_egg" ]
 
 jobs:
   code-test:
