@@ -8,7 +8,6 @@ from insights.parsers.netstat import (
     NetstatAGN,
     NetstatS,
     Netstat_I,
-    Ss,
     SsTULPN,
     SsTUPNA,
     ProcNsat,
@@ -820,7 +819,7 @@ def test_netstat_doc_examples():
         'multicast': NetstatAGN(context_wrap(TEST_NETSTAT_AGN)),
         'ns': Netstat(context_wrap(NETSTAT_DOCS)),
         'traf': Netstat_I(context_wrap(NETSTAT_I)),
-        'ss': Ss(context_wrap(SS_TUPNA_DOCS)),
+        'ss': SsTUPNA(context_wrap(SS_TUPNA_DOCS)),
         'pnstat': ProcNsat(context_wrap(PROC_NETSTAT)),
     }
     failed, total = doctest.testmod(netstat, globs=env)
