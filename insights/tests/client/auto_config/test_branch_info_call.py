@@ -1,5 +1,5 @@
 from insights.client.auto_config import set_auto_configuration
-from mock.mock import Mock, patch
+from unittest.mock import Mock, patch
 
 
 @patch("insights.client.auto_config.InsightsConnection")

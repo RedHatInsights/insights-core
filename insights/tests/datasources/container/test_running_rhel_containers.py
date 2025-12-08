@@ -1,6 +1,6 @@
 import pytest
 
-from mock.mock import patch
+from unittest.mock import patch
 
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent

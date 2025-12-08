@@ -2,7 +2,7 @@ import os
 import tempfile
 import yaml
 
-from mock.mock import Mock
+from unittest.mock import Mock
 
 from insights.collect import load_manifest, generate_archive_name, _parse_broker_exceptions
 from insights.core.dr import Broker

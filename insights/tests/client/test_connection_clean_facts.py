@@ -1,8 +1,4 @@
-try:
-    from unittest.mock import patch
-except Exception:
-    from mock import patch
-
+from unittest.mock import patch
 from copy import deepcopy
 
 from insights.client.connection import InsightsConnection

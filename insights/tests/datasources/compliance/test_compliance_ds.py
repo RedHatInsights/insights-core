@@ -2,13 +2,9 @@
 import os
 import json
 
-try:
-    from unittest.mock import patch
-except Exception:
-    from mock import patch
-
 from pytest import raises
 from tempfile import NamedTemporaryFile
+from unittest.mock import patch
 
 from insights.core.exceptions import SkipComponent
 from insights.client.config import InsightsConfig

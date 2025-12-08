@@ -4,7 +4,7 @@ from insights.client.config import InsightsConfig
 from insights.client.connection import InsightsConnection
 from insights.client.support import InsightsSupport, registration_check
 from insights.client.constants import InsightsConstants as constants
-from mock.mock import Mock, patch
+from unittest.mock import Mock, patch
 
 
 TEMP_TEST_REG_DIR = "/tmp/insights-client-registration"

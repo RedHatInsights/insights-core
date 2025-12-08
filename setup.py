@@ -88,7 +88,6 @@ testing = set(
         'pytest~=4.6.0; python_version == "2.7"',
         'pytest; python_version >= "3"',
         'pytest-cov',
-        'mock==2.0.0',
     ]
 )
 

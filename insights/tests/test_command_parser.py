@@ -2,7 +2,7 @@ import sys
 from insights import get_nvr
 from insights.command_parser import InsightsCli
 import pytest
-from mock import patch
+from unittest.mock import patch
 
 VERSION_OUT = get_nvr() + '\n'
 

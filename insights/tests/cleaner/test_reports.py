@@ -3,7 +3,7 @@ import json
 import os
 import tempfile
 
-from mock.mock import patch
+from unittest.mock import patch
 from pytest import mark
 
 from insights.client.archive import InsightsArchive

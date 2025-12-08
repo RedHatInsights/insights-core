@@ -2,7 +2,7 @@ import json
 import os
 from collections import defaultdict
 
-from mock.mock import patch
+from unittest.mock import patch
 
 from insights import collect
 from insights.client.archive import InsightsArchive

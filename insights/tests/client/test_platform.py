@@ -1,7 +1,7 @@
 import json
 from insights.client.config import InsightsConfig
 from insights.client.connection import InsightsConnection
-from mock.mock import patch, mock_open, ANY
+from unittest.mock import patch, mock_open, ANY
 from pytest import raises
 
 
