@@ -67,7 +67,6 @@ optional = [
 ]
 testing = [
     "coverage",
-    "mock==2.0.0",  # FIXME: remove for python 3.6 and newer
     "pytest-cov",
     "pytest; python_version >= '3'",
     "pytest~=4.6.0; python_version == '2.7'",

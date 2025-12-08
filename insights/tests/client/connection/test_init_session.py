@@ -1,5 +1,5 @@
 from insights.client.connection import InsightsConnection
-from mock.mock import Mock, patch
+from unittest.mock import Mock, patch
 from os import environ as os_environ
 
 

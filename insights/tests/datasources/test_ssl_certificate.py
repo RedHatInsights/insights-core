@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-try:
-    from unittest.mock import patch, mock_open
-    builtin_open = "builtins.open"
-except Exception:
-    from mock import patch, mock_open
-    builtin_open = "__builtin__.open"
+
+from unittest.mock import patch, mock_open
 
 from insights.combiners.rsyslog_confs import RsyslogAllConf
 from insights.core.exceptions import SkipComponent
@@ -315,7 +311,7 @@ queue.type = "LinkedList"
 
 
 @patch("os.path.exists", return_value=True)
-@patch(builtin_open, new_callable=mock_open, read_data=HTTPD_CONF)
+@patch("builtins.open", new_callable=mock_open, read_data=HTTPD_CONF)
 def test_httpd_certificate(m_open, m_exist):
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_SSL_CONF).return_value]
     broker = {
@@ -354,7 +350,7 @@ def test_nginx_certificate():
 
 
 @patch("os.path.exists", return_value=True)
-@patch(builtin_open, new_callable=mock_open, read_data=HTTPD_CONF)
+@patch("builtins.open", new_callable=mock_open, read_data=HTTPD_CONF)
 def test_httpd_ssl_cert_exception(m_open, m_exists):
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_CONF_WITHOUT_SSL).return_value]
     broker1 = {
@@ -400,7 +396,7 @@ def test_mssql_tls_no_cert_exception():
 
 
 @patch("os.path.exists", return_value=True)
-@patch(builtin_open, new_callable=mock_open, read_data=HTTPD_CONF)
+@patch("builtins.open", new_callable=mock_open, read_data=HTTPD_CONF)
 def test_httpd_certificate_info_in_nss(m_open, m_exists):
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_WITH_NSS).return_value]
     broker = {
@@ -411,7 +407,7 @@ def test_httpd_certificate_info_in_nss(m_open, m_exists):
 
 
 @patch("os.path.exists", return_value=True)
-@patch(builtin_open, new_callable=mock_open, read_data=HTTPD_CONF)
+@patch("builtins.open", new_callable=mock_open, read_data=HTTPD_CONF)
 def test_httpd_certificate_info_in_nss_exception(m_open, m_exists):
     m_open.side_effect = [m_open.return_value, mock_open(read_data=HTTPD_WITH_NSS_OFF).return_value]
     broker = {

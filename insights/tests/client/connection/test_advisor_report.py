@@ -1,6 +1,6 @@
 import os
 import pytest
-from mock.mock import patch
+from unittest.mock import patch
 from insights.client.constants import InsightsConstants as constants
 from insights.client.connection import InsightsConnection
 from insights.client.config import InsightsConfig

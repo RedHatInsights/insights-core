@@ -1,5 +1,5 @@
 import pytest
-from mock.mock import Mock
+from unittest.mock import Mock
 
 from insights import SkipComponent
 from insights.parsers.blkid import BlockIDInfo

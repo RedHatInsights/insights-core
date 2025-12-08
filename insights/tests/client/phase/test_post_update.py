@@ -4,7 +4,7 @@ from contextlib import contextmanager
 import os
 from shutil import rmtree
 from insights.client.phase.v1 import post_update
-from mock.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 from pytest import raises
 
 

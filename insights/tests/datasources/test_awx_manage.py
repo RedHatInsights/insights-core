@@ -2,7 +2,7 @@ import json
 import pytest
 
 from collections import defaultdict, OrderedDict
-from mock.mock import Mock
+from unittest.mock import Mock
 
 from insights.core import filters
 from insights.core.exceptions import SkipComponent

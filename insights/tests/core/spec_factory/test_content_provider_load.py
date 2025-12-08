@@ -2,7 +2,7 @@ import os
 from collections import defaultdict
 
 import pytest
-from mock.mock import patch
+from unittest.mock import patch
 
 from insights.core import dr
 from insights.core import filters

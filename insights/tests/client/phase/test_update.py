@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 from insights.client.phase.v1 import update
-from mock.mock import patch
+from unittest.mock import patch
 from pytest import raises
 
 

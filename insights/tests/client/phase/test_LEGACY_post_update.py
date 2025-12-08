@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from insights.client.phase.v1 import post_update
-from mock.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 from pytest import raises
 
 
