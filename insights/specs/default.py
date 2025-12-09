@@ -16,7 +16,7 @@ import signal
 # - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
-from insights.components.rhel_version import IsGtOrRhel84, IsGtOrRhel86
+from insights.components.rhel_version import IsRhel7, IsGtOrRhel84, IsGtOrRhel86
 from insights.components.satellite import (
     IsSatellite,
     IsSatellite611,
@@ -468,7 +468,7 @@ class DefaultSpecs(Specs):
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
     limits_conf = glob_file(["/etc/security/limits.conf", "/etc/security/limits.d/*.conf"])
-    localectl_status = simple_command("/usr/bin/localectl status")
+    localectl_status = simple_command("/usr/bin/localectl status", deps=[IsRhel7])
     localtime = simple_command("/usr/bin/file -L /etc/localtime")
     login_pam_conf = simple_file("/etc/pam.d/login")
     logrotate_conf = foreach_collect(logrotate.logrotate_conf_list, "%s")
