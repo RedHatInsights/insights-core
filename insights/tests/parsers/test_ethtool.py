@@ -1,7 +1,7 @@
 import pytest
 import re
 
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import ethtool
 from insights.tests import context_wrap
 from insights.util import keys_in
@@ -946,6 +946,35 @@ def test_ethtool_fail():
 # Because tests are done at the module level, we have to put all the shared
 # parser information in the one environment.  Fortunately this is normal.
 # Also note that to support common usage, all of these are supplied in lists.
+
+ETHTOOL_PRIV_FLAGS_CONTENT = """
+Private flags for eth0:
+legacy-rx: off
+vf-true-promisc-support: off
+vf-vlan-pruning: on
+flow-director-atr: on
+veb-stats: off
+hw-atr-eviction: on
+link-down-on-close: off
+""".strip()
+
+ETHTOOL_PRIV_FLAGS_ERROR = """
+netlink error Operation not supported
+""".strip()
+
+
+def test_ethtool_priv_flags():
+    ethtool_priv_flags = ethtool.PrivFlags(context_wrap(ETHTOOL_PRIV_FLAGS_CONTENT, path="ethtool_-show-priv-flags_eth0"))
+    assert ethtool_priv_flags.ifname == "eth0"
+    assert ethtool_priv_flags.priv_flags['legacy-rx'] == 'off'
+    assert len(ethtool_priv_flags.priv_flags.keys()) == 7
+
+
+def test_ethtool_priv_flags_error():
+    with pytest.raises(SkipComponent):
+        ethtool.PrivFlags(context_wrap(ETHTOOL_PRIV_FLAGS_ERROR))
+
+
 def test_ethtool_i_doc_examples():
     env = {
         'coalesce': [ethtool.CoalescingInfo(context_wrap(TEST_ETHTOOL_C_DOCS, path='ethtool_-c_eth0'))],
@@ -956,6 +985,7 @@ def test_ethtool_i_doc_examples():
         'ring': [ethtool.Ring(context_wrap(TEST_ETHTOOL_G_DOCS, path='ethtool_-g_eth0'))],
         'stats': [ethtool.Statistics(context_wrap(TEST_ETHTOOL_S_DOCS, path='ethtool_-S_eth0'))],
         'timestamp': [ethtool.TimeStamp(context_wrap(TEST_ETHTOOL_TIMESTAMP, path='ethtool_-T_eno1'))],
+        'priv_flags': [ethtool.PrivFlags(context_wrap(ETHTOOL_PRIV_FLAGS_CONTENT, path='ethtool_-show-priv-flags_eth0'))],
     }
     failed, total = doctest.testmod(ethtool, globs=env)
     assert failed == 0
