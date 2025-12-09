@@ -9,11 +9,15 @@ This module provides a parser for information about certificates for
 Red Hat product subscriptions.
 
 """
+
 from insights.core.filters import add_filter
 from insights.specs import Specs
 from .. import parser, CommandParser
 
-add_filter(Specs.subscription_manager_installed_product_ids, ['ID:', 'Product Certificate', 'Path:'])
+add_filter(
+    Specs.subscription_manager_installed_product_ids,
+    ['ID:', 'Name:', 'Product Certificate', 'Path:'],
+)
 
 
 @parser(Specs.subscription_manager_installed_product_ids)
@@ -101,11 +105,12 @@ class InstalledProductIDs(CommandParser):
         >>> list(products.ids)
         ['69']
         >>> products.product_certs[0]
-        {'path': '/etc/pki/product-default/69.pem', 'id': '69'}
+        {'path': '/etc/pki/product-default/69.pem', 'id': '69', 'name': 'Red Hat Enterprise Linux Server'}
 
     """
+
     def parse_content(self, content):
-        """ Parse command output """
+        """Parse command output"""
         self.ids = set()
         self.product_certs = []
         one_file_data = None
@@ -118,7 +123,9 @@ class InstalledProductIDs(CommandParser):
                 one_file_data = {}
             elif one_file_data is not None and ':' in line:
                 name, value = line.split(':', 1)
-                lower_name_with_underscore = '_'.join([item.strip().lower() for item in name.split()])
+                lower_name_with_underscore = '_'.join(
+                    [item.strip().lower() for item in name.split()]
+                )
                 one_file_data[lower_name_with_underscore] = value.strip()
         if one_file_data:
             # add the last file data
