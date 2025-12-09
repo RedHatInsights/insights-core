@@ -1,6 +1,6 @@
 import pytest
 
-from mock.mock import patch, PropertyMock
+from unittest.mock import patch, PropertyMock
 
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent, ContentException

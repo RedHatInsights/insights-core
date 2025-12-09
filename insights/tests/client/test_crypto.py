@@ -3,7 +3,7 @@ import shutil
 import subprocess
 import tempfile
 
-import mock
+from unittest import mock
 import pytest
 
 from insights.client import crypto

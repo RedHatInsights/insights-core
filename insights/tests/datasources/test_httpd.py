@@ -1,20 +1,12 @@
 import pytest
 
-from mock.mock import mock_open
+from unittest.mock import mock_open, patch
 from insights.combiners.ps import Ps
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
 from insights.parsers.mount import ProcMounts
 from insights.specs.datasources.httpd import httpd_cmds, httpd_on_nfs, httpd_configuration_files, httpd24_scl_configuration_files, httpd24_scl_jbcs_configuration_files
 from insights.tests import context_wrap
-
-
-try:
-    from unittest.mock import patch
-    builtin_open = "builtins.open"
-except Exception:
-    from mock import patch
-    builtin_open = "__builtin__.open"
 
 
 MOUNT_DATA = """
@@ -153,7 +145,7 @@ SecAction \
 @patch("os.path.isfile", return_value=True)
 @patch("os.path.isdir", return_value=True)
 @patch("glob.glob", return_value=["/etc/httpd/conf.d/ssl.conf"])
-@patch(builtin_open, new_callable=mock_open, read_data=data_lines_httpd_conf)
+@patch("builtins.open", new_callable=mock_open, read_data=data_lines_httpd_conf)
 def test_httpd_conf_files(m_open, m_glob, m_isdir, m_isfile):
     handlers = (m_open.return_value, mock_open(read_data=data_lines_ssl_conf).return_value)
     m_open.side_effect = handlers
@@ -165,7 +157,7 @@ def test_httpd_conf_files(m_open, m_glob, m_isdir, m_isfile):
 @patch("os.path.isfile", return_value=True)
 @patch("os.path.isdir", return_value=True)
 @patch("glob.glob", return_value=["/etc/httpd/conf.d/ssl.conf"])
-@patch(builtin_open, new_callable=mock_open, read_data=data_lines_httpd_conf_lower_case)
+@patch("builtins.open", new_callable=mock_open, read_data=data_lines_httpd_conf_lower_case)
 def test_httpd_conf_files_lower_case(m_open, m_glob, m_isdir, m_isfile):
     handlers = (m_open.return_value, mock_open(read_data=data_lines_ssl_conf_lower_case).return_value)
     m_open.side_effect = handlers
@@ -177,7 +169,7 @@ def test_httpd_conf_files_lower_case(m_open, m_glob, m_isdir, m_isfile):
 @patch("os.path.isfile", return_value=True)
 @patch("os.path.isdir", return_value=True)
 @patch("glob.glob", return_value=["/etc/httpd/modsecurity.d/crs-setup.conf"])
-@patch(builtin_open, new_callable=mock_open, read_data=data_lines_httpd_conf_section_test)
+@patch("builtins.open", new_callable=mock_open, read_data=data_lines_httpd_conf_section_test)
 def test_httpd_conf_files_section(m_open, m_glob, m_isdir, m_isfile):
     handlers = (m_open.return_value, mock_open(read_data=data_lines_crs_setup_conf).return_value)
     m_open.side_effect = handlers
@@ -189,7 +181,7 @@ def test_httpd_conf_files_section(m_open, m_glob, m_isdir, m_isfile):
 @patch("os.path.isfile", return_value=False)
 @patch("os.path.isdir", return_value=False)
 @patch("glob.glob", return_value=["/etc/httpd/conf.d/ssl.conf"])
-@patch(builtin_open, new_callable=mock_open, read_data=data_lines_httpd_conf)
+@patch("builtins.open", new_callable=mock_open, read_data=data_lines_httpd_conf)
 def test_httpd_conf_files_ssl_miss(m_open, m_glob, m_isdir, m_isfile):
     handlers = (m_open.return_value, mock_open(read_data=data_lines_ssl_conf).return_value)
     m_open.side_effect = handlers
@@ -211,7 +203,7 @@ def test_httpd_conf_files_main_miss(m_glob, m_isdir, m_isfile, m_join):
 @patch("os.path.isfile", return_value=True)
 @patch("os.path.isdir", return_value=True)
 @patch("glob.glob", return_value=["/opt/rh/httpd24/root/etc/httpd/conf.d/ssl.conf"])
-@patch(builtin_open, new_callable=mock_open, read_data=data_lines_httpd24_scl_conf)
+@patch("builtins.open", new_callable=mock_open, read_data=data_lines_httpd24_scl_conf)
 def test_httpd24_scl_conf_files(m_open, m_glob, m_isdir, m_isfile):
     handlers = (m_open.return_value, mock_open(read_data=data_lines_ssl_conf).return_value)
     m_open.side_effect = handlers
@@ -223,7 +215,7 @@ def test_httpd24_scl_conf_files(m_open, m_glob, m_isdir, m_isfile):
 @patch("os.path.isfile", return_value=True)
 @patch("os.path.isdir", return_value=True)
 @patch("glob.glob", return_value=["/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/ssl.conf"])
-@patch(builtin_open, new_callable=mock_open, read_data=data_lines_httpd24_scl_jbcs_conf)
+@patch("builtins.open", new_callable=mock_open, read_data=data_lines_httpd24_scl_jbcs_conf)
 def test_httpd24_scl_jbs_conf_files(m_open, m_glob, m_isdir, m_isfile):
     handlers = (m_open.return_value, mock_open(read_data=data_lines_ssl_conf).return_value)
     m_open.side_effect = handlers

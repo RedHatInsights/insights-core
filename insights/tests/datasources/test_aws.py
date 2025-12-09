@@ -1,6 +1,6 @@
 import pytest
 
-from mock.mock import Mock
+from unittest.mock import Mock
 
 from insights.core.exceptions import SkipComponent
 from insights.specs.datasources.aws import LocalSpecs, aws_imdsv2_token

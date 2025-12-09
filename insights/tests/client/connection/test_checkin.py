@@ -1,7 +1,7 @@
 from json import dumps
 from uuid import uuid4
 
-from mock.mock import Mock, patch
+from unittest.mock import Mock, patch
 from pytest import mark
 from pytest import raises
 from requests import ConnectionError

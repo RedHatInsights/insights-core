@@ -1,7 +1,7 @@
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
-from mock.mock import Mock, patch
+from unittest.mock import Mock, patch
 from pytest import fixture
 from tempfile import NamedTemporaryFile
 

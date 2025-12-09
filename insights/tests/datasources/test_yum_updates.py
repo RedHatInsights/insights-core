@@ -2,7 +2,7 @@ import json
 
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs.datasources import yum_updates
-from mock.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 
 # Verify that the yum_updates broker correctly executes.

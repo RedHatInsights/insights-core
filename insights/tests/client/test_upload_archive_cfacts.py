@@ -1,12 +1,6 @@
 import json
 
-try:
-    from unittest.mock import patch, mock_open
-    builtin_open = "builtins.open"
-except Exception:
-    from mock import patch
-    from mock.mock import mock_open
-    builtin_open = "__builtin__.open"
+from unittest.mock import patch, mock_open
 
 from insights.client.connection import InsightsConnection
 from insights.util.hostname import determine_hostname
@@ -36,7 +30,7 @@ def test_cfacts_no_cleaning_1(legacy_upload):
 
 @patch('insights.client.connection.InsightsConnection._init_session', mock_init_session)
 @patch('insights.client.connection.InsightsConnection.post', return_value=MockSession())
-@patch(builtin_open, new_callable=mock_open, read_data='')
+@patch('builtins.open', new_callable=mock_open, read_data='')
 @patch('insights.client.connection.InsightsUploadConf.get_rm_conf', return_value={})
 @patch("insights.client.connection.get_canonical_facts", return_value={'hostname': determine_hostname()})
 @patch("insights.client.connection.logger")
@@ -58,7 +52,7 @@ def test_cfacts_no_cleaning_2(logger, facts, rm_conf, _open, post):
 
 @patch('insights.client.connection.InsightsConnection._init_session', mock_init_session)
 @patch('insights.client.connection.InsightsConnection.post', return_value=MockSession())
-@patch(builtin_open, new_callable=mock_open, read_data='')
+@patch('builtins.open', new_callable=mock_open, read_data='')
 @patch('insights.client.connection.InsightsUploadConf.get_rm_conf', return_value={})
 @patch("insights.client.connection.get_canonical_facts", return_value={'hostname': determine_hostname(), 'ip': '10.0.0.1'})
 @patch("insights.client.connection.logger")

@@ -1,6 +1,6 @@
 import pytest
 
-from mock.mock import Mock
+from unittest.mock import Mock
 from insights.core.exceptions import SkipComponent
 from insights.specs.datasources.db2 import LocalSpecs, db2_users, db2_databases_info
 from insights.parsers.ps import PsAuxcww

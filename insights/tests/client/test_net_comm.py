@@ -2,7 +2,7 @@
 
 from insights.client.phase import v1
 from insights.tests.helpers import dummy_requests_session, getenv_bool, Timeout
-from mock.mock import patch
+from unittest.mock import patch
 from pytest import mark
 
 

@@ -1,5 +1,5 @@
 from insights.client.connection import InsightsConnection
-from mock.mock import Mock, patch
+from unittest.mock import Mock, patch
 
 
 @patch("insights.client.connection.InsightsConnection._init_session")

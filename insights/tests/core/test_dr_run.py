@@ -4,7 +4,7 @@ from insights import run, make_fail, make_pass
 from insights.core import dr
 from insights.plugins import always_fires, never_fires
 from insights.specs import Specs
-from mock import patch
+from unittest.mock import patch
 from insights.tests.spec_tests import report_multioutput, report_nonexistent, report_raw
 
 
