@@ -216,6 +216,7 @@ class Specs(SpecSet):
     ethtool_g = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     ethtool_i = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     ethtool_k = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    ethtool_priv_flags = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     facter = RegistryPoint()
     falconctl_aid = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     falconctl_backend = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])

@@ -29,6 +29,9 @@ Features - command ``/sbin/ethtool -k {interface}``
 Pause - command ``/sbin/ethtool -a {interface}``
 ------------------------------------------------
 
+PrivFlags - command ``/sbin/ethtool --show-priv-flags {interface}``
+-------------------------------------------------------------------
+
 Ring - command ``/sbin/ethtool -g {interface}``
 -----------------------------------------------
 
@@ -45,7 +48,7 @@ import sys
 
 from collections import namedtuple
 from insights.core import CommandParser, LegacyItemAccess
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -951,3 +954,53 @@ class Ethtool(CommandParser):
         self.supported_ports = []
         if 'Supported ports' in self.data:
             self.supported_ports = self.data['Supported ports'][0].strip('[] ').split()
+
+
+@parser(Specs.ethtool_priv_flags)
+class PrivFlags(CommandParser):
+    """
+    Parses output of ``ethtool --show-priv-flags`` command.
+
+    Raises:
+        SkipComponent: Raised when any problem parsing the command output.
+
+    Sample output::
+
+        Private flags for eth0:
+        legacy-rx: off
+        vf-true-promisc-support: off
+        vf-vlan-pruning: on
+        flow-director-atr: on
+        veb-stats: off
+        hw-atr-eviction: on
+        link-down-on-close: off
+
+    Examples:
+        >>> type(priv_flags[0])
+        <class 'insights.parsers.ethtool.PrivFlags'>
+        >>> eth_priv_flags = priv_flags[0]
+        >>> eth_priv_flags.ifname
+        'eth0'
+        >>> len(eth_priv_flags.priv_flags.keys())
+        7
+        >>> "legacy-rx" in eth_priv_flags.priv_flags
+        True
+        >>> eth_priv_flags.priv_flags["legacy-rx"]
+        'off'
+    """
+
+    def parse_content(self, content):
+        self.priv_flags = {}
+        self.ifname = None
+        for line in content:
+            line = line.strip()
+            if 'Private flags for' in line:
+                self.ifname = line.split('Private flags for')[-1].strip(':').strip()
+                continue
+            if line and ':' in line:
+                key, value = line.split(':', 1)
+                key = key.strip()
+                self.priv_flags[key] = value.strip()
+
+        if not self.priv_flags and not self.ifname:
+            raise SkipComponent
