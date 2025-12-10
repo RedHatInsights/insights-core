@@ -641,6 +641,7 @@ class DefaultSpecs(Specs):
     os_release = simple_file("etc/os-release")
     ose_master_config = simple_file("/etc/origin/master/master-config.yaml")
     ose_node_config = simple_file("/etc/origin/node/node-config.yaml")
+    ossl_files = simple_command("/usr/lib/dracut/ossl-files --config", keep_rc=True)
     ovirt_engine_server_log = simple_file("/var/log/ovirt-engine/server.log")
     ovirt_engine_ui_log = simple_file("/var/log/ovirt-engine/ui.log")
     ovs_appctl_fdb_show_bridge = foreach_execute(
