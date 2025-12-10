@@ -34,6 +34,7 @@ from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import keyword_search, parse_delimited_table
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 ACTIVE_INTERNET_CONNECTIONS = 'Active Internet connections (servers and established)'
@@ -659,12 +660,10 @@ class Netstat_I(CommandParser):
         return
 
 
-class Ss(CommandParser, list):
+@parser(Specs.ss)
+class SsTUPNA(CommandParser, list):
     """
-    Parse the output of the ``ss -p...`` command.
-
-    This class parse the input as a table with header:
-        "Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"
+    Parse the output of the ``ss -tupna`` command.
 
     Sample input data looks like::
 
@@ -678,7 +677,7 @@ class Ss(CommandParser, list):
     Examples:
 
         >>> type(ss)
-        <class 'insights.parsers.netstat.Ss'>
+        <class 'insights.parsers.netstat.SsTUPNA'>
         >>> len(ss[1].keys())
         7
         >>> ss[0]['Local-Address-Port']
@@ -749,18 +748,26 @@ class Ss(CommandParser, list):
 
 
 @parser(Specs.ss)
-class SsTUPNA(Ss):
+class SsTULPN(SsTUPNA):
     """
-    Parse the output of the ``ss -tupna`` command.
+    .. warning::
+        This parser is deprecated, please use :py:class:`SsTUPNA` instead.
+
+    Parse the output of the ``ss -tulpn`` command which keeps the lines contain
+    "UNCONN" or "LISTEN" in the output of ``ss -tupna`` command.
 
     Refer to the super class :py:class:`Ss` for details.
     """
 
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(SsTULPN, "Please use the :py:class:`SsTUPNA` instead.", "3.8.0")
+        super(SsTULPN, self).__init__(*args, **kwargs)
 
-
-# SsTULPN is SsTUPNA
-SsTULPN = SsTUPNA
+    def parse_content(self, content):
+        # Keep the lines of UNCONN and LISTEN only
+        content = [line for line in content if (('UNCONN' in line) or ('LISTEN' in line))]
+        self.extend(parse_delimited_table(self.SS_TABLE_HEADER + content))
+        del content
 
 
 @parser(Specs.proc_netstat)
