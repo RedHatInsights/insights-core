@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.10
+Version:        3.6.11
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,20 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Dec 11 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.11-1
+- fix(parser): Deprecate the SsTUPLN parser (#4663) (xiangceliu@redhat.com)
+- feat: add filter "Name:" to InstalledProductIDs spec (#4661)
+  (xiaoxwan@redhat.com)
+- spec: do hostname obfuscation for bootctl_status (#4658)
+  (xiangceliu@redhat.com)
+- spec: collect localectl_status only on RHEL 7 (#4656) (xiangceliu@redhat.com)
+- fix: don't import FileListing in insights (#4652) (xiangceliu@redhat.com)
+- chore(ci/cd): revert the ci/cd test for Egg branch (#4653)
+  (xiangceliu@redhat.com)
+- feat(test): unit test for successful upload (#4651) (pschrimp@redhat.com)
+- fix(test): update the check of obfuscation warnings (#4649)
+  (xiangceliu@redhat.com)
+
 * Thu Nov 20 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.10-1
 - fix(spec): keyctl_show should be a simple_command (#4637)
   (xiangceliu@redhat.com)

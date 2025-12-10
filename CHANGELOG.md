@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.11](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.11) (2025-12-11)
+
+- fix(parser): Deprecate the SsTUPLN parser ([PR 4663](https://github.com/RedHatInsights/insights-core/pull/4663))
+- feat: add filter "Name:" to InstalledProductIDs spec ([PR 4661](https://github.com/RedHatInsights/insights-core/pull/4661))
+- spec: do hostname obfuscation for bootctl_status ([PR 4658](https://github.com/RedHatInsights/insights-core/pull/4658))
+- spec: collect localectl_status only on RHEL 7 ([PR 4656](https://github.com/RedHatInsights/insights-core/pull/4656))
+- fix: don't import FileListing in insights ([PR 4652](https://github.com/RedHatInsights/insights-core/pull/4652))
+- chore(ci/cd): revert the ci/cd test for Egg branch ([PR 4653](https://github.com/RedHatInsights/insights-core/pull/4653))
+- feat(test): unit test for successful upload ([PR 4651](https://github.com/RedHatInsights/insights-core/pull/4651))
+- fix(test): update the check of obfuscation warnings ([PR 4649](https://github.com/RedHatInsights/insights-core/pull/4649))
+
 # [insights-core-3.6.10](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.10) (2025-11-20)
 
 - fix(spec): keyctl_show should be a simple_command ([PR 4637](https://github.com/RedHatInsights/insights-core/pull/4637))
