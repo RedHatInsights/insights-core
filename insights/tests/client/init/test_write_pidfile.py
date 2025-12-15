@@ -2,8 +2,8 @@ import os
 
 from insights.client import InsightsClient
 from insights.client.constants import InsightsConstants
-from mock.mock import call
-from mock.mock import patch
+from unittest.mock import call
+from unittest.mock import patch
 
 
 @patch("insights.client.atexit.register")

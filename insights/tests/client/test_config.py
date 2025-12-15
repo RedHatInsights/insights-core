@@ -2,7 +2,7 @@ import pytest
 import os
 from io import TextIOWrapper, BytesIO
 from insights.client.config import InsightsConfig, DEFAULT_OPTS
-from mock.mock import patch, Mock
+from unittest.mock import patch, Mock
 from pytest import mark
 
 

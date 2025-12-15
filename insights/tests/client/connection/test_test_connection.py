@@ -1,7 +1,7 @@
 import logging
 import pytest
 import requests
-from mock import mock
+from unittest import mock
 
 from insights.client.config import InsightsConfig
 from insights.client.connection import InsightsConnection

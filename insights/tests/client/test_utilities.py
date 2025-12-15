@@ -7,12 +7,8 @@ import insights.client.utilities as util
 import insights.client.cert_auth
 from insights.client.constants import InsightsConstants as constants
 import re
-try:
-    from unittest import mock
-    from unittest.mock import patch
-except ImportError:
-    import mock
-    from mock.mock import patch
+from unittest import mock
+from unittest.mock import patch
 import six
 import pytest
 import errno

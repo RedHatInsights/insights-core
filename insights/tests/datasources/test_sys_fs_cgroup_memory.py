@@ -1,5 +1,5 @@
 import pytest
-from mock.mock import patch, mock_open, Mock
+from unittest.mock import patch, mock_open, Mock
 from insights.core.dr import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs.datasources.sys_fs_cgroup_memory import (

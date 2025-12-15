@@ -5,11 +5,11 @@ import collections
 import pkgutil
 import sys
 
-import mock
 import pytest
 import tempfile
 import shutil
-from mock.mock import patch
+from unittest import mock
+from unittest.mock import patch
 from pytest import raises
 
 from insights.client.constants import InsightsConstants as constants

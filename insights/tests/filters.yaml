@@ -1,0 +1,489 @@
+# This file is used only for RPM testing
+# Please add a property filter keyword for new spec which is `filterable=True`
+insights.specs.Specs.abrt_ccpp_conf:
+  CreateCoreBacktrace: 1
+insights.specs.Specs.audit_log:
+  type=AVC: 10
+insights.specs.Specs.awx_manage_check_license_data:
+  product_name: 10
+insights.specs.Specs.candlepin_error_log:
+  WARNING: 1
+insights.specs.Specs.candlepin_log:
+  update or delete: 1
+insights.specs.Specs.catalina_out:
+  WARNING: 1
+insights.specs.Specs.catalina_server_log:
+  WARNING: 1
+insights.specs.Specs.ceilometer_central_log:
+  WARNING: 1
+insights.specs.Specs.ceilometer_collector_log:
+  WARNING: 1
+insights.specs.Specs.ceilometer_compute_log:
+  WARNING: 1
+insights.specs.Specs.ceph_conf:
+  '[': 10
+insights.specs.Specs.ceph_log:
+  WARNING: 1
+insights.specs.Specs.ceph_osd_log:
+  WARNING: 1
+insights.specs.Specs.cifs_debug_data:
+  DFS origin: 10
+insights.specs.Specs.cinder_api_log:
+  WARNING: 1
+insights.specs.Specs.cinder_volume_log:
+  WARNING: 1
+insights.specs.Specs.cloud_cfg:
+  ssh_deletekeys: 10
+insights.specs.Specs.cloud_init_log:
+  WARNING: 1
+insights.specs.Specs.cluster_conf:
+  clusternode name=: 10
+insights.specs.Specs.container_inspect_keys:
+  Config|Env: 10
+insights.specs.Specs.container_nginx_error_log:
+  worker_connections: 1
+insights.specs.Specs.container_ps_aux:
+  COMMAND: 10
+insights.specs.Specs.container_vsftpd_conf:
+  local_enable: 10
+insights.specs.Specs.corosync:
+  COROSYNC_OPTIONS: 10
+insights.specs.Specs.crictl_logs:
+  WARNING: 1
+insights.specs.Specs.cron_daily_rhsmd:
+  if [ -n $config ]; then: 10
+insights.specs.Specs.cron_foreman:
+  foreman-rake reports:expire: 10
+insights.specs.Specs.cron_log:
+  FAILED to authorize user with PAM: 10
+insights.specs.Specs.cups_browsed_conf:
+  BrowseRemoteProtocols: 10
+insights.specs.Specs.designate_conf:
+  '[': 10
+insights.specs.Specs.dirsrv:
+  KRB5: 1
+insights.specs.Specs.dirsrv_access:
+  KRB5: 1
+insights.specs.Specs.dirsrv_errors:
+  could not delete change record: 10
+insights.specs.Specs.dmesg:
+  Linux version: 10
+insights.specs.Specs.dmesg_log:
+  Linux version: 10
+insights.specs.Specs.dnf_conf:
+  '[': 10
+insights.specs.Specs.docker_storage:
+  OPTIONS: 10
+insights.specs.Specs.docker_storage_setup:
+  OPTIONS: 10
+insights.specs.Specs.docker_sysconfig:
+  OPTIONS: 10
+insights.specs.Specs.doveconf:
+  ssl_protocols: 10
+insights.specs.Specs.dse_ldif:
+  sslVersionMax: 10
+insights.specs.Specs.du_dirs:
+  /var/log: 1
+insights.specs.Specs.duplicate_machine_id:
+  fe037097-fb97-4204-9ca5-2e23326ae299: 10
+insights.specs.Specs.engine_log:
+  ERROR: 10
+insights.specs.Specs.etc_udev_40_redhat_rules:
+  SUBSYSTEM!="memory": 10
+insights.specs.Specs.etc_udev_oracle_asm_rules:
+  ACTION==: 10
+insights.specs.Specs.etcd_conf:
+  '[': 10
+insights.specs.Specs.fapolicyd_rules:
+  pattern=ld_so: 10
+insights.specs.Specs.files_dirs_number_filter:
+  /var/spool/clientmqueue/: 10
+insights.specs.Specs.firewalld_conf:
+  DefaultZone: 10
+insights.specs.Specs.foreman_log:
+  WARNING: 1
+insights.specs.Specs.foreman_production_log:
+  is not a valid choice: 1
+insights.specs.Specs.foreman_proxy_log:
+  WARNING: 1
+insights.specs.Specs.foreman_satellite_log:
+  WARNING: 1
+insights.specs.Specs.foreman_ssl_access_ssl_log:
+  WARNING: 1
+insights.specs.Specs.foreman_ssl_error_ssl_log:
+  WARNING: 1
+insights.specs.Specs.foreman_tasks_config:
+  ssl_ca_file: 1
+insights.specs.Specs.glance_api_log:
+  WARNING: 1
+insights.specs.Specs.gnocchi_conf:
+  '[': 10
+insights.specs.Specs.gnocchi_metricd_log:
+  WARNING: 1
+insights.specs.Specs.greenboot_status:
+  Boot Status is: 10
+insights.specs.Specs.group_info:
+  ssh_keys: 10
+insights.specs.Specs.heat_api_log:
+  WARNING: 1
+insights.specs.Specs.heat_engine_log:
+  WARNING: 1
+insights.specs.Specs.httpd24_httpd_error_log:
+  unable to create worker thread: 1
+insights.specs.Specs.httpd_access_log:
+  WARNING: 1
+insights.specs.Specs.httpd_cert_info_in_nss:
+  'Not After :': 10
+insights.specs.Specs.httpd_error_log:
+  'No space left on device: ': 1
+insights.specs.Specs.httpd_ssl_access_log:
+  WARNING: 1
+insights.specs.Specs.httpd_ssl_error_log:
+  WARNING: 1
+insights.specs.Specs.ibm_lparcfg:
+  system_type: 10
+insights.specs.Specs.ifcfg_static_route:
+  '=': 10
+insights.specs.Specs.imagemagick_policy:
+  <policy: 10
+insights.specs.Specs.insights_client_conf:
+  '[': 10
+insights.specs.Specs.ip6tables_permanent:
+  OUTPUT: 10
+insights.specs.Specs.ip_netns_exec_namespace_lsof:
+  COMMAND: 10
+insights.specs.Specs.ip_route_show_table_all:
+  default: 10
+insights.specs.Specs.ipaupgrade_log:
+  'wait_for_open_ports: localhost': 1
+insights.specs.Specs.ipsec_conf:
+  include: 10
+insights.specs.Specs.iptables_permanent:
+  OUTPUT: 10
+insights.specs.Specs.iris_messages_log:
+  '[Utility.Event] DELETE:': 10
+insights.specs.Specs.ironic_conf:
+  '[': 10
+insights.specs.Specs.ironic_inspector_log:
+  WARNING: 1
+insights.specs.Specs.jbcs_httpd24_httpd_error_log:
+  unable to create worker thread: 1
+insights.specs.Specs.jboss_domain_server_log:
+  WARNING: 1
+insights.specs.Specs.jboss_standalone_server_log:
+  WARNING: 1
+insights.specs.Specs.journal_all:
+  WARNING: 1
+insights.specs.Specs.journal_header:
+  'File path:': 10
+insights.specs.Specs.journal_since_boot:
+  WARNING: 1
+insights.specs.Specs.katello_service_status:
+  Success: 10
+insights.specs.Specs.kerberos_kdc_log:
+  WARNING: 1
+insights.specs.Specs.kernel_config:
+  CONFIG_SMP: 10
+insights.specs.Specs.keystone_log:
+  WARNING: 1
+insights.specs.Specs.libssh_client_config:
+  Include: 1
+insights.specs.Specs.libssh_server_config:
+  Include: 1
+insights.specs.Specs.libvirtd_log:
+  'virDomainBlockCopy:': 1
+insights.specs.Specs.libvirtd_qemu_log:
+  WARNING: 1
+insights.specs.Specs.ls_lH_files:
+  fstab_mounted.devices: 1
+  pvs.devices: 1
+insights.specs.Specs.ls_laRZ_dirs:
+  /var/lib/gdm: 1
+insights.specs.Specs.ls_laZ_dirs:
+  /var/log: 1
+insights.specs.Specs.ls_la_dirs:
+  /var/opt: 1
+insights.specs.Specs.ls_la_filtered:
+  /tmp: 1
+  /var/log: 1
+  'total ': 1
+  log: 1
+insights.specs.Specs.ls_la_filtered_dirs:
+  /tmp: 1
+  /var/log: 1
+insights.specs.Specs.ls_lanL_dirs:
+  /: 1
+insights.specs.Specs.ls_lanRL_dirs:
+  /etc/systemd/system: 1
+insights.specs.Specs.ls_lanR_dirs:
+  /lib/firmware: 1
+insights.specs.Specs.ls_lan_dirs:
+  /dev: 1
+  /etc: 1
+  fstab_mounted.dirs: 1
+insights.specs.Specs.ls_lan_filtered:
+  /boot: 1
+  /etc: 1
+  grub: 1
+  'total ': 1
+insights.specs.Specs.ls_lan_filtered_dirs:
+  /boot: 1
+  /etc: 1
+insights.specs.Specs.ls_ldH_items:
+  /boot: 1
+insights.specs.Specs.ls_ldZ_items:
+  /etc: 1
+insights.specs.Specs.lsattr_files_or_dirs:
+  /etc/default/grub: 1
+insights.specs.Specs.lsinitrd:
+  system-connections: 1
+insights.specs.Specs.lsinitrd_kdump_image:
+  system-connections: 1
+insights.specs.Specs.lsinitrd_lvm_conf:
+  filter: 1
+insights.specs.Specs.lsof:
+  COMMAND: 1
+insights.specs.Specs.lvm_conf:
+  filter: 10
+insights.specs.Specs.mariadb_log:
+  Too many open files: 10
+insights.specs.Specs.messages:
+  memory: 1
+insights.specs.Specs.mistral_executor_log:
+  WARNING: 1
+insights.specs.Specs.modinfo_modules:
+  be2net: 10
+insights.specs.Specs.mongod_conf:
+  vxfs: 10
+insights.specs.Specs.mysql_log:
+  Too many open files: 1
+insights.specs.Specs.named_checkconf_p:
+  '}': 10
+insights.specs.Specs.named_conf:
+  options: 10
+insights.specs.Specs.netconsole:
+  options: 10
+insights.specs.Specs.neutron_conf:
+  '[': 10
+insights.specs.Specs.neutron_dhcp_agent_ini:
+  '[': 10
+insights.specs.Specs.neutron_l3_agent_ini:
+  '[': 10
+insights.specs.Specs.neutron_l3_agent_log:
+  WARNING: 1
+insights.specs.Specs.neutron_metadata_agent_ini:
+  '[': 10
+insights.specs.Specs.neutron_metadata_agent_log:
+  WARNING: 1
+insights.specs.Specs.neutron_ml2_conf:
+  '[': 10
+insights.specs.Specs.neutron_ovs_agent_log:
+  WARNING: 1
+insights.specs.Specs.neutron_server_log:
+  WARNING: 1
+insights.specs.Specs.neutron_sriov_agent:
+  '[': 10
+insights.specs.Specs.nginx_error_log:
+  client intended to send too large body: 1
+insights.specs.Specs.nova_api_log:
+  WARNING: 1
+insights.specs.Specs.nova_compute_log:
+  WARNING: 1
+insights.specs.Specs.nscd_conf:
+  enable-cache: 10
+insights.specs.Specs.nsswitch_conf:
+  group: 10
+insights.specs.Specs.octavia_conf:
+  '[': 10
+insights.specs.Specs.odbc_ini:
+  server: 10
+insights.specs.Specs.openshift_hosts:
+  '[': 10
+insights.specs.Specs.openvswitch_daemon_log:
+  WARNING: 1
+insights.specs.Specs.openvswitch_server_log:
+  WARNING: 1
+insights.specs.Specs.osa_dispatcher_log:
+  WARNING: 1
+insights.specs.Specs.ovirt_engine_boot_log:
+  WARNING: 1
+insights.specs.Specs.ovirt_engine_console_log:
+  WARNING: 1
+insights.specs.Specs.ovirt_engine_server_log:
+  WARNING: 1
+insights.specs.Specs.ovirt_engine_ui_log:
+  WARNING: 1
+insights.specs.Specs.pacemaker_log:
+  No processes on: 10
+insights.specs.Specs.package_provides_command:
+  httpd: 10
+insights.specs.Specs.pcp_openmetrics_log:
+  WARNING: 1
+insights.specs.Specs.php_ini:
+  '[': 10
+insights.specs.Specs.postconf:
+  smtpd_use_tls: 10
+insights.specs.Specs.postconf_builtin:
+  smtpd_use_tls: 10
+insights.specs.Specs.postgresql_log:
+  FATAL: 10
+insights.specs.Specs.ps_alxwww:
+  COMMAND: 10
+insights.specs.Specs.ps_aux:
+  COMMAND: 10
+insights.specs.Specs.ps_auxww:
+  COMMAND: 10
+insights.specs.Specs.ps_ef:
+  COMMAND: 10
+insights.specs.Specs.puppetserver_config:
+  log: 10
+insights.specs.Specs.rabbitmq_logs:
+  WARNING: 1
+insights.specs.Specs.rabbitmq_startup_err:
+  WARNING: 1
+insights.specs.Specs.rabbitmq_startup_log:
+  WARNING: 1
+insights.specs.Specs.rear_default_conf:
+  log: 10
+insights.specs.Specs.rear_local_conf:
+  log: 10
+insights.specs.Specs.rhc_conf:
+  log-level: 10
+insights.specs.Specs.rhn_search_daemon_log:
+  WARNING: 1
+insights.specs.Specs.rhn_server_satellite_log:
+  WARNING: 1
+insights.specs.Specs.rhn_server_xmlrpc_log:
+  WARNING: 1
+insights.specs.Specs.rhsm_conf:
+  '[': 10
+insights.specs.Specs.rhsm_log:
+  WARNING: 1
+insights.specs.Specs.rpm_V_package_list:
+  glibc: 10
+insights.specs.Specs.rsyslog_conf:
+  (: 10
+insights.specs.Specs.samba:
+  workgroup: 10
+insights.specs.Specs.samba_logs:
+  workgroup: 10
+insights.specs.Specs.sap_dev_disp:
+  haha: 1
+insights.specs.Specs.sap_dev_rd:
+  haha: 1
+insights.specs.Specs.sap_host_profile:
+  DIR_: 10
+insights.specs.Specs.saphostctl_getcimobject_sapinstance:
+  Hostname: 10
+insights.specs.Specs.secure:
+  drop connection: 10
+insights.specs.Specs.selinux_users:
+  staff_u: 1
+insights.specs.Specs.sendmail_mc:
+  conf: 10
+insights.specs.Specs.setup_named_chroot:
+  /: 10
+insights.specs.Specs.smartpdc_settings:
+  conf: 10
+insights.specs.Specs.snmpd_conf:
+  include_ifmib_iface_prefix: 10
+insights.specs.Specs.sos_conf:
+  '[': 10
+insights.specs.Specs.squid_cache_log:
+  Your cache is running out of filedescriptors: 1
+insights.specs.Specs.ssh_config:
+  Include: 10
+insights.specs.Specs.ssh_config_d:
+  Include: 10
+insights.specs.Specs.ssh_foreman_config:
+  dir: 1
+insights.specs.Specs.ssh_foreman_proxy_config:
+  dir: 1
+insights.specs.Specs.sshd_config:
+  Include: 10
+insights.specs.Specs.sshd_config_d:
+  Include: 10
+insights.specs.Specs.sshd_test_mode:
+  allowusers: 10
+insights.specs.Specs.sssd_logs:
+  WARNING: 1
+insights.specs.Specs.subscription_manager_facts:
+  instance_id: 10
+insights.specs.Specs.subscription_manager_installed_product_ids:
+  'Tags:': 10
+insights.specs.Specs.sudoers:
+  \: 10
+insights.specs.Specs.swift_log:
+  WARNING: 1
+insights.specs.Specs.sysconfig_chronyd:
+  server: 1
+insights.specs.Specs.sysconfig_grub:
+  GRUB_TIMEOUT: 10
+insights.specs.Specs.sysconfig_httpd:
+  server: 1
+insights.specs.Specs.sysconfig_irqbalance:
+  server: 1
+insights.specs.Specs.sysconfig_kdump:
+  KEXEC_ARGS: 10
+insights.specs.Specs.sysconfig_kernel:
+  MAKEDEBUG: 10
+insights.specs.Specs.sysconfig_libvirt_guests:
+  server: 1
+insights.specs.Specs.sysconfig_memcached:
+  server: 1
+insights.specs.Specs.sysconfig_mongod:
+  server: 1
+insights.specs.Specs.sysconfig_network:
+  GATEWAY: 10
+insights.specs.Specs.sysconfig_nfs:
+  RPCNFSDARGS: 10
+insights.specs.Specs.sysconfig_ntpd:
+  OPTIONS: 10
+insights.specs.Specs.sysconfig_oracleasm:
+  ORACLEASM_SCANORDER: 10
+insights.specs.Specs.sysconfig_pcsd:
+  PCSD_DISABLE_GUI: 10
+insights.specs.Specs.sysconfig_prelink:
+  PRELINKING: 10
+insights.specs.Specs.sysconfig_sbd:
+  CRYPTO_POLICY: 10
+insights.specs.Specs.sysconfig_sshd:
+  OPTIONS: 10
+insights.specs.Specs.sysconfig_stonith:
+  retry: 10
+insights.specs.Specs.sysconfig_virt_who:
+  server: 10
+insights.specs.Specs.systemctl_status_all:
+  'Failed: ': 10
+insights.specs.Specs.testparm_s:
+  '[': 10
+insights.specs.Specs.testparm_v_s:
+  '[': 10
+insights.specs.Specs.udev_66_md_rules:
+  GOTO="md_end": 10
+insights.specs.Specs.udev_fc_wwpn_id_rules:
+  ENV{FC_TARGET_LUN}: 10
+insights.specs.Specs.up2date:
+  serverURL: 10
+insights.specs.Specs.up2date_log:
+  The certificate /usr/share/rhn/RHNS-CA-CERT is expired: 1
+insights.specs.Specs.vdsm_import_log:
+  WARNING: 1
+insights.specs.Specs.vdsm_log:
+  not provided by any .service files: 10
+insights.specs.Specs.virt_who_conf:
+  '[': 10
+insights.specs.Specs.virtlogd_conf:
+  '[': 10
+insights.specs.Specs.vmcore_dmesg:
+  Linux: 1
+insights.specs.Specs.vsftpd_conf:
+  enable: 10
+insights.specs.Specs.watchdog_conf:
+  timeout: 10
+insights.specs.Specs.watchdog_logs:
+  Connection timed out: 1
+insights.specs.Specs.yum_conf:
+  '[': 10
+insights.specs.Specs.yum_log:
+  'Installed:': 10

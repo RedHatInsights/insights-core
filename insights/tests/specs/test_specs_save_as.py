@@ -2,7 +2,7 @@ import os
 import json
 
 from collections import defaultdict
-from mock.mock import patch, Mock
+from unittest.mock import patch, Mock
 from pytest import mark
 
 from insights import collect

@@ -1,4 +1,4 @@
-from mock.mock import patch
+from unittest.mock import patch
 from cachecontrol.cache import DictCache
 from insights.core.remote_resource import RemoteResource, CachedRemoteResource
 from insights.tests.mock_web_server import TestMockServer

@@ -16,7 +16,7 @@ from insights.client.config import InsightsConfig
 from insights.client.connection import InsightsConnection
 from insights import package_info
 from insights.client.constants import InsightsConstants as constants
-from mock.mock import patch, Mock, call, ANY
+from unittest.mock import patch, Mock, call, ANY
 from pytest import mark
 from pytest import raises
 

@@ -1,4 +1,4 @@
-from mock.mock import patch
+from unittest.mock import patch
 
 from insights import dr
 from insights.collect import apply_blacklist

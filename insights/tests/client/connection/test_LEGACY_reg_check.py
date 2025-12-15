@@ -1,7 +1,7 @@
 import requests
 import json
 from insights.client.connection import InsightsConnection
-from mock.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 
 @patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')

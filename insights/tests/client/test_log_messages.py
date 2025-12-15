@@ -1,8 +1,5 @@
 # -*- coding: UTF-8 -*-
-try:
-    from unittest.mock import patch
-except Exception:
-    from mock import patch
+from unittest.mock import patch
 
 from insights.client.client import collect
 from insights.client.config import InsightsConfig

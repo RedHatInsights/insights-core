@@ -38,7 +38,7 @@ elif [ "$TARGET" == "release" ] || [ "$TARGET" == "testing" ]; then
     # - remove depedencies for data processing
     sed -i -e '/cachecontrol/d' -e '/defusedxml/d' -e '/jinja2/d' -e '/lockfile/d' -e '/redis/d' -e '/setuptools;/d' pyproject.toml setup.py
     # - remove entrypoints for data processing
-    sed -i -e '/insights =/d' -e '/insights-dupkey/d' -e '/insights-run/d' -e '/insights-inspect/d' -e '/mangle =/d' pyproject.toml setup.py
+    sed -i -e '/insights-.*=/d' -e '/mangle =/d' pyproject.toml setup.py
 else
     echo "Error: invalid build target: '$TARGET'. Use 'internal', 'release', or 'testing'"
     exit 1

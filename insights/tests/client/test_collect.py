@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-from mock.mock import patch
+from unittest.mock import patch
 
 from insights.client.client import collect
 from insights.client.config import InsightsConfig

@@ -1,11 +1,7 @@
 import pytest
 
 from collections import defaultdict
-
-try:
-    from unittest.mock import patch
-except Exception:
-    from mock import patch
+from unittest.mock import patch
 
 from insights.core import filters
 from insights.core.exceptions import SkipComponent

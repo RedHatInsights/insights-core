@@ -1,8 +1,8 @@
 from insights.client.auto_config import try_auto_configuration
 from insights.client.config import InsightsConfig
 from insights.client.connection import InsightsConnection
-from mock.mock import Mock
-from mock.mock import patch
+from unittest.mock import Mock
+from unittest.mock import patch
 from pytest import mark
 
 

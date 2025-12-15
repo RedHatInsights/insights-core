@@ -1,6 +1,6 @@
 import pytest
 
-from mock.mock import patch
+from unittest.mock import patch
 
 from insights.combiners.redhat_release import RedHatRelease
 from insights.core.exceptions import SkipComponent
