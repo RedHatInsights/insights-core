@@ -2,8 +2,9 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
-# [insights-core-3.6.11.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.11.1) (2025-12-11)
+# [insights-core-3.6.11.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.11.1) (2025-12-15)
 
+- chore: print version.release in 'insights.version' module ([PR 4670](https://github.com/RedHatInsights/insights-core/pull/4670))
 - fix(test): filters.yaml for building RPM in packit for test ([PR 4665](https://github.com/RedHatInsights/insights-core/pull/4665))
 - chore(rpmbuild): refine the RPM spec file ([PR 4669](https://github.com/RedHatInsights/insights-core/pull/4669))
 - fix(parser): Deprecate the SsTUPLN parser ([PR 4662](https://github.com/RedHatInsights/insights-core/pull/4662))
