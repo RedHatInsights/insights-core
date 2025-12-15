@@ -1,7 +1,7 @@
 import json
 import pytest
 
-from mock.mock import patch
+from unittest.mock import patch
 from collections import defaultdict
 
 from insights.client.config import InsightsConfig

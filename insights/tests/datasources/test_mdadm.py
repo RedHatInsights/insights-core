@@ -1,5 +1,5 @@
 import pytest
-from mock.mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from insights.core.exceptions import SkipComponent
 from insights.specs.datasources.mdadm import raid_devices

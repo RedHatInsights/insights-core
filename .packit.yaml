@@ -5,25 +5,31 @@ specfile_path: insights-core.spec
 actions:
   post-upstream-clone:
     - sed -i -e '/cachecontrol/d' -e '/defusedxml/d' -e '/jinja2/d' -e '/lockfile/d' -e '/redis/d' -e '/setuptools;/d' pyproject.toml setup.py
-    - sed -i -e '/insights =/d' -e '/insights-dupkey/d' -e '/insights-run/d' -e '/insights-inspect/d' -e '/mangle =/d' pyproject.toml setup.py
-    - echo "dev" > insights/RELEASE
+    - sed -i -e '/insights-.*=/d' -e '/mangle =/d' pyproject.toml setup.py
+    - sed -i -e '1 s/^.*$/99.dev/' insights/RELEASE
+    - cp insights/tests/filters.yaml insights/filters.yaml
     - cp MANIFEST.in.client MANIFEST.in
-    # - python3 -m pip3 install build
-    # - python3 -m build --sdist
     - python3 setup.py sdist
   get-current-version:
     - awk '/^Version:/ {print $2;}' insights-core.spec
   create-archive:
     - bash -c 'ls dist/insights*.tar.*'
   fix-spec-file:
-    - sed -i -e "s/1%{?dist}/dev%{?dist}/g" insights-core.spec
+    - sed -i -e "s/1%{?dist}/99.dev%{?dist}/g" insights-core.spec
 
 jobs:
   - job: copr_build
     trigger: pull_request
     branch: master
     targets:
-      - rhel-9
-      - rhel-10
+      - rhel-9-x86_64
+      - rhel-9-aarch64
+      - rhel-9-s390x
+      - rhel-10-x86_64
+      - rhel-10-aarch64
+      - rhel-10-ppc64le
+      - rhel-10-s390x
+      - centos-stream-9
       - centos-stream-10
       - fedora-rawhide
+      # - rhel-9-ppc64le

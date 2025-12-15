@@ -8,6 +8,7 @@ COMMAND_OUTPUT = """
 Product Certificate
 path: /etc/pki/product-default/69.pem
 id: 69
+Name: Red Hat Enterprise Linux Server
 Product Certificate
 path: /etc/pki/product/69.pem
 id: 69
@@ -17,12 +18,14 @@ COMMAND_OUTPUT2 = """
     Product Certificate
     path: /etc/pki/product-default/69.pem
     id: 69
+    Name: Red Hat Enterprise Linux Server
     brand_type:
     brand_name:
     tags: rhel-7,rhel-7-server
     Product Certificate
     path: /etc/pki/product/479.pem
     id: 479
+    Name: Red Hat Enterprise Linux for x86_64
     tags: rhel-8,rhel-8-x86_64
     brand_type:
     brand_name:
@@ -32,12 +35,14 @@ COMMAND_SOME_CERT_PART_DATA_OUTPUT3 = """
 Product Certificate
 path: /etc/pki/product-default/69.pem
 id: 69
+Name: Red Hat Enterprise Linux Server
 brand_type:
 brand_name:
 tags: rhel-7,rhel-7-server
 Product Certificate
 path: /etc/pki/product/479.pem
 id: 479
+Name: Red Hat Enterprise Linux for x86_64
 tags: rhel-8,rhel-8-x86_64
 brand_type:
 brand_name:
@@ -60,6 +65,7 @@ def test_installed_product_ids():
     assert results.ids == set(['69', '69'])
     assert results.product_certs[0]['path'] == '/etc/pki/product-default/69.pem'
     assert results.product_certs[0]['id'] == '69'
+    assert results.product_certs[0]['name'] == 'Red Hat Enterprise Linux Server'
     assert results.product_certs[1]['path'] == '/etc/pki/product/69.pem'
     assert results.product_certs[1]['id'] == '69'
 
@@ -71,6 +77,7 @@ def test_installed_product_ids():
     assert results.product_certs[0]['tags'] == 'rhel-7,rhel-7-server'
     assert results.product_certs[1]['path'] == '/etc/pki/product/479.pem'
     assert results.product_certs[1]['id'] == '479'
+    assert results.product_certs[1]['name'] == 'Red Hat Enterprise Linux for x86_64'
     assert results.product_certs[1]['brand_type'] == ''
     assert results.product_certs[1]['brand_name'] == ''
     assert results.product_certs[1]['tags'] == 'rhel-8,rhel-8-x86_64'

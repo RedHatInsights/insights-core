@@ -2,7 +2,7 @@
 
 from insights.client.constants import InsightsConstants
 from insights.client.phase.v1 import pre_update
-from mock.mock import patch
+from unittest.mock import patch
 from pytest import raises
 
 

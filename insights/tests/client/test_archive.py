@@ -1,7 +1,7 @@
 import time
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
-from mock.mock import patch, Mock, call
+from unittest.mock import patch, Mock, call
 from unittest import TestCase
 from pytest import raises
 from insights.client.constants import InsightsConstants as constants

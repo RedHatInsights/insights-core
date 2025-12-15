@@ -1,10 +1,7 @@
 import doctest
 import pytest
 
-try:
-    from unittest.mock import patch
-except Exception:
-    from mock import patch
+from unittest.mock import patch
 
 from insights.parsers import uname
 from insights.tests import context_wrap

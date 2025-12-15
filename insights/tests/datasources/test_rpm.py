@@ -1,7 +1,7 @@
-import mock
 import pytest
 
-from mock.mock import Mock
+from unittest import mock
+from unittest.mock import Mock
 from collections import defaultdict
 
 from insights.core import filters

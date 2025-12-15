@@ -1,9 +1,6 @@
 import pytest
 
-try:
-    from unittest.mock import patch, call
-except Exception:
-    from mock import patch, call
+from unittest.mock import patch, call
 
 from insights.client.config import InsightsConfig
 

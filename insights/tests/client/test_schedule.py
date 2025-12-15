@@ -1,6 +1,6 @@
 import tempfile
 
-from mock.mock import call, patch
+from unittest.mock import call, patch
 from pytest import mark
 
 import insights.client.schedule as sched

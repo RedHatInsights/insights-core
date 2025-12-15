@@ -2,6 +2,21 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.6.11.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.11.1) (2025-12-11)
+
+- fix(test): filters.yaml for building RPM in packit for test ([PR 4665](https://github.com/RedHatInsights/insights-core/pull/4665))
+- chore(rpmbuild): refine the RPM spec file ([PR 4669](https://github.com/RedHatInsights/insights-core/pull/4669))
+- fix(parser): Deprecate the SsTUPLN parser ([PR 4662](https://github.com/RedHatInsights/insights-core/pull/4662))
+- feat: add filter "Name:" to InstalledProductIDs spec ([PR 4660](https://github.com/RedHatInsights/insights-core/pull/4660))
+- chore(test): replace mock with unittest.mock ([PR 4659](https://github.com/RedHatInsights/insights-core/pull/4659))
+- spec: do hostname obfuscation for bootctl_status ([PR 4657](https://github.com/RedHatInsights/insights-core/pull/4657))
+- spec: remove localectl_status from RPM collection ([PR 4655](https://github.com/RedHatInsights/insights-core/pull/4655))
+- chore: print current version for tmt testing convenience ([PR 4650](https://github.com/RedHatInsights/insights-core/pull/4650))
+- fix: don't import FileListing in insights ([PR 4647](https://github.com/RedHatInsights/insights-core/pull/4647))
+- chore(ci/cd): remove py27 pipeline tests for master  ([PR 4654](https://github.com/RedHatInsights/insights-core/pull/4654))
+- feat(test): unit test for successful upload ([PR 4641](https://github.com/RedHatInsights/insights-core/pull/4641))
+- fix(test): update the check of obfuscation warnings ([PR 4648](https://github.com/RedHatInsights/insights-core/pull/4648))
+
 # [insights-core-3.6.10.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.10.1) (2025-11-20)
 
 - fix(spec): keyctl_show should be a simple_command ([PR 4637](https://github.com/RedHatInsights/insights-core/pull/4637))
