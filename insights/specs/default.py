@@ -284,6 +284,7 @@ class DefaultSpecs(Specs):
     dracut_kdump_capture_service = simple_file(
         "/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service"
     )
+    dracut_ossl_files_config = simple_command("/usr/lib/dracut/ossl-files --config")
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
     dumpe2fs_h = foreach_execute(mount_ds.dumpdev_list, "/sbin/dumpe2fs -h %s")
     du_dirs = foreach_execute(du.du_dir_list, "/bin/du -s -k %s")  # empty filter

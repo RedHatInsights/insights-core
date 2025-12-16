@@ -6,9 +6,12 @@ This module contains the following parsers:
 
 DracutModuleKdumpCaptureService - file ``/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service``
 ------------------------------------------------------------------------------------------------------
+
+DracutOsslFilesConfig - command ``/usr/lib/dracut/ossl-files --config``
+-----------------------------------------------------------------------
 """
 
-from insights.core import IniConfigFile
+from insights.core import CommandParser, IniConfigFile
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -46,3 +49,30 @@ class DracutModuleKdumpCaptureService(IniConfigFile):
         True
     """
     pass
+
+
+@parser(Specs.dracut_ossl_files_config)
+class DracutOsslFilesConfig(CommandParser):
+    """
+    Class for parsing the output of ``/usr/lib/dracut/ossl-files --config`` command.
+
+    Sample input::
+
+        configuration file routines:def_load_bio:missing equal s
+
+    Attributes:
+        has_error (bool): True if the error message "configuration file routines:def_load_bio:missing equal s" is found
+
+    Examples:
+        >>> parser.has_error
+        True
+        >>> parser.content
+        ['configuration file routines:def_load_bio:missing equal s']
+    """
+    def parse_content(self, content):
+        """
+        Parse the command output to check for the error message.
+        """
+        self.content = content
+        error_message = "configuration file routines:def_load_bio:missing equal s"
+        self.has_error = any(error_message in line for line in content)

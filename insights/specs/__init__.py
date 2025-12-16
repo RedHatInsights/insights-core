@@ -192,6 +192,7 @@ class Specs(SpecSet):
     dotnet_version = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     doveconf = RegistryPoint(filterable=True)
     dracut_kdump_capture_service = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    dracut_ossl_files_config = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     dse_ldif = RegistryPoint(multi_output=True, filterable=True)
     du_dirs = RegistryPoint(
         multi_output=True, filterable=True, no_obfuscate=['ipv4', 'ipv6', 'mac']
