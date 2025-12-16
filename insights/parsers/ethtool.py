@@ -306,6 +306,75 @@ class Features(LegacyItemAccess, CommandParser):
                 }
 
 
+@parser(Specs.ethtool_show_priv_flags)
+class PrivFlags(LegacyItemAccess, CommandParser):
+    """
+    Parse information for the ``ethtool --show-priv-flags`` command.
+
+    Private flags are stored as key: value pairs where the value is either "on" or "off".
+
+    Attributes:
+        data (dict): Dictionary of keys with boolean values (True for "on", False for "off").
+        iface (str): Interface name.
+
+    Sample input for ``/sbin/ethtool --show-priv-flags eth0``::
+
+        Private flags for eth0:
+        legacy-rx: off
+        rx-lro: on
+        rx-lro-list: off
+
+    Examples:
+
+        >>> len(priv_flags) # All interfaces in a list
+        1
+        >>> type(priv_flags[0])
+        <class 'insights.parsers.ethtool.PrivFlags'>
+        >>> eth0 = priv_flags[0] # Would normally iterate through interfaces
+        >>> eth0.iface
+        'eth0'
+        >>> eth0.ifname
+        'eth0'
+        >>> eth0.data['legacy-rx'] # Traditional access
+        False
+        >>> eth0.data['rx-lro']
+        True
+        >>> eth0.is_on('legacy-rx')
+        False
+        >>> eth0.is_on('rx-lro')
+        True
+    """
+
+    @property
+    def ifname(self):
+        """(str): the interface name"""
+        return self.iface
+
+    def is_on(self, flag):
+        """(bool): Does this flag exist and is it on?"""
+        return self.get(flag, False)
+
+    def parse_content(self, content):
+        self.data = {}
+        self.iface = extract_iface_name_from_path(self.file_path, "ethtool_--show-priv-flags_")
+        # Handle e.g. '/sbin/ethtool: file not found'
+        if content and len(content) > 0 and "ethtool" in content[0] and "file not found" in content[0]:
+            return
+        # Handle 'Cannot get private flags: Operation not supported'
+        if content and len(content) > 0 and "Cannot get" in content[0]:
+            return
+        # Handle empty content
+        if not content:
+            return
+
+        # Need to strip header line that's only on --show-priv-flags
+        # Header format: "Private flags for eth0:"
+        for line in content:
+            if ":" in line and not line.strip().startswith("Private flags for"):
+                key, value = [s.strip() for s in line.strip().split(":", 1)]
+                self.data[key.strip()] = value == "on"
+
+
 @parser(Specs.ethtool_a)
 class Pause(CommandParser):
     """
