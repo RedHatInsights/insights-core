@@ -806,6 +806,8 @@ class Specs(SpecSet):
     sssd_conf_d = RegistryPoint(multi_output=True)
     sssd_logs = RegistryPoint(multi_output=True, filterable=True)
     sys_block_queue_stable_writes = RegistryPoint(multi_output=True)
+    sys_block_queue_discard_max_bytes = RegistryPoint(multi_output=True)
+    sys_block_queue_max_segment_size = RegistryPoint(multi_output=True)
     subscription_manager_facts = RegistryPoint(filterable=True)
     subscription_manager_id = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     subscription_manager_installed_product_ids = RegistryPoint(
