@@ -269,6 +269,7 @@ class DefaultSpecs(Specs):
     dmsetup_status = simple_command("/usr/sbin/dmsetup status")
     dnf_conf = simple_file("/etc/dnf/dnf.conf")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")  # used by puptoo
+    dbus_conf = glob_file("/etc/dbus-1/*.conf")
     dnf_module_list = simple_command(
         "/usr/bin/dnf -C --noplugins module list", signum=signal.SIGTERM
     )  # used by puptoo

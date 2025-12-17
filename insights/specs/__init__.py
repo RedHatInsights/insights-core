@@ -181,6 +181,7 @@ class Specs(SpecSet):
     dnf_module_list = RegistryPoint()
     dnf_modules = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     dnsmasq_config = RegistryPoint(multi_output=True)
+    dbus_conf = RegistryPoint(multi_output=True, filterable=True)
     docker_container_inspect = RegistryPoint(multi_output=True)
     docker_host_machine_id = RegistryPoint()
     docker_info = RegistryPoint()
