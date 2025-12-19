@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.10.1
+Version:        3.6.11.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -29,31 +29,6 @@ Source0:        %{modulename}-%{version}.tar.gz
 BuildArch:      noarch
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
-
-Requires: python3
-%if 0%{?rhel} == 7
-Requires:       python36-CacheControl
-Requires:       python36-colorama
-Requires:       python36-defusedxml
-Requires:       python36-jinja2
-Requires:       python36-lockfile
-Requires:       python36-PyYAML
-Requires:       python36-requests
-Requires:       python36-six
-%else
-%if 0%{?for_internal}
-Requires:       python3-CacheControl
-Requires:       python3-colorama
-Requires:       python3-defusedxml
-Requires:       python3-jinja2
-Requires:       python3-lockfile
-Requires:       python3-redis
-%endif
-Requires:       python3-pyyaml
-Requires:       python3-requests
-Requires:       python3-rpm
-Requires:       python3-six
-%endif
 
 %if 0%{?with_selinux}
 Requires:       ((%{name}-selinux >= %{version}-%{release}) if selinux-policy-%{selinuxtype})
@@ -101,16 +76,26 @@ if [ $1 -eq 0 ]; then
     %selinux_modules_uninstall -s %{selinuxtype} %{modulename}
     %selinux_relabel_post -s %{selinuxtype}
 fi
+%endif
 
 %build
+%if 0%{?with_selinux}
 make -f %{_datadir}/selinux/devel/Makefile %{modulename}.pp
 bzip2 -9 %{modulename}.pp
 %endif
 
 %install
-rm -rf $RPM_BUILD_ROOT
-%{__python3} setup.py install -O1 --root $RPM_BUILD_ROOT
-rm -rf $RPM_BUILD_ROOT/usr/bin
+rm -rf %{buildroot}
+# %{__python3} -m pip install --upgrade pip
+# %{__python3} -m pip install . --root %{buildroot}
+%{__python3} setup.py install -O1 --root %{buildroot}
+mkdir -p %{buildroot}/%{_libexecdir}
+mv %{buildroot}%{_bindir}/insights %{buildroot}%{_libexecdir}
+
+%if 0%{?for_internal}
+mv %{buildroot}%{_bindir}/insights-* %{buildroot}%{_libexecdir}
+mv %{buildroot}%{_bindir}/mangle %{buildroot}%{_libexecdir}
+%endif
 
 %if 0%{?with_selinux}
 install -D -p -m 0644 %{modulename}.pp.bz2 %{buildroot}%{_datadir}/selinux/packages/%{selinuxtype}/%{modulename}.pp.bz2
@@ -120,17 +105,46 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %files
 # For noarch packages: sitelib
 %{python3_sitelib}/*
+%{_libexecdir}/insights
+
+%if 0%{?for_internal}
+%{_libexecdir}/insights-*
+%{_libexecdir}/mangle
+%endif
+
 %license LICENSE
 
 %if 0%{?with_selinux}
 %files selinux
-%license LICENSE
 %{_datadir}/selinux/packages/%{selinuxtype}/%{modulename}.pp.*
 %{_datadir}/selinux/devel/include/distributed/%{modulename}.if
 %ghost %verify(not md5 size mode mtime) %{_sharedstatedir}/selinux/%{selinuxtype}/active/modules/200/%{modulename}
 %endif
 
 %changelog
+* Mon Dec 15 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.11.1-1
+- chore: print version.release in 'insights.version' module (#4670)
+  (xiangceliu@redhat.com)
+- fix(test): filters.yaml for building RPM in packit for test (#4665)
+  (xiangceliu@redhat.com)
+- chore(rpmbuild): refine the RPM spec file (#4669) (xiangceliu@redhat.com)
+- fix(parser): Deprecate the SsTUPLN parser (#4662) (xiangceliu@redhat.com)
+- feat: add filter "Name:" to InstalledProductIDs spec (#4660)
+  (xiaoxwan@redhat.com)
+- chore(test): replace mock with unittest.mock (#4659) (xiangceliu@redhat.com)
+- spec: do hostname obfuscation for bootctl_status (#4657)
+  (xiangceliu@redhat.com)
+- spec: remove localectl_status from RPM collection (#4655)
+  (xiangceliu@redhat.com)
+- chore: print current version for tmt testing convenience (#4650)
+  (xiangceliu@redhat.com)
+- fix: don't import FileListing in insights (#4647) (xiangceliu@redhat.com)
+- chore(ci/cd): remove py27 pipeline tests for master  (#4654)
+  (xiangceliu@redhat.com)
+- feat(test): unit test for successful upload (#4641) (pschrimp@redhat.com)
+- fix(test): update the check of obfuscation warnings (#4648)
+  (xiangceliu@redhat.com)
+
 * Fri Nov 21 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.10.1-1
 - fix(spec): ignore errors when collecting bootloader data (#4636)
   (xiangceliu@redhat.com)
