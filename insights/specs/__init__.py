@@ -594,6 +594,7 @@ class Specs(SpecSet):
     osa_dispatcher_log = RegistryPoint(filterable=True)
     ose_master_config = RegistryPoint()
     ose_node_config = RegistryPoint()
+    ossl_files = RegistryPoint()
     ovirt_engine_boot_log = RegistryPoint(filterable=True)
     ovirt_engine_confd = RegistryPoint(multi_output=True)
     ovirt_engine_console_log = RegistryPoint(filterable=True)
