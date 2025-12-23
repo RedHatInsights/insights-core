@@ -2,14 +2,19 @@ import logging
 import os
 
 from insights.core import archives, dr
-from insights.core.context import (ClusterArchiveContext, ExecutionContextMeta, HostArchiveContext,
-                                   SerializedArchiveContext)
-from insights.core.exceptions import InvalidArchive
+from insights.core.context import (
+    ClusterArchiveContext,
+    ExecutionContextMeta,
+    HostArchiveContext,
+    SerializedArchiveContext,
+)
+from insights.core.exceptions import ContextException, InvalidArchive
 from insights.core.serde import Hydration
 
 log = logging.getLogger(__name__)
 
 if hasattr(os, "scandir"):
+
     def get_all_files(path):
         with os.scandir(path) as it:
             for ent in it:
@@ -22,8 +27,8 @@ if hasattr(os, "scandir"):
                 except OSError as ex:
                     log.exception(ex)
 
-
 else:
+
     def get_all_files(path):
         for root, _, files in os.walk(path):
             for f in files:
@@ -46,9 +51,11 @@ def identify(files):
 
 def create_context(path, context=None):
     top = os.listdir(path)
-    arc = [os.path.join(path, f) for f in top
-           if f.endswith(archives.COMPRESSION_TYPES) and
-           os.path.isfile(os.path.join(path, f))]
+    arc = [
+        os.path.join(path, f)
+        for f in top
+        if f.endswith(archives.COMPRESSION_TYPES) and os.path.isfile(os.path.join(path, f))
+    ]
     if arc:
         return ClusterArchiveContext(path, all_files=arc)
 
@@ -56,9 +63,31 @@ def create_context(path, context=None):
     if not all_files:
         raise InvalidArchive("No files in archive")
 
-    common_path, ctx = identify(all_files)
-    context = context or ctx
-    return context(common_path, all_files=all_files)
+    ctxs = ExecutionContextMeta.identify_all(all_files)
+
+    if not ctxs:
+        common_path = os.path.dirname(os.path.commonprefix(all_files))
+        if not common_path:
+            raise InvalidArchive("Unable to determine common path")
+        # Backwards compatible:
+        #   Default to HostArchiveContext when no ExecutionContext is identified
+        ctxs[common_path] = HostArchiveContext
+
+    if context is not None:
+        msg = "ExecutionContext mismatch:\n  Cannot found '{0}.{1}' in the given archive/path: {2}\n  Avaiable context(s):".format(
+            context.__module__, context.__name__, path
+        )
+        ctx_msgs = [msg]
+        for common_path, ctx in ctxs.items():
+            if ctx == context:
+                return context(common_path, all_files=all_files)
+            ctx_msgs.append("    {0}.{1} ({2})".format(ctx.__module__, ctx.__name__, common_path))
+        # The given context is not in the identfied list
+        raise ContextException('\n'.join(ctx_msgs))
+
+    # Return the first identified ExecutionContext by default
+    common_path, ctx = next(iter(ctxs.items()))
+    return ctx(common_path, all_files=all_files)
 
 
 def initialize_broker(path, context=None, broker=None):

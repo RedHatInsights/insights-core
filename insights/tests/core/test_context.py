@@ -74,3 +74,25 @@ def test_unrecognized():
     files = ["/foo/junk", "/bar/junk"]
     actual = ExecutionContextMeta.identify(files)
     assert actual == (None, None), actual
+
+
+def test_archive_context_identify_all():
+    files = ["/foo/junk", "/insights_archive.txt"]
+    actual = ExecutionContextMeta.identify_all(files)
+    assert len(actual) == 1
+    assert actual["/"] == SerializedArchiveContext
+
+    files = ["/foo/junk", "/sos_commands/things"]
+    actual = ExecutionContextMeta.identify_all(files)
+    assert len(actual) == 1
+    assert actual["/"] == SosArchiveContext
+
+    files = ["/foo/junk", "/data/insights_commands", "/insights_archive.txt"]
+    actual = ExecutionContextMeta.identify_all(files)
+    assert len(actual) == 2
+    assert actual["/"] == SerializedArchiveContext
+    assert actual["/data"] == HostArchiveContext
+
+    files = ["/foo/junk", "/bar/junk"]
+    actual = ExecutionContextMeta.identify_all(files)
+    assert len(actual) == 0

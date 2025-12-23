@@ -52,7 +52,12 @@ from insights.core.context import (
     HostContext,
     SerializedArchiveContext,
 )
-from insights.core.exceptions import InvalidArchive, InvalidContentType, SkipComponent
+from insights.core.exceptions import (
+    InvalidArchive,
+    InvalidContentType,
+    SkipComponent,
+    ContextException,
+)
 from insights.core.filters import add_filter, apply_filters, get_filters
 from insights.core.hydration import create_context, initialize_broker
 from insights.core.plugins import (
@@ -298,9 +303,17 @@ def _load_context(path):
     if path is None:
         return
 
+    tmp_path = path
     if "." not in path:
         path = ".".join(["insights.core.context", path])
-    return dr.get_component(path)
+
+    context = dr.get_component(path)
+    if context is None:
+        raise ContextException(
+            "ERROR: cannot find '{0}', please check the full module name.".format(tmp_path)
+        )
+
+    return context
 
 
 def run(
@@ -349,7 +362,11 @@ def run(
         )
         p.add_argument(
             "--context",
-            help="Execution Context. Defaults to HostContext if an archive isn't passed.",
+            help="Execution Context. Defaults to HostContext if an archive isn't passed.\
+                  Defaults to HostArchiveContext if no ExecutionContext can be found in\
+                  passed archive. When the passed ExecutionContext cannot be found in\
+                  archive, all avaiable ExecutionContext in the archive will be printed\
+                  but nothing will be run.",
         )
         p.add_argument(
             "--no-load-default", help="Don't load the default plugins.", action="store_true"
@@ -525,6 +542,12 @@ def run(
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
         return broker
+    except ContextException as ce:
+        if args and args.context:
+            msg = "{ce}\n\nCannot run with context: '{ctx}'"
+            log.error(msg.format(ce=ce, ctx=args.context))
+        else:
+            raise
     except (InvalidContentType, InvalidArchive):
         if args and args.archive:
             path = args.archive
