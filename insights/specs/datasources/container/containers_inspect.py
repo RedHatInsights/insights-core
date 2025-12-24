@@ -1,6 +1,7 @@
 """
 Custom datasources for containers inspect information
 """
+
 import json
 import os
 
@@ -25,9 +26,11 @@ def running_rhel_containers_id(broker):
 
 
 class LocalSpecs(Specs):
-    """ Local specs used only by docker|podman inspect datasources """
+    """Local specs used only by docker|podman inspect datasources"""
 
-    containers_inspect_data_raw = foreach_execute(running_rhel_containers_id, "/usr/bin/%s inspect %s")
+    containers_inspect_data_raw = foreach_execute(
+        running_rhel_containers_id, "/usr/bin/%s inspect %s"
+    )
     """ Returns the output of command ``/usr/bin/docker|podman inspect <container ID>`` """
 
 
@@ -89,7 +92,13 @@ def containers_inspect_data_datasource(broker):
             # LocalSpecs.containers_inspect_data_raw can guarantee total_results is not null. However, it's worth
             # leaving this condition as an explicit assertion to avoid unexpected situation.
             if total_results:
-                return DatasourceProvider(content=json.dumps(total_results), relative_path='insights_containers/containers_inspect')
+                return DatasourceProvider(
+                    content=json.dumps(total_results),
+                    ctx=broker.get(HostContext),
+                    cleaner=broker.get("cleaner"),
+                    no_obfuscate=['ipv4', 'ipv6', 'mac'],
+                    relative_path='insights_containers/containers_inspect',
+                )
     except Exception as e:
         raise ContentException("Unexpected content exception:{e}".format(e=str(e)))
     raise SkipComponent

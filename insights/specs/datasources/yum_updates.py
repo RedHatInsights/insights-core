@@ -335,5 +335,9 @@ def yum_updates(broker):
             response["metadata_time"] = time.strftime("%FT%TZ", time.gmtime(ts))
 
     return DatasourceProvider(
-        content=json.dumps(response), relative_path='insights_datasources/yum_updates'
+        content=json.dumps(response),
+        ctx=broker.get(HostContext),
+        cleaner=broker.get("cleaner"),
+        no_obfuscate=['ipv6', 'mac'],
+        relative_path='insights_datasources/yum_updates',
     )

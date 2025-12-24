@@ -69,8 +69,13 @@ def httpd_on_nfs(broker):
                 "nfs_mounts": nfs_mounts,
                 "open_nfs_files": open_nfs_files,
             }
-            relative_path = 'insights_datasources/httpd_on_nfs'
-            return DatasourceProvider(content=json.dumps(result_dict), relative_path=relative_path)
+            return DatasourceProvider(
+                content=json.dumps(result_dict),
+                ctx=broker.get(HostContext),
+                cleaner=broker.get("cleaner"),
+                no_obfuscate=['ipv4', 'ipv6', 'mac'],
+                relative_path='insights_datasources/httpd_on_nfs',
+            )
     raise SkipComponent
 
 
