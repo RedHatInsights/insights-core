@@ -1,6 +1,7 @@
 """
 Custom datasources for cloud initialization information
 """
+
 import yaml
 
 from insights.core.context import HostContext
@@ -12,7 +13,7 @@ from insights.specs import Specs
 
 
 class LocalSpecs(Specs):
-    """ Local specs used only by cloud_init datasources """
+    """Local specs used only by cloud_init datasources"""
 
     cloud_cfg_input = simple_file("/etc/cloud/cloud.cfg")
     """ Returns the contents of the file ``/etc/cloud/cloud.cfg`` """
@@ -81,7 +82,13 @@ def cloud_cfg(broker):
                         result[item] = content[item]
 
                 if result:
-                    return DatasourceProvider(content=yaml.dump(result), relative_path=relative_path)
+                    return DatasourceProvider(
+                        content=yaml.dump(result),
+                        ctx=broker.get(HostContext),
+                        cleaner=broker.get("cleaner"),
+                        no_obfuscate=['ipv4', 'ipv6', 'mac'],
+                        relative_path=relative_path,
+                    )
             raise SkipComponent("Invalid YAML format")
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
