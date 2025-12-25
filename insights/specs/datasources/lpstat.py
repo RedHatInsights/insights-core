@@ -44,6 +44,9 @@ def lpstat_protocol_printers_info(broker):
         if result:
             return DatasourceProvider(
                 content="\n".join(result),
+                ctx=broker.get(HostContext),
+                cleaner=broker.get("cleaner"),
+                no_obfuscate=['ipv4', 'ipv6', 'mac'],
                 relative_path='insights_datasources/lpstat_protocol_printers',
             )
     except Exception as e:
@@ -91,6 +94,9 @@ def lpstat_queued_jobs_count(broker):
         if cnt:
             return DatasourceProvider(
                 content="{0}".format(cnt),
+                ctx=broker.get(HostContext),
+                cleaner=broker.get("cleaner"),
+                no_obfuscate=['ipv4', 'ipv6', 'mac'],
                 relative_path='insights_datasources/lpstat_queued_jobs_count',
             )
     raise SkipComponent

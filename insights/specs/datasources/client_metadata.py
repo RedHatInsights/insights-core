@@ -41,7 +41,11 @@ def ansible_host(broker):
     insights_config = broker.get('client_config')
     if insights_config and insights_config.ansible_host:
         return DatasourceProvider(
-            content=insights_config.ansible_host, relative_path='ansible_host'
+            content=insights_config.ansible_host,
+            ctx=broker.get(HostContext),
+            cleaner=broker.get("cleaner"),
+            no_obfuscate=['ipv4', 'ipv6', 'mac'],
+            relative_path='ansible_host',
         )
     raise SkipComponent
 
@@ -66,7 +70,13 @@ def basic_auth_insights_client(broker):
         if insights_config.password:
             result['pass_set'] = True
         if result:
-            return DatasourceProvider(content=json.dumps(result), relative_path='basic_conf')
+            return DatasourceProvider(
+                content=json.dumps(result),
+                ctx=broker.get(HostContext),
+                cleaner=broker.get("cleaner"),
+                no_obfuscate=['ipv4', 'ipv6', 'mac'],
+                relative_path='basic_conf',
+            )
     raise SkipComponent
 
 
@@ -118,6 +128,7 @@ def blacklist_report(broker):
             )
         else:
             ret.update(patterns=length(redact_config.get('patterns')))
+    # cleaner is not required per the content
     return DatasourceProvider(content=json.dumps(ret), relative_path='blacklist_report')
 
 
@@ -134,6 +145,7 @@ def blacklisted_specs(broker):
         str: The JSON strings
     """
     if BLACKLISTED_SPECS:
+        # cleaner is not required per the content
         return DatasourceProvider(
             content=json.dumps({"specs": BLACKLISTED_SPECS}), relative_path='blacklisted_specs'
         )
@@ -155,7 +167,13 @@ def branch_info(broker):
             branch_info = constants.default_branch_info
         else:
             branch_info = insights_config.branch_info
-    return DatasourceProvider(content=json.dumps(branch_info), relative_path='branch_info')
+    return DatasourceProvider(
+        content=json.dumps(branch_info),
+        ctx=broker.get(HostContext),
+        cleaner=broker.get("cleaner"),
+        no_obfuscate=['ipv4', 'ipv6', 'mac'],
+        relative_path='branch_info',
+    )
 
 
 @datasource(HostContext)
@@ -173,7 +191,11 @@ def display_name(broker):
     insights_config = broker.get('client_config')
     if insights_config and insights_config.display_name:
         return DatasourceProvider(
-            content=insights_config.display_name, relative_path='display_name'
+            content=insights_config.display_name,
+            ctx=broker.get(HostContext),
+            cleaner=broker.get("cleaner"),
+            no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'],
+            relative_path='display_name',
         )
     raise SkipComponent
 
@@ -255,7 +277,13 @@ def tags(broker):
         if t:
             # The actual file path in archive:
             # - insights-archive-xxx/data/tags.json
-            return DatasourceProvider(content=json.dumps(t), relative_path='tags.json')
+            return DatasourceProvider(
+                content=json.dumps(t),
+                ctx=broker.get(HostContext),
+                cleaner=broker.get("cleaner"),
+                no_obfuscate=['ipv4', 'ipv6', 'mac'],
+                relative_path='tags.json',
+            )
         msg = "Empty YAML. Unable to load '%s'." % tags_file_path
         logger.error(msg)
         raise ContentException(msg)
@@ -282,4 +310,5 @@ def version_info(broker):
     )
     version_info['client_version'] = client_version
 
+    # cleaner is not required per the content
     return DatasourceProvider(content=json.dumps(version_info), relative_path='version_info')

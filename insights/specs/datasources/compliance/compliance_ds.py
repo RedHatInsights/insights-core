@@ -94,7 +94,7 @@ def compliance_unassign_enabled(broker):
         compliance_enabled,
         compliance_policies_enabled,
         compliance_unassign_enabled,
-    ]
+    ],
 )
 def os_version(broker):
     os_release = None
@@ -104,10 +104,17 @@ def os_version(broker):
         os_release = broker[RedhatRelease].version
     if os_release:
         return os_release.split('.')
-    if any(com in broker for com in [compliance_assign_enabled, compliance_enabled, compliance_policies_enabled, compliance_unassign_enabled]):
+    if any(
+        com in broker
+        for com in [
+            compliance_assign_enabled,
+            compliance_enabled,
+            compliance_policies_enabled,
+            compliance_unassign_enabled,
+        ]
+    ):
         sys.exit(constants.sig_kill_bad)
-    else:
-        raise SkipComponent
+    raise SkipComponent
 
 
 @datasource(
@@ -118,20 +125,27 @@ def os_version(broker):
         compliance_enabled,
         compliance_policies_enabled,
         compliance_unassign_enabled,
-    ]
+    ],
 )
 def package_check(broker):
     rpms = broker[InstalledRpms]
     missed = [rpm for rpm in REQUIRED_PACKAGES if rpm not in rpms]
     if missed:
-        if any(com in broker for com in [compliance_assign_enabled, compliance_enabled, compliance_policies_enabled, compliance_unassign_enabled]):
+        if any(
+            com in broker
+            for com in [
+                compliance_assign_enabled,
+                compliance_enabled,
+                compliance_policies_enabled,
+                compliance_unassign_enabled,
+            ]
+        ):
             msg = 'Missing required packages for compliance scanning. Please ensure the following packages are installed: {0}\n'.format(
                 ', '.join(missed)
             )
             logger.error(msg)
             sys.exit(constants.sig_kill_bad)
-        else:
-            raise SkipComponent
+        raise SkipComponent
 
     return rpms.newest(SSG_PACKAGE).version
 
@@ -195,6 +209,7 @@ def compliance(broker):
                 if results_need_repair:
                     content = compliance.repair_results(results_file.name, content)
                 compliance_result.append(
+                    # self obfuscation is done above, cleaner is not required
                     DatasourceProvider(
                         content=content,  # The actual result content here
                         relative_path='{0}.xml'.format(file_name),
@@ -307,7 +322,7 @@ def compliance_advisor_rule_enabled(broker):
             result['tailoring_policies'] = tailoring_policies
         return DatasourceProvider(
             content=json.dumps(result),
-            relative_path='insights_datasources/compliance_enabled_policies'
+            relative_path='insights_datasources/compliance_enabled_policies',
         )
 
     except Exception:
