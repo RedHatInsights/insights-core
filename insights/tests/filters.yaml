@@ -404,7 +404,7 @@ insights.specs.Specs.sshd_config:
 insights.specs.Specs.sshd_config_d:
   Include: 10
 insights.specs.Specs.sshd_test_mode:
-  allowusers: 10
+  permitemptypasswords: 10
 insights.specs.Specs.sssd_logs:
   WARNING: 1
 insights.specs.Specs.subscription_manager_facts:
