@@ -50,4 +50,4 @@ def test_doc_examples():
 
 def test_strings_shimx64_efi():
     shimx64_info = shim.StringsShimx64(context_wrap(STRING_SHIMX64_OUPTUT))
-    assert shimx64_info.microsoft_corp_line_test.get('raw_message') == 'Microsoft Corporation1&0$'
+    assert shimx64_info.microsoft_corp_line_test.get('raw_line') == 'Microsoft Corporation1&0$'
