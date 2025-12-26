@@ -1,11 +1,8 @@
 import pytest
 from insights.core.ls_parser import FilePermissions
-from insights.parsers.ls import FileListing, LSlHFiles
+from insights.parsers.ls import FileListing
 from insights.tests import context_wrap
-from insights.tests.parsers.test_ls_file_listing import (
-    LS_FILE_PERMISSIONS_DOC,
-    MULTIPLE_DIRECTORIES,
-)
+from insights.tests.parsers.test_ls_file_listing import MULTIPLE_DIRECTORIES
 
 PERMISSIONS_TEST_EXCEPTION_VECTORS = [
     ('-rw------ 1 root root 762 Sep 23 002 /etc/ssh/sshd_config', True),
@@ -261,26 +258,3 @@ def test_multiple_directories():
     assert obj.perms_owner == 'rwx'
     assert obj.perms_group == 'r-x'
     assert obj.perms_other == 'r-x'
-
-    dirs = LSlHFiles(context_wrap(LS_FILE_PERMISSIONS_DOC))
-    assert '/etc/sysconfig' not in dirs
-    assert '/etc/redhat-release' in dirs
-    obj = dirs['/etc/redhat-release']
-    assert obj.perms_owner == 'rw-'
-    assert obj.perms_group == 'r--'
-    assert obj.perms_other == 'r--'
-    assert obj.size == 46
-    assert dirs.error_lines == [
-        "/bin/ls: cannot access /boot/grub/grub.conf: No such file or directory",
-        "/bin/ls: cannot access fstab_mounted.devices: No such file or directory",
-        "/bin/ls: cannot access pvs.devices: No such file or directory"
-    ]
-
-    assert '/dev/vda1' in dirs
-    obj2 = dirs['/dev/vda1']
-    assert obj2.perms_owner == 'rw-'
-    assert obj2.perms_group == 'rw-'
-    assert obj2.perms_other == '---'
-    assert obj2.type == 'b'
-    assert obj2.major == 252
-    assert obj2.minor == 1

@@ -42,7 +42,6 @@ class Specs(SpecSet):
     aws_instance_id_pkcs7 = RegistryPoint()
     aws_public_ipv4_addresses = RegistryPoint()
     aws_public_hostnames = RegistryPoint()
-    awx_manage_check_license = RegistryPoint()
     awx_manage_check_license_data = RegistryPoint(filterable=True)
     awx_manage_print_settings = RegistryPoint()
     azure_instance_id = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
@@ -414,8 +413,6 @@ class Specs(SpecSet):
     lpstat_queued_jobs_count = RegistryPoint()
     lru_gen_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     # New `ls` Specs
-    ls_files = RegistryPoint()
-    ls_lH_files = RegistryPoint(filterable=True)
     ls_la = RegistryPoint()
     ls_la_dirs = RegistryPoint(filterable=True)
     ls_la_filtered = RegistryPoint(filterable=True)
