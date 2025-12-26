@@ -2,6 +2,7 @@
 SelinuxConfig - file ``/etc/selinux/config``
 ============================================
 """
+
 from insights.core import Parser
 from insights.core.plugins import parser
 from insights.parsers import split_kv_pairs, get_active_lines
@@ -44,13 +45,3 @@ class SelinuxConfig(Parser, dict):
         # TODO: raise Skip when empty
         # if len(self) == 0:
         #     raise SkipComponent
-
-    @property
-    def data(self):
-        """
-        .. warning::
-            'data' attribute is deprecated and will be removed from 3.7.0.
-            Please use the :class:`insights.parsers.SelinuxConfig` as a dict
-            instead.
-        """
-        return self
