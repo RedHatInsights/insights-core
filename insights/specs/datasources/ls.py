@@ -159,6 +159,9 @@ def files_dirs_number(broker):
     if result:
         return DatasourceProvider(
             content=json.dumps(result, sort_keys=True),
+            ctx=broker.get(HostContext),
+            cleaner=broker.get("cleaner"),
+            no_obfuscate=['ipv4', 'ipv6', 'mac'],
             relative_path='insights_datasources/files_dirs_number',
         )
     raise SkipComponent

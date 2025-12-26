@@ -44,6 +44,7 @@ def tasks_number(broker):
     ]
     content = broker[LocalSpecs.sys_fs_cgroup_memory_tasks_raw].content
     if len(content) == 0 or not any(ex in content[0].lower() for ex in exceptions):
+        # cleaner is not required per the content
         return DatasourceProvider(
             content=str(len(content)),
             relative_path='insights_datasources/sys_fs_cgroup_memory_tasks_number',
@@ -84,6 +85,7 @@ def uniq_memory_swappiness(broker):
     for value, count in data.items():
         data_list.append("{0}   {1}".format(value, count))
 
+    # cleaner is not required per the content
     return DatasourceProvider(
         content="\n".join(data_list),
         relative_path='insights_datasources/sys_fs_cgroup_uniq_memory_swappiness',

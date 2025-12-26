@@ -92,7 +92,11 @@ def ld_library_path_global_conf(broker):
         raise SkipComponent()
 
     return DatasourceProvider(
-        content=json.dumps(data), relative_path='insights_datasources/ld_library_path_global_conf'
+        content=json.dumps(data),
+        ctx=broker.get(HostContext),
+        cleaner=broker.get("cleaner"),
+        no_obfuscate=['ipv4', 'ipv6', 'mac'],
+        relative_path='insights_datasources/ld_library_path_global_conf',
     )
 
 
