@@ -72,11 +72,6 @@ Traceback (most recent call last):
     return get_distribution(dist).load_entry_point(group, name)
   File "/usr/lib/python2.7/site-packages/pkg_resources.py", line 2566, in load_entry_point
     return ep.load()
-  File "/usr/lib/python2.7/site-packages/pkg_resources.py", line 2260, in load
-    entry = __import__(self.module_name, globals(),globals(), ['__name__'])
-  File "/usr/lib64/python2.7/site-packages/subscription_manager/scripts/subscription_manager.py", line 29, in <module>
-    if six.PY2:
-AttributeError: 'module' object has no attribute 'PY2'
 """
 
 
@@ -100,8 +95,12 @@ def test_subscription_manager_list_exceptions():
 
 def test_subscription_manager_list_docs():
     env = {
-        'installed': subscription_manager_list.SubscriptionManagerListInstalled(context_wrap(subscription_manager_list_installed_in_docs)),
-        'consumed': subscription_manager_list.SubscriptionManagerListConsumed(context_wrap(subscription_manager_list_consumed_in_docs)),
+        'installed': subscription_manager_list.SubscriptionManagerListInstalled(
+            context_wrap(subscription_manager_list_installed_in_docs)
+        ),
+        'consumed': subscription_manager_list.SubscriptionManagerListConsumed(
+            context_wrap(subscription_manager_list_consumed_in_docs)
+        ),
     }
     failed, total = doctest.testmod(subscription_manager_list, globs=env)
     assert failed == 0
@@ -112,4 +111,5 @@ def test_exception():
         context_wrap(subscription_manager_list_errors)
     )
     assert not sml.records
-    assert "AttributeError: 'module' object has no attribute 'PY2'" in sml.error
+    assert "Traceback (most recent call last):" not in sml.error
+    assert "return ep.load()" in sml.error

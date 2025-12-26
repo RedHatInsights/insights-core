@@ -107,21 +107,13 @@ def test_dict():
 def test_beautify_deep_compare_diff():
     with pytest.raises(AssertionError) as err:
         deep_compare({"foo": "some foo"}, {"bar": "some bar"})
-    einfo = None
-    if hasattr(err, "value"):       # py3
-        einfo = err.value
-    elif hasattr(err, "message"):   # py2
-        einfo = err.message
+    einfo = err.value
     assert 'key "foo" not in Expected;' in str(einfo)
     assert 'key "bar" not in Result;' in str(einfo)
 
     with pytest.raises(AssertionError) as err:
         deep_compare({"e": "k", "common": "left"}, {"e": "k", "common": "right"})
-    einfo = None
-    if hasattr(err, "value"):       # py3
-        einfo = err.value
-    elif hasattr(err, "message"):   # py2
-        einfo = err.message
+    einfo = err.value
     assert 'key "common" unequal values:' in str(einfo)
     assert 'Result: ' in str(einfo)
 
@@ -183,16 +175,16 @@ def test_deep_nest_list_dict():
         deep_compare(a, b)
 
     a = [
-           {'ip_addr': '0.0.0.0', 'process_name': 'qpidd', 'port': '5672'},
-           {'ip_addr': '127.0.0.1', 'process_name': 'mongod', 'port': '27017'},
-           {'ip_addr': '127.0.0.1', 'process_name': 'Passenger Rac', 'port': '53644'},
-           {'ip_addr': '0.0.0.0', 'process_name': 'qdrouterd', 'port': '5646'},
+        {'ip_addr': '0.0.0.0', 'process_name': 'qpidd', 'port': '5672'},
+        {'ip_addr': '127.0.0.1', 'process_name': 'mongod', 'port': '27017'},
+        {'ip_addr': '127.0.0.1', 'process_name': 'Passenger Rac', 'port': '53644'},
+        {'ip_addr': '0.0.0.0', 'process_name': 'qdrouterd', 'port': '5646'},
     ]
     b = [
-           {'ip_addr': '0.0.0.0', 'port': '5672', 'process_name': 'qpidd'},
-           {'ip_addr': '127.0.0.1', 'port': '27017', 'process_name': 'mongod'},
-           {'ip_addr': '127.0.0.1', 'port': '53644', 'process_name': 'Passenger Rac'},
-           {'ip_addr': '0.0.0.0', 'port': '5646', 'process_name': 'qdrouterd'},
+        {'ip_addr': '0.0.0.0', 'port': '5672', 'process_name': 'qpidd'},
+        {'ip_addr': '127.0.0.1', 'port': '27017', 'process_name': 'mongod'},
+        {'ip_addr': '127.0.0.1', 'port': '53644', 'process_name': 'Passenger Rac'},
+        {'ip_addr': '0.0.0.0', 'port': '5646', 'process_name': 'qdrouterd'},
     ]
     deep_compare(a, b)
 
@@ -238,18 +230,40 @@ def test_deep_compare_special():
 
 
 def test_case_variants():
-    filter_list = ['Ciphers', 'MACs', 'UsePAM', 'MaxAuthTries', 'nt pipe support',
-                   'A-Dash-SEPARATED-tESt-tEST-tesT-test-ExAMPle']
-    expanded_list = ['Ciphers', 'ciphers', 'CIPHERS',
-                     'MACs', 'Macs', 'macs', 'MACS',
-                     'UsePAM', 'UsePam', 'usepam', 'USEPAM', 'Usepam',
-                     'MaxAuthTries', 'maxauthtries', 'MAXAUTHTRIES', 'Maxauthtries',
-                     'nt pipe support', 'NT PIPE SUPPORT', 'Nt Pipe Support',
-                     'A-Dash-SEPARATED-tESt-tEST-tesT-test-ExAMPle',
-                     'A-Dash-Separated-tEst-tEst-tesT-test-ExAmple',
-                     'a-dash-separated-test-test-test-test-example',
-                     'A-DASH-SEPARATED-TEST-TEST-TEST-TEST-EXAMPLE',
-                     'A-Dash-Separated-Test-Test-Test-Test-Example']
+    filter_list = [
+        'Ciphers',
+        'MACs',
+        'UsePAM',
+        'MaxAuthTries',
+        'nt pipe support',
+        'A-Dash-SEPARATED-tESt-tEST-tesT-test-ExAMPle',
+    ]
+    expanded_list = [
+        'Ciphers',
+        'ciphers',
+        'CIPHERS',
+        'MACs',
+        'Macs',
+        'macs',
+        'MACS',
+        'UsePAM',
+        'UsePam',
+        'usepam',
+        'USEPAM',
+        'Usepam',
+        'MaxAuthTries',
+        'maxauthtries',
+        'MAXAUTHTRIES',
+        'Maxauthtries',
+        'nt pipe support',
+        'NT PIPE SUPPORT',
+        'Nt Pipe Support',
+        'A-Dash-SEPARATED-tESt-tEST-tesT-test-ExAMPle',
+        'A-Dash-Separated-tEst-tEst-tesT-test-ExAmple',
+        'a-dash-separated-test-test-test-test-example',
+        'A-DASH-SEPARATED-TEST-TEST-TEST-TEST-EXAMPLE',
+        'A-Dash-Separated-Test-Test-Test-Test-Example',
+    ]
     assert case_variants(*filter_list) == expanded_list
 
     assert case_variants('hosts:') == ['hosts:', 'HOSTS:', 'Hosts:']

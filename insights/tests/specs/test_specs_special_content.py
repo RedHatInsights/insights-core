@@ -10,9 +10,7 @@ from insights import collect
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
 from insights.core import dr
-from insights.core.spec_factory import encoding
 from insights.core.spec_factory import RegistryPoint
-from insights.core.spec_factory import safe_open
 from insights.core.spec_factory import simple_file
 from insights.core.spec_factory import SpecSet
 from insights.util.hostname import determine_hostname
@@ -76,7 +74,7 @@ class Stuff(Specs):
 
 
 def setup_function(func):
-    with safe_open(tmp_file_path, "w+", encoding=encoding, errors="surrogateescape") as f:
+    with open(tmp_file_path, "w+", encoding="utf-8", errors="surrogateescape") as f:
         f.write('“！……”\n{0}'.format(orig_hostname))
 
 

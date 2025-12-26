@@ -11,8 +11,6 @@ DateUTC - command ``date --utc``
 TimeDateCtlStatus - command ``timedatectl status``
 --------------------------------------------------
 """
-import six
-import sys
 
 from datetime import datetime
 
@@ -57,8 +55,8 @@ class DateParser(CommandParser):
             self.timezone = parts[4]
             no_tz = ' '.join(parts[:4]) + ' ' + parts[-1]
             self.datetime = datetime.strptime(no_tz, '%a %b %d %H:%M:%S %Y')
-        except:
-            six.reraise(DateParseException, DateParseException(self.data), sys.exc_info()[2])
+        except Exception:
+            raise DateParseException(self.data)
 
 
 @parser(Specs.date)
@@ -83,6 +81,7 @@ class Date(DateParser):
         >>> date_info.timezone
         'CST'
     """
+
     pass
 
 
@@ -108,6 +107,7 @@ class DateUTC(DateParser):
         >>> date_info.timezone
         'UTC'
     """
+
     pass
 
 
@@ -159,12 +159,11 @@ class TimeDateCtlStatus(CommandParser, dict):
         >>> ctl_info['local_time']
         datetime.datetime(2022, 11, 14, 23, 4, 6)
     """
+
     date_format = '%a %Y-%m-%d %H:%M:%S'
 
     # unify the different names in rhel7 and rhel8
-    key_mapping = {
-        'ntp_synchronized': 'system_clock_synchronized'
-    }
+    key_mapping = {'ntp_synchronized': 'system_clock_synchronized'}
 
     def parse_content(self, content):
         dict_key = None
@@ -185,7 +184,7 @@ class TimeDateCtlStatus(CommandParser, dict):
                 continue
             if line[colon_index] == ':':
                 key = line[:colon_index].strip()
-                value = line[colon_index + 1:].strip()
+                value = line[colon_index + 1 :].strip()
                 dict_key = '_'.join(key.lower().split())
                 if dict_key in ['local_time', 'universal_time', 'rtc_time']:
                     if dict_key == 'rtc_time':
@@ -194,8 +193,8 @@ class TimeDateCtlStatus(CommandParser, dict):
                         final_val = value.rsplit(None, 1)[0]  # remove tz info
                     try:
                         self[dict_key] = datetime.strptime(final_val, self.date_format)
-                    except Exception:
-                        six.reraise(DateParseException, DateParseException(value), sys.exc_info()[2])
+                    except Exception as ex:
+                        raise DateParseException(ex)
                 else:
                     if dict_key in self.key_mapping:
                         self[self.key_mapping[dict_key]] = value

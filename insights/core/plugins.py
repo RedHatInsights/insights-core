@@ -24,6 +24,7 @@ may return:
     - :class:`make_fingerprint`
 
 """
+
 from __future__ import print_function
 
 import logging
@@ -31,13 +32,18 @@ import signal
 import traceback
 
 from pprint import pformat
-from six import StringIO
+from io import StringIO
 
 from insights import settings
 from insights.core import dr
 from insights.core.context import HostContext
-from insights.core.exceptions import (CalledProcessError, ContentException, SkipComponent, TimeoutException,
-                                      ValidationException)
+from insights.core.exceptions import (
+    CalledProcessError,
+    ContentException,
+    SkipComponent,
+    TimeoutException,
+    ValidationException,
+)
 
 log = logging.getLogger(__name__)
 
@@ -57,6 +63,7 @@ class PluginType(dr.ComponentType):
     is delayed until the parser asks for its value. This helps with performance
     and memory consumption.
     """
+
     def invoke(self, broker):
         try:
             return super(PluginType, self).invoke(broker)
@@ -79,6 +86,7 @@ class datasource(PluginType):
     Decorates a component that one or more :class:`insights.core.Parser`
     subclasses will consume.
     """
+
     filterable = False
     multi_output = False
     no_obfuscate = []
@@ -87,8 +95,11 @@ class datasource(PluginType):
     raw = False
 
     def _handle_timeout(self, signum, frame):
-        raise TimeoutException("Datasource spec {ds_name} timed out after {secs} seconds!".format(
-            ds_name=dr.get_name(self.component), secs=self.timeout))
+        raise TimeoutException(
+            "Datasource spec {ds_name} timed out after {secs} seconds!".format(
+                ds_name=dr.get_name(self.component), secs=self.timeout
+            )
+        )
 
     def invoke(self, broker):
         # Grab the timeout from the decorator, or use the default of 120.
@@ -140,6 +151,7 @@ class parser(PluginType):
         others fail. If all parsers should succeed or fail together, pass
         ``continue_on_error=False``.
     """
+
     def __init__(self, *args, **kwargs):
         group = kwargs.get('group', dr.GROUPS.single)
         self.continue_on_error = kwargs.get('continue_on_error', True)
@@ -215,6 +227,7 @@ class metadata(parser):
     .. warning::
         Do not use this component type.
     """
+
     requires = ["metadata.json"]
 
 
@@ -226,11 +239,13 @@ class combiner(PluginType):
     interfaces. Another use case is to combine several related parsers behind a
     single, cohesive, higher level interface.
     """
+
     pass
 
 
 class remoteresource(PluginType):
-    """ ComponentType for a component for remote web resources. """
+    """ComponentType for a component for remote web resources."""
+
     pass
 
 
@@ -311,6 +326,7 @@ class rule(PluginType):
             values. The keys categorize the urls, e.g. "kcs" for kcs urls and
             "bugzilla" for bugzilla urls.
     """
+
     content = None
     links = None
 
@@ -343,6 +359,7 @@ class condition(PluginType):
     is also a valid return type for conditions, so ``rules`` that depend on
     ``conditions`` that might return None should check their validity.
     """
+
     pass
 
 
@@ -351,6 +368,7 @@ class incident(PluginType):
     ComponentType for a component used by rules that allows automated
     statistical analysis.
     """
+
     pass
 
 
@@ -360,6 +378,7 @@ class fact(PluginType):
     dictionaries that will be used later by cluster rules. The data from a fact
     is converted to a pandas Dataframe
     """
+
     pass
 
 
@@ -454,7 +473,7 @@ class Response(dict):
             raise ValidationException(msg)
 
     def validate_key(self, key):
-        """ Called if the key_name class attribute is not None. """
+        """Called if the key_name class attribute is not None."""
         if not key:
             name = self.__class__.__name__
             msg = "%s response missing %s" % (name, self.key_name)
@@ -477,7 +496,7 @@ class Response(dict):
         return kwargs
 
     def _log_length_error(self, key, length, limit):
-        """ Helper function for logging a response length error. """
+        """Helper function for logging a response length error."""
         msg = (
             "Rule response %(response_type)s(%(response_key)s) "
             "exceeds the size limit of %(limit)d characters."
@@ -485,7 +504,7 @@ class Response(dict):
         data = {
             "response_type": self.__class__.__name__,
             "response_key": key,
-            "limit": settings.defaults["max_detail_length"]
+            "limit": settings.defaults["max_detail_length"],
         }
         log.error(msg, data, extra=data)
 
@@ -567,6 +586,7 @@ class make_fail(make_response):
                return make_fail("BASH_BUG_123", bash=bash)
            return make_pass("BASH", bash=bash)
     """
+
     pass
 
 
@@ -598,6 +618,7 @@ class make_pass(Response):
            return make_pass("BASH", bash=bash)
 
     """
+
     response_type = "pass"
     key_name = "pass_key"
 
@@ -616,6 +637,7 @@ class make_info(Response):
            return make_info("BASH_VERSION", bash=bash.nvra)
 
     """
+
     response_type = "info"
     key_name = "info_key"
 
@@ -643,6 +665,7 @@ class make_metadata(Response):
     may be aggregated with other make_metadata responses. As such, it has no
     response key.
     """
+
     response_type = "metadata"
 
     def __init__(self, **kwargs):
@@ -655,6 +678,7 @@ class _make_skip(Response):
     be deprecated or have its semantics changed. Do not call explicitly from
     rules.
     """
+
     response_type = "skip"
 
     def __str__(self):
@@ -680,10 +704,9 @@ class _make_skip(Response):
     def __init__(self, rule_fqdn, missing):
         self.missing = missing
         details = dr.stringify_requirements(missing)
-        super(_make_skip, self).__init__(None,
-                                        rule_fqdn=rule_fqdn,
-                                        reason="MISSING_REQUIREMENTS",
-                                        details=details)
+        super(_make_skip, self).__init__(
+            None, rule_fqdn=rule_fqdn, reason="MISSING_REQUIREMENTS", details=details
+        )
 
 
 class make_none(Response):
@@ -693,6 +716,7 @@ class make_none(Response):
     This is not intended to be used by plugins, only infrastructure
     but it not private so that we can easily add it to reporting.
     """
+
     response_type = "none"
     key_name = "none_key"
 

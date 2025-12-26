@@ -31,7 +31,6 @@ specs during collection according to the user configuration and specs setting.
 import logging
 import json
 import os
-import six
 import tempfile
 
 from insights.cleaner.filters import AllowFilter
@@ -187,7 +186,7 @@ class Cleaner(object):
                     if content:
                         with open(_file, 'wb') as fh:
                             for line in content:
-                                fh.write(line.encode('utf-8') if six.PY3 else line)
+                                fh.write(line.encode('utf-8'))
                     else:
                         # Remove Empty file
                         logger.debug('Removing %s, as it\'s empty after cleaning' % _file)

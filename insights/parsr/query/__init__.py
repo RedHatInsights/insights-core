@@ -20,31 +20,14 @@ queries. This allows their instances to be accessed like simple dictionaries,
 but the key passed to ``[]`` is converted to a query of immediate child
 instances instead of a simple lookup.
 """
+
 import operator
 import re
-import six
 import sys
+
 from collections import defaultdict
 from itertools import chain, count
 from insights.parsr.query.boolean import All, Any, Boolean, Not, pred, pred2  # noqa
-
-# intern was a builtin until it moved to sys in python3
-try:
-    intern = sys.intern
-except:
-    pass
-
-
-def _make_str(s):
-    """
-    Inspired by six.ensure_str in six version 1.15. See the six module for
-    copyright notice.
-    """
-    if six.PY2 and isinstance(s, six.text_type):
-        return s.encode("utf-8", "strict")
-    if six.PY3 and isinstance(s, six.binary_type):
-        return s.decode("utf-8", "strict")
-    return s
 
 
 # we need this when generating crumbs
@@ -72,6 +55,7 @@ except ImportError:
             res = sorted(self.data.items(), key=itemgetter(1), reverse=True)
             return res[:top] if top is not None else res
 
+
 ANY = None
 
 
@@ -80,13 +64,16 @@ class Entry(object):
     Entry is the base class for the data model, which is a tree of Entry
     instances. Each instance has a name, attributes, a parent, and children.
     """
+
     __slots__ = ("_name", "attrs", "children", "parent", "lineno", "src")
 
-    def __init__(self, name=None, attrs=None, children=None, lineno=None, src=None, set_parents=True):
+    def __init__(
+        self, name=None, attrs=None, children=None, lineno=None, src=None, set_parents=True
+    ):
         if type(name) is str:
-            self._name = intern(name)
-        elif isinstance(name, (six.text_type, six.binary_type)):
-            self._name = intern(_make_str(name))
+            self._name = sys.intern(name)
+        elif isinstance(name, bytes):
+            self._name = sys.intern(name.decode("utf-8", "strict"))
         else:
             self._name = name
 
@@ -306,11 +293,13 @@ class Entry(object):
         elif isinstance(name, Boolean):
             query = child_query(name, value).to_pyfunc()
         elif callable(name):
+
             def predicate(e):
                 try:
                     return name(e)
                 except:
                     return False
+
             query = predicate
         else:
             query = child_query(name, value).to_pyfunc()
@@ -425,6 +414,7 @@ class Section(Entry):
     A Section is an ``Entry`` composed of other Sections and
     :py:class:`Directive` instances.
     """
+
     @property
     def section(self):
         """
@@ -445,6 +435,7 @@ class Directive(Entry):
     A Directive is an ``Entry`` that represents a single option or named value.
     They are normally found in :py:class:`Section` instances.
     """
+
     @property
     def section(self):
         if self.parent:
@@ -460,6 +451,7 @@ class Result(Entry):
     """
     Result is an Entry whose children are the results of a query.
     """
+
     def __init__(self, children=None):
         super(Result, self).__init__()
         self.children = children or []
@@ -653,11 +645,13 @@ class Result(Entry):
         elif isinstance(name, Boolean):
             query = child_query(name, value).to_pyfunc()
         elif callable(name):
+
             def predicate(e):
                 try:
                     return name(e)
                 except:
                     return False
+
             query = predicate
         else:
             query = child_query(name, value).to_pyfunc()
@@ -699,6 +693,7 @@ class _Choose(Result):
     """
     Marker class that allows us to detected nested calls to choose
     """
+
     pass
 
 
@@ -706,6 +701,7 @@ class _EntryQuery(object):
     """
     _EntryQuery is the base class of all other query classes.
     """
+
     def __and__(self, other):
         return _AllEntryQuery(self, other)
 
@@ -742,9 +738,11 @@ def predicate(value):
         return {body}
     except Exception as ex:
         return False
-        """.format(body=expr(self))
+        """.format(
+            body=expr(self)
+        )
 
-        six.exec_(func, env, env)
+        exec(func, env, env)
         return env["predicate"]
 
 
@@ -796,6 +794,7 @@ class ChildQuery(_EntryQuery):
     """
     Returns True if any child entry passes the query.
     """
+
     def __init__(self, expr):
         self.expr = expr
 
@@ -822,11 +821,13 @@ def _desugar_name(q):
         f = q.to_pyfunc()
         return lambda e: f(e._name)
     if callable(q):
+
         def predicate(e):
             try:
                 return q(e._name)
             except:
                 return False
+
         return predicate
     return lambda e: e._name == q
 
@@ -835,11 +836,13 @@ def _desugar_attr(q):
     if isinstance(q, Boolean):
         return q.to_pyfunc()
     if callable(q):
+
         def predicate(v):
             try:
                 return q(v)
             except:
                 return False
+
         return predicate
     return lambda v: v == q
 
@@ -875,10 +878,12 @@ def _flatten(nodes):
     """
     Flatten the config tree into a list of nodes.
     """
+
     def inner(n):
         yield n
         for i in chain.from_iterable(inner(c) for c in n.children):
             yield i
+
     return list(chain.from_iterable(inner(n) for n in nodes))
 
 
@@ -908,6 +913,7 @@ def compile_queries(*queries):
 
     def inner(nodes):
         return Result(children=match(queries, nodes))
+
     return inner
 
 
@@ -940,6 +946,7 @@ def from_dict(orig, src=None):
     from_dict is a helper function that does its best to convert a python dict
     into a tree of :py:class:`Entry` instances that can be queried.
     """
+
     def inner(d):
         result = []
         for k, v in d.items():
@@ -957,6 +964,7 @@ def from_dict(orig, src=None):
             else:
                 result.append(Entry(name=k, attrs=(v,)))
         return tuple(result)
+
     return Entry(children=inner(orig), src=src)
 
 

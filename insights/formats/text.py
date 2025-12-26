@@ -1,11 +1,10 @@
 from __future__ import print_function
-import six
 import sys
 import inspect
 from collections import namedtuple
 
 from pprint import pprint
-from six import StringIO
+from io import StringIO
 from insights import _COLOR, dr, datasource, rule, condition, incident, parser
 from insights.core.context import ExecutionContext
 from insights.formats import Formatter, FormatterAdapter, render
@@ -16,20 +15,24 @@ try:
 
     if _COLOR == "always":
         from colorama import Fore, Style
+
         init(strip=False)
     elif _COLOR == "auto":
         from colorama import Fore, Style
+
         init()
     elif _COLOR == "never":
+
         class Default(type):
             def __getattr__(*args):
                 return ""
 
-        class Fore(six.with_metaclass(Default)):
+        class Fore(object, metaclass=Default):
             pass
 
-        class Style(six.with_metaclass(Default)):
+        class Style(object, metaclass=Default):
             pass
+
 except ImportError:
     print("Install colorama if console colors are preferred.")
 
@@ -37,10 +40,10 @@ except ImportError:
         def __getattr__(*args):
             return ""
 
-    class Fore(six.with_metaclass(Default)):
+    class Fore(object, metaclass=Default):
         pass
 
-    class Style(six.with_metaclass(Default)):
+    class Style(object, metaclass=Default):
         pass
 
 
@@ -85,13 +88,17 @@ class HumanReadableFormat(Formatter):
             used in general.
         stream (file-like): Output is written to stream. Defaults to sys.stdout.
     """
-    def __init__(self, broker,
-            missing=False,
-            tracebacks=False,
-            dropped=False,
-            show_rules=None,
-            no_details=False,
-            stream=sys.stdout):
+
+    def __init__(
+        self,
+        broker,
+        missing=False,
+        tracebacks=False,
+        dropped=False,
+        show_rules=None,
+        no_details=False,
+        stream=sys.stdout,
+    ):
         super(HumanReadableFormat, self).__init__(broker, stream=stream)
         self.missing = missing
         self.tracebacks = tracebacks
@@ -112,10 +119,16 @@ class HumanReadableFormat(Formatter):
             'pass': response(color=Fore.GREEN, label="PASS", intl='P', title="Passed      : "),
             'rule': response(color=Fore.RED, label="FAIL", intl='F', title="Failed      : "),
             'info': response(color=Fore.WHITE, label="INFO", intl='I', title="Info        : "),
-            'none': response(color=Fore.BLUE, label="RETURNED NONE", intl='N', title="Ret'd None  : "),
+            'none': response(
+                color=Fore.BLUE, label="RETURNED NONE", intl='N', title="Ret'd None  : "
+            ),
             'metadata': response(color=Fore.YELLOW, label="META", intl='M', title="Metadata    : "),
-            'metadata_key': response(color=Fore.MAGENTA, label="META", intl='K', title="Metadata Key: "),
-            'fingerprint': response(color=Fore.YELLOW, label="FINGERPRINT", intl='P', title="Fingerprint : "),
+            'metadata_key': response(
+                color=Fore.MAGENTA, label="META", intl='K', title="Metadata Key: "
+            ),
+            'fingerprint': response(
+                color=Fore.YELLOW, label="FINGERPRINT", intl='P', title="Fingerprint : "
+            ),
             'exception': response(color=Fore.RED, label="EXCEPT", intl='E', title="Exceptions  : "),
         }
 
@@ -137,7 +150,13 @@ class HumanReadableFormat(Formatter):
 
         if v and isinstance(v, dict) and len(v) > 0 and 'type' in v:
             if v["type"] in self.responses:
-                print(self.responses[v["type"]].color + self.responses[v["type"]].intl + Style.RESET_ALL, end="", file=self.stream)
+                print(
+                    self.responses[v["type"]].color
+                    + self.responses[v["type"]].intl
+                    + Style.RESET_ALL,
+                    end="",
+                    file=self.stream,
+                )
             else:
                 print(".", end="", file=self.stream)
         elif c in broker.exceptions:
@@ -146,7 +165,7 @@ class HumanReadableFormat(Formatter):
         return self
 
     def show_tracebacks(self):
-        """ Show tracebacks """
+        """Show tracebacks"""
         if self.broker.tracebacks:
             print(file=self.stream)
             print("Tracebacks:", file=self.stream)
@@ -154,7 +173,7 @@ class HumanReadableFormat(Formatter):
                 print(t, file=self.stream)
 
     def show_dropped(self):
-        """ Show dropped files """
+        """Show dropped files"""
         ctx = _find_context(self.broker)
         if ctx and ctx.all_files:
             ds = self.broker.get_by_type(datasource)
@@ -169,7 +188,7 @@ class HumanReadableFormat(Formatter):
             pprint(dropped, indent=4, stream=self.stream)
 
     def show_description(self):
-        """ Prints the formatted response for the matching return type """
+        """Prints the formatted response for the matching return type"""
 
         def printit(c, v):
             resp = self.responses[v["type"]]
@@ -195,9 +214,9 @@ class HumanReadableFormat(Formatter):
                 self.counts[_type] += 1
 
             if (
-                    (self.missing and _type == 'skip') or
-                    (self.show_rules and _type in self.show_rules) or
-                    (not self.show_rules and _type not in ['skip', 'none'])
+                (self.missing and _type == 'skip')
+                or (self.show_rules and _type in self.show_rules)
+                or (not self.show_rules and _type not in ['skip', 'none'])
             ):
                 printit(c, v)
 
@@ -205,7 +224,13 @@ class HumanReadableFormat(Formatter):
 
         self.print_header("Rule Execution Summary", Fore.CYAN)
         for c in self.counts:
-            print(self.responses[c].color + self.responses[c].title + str(self.counts[c]) + Style.RESET_ALL, file=self.stream)
+            print(
+                self.responses[c].color
+                + self.responses[c].title
+                + str(self.counts[c])
+                + Style.RESET_ALL,
+                file=self.stream,
+            )
 
     def postprocess(self):
         if self.tracebacks:
@@ -220,21 +245,38 @@ class HumanReadableFormat(Formatter):
 
 
 class HumanReadableFormatAdapter(FormatterAdapter):
-    """ Displays results in a human readable format. """
+    """Displays results in a human readable format."""
 
     @staticmethod
     def configure(p):
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
-        p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true")
+        p.add_argument(
+            "-d",
+            "--dropped",
+            help="Show collected files that weren't processed.",
+            action="store_true",
+        )
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
-        p.add_argument("-S", "--show-rules", default=[], nargs="+",
-                       choices=["fail", "info", "pass", "none", "metadata", "fingerprint"],
-                       metavar="TYPE",
-                       help="Show results per rule's type: 'fail', 'info', 'pass', 'none', 'metadata', and 'fingerprint'")
-        p.add_argument("-F", "--fail-only",
-                       help="Show FAIL results only. Conflict with '-m', will be dropped when using them together. This option is deprecated by '-S fail'",
-                       action="store_true")
-        p.add_argument("--no-details", help="Hide the details and show result only, for TEXT format only", action="store_true")
+        p.add_argument(
+            "-S",
+            "--show-rules",
+            default=[],
+            nargs="+",
+            choices=["fail", "info", "pass", "none", "metadata", "fingerprint"],
+            metavar="TYPE",
+            help="Show results per rule's type: 'fail', 'info', 'pass', 'none', 'metadata', and 'fingerprint'",
+        )
+        p.add_argument(
+            "-F",
+            "--fail-only",
+            help="Show FAIL results only. Conflict with '-m', will be dropped when using them together. This option is deprecated by '-S fail'",
+            action="store_true",
+        )
+        p.add_argument(
+            "--no-details",
+            help="Hide the details and show result only, for TEXT format only",
+            action="store_true",
+        )
 
     def __init__(self, args=None):
         self.tracebacks = args.tracebacks

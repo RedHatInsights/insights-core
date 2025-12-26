@@ -1,13 +1,13 @@
 try:
     import cjson
+
     json_encode = cjson.encode
     json_decode = cjson.decode
 except ImportError:
     import json
+
     json_encode = json.dumps
     json_decode = json.loads
-
-import six
 
 
 class Marshaller(object):
@@ -28,7 +28,7 @@ class Marshaller(object):
                 for k, v in o.items():
                     o[k] = [v]
             return o
-        elif isinstance(o, six.string_types):
+        elif isinstance(o, str):
             if use_value_list:
                 return {o: [True]}
             else:

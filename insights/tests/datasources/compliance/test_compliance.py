@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 import os
-import six
 
 from pytest import raises, mark
 from unittest.mock import patch, Mock, mock_open
@@ -162,20 +161,11 @@ def test_run_scan(config, call):
     env = os.environ
     env.update({'TZ': 'UTC'})
     compliance_client.run_scan('ref_id', '/nonexistent', output_path)
-    if six.PY3:
-        call.assert_called_with(
-            ("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent'),
-            keep_rc=True,
-            env=env,
-        )
-    else:
-        call.assert_called_with(
-            (
-                "oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent'
-            ).encode(),
-            keep_rc=True,
-            env=env,
-        )
+    call.assert_called_with(
+        ("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent'),
+        keep_rc=True,
+        env=env,
+    )
 
 
 @patch(
@@ -190,20 +180,11 @@ def test_run_scan_fail(config, call):
     env.update({'TZ': 'UTC'})
     with raises(SystemExit):
         compliance_client.run_scan('ref_id', '/nonexistent', output_path)
-    if six.PY3:
-        call.assert_called_with(
-            ("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent'),
-            keep_rc=True,
-            env=env,
-        )
-    else:
-        call.assert_called_with(
-            (
-                "oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent'
-            ).encode(),
-            keep_rc=True,
-            env=env,
-        )
+    call.assert_called_with(
+        ("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent'),
+        keep_rc=True,
+        env=env,
+    )
 
 
 @patch("insights.specs.datasources.compliance.call", return_value=(0, ''.encode('utf-8')))

@@ -5,8 +5,6 @@ import operator
 import os
 import re
 import shlex
-import six
-import sys
 import yaml
 
 from collections import OrderedDict
@@ -794,14 +792,12 @@ class YAMLParser(Parser, LegacyItemAccess):
             if not isinstance(self.data, (dict, list)):
                 raise ParseException("YAML didn't produce a dictionary or list.")
         except SkipComponent as se:
-            tb = sys.exc_info()[2]
-            six.reraise(SkipComponent, SkipComponent(str(se)), tb)
-        except:
-            tb = sys.exc_info()[2]
+            raise SkipComponent(str(se))
+        except Exception:
             cls = self.__class__
             name = ".".join([cls.__module__, cls.__name__])
             msg = "%s couldn't parse yaml." % name
-            six.reraise(ParseException, ParseException(msg), tb)
+            raise ParseException(msg)
 
 
 class JSONParser(Parser, LegacyItemAccess):
@@ -835,12 +831,11 @@ class JSONParser(Parser, LegacyItemAccess):
                 self.data = json.loads('\n'.join(content[actual_start_index:]))
             else:
                 self.data = json.loads(content)
-        except:
-            tb = sys.exc_info()[2]
+        except Exception:
             cls = self.__class__
             name = ".".join([cls.__module__, cls.__name__])
             msg = "%s couldn't parse json." % name
-            six.reraise(ParseException, ParseException(msg), tb)
+            raise ParseException(msg)
         # Kept for backwards compatibility;
         # JSONParser used to raise an exception for valid "null" JSON string
         if self.data is None:
@@ -853,7 +848,7 @@ class ScanMeta(type):
         return super(ScanMeta, cls).__new__(cls, name, parents, dct)
 
 
-class Scannable(six.with_metaclass(ScanMeta, Parser)):
+class Scannable(Parser, metaclass=ScanMeta):
     """
     A class to enable early and easy collection of data in a file.
 
@@ -973,7 +968,7 @@ class Scannable(six.with_metaclass(ScanMeta, Parser)):
                 scanner(self, obj)
 
 
-class TextFileOutput(six.with_metaclass(ScanMeta, Parser)):
+class TextFileOutput(Parser, metaclass=ScanMeta):
     """
     Class for parsing general text file content.
 
@@ -1064,9 +1059,9 @@ class TextFileOutput(six.with_metaclass(ScanMeta, Parser)):
         Check this given `s`, it must be a string or a list of strings.
         Otherwise, a TypeError will be raised.
         """
-        if isinstance(s, six.string_types):
+        if isinstance(s, str):
             return lambda l: s in l
-        elif isinstance(s, list) and len(s) > 0 and all(isinstance(w, six.string_types) for w in s):
+        elif isinstance(s, list) and len(s) > 0 and all(isinstance(w, str) for w in s):
             return lambda l: check(w in l for w in s)
         elif s is not None:
             raise TypeError('Search items must be given as a string or a list of strings')
@@ -1090,7 +1085,7 @@ class TextFileOutput(six.with_metaclass(ScanMeta, Parser)):
             TypeError: When `s` is not a string or a list of strings, or `num`
                 is not an integer.
         """
-        if num is not None and not isinstance(num, six.integer_types):
+        if num is not None and not isinstance(num, int):
             raise TypeError('Required numbers must be given as a integer')
         ret = []
         search_by_expression = self._valid_search(s, check)
@@ -1333,7 +1328,7 @@ class LogFileOutput(TextFileOutput):
         # Grab values of dict as a list first
         if isinstance(time_format, dict):
             time_format = list(time_format.values())
-        if isinstance(time_format, six.string_types):
+        if isinstance(time_format, str):
             logs_have_year = '%Y' in time_format or '%y' in time_format
             time_re = re.compile('(' + timefmt_re.sub(replacer, time_format) + ')')
 

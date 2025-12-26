@@ -1,6 +1,5 @@
 import logging
 import os
-import six
 from contextlib import contextmanager
 from insights.util import streams, subproc
 
@@ -156,7 +155,7 @@ class ExecutionContextMeta(type):
         return (None, None)
 
 
-class ExecutionContext(six.with_metaclass(ExecutionContextMeta)):
+class ExecutionContext(object, metaclass=ExecutionContextMeta):
     marker = None
 
     def __init__(self, root="/", timeout=None, all_files=None):

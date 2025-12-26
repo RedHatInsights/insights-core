@@ -2,8 +2,6 @@ import logging
 import os
 import shlex
 import signal
-import six
-import sys
 
 from subprocess import Popen, PIPE, STDOUT
 
@@ -148,7 +146,7 @@ class Pipeline(object):
         Raises:
             CalledProcessError if any return code in the pipeline is nonzero.
         """
-        if isinstance(output, six.string_types):
+        if isinstance(output, str):
             already_exists = os.path.exists(output)
             try:
                 with open(output, mode) as f:
@@ -161,7 +159,7 @@ class Pipeline(object):
             except BaseException as be:
                 if not already_exists and os.path.exists(output):
                     os.remove(output)
-                six.reraise(be.__class__, be, sys.exc_info()[2])
+                raise be
         else:
             p = self._build_pipes(output)
             rc = p.wait()

@@ -39,11 +39,12 @@ filtered even if filters are defined for them.
 
 import os
 import pkgutil
-import six
 import yaml as ser
+
 from collections import defaultdict
 
 import insights
+
 from insights.core import dr, plugins
 from insights.util import parse_bool
 
@@ -91,10 +92,10 @@ def add_filter(component, patterns, max_match=MAX_MATCH):
         if comp in _CACHE:
             del _CACHE[comp]
 
-        if not isinstance(patterns, (six.string_types, list, set)):
+        if not isinstance(patterns, (str, list, set)):
             raise TypeError("Filter patterns must be of type string, list, or set.")
 
-        if isinstance(patterns, six.string_types):
+        if isinstance(patterns, str):
             patterns = [patterns]
 
         for pat in patterns:

@@ -46,6 +46,7 @@ can register callbacks with a broker that get invoked after the attempted
 execution of every component, so you can inspect it during an evaluation
 instead of at the end.
 """
+
 from __future__ import print_function
 
 import importlib
@@ -55,7 +56,6 @@ import logging
 import os
 import pkgutil
 import re
-import six
 import sys
 import time
 import traceback
@@ -106,7 +106,7 @@ def set_enabled(component, enabled=True):
     Returns:
         None
     """
-    if isinstance(component, six.string_types):
+    if isinstance(component, str):
         component = get_component(component)
 
     if component:
@@ -172,7 +172,7 @@ COMPONENT_IMPORT_CACHE = KeyPassingDefaultDict(_import_component)
 
 
 def get_component(name):
-    """ Returns the class or function specified, importing it if necessary. """
+    """Returns the class or function specified, importing it if necessary."""
     return COMPONENT_IMPORT_CACHE[name]
 
 
@@ -229,14 +229,14 @@ def get_name(component):
     Attempt to get the string name of component, including module and class if
     applicable.
     """
-    if six.callable(component):
+    if callable(component):
         name = getattr(component, "__qualname__", component.__name__)
         return '.'.join([component.__module__, name])
     return str(component)
 
 
 def get_simple_name(component):
-    if six.callable(component):
+    if callable(component):
         return component.__name__
     return str(component)
 
@@ -308,6 +308,7 @@ def walk_dependencies(root, visitor):
         visitor (function): signature is `func(component, parent)`.  The
             call on root is `visitor(root, None)`.
     """
+
     def visit(parent, visitor):
         for d in get_dependencies(parent):
             visitor(d, parent)
@@ -380,6 +381,7 @@ def get_dependency_specs(component):
            sub-set. This sub-set specs and the 'at_least_one_21' are
            `at_least_one` specs in the same at least one set.
     """
+
     def get_requires(comp):
         req = list()
         for cmp in get_delegate(comp).requires:
@@ -475,7 +477,11 @@ def get_subgraphs(graph=None):
     """
     graph = graph or DEPENDENCIES
     # Sort the keys as per "prio", 0 -> no priority
-    keys = sorted(graph, key=lambda x: getattr(next(iter(get_registry_points(x) or [object])), 'prio', 0), reverse=True)
+    keys = sorted(
+        graph,
+        key=lambda x: getattr(next(iter(get_registry_points(x) or [object])), 'prio', 0),
+        reverse=True,
+    )
     frontier = set()
     seen = set()
     while keys:
@@ -843,6 +849,7 @@ class Broker(object):
             times.
         store_skips (bool): Weather to store skips in the broker or not.
     """
+
     def __init__(self, seed_broker=None):
         self.instances = dict(seed_broker.instances) if seed_broker else {}
         self.missing_requirements = {}
@@ -864,9 +871,11 @@ class Broker(object):
         You can use ``@broker.observer()`` as a decorator to your callback
         instead of :func:`Broker.add_observer`.
         """
+
         def inner(func):
             self.add_observer(func, component_type)
             return func
+
         return inner
 
     def add_observer(self, o, component_type=ComponentType):
@@ -963,9 +972,14 @@ class Broker(object):
             return default
 
     def print_component(self, component_type):
-        print(json.dumps(
-            dict((get_name(c), self[c])
-                 for c in sorted(self.get_by_type(component_type), key=get_name))))
+        print(
+            json.dumps(
+                dict(
+                    (get_name(c), self[c])
+                    for c in sorted(self.get_by_type(component_type), key=get_name)
+                )
+            )
+        )
 
 
 def get_missing_requirements(func, requires, d):
@@ -1017,9 +1031,11 @@ def observer(component_type=ComponentType):
     You can use ``@broker.observer()`` as a decorator to your callback
     instead of :func:`add_observer`.
     """
+
     def inner(func):
         add_observer(func, component_type)
         return func
+
     return inner
 
 
@@ -1064,9 +1080,12 @@ def run_components(ordered_components, components, broker):
     for component in ordered_components:
         start = time.time()
         try:
-            if (component not in broker and component in components and
-               component in DELEGATES and
-               is_enabled(component)):
+            if (
+                component not in broker
+                and component in components
+                and component in DELEGATES
+                and is_enabled(component)
+            ):
                 log.info("Trying %s" % get_name(component))
                 result = DELEGATES[component].process(broker)
                 broker[component] = result

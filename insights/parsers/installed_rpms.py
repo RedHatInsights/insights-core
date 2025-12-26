@@ -2,15 +2,14 @@
 InstalledRpms - Command ``rpm -qa``
 ===================================
 
-
 InstalledRpms - command ``rpm -qa``
 -----------------------------------
+
 ContainerInstalledRpms - command ``rpm -qa`` for containers
 -----------------------------------------------------------
 """
 
 import json
-import six
 
 from collections import defaultdict
 
@@ -283,6 +282,7 @@ def pad_version(left, right):
     before non-integer components.  The algorithm attempts to align character
     components.
     """
+
     def _int_or_str(c):
         try:
             return int(c)
@@ -291,6 +291,7 @@ def pad_version(left, right):
 
     def vcmp(s):
         import re
+
         p = re.compile(r"(\d+|[a-z]+|\.|-|_)")
         return [_int_or_str(c) for c in p.split(s) if c and c not in (".", "_", "-")]
 
@@ -310,7 +311,7 @@ def pad_version(left, right):
         except IndexError:
             if type(c) is int:
                 mn.append(0)
-            elif isinstance(c, six.string_types):
+            elif isinstance(c, str):
                 mn.append('')
             else:
                 raise Exception("pad_version failed (%s) (%s)" % (left, right))
@@ -412,7 +413,7 @@ class InstalledRpm(object):
         self.vendor = None
         """str: RPM package vendor. `None` when no 'vendor' info"""
 
-        if isinstance(data, six.string_types):
+        if isinstance(data, str):
             data = self._parse_package(data)
 
         for k, v in data.items():
@@ -632,7 +633,6 @@ class InstalledRpm(object):
         return isinstance(other, InstalledRpm) and not other.__lt__(self)
 
     def __hash__(self):
-        # Python 3 requires hash implementation to have hashable object.
         try:
             # Just NVR is not enouch for uniqueness. Try NVRA first.
             value = self.nvra

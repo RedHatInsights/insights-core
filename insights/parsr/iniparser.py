@@ -1,15 +1,33 @@
 import string
 
-from insights.parsr import (Comma, EOF, EOL, DoubleQuotedString,
-                            HangingString, InSet, LeftBracket, Lift, LineEnd, Literal, Many,
-                            OneLineComment, Opt, PosMarker, RightBracket, skip_none, String,
-                            WithIndent, WS, WSChar)
+from insights.parsr import (
+    Comma,
+    EOF,
+    EOL,
+    DoubleQuotedString,
+    HangingString,
+    InSet,
+    LeftBracket,
+    Lift,
+    LineEnd,
+    Literal,
+    Many,
+    OneLineComment,
+    Opt,
+    PosMarker,
+    RightBracket,
+    skip_none,
+    String,
+    WithIndent,
+    WS,
+    WSChar,
+)
 from insights.parsr.query import Directive, Entry, eq, Section
-from six import PY2
 
 
 class Error(Exception):
     """Base class for iniparser exceptions."""
+
     def __init__(self, msg=''):
         self.message = msg
         Exception.__init__(self, msg)
@@ -22,6 +40,7 @@ class Error(Exception):
 
 class NoOptionError(Error):
     """A requested option was not found."""
+
     def __init__(self, section, option):
         Error.__init__(self, "No option {0!r} in section: {1!r}".format(option, section))
         self.option = option
@@ -31,6 +50,7 @@ class NoOptionError(Error):
 
 class NoSectionError(Error):
     """Raised when no section matches a requested option."""
+
     def __init__(self, section):
         Error.__init__(self, 'No section: {0!r}'.format(section))
         self.section = section
@@ -73,8 +93,8 @@ def parse_doc(content, ctx, return_defaults=False, return_booleans=True):
     if return_booleans:
         Boolean = ((Yes | No | Tru | Fals) & (WSChar | LineEnd)) % "Boolean"
 
-    LeftEnd = (WS + LeftBracket + Many(WSChar))
-    RightEnd = (Many(WSChar) + RightBracket + WS)
+    LeftEnd = WS + LeftBracket + Many(WSChar)
+    RightEnd = Many(WSChar) + RightBracket + WS
     NestedValuesStart = WS >> (LeftBracket + EOL) % "NestedValuesStart"
     NestedValuesEnd = (RightBracket + WS) % "NestedValuesEnd"
 
@@ -85,11 +105,15 @@ def parse_doc(content, ctx, return_defaults=False, return_booleans=True):
         NormalValue = WS >> (Boolean | HangingString(value_chars))
     else:
         NormalValue = WS >> (HangingString(value_chars))
-    Comment = (WS >> (OneLineComment("#") | OneLineComment(";")).map(lambda x: None))
+    Comment = WS >> (OneLineComment("#") | OneLineComment(";")).map(lambda x: None)
 
-    NestedItem = WS >> (Comment | DoubleQuotedString + EOL | DoubleQuotedString + Comma + EOL) % "NestedItem"
-    NestedValues = (NestedValuesStart + Many(NestedItem) + Many(WSChar) + Many(EOL) + NestedValuesEnd) % "NestedValues"
-    Value = (NestedValues | NormalValue)
+    NestedItem = (
+        WS >> (Comment | DoubleQuotedString + EOL | DoubleQuotedString + Comma + EOL) % "NestedItem"
+    )
+    NestedValues = (
+        NestedValuesStart + Many(NestedItem) + Many(WSChar) + Many(EOL) + NestedValuesEnd
+    ) % "NestedValues"
+    Value = NestedValues | NormalValue
 
     KVPair = WithIndent(Key + Opt(Sep >> Value)) % "KVPair"
 
@@ -98,15 +122,9 @@ def parse_doc(content, ctx, return_defaults=False, return_booleans=True):
     Doc = Many(Comment | Sect).map(skip_none)
     Top = Doc << WS << EOF
 
-    if PY2:
-        # For py2 sub all non ascii chars for question marks,
-        # since it doesn't support unicode encoding/decoding well.
-        from re import sub
-        content = sub(r"[^\x00-\x7F]", "?", content)
-    else:
-        # Encode and replace unicode characters,
-        # then decode again before processing content.
-        content = content.encode('ascii', 'replace').decode()
+    # Encode and replace unicode characters,
+    # then decode again before processing content.
+    content = content.encode('ascii', 'replace').decode()
 
     res = Entry(children=Top(content), src=ctx)
     return apply_defaults(res, return_defaults)

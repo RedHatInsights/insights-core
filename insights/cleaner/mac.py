@@ -7,7 +7,6 @@ import hashlib
 import logging
 import os
 import re
-import six
 
 from insights.cleaner.utilities import write_report
 
@@ -37,7 +36,7 @@ class Mac(object):
         '''
 
         def obfuscate_hex(_hex, lower=True):
-            __hex = _hex.encode('utf-8') if six.PY3 else _hex
+            __hex = _hex.encode('utf-8')
             new_hex = hashlib.sha1(__hex.lower()).hexdigest()[: len(__hex)]
             return new_hex if lower else new_hex.upper()
 

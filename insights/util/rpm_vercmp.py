@@ -130,13 +130,12 @@ def _rpm_vercmp(a, b):
 
 try:
     import rpm
-    import six
     from functools import cmp_to_key
 
     def version_compare(left, right):
         # place the single string as 'version' in the middle of the tuple
-        left = ('0', left, '0') if isinstance(left, six.string_types) else left
-        right = ('0', right, '0') if isinstance(right, six.string_types) else right
+        left = ('0', left, '0') if isinstance(left, str) else left
+        right = ('0', right, '0') if isinstance(right, str) else right
 
         _l = cmp_to_key(rpm.labelCompare)(left)
         _r = cmp_to_key(rpm.labelCompare)(right)
