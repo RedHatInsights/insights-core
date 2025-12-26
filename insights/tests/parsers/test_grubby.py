@@ -3,7 +3,7 @@ import pytest
 
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import grubby
-from insights.parsers.grubby import GrubbyDefaultIndex, GrubbyDefaultKernel, GrubbyInfoAll
+from insights.parsers.grubby import GrubbyDefaultIndex, GrubbyInfoAll
 from insights.tests import context_wrap
 
 DEFAULT_INDEX_1 = '0'
@@ -144,44 +144,6 @@ def test_grubby_default_index_ab():
     assert 'Invalid output:' in str(excinfo.value)
 
 
-def test_grubby_default_kernel():
-    res = GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL))
-    assert res.default_kernel == DEFAULT_KERNEL
-
-    content_with_error_msgs = [
-        DEFAULT_KERNEL_WITH_ERRORS_MSGS_1,
-        DEFAULT_KERNEL_WITH_ERRORS_MSGS_2,
-        DEFAULT_KERNEL_WITH_ERRORS_MSGS_3,
-        DEFAULT_KERNEL_WITH_ERRORS_MSGS_4,
-        DEFAULT_KERNEL_WITH_ERRORS_MSGS_5,
-    ]
-    for content in content_with_error_msgs:
-        this_res = GrubbyDefaultKernel(context_wrap(content))
-        assert this_res.default_kernel == content.split()[-1].strip()
-
-
-def test_grubby_default_kernel_ab():
-    with pytest.raises(SkipComponent) as excinfo:
-        GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL_EMPTY))
-    assert 'Empty output' in str(excinfo.value)
-
-    with pytest.raises(ParseException) as excinfo:
-        GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL_AB))
-    assert 'Invalid output:' in str(excinfo.value)
-
-    with pytest.raises(ParseException) as excinfo:
-        GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL_INVALID))
-    assert 'Invalid output:' in str(excinfo.value)
-
-    with pytest.raises(ParseException) as excinfo:
-        GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL_INVALID_2))
-    assert 'Invalid output:' in str(excinfo.value)
-
-    with pytest.raises(ParseException) as excinfo:
-        GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL_INVALID_3))
-    assert 'Invalid output:' in str(excinfo.value)
-
-
 def test_grubby_info_all():
     res = GrubbyInfoAll(context_wrap(GRUBBY_INFO_ALL_1))
 
@@ -236,7 +198,6 @@ def test_grubby_info_all_ab():
 def test_doc_examples():
     env = {
         'grubby_default_index': GrubbyDefaultIndex(context_wrap(DEFAULT_INDEX_1)),
-        'grubby_default_kernel': GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL)),
         'grubby_info_all': GrubbyInfoAll(context_wrap(GRUBBY_INFO_ALL_1)),
     }
     failed, total = doctest.testmod(grubby, globs=env)

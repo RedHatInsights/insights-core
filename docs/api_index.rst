@@ -259,11 +259,6 @@ insights.util
     :show-inheritance:
     :undoc-members:
 
-.. automodule:: insights.util.file_permissions
-    :members:
-    :show-inheritance:
-    :undoc-members:
-
 .. automodule:: insights.util.autology
     :members:
     :show-inheritance:
