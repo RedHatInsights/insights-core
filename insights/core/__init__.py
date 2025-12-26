@@ -1052,12 +1052,8 @@ class TextFileOutput(six.with_metaclass(ScanMeta, Parser)):
         """
         Parse the line into a dictionary and return it. Only wrap with
         `raw_line` by default.
-
-        .. warning::
-            The key `raw_message` is deprecated and will be removed from
-            version `3.7.0`
         """
-        return {'raw_line': line, 'raw_message': line}
+        return {'raw_line': line}
 
     def _valid_search(self, s, check=all):
         """

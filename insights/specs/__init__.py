@@ -42,7 +42,6 @@ class Specs(SpecSet):
     aws_instance_id_pkcs7 = RegistryPoint()
     aws_public_ipv4_addresses = RegistryPoint()
     aws_public_hostnames = RegistryPoint()
-    awx_manage_check_license = RegistryPoint()
     awx_manage_check_license_data = RegistryPoint(filterable=True)
     awx_manage_print_settings = RegistryPoint()
     azure_instance_id = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
