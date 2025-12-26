@@ -36,18 +36,13 @@ LSldH - command ``ls -ldH <items>``
 
 LSldZ - command ``ls -ldZ <items>``
 -----------------------------------
-
-LSlHFiles - spec ``ls_files`` -  command ``ls -lH  <files>``
-------------------------------------------------------------
 """
 
 from insights.core import ls_parser, CommandParser
-from insights.core.exceptions import SkipComponent
 from insights.core.filters import add_filter
 from insights.core.ls_parser import FilePermissions
 from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.util import deprecated
 
 # Required basic filters for `LS` specs that the content needs to be filtered
 add_filter(Specs.ls_la_filtered, ['total '])
@@ -415,43 +410,6 @@ class LSlaZ(FileListing):
     pass
 
 
-@parser(Specs.ls_files)
-class LSlHFiles(CommandParser, dict):
-    """
-    Parses file information of ``ls -lH`` command.
-
-    .. warning::
-        This class is deprecated and will be removed from 3.7.0.
-        Please use the :class:`LSldH` instead.
-
-    .. note::
-
-        To parse a specific file, its full path should be added to the
-        `ls_lH_files` spec via `add_filter`.
-        Only paths point to files are acceptable.
-
-    """
-    def __init__(self, *args, **kwargs):
-        deprecated(
-            LSlHFiles, "Please use the :class:`LSldH` instead.", "3.7.0"
-        )
-        super(LSlHFiles, self).__init__(*args, **kwargs)
-
-    def parse_content(self, content):
-        self.error_lines = []
-        for line in content:
-            if "ls: cannot access" in line and "No such file or directory" in line:
-                self.error_lines.append(line)
-                continue
-            try:
-                line = line.strip()
-                self[line.rsplit(None, 1)[-1]] = FilePermissions(line)
-            except Exception:
-                pass
-        if not self:
-            raise SkipComponent
-
-
 class FileListingNoHeader(CommandParser, dict):
     """
     Parses a flat, long-listing with SELinux context information
@@ -575,6 +533,7 @@ class LSldH(FileListingNoHeader):
         `ls_ldH_items` spec via `add_filter`.
 
     """
+
     pass
 
 
@@ -590,4 +549,5 @@ class LSldZ(FileListingNoHeader):
         `ls_ldZ_items` spec via `add_filter`.
 
     """
+
     pass

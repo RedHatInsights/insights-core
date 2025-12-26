@@ -9,6 +9,7 @@ This module provides plugins access to file ``/etc/os-release``.
     The /etc/os-release is not exist in RHEL6 and prior versions.
 
 """
+
 from insights.core import Parser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
@@ -50,6 +51,7 @@ class OsRelease(Parser, dict):
         >>> rls.get("VERSION") == "7.2 (Maipo)"
         True
     """
+
     def parse_content(self, content):
         data = {}
         for line in get_active_lines(content):
@@ -59,14 +61,6 @@ class OsRelease(Parser, dict):
         if not data:
             raise SkipComponent
         self.update(data)
-
-    @property
-    def data(self):
-        """
-        .. warning::
-            Deprecated, it will be removed from 3.7.0
-        """
-        return self
 
     @property
     def is_rhel_ai(self):
