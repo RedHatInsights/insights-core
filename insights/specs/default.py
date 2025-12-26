@@ -157,7 +157,6 @@ class DefaultSpecs(Specs):
         aws.aws_imdsv2_token,
         deps=[aws.aws_imdsv2_token],
     )
-    awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
     awx_manage_check_license_data = awx_manage.check_license_data
     awx_manage_print_settings = simple_command(
         "/usr/bin/awx-manage print_settings INSIGHTS_TRACKING_STATE SYSTEM_UUID INSTALL_UUID TOWER_URL_BASE AWX_CLEANUP_PATHS AWX_PROOT_BASE_PATH LOG_AGGREGATOR_ENABLED LOG_AGGREGATOR_LEVEL --format json"
@@ -277,13 +276,6 @@ class DefaultSpecs(Specs):
     dnf_module_list = simple_command(
         "/usr/bin/dnf -C --noplugins module list", signum=signal.SIGTERM
     )  # used by puptoo
-    docker_info = simple_command("/usr/bin/docker info")  # v3.7.0
-    docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")  # v3.7.0
-    docker_list_images = simple_command(
-        "/usr/bin/docker images --all --no-trunc --digests"
-    )  # v3.7.0
-    docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")  # v3.7.0
-    docker_sysconfig = simple_file("/etc/sysconfig/docker")  # v3.7.0
     dotnet_version = simple_command("/usr/bin/dotnet --version")
     doveconf = simple_command("/usr/bin/doveconf")
     dracut_kdump_capture_service = simple_file(
@@ -360,13 +352,10 @@ class DefaultSpecs(Specs):
     group_info = command_with_args("/usr/bin/getent group %s", user_group.group_filters)
     grub2_cfg = simple_file("/boot/grub2/grub.cfg")
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
-    grubby_default_index = simple_command(
-        "/usr/sbin/grubby --default-index"
-    )  # only RHEL7 and updwards
-    grubby_default_kernel = simple_command("/sbin/grubby --default-kernel")
-    grubby_info_all = simple_command("/usr/sbin/grubby --info=ALL")
     grub_conf = simple_file("/boot/grub/grub.conf")
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
+    grubby_default_index = simple_command("/usr/sbin/grubby --default-index")
+    grubby_info_all = simple_command("/usr/sbin/grubby --info=ALL")
     grubenv = simple_command("/usr/bin/grub2-editenv list", keep_rc=True)
     haproxy_cfg = first_file(
         [
@@ -476,9 +465,6 @@ class DefaultSpecs(Specs):
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
     lpstat_queued_jobs_count = lpstat.lpstat_queued_jobs_count
     lru_gen_enabled = simple_file("/sys/kernel/mm/lru_gen/enabled")
-    ls_files = command_with_args(
-        '/bin/ls -lH %s', ls.list_files_with_lH, save_as='ls_files', keep_rc=True
-    )
     ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, save_as='ls_la', keep_rc=True)
     ls_la_filtered = command_with_args(
         '/bin/ls -la %s', ls.list_with_la_filtered, save_as='ls_la_filtered', keep_rc=True
@@ -928,7 +914,6 @@ class DefaultSpecs(Specs):
     systemctl_show_target = simple_command("/bin/systemctl show *.target")
     systemctl_status_all = simple_command("/bin/systemctl status --all")  # used by puptoo
     systemd_analyze_blame = simple_command("/bin/systemd-analyze blame")
-    systemd_docker = simple_command("/usr/bin/systemctl cat docker.service")  # v3.7.0
     systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
     systemd_openshift_node = simple_command("/usr/bin/systemctl cat atomic-openshift-node.service")
     systemd_system_conf = simple_file("/etc/systemd/system.conf")

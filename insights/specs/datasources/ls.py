@@ -126,24 +126,6 @@ def list_with_laZ(broker):
     return ' '.join(_list_items(Specs.ls_laZ_dirs))
 
 
-@datasource(HostContext, optional=[FSTab, BlockIDInfo, Pvs])
-def list_files_with_lH(broker):
-    filters = set(_list_items(Specs.ls_lH_files))
-    files = set(_f for _f in filters if not os.path.isdir(_f))
-    if 'fstab_mounted.devices' in filters and FSTab in broker and BlockIDInfo in broker:
-        files.remove('fstab_mounted.devices')
-        fstab_mounts = broker[FSTab]
-        blkid_info = broker[BlockIDInfo]
-        files.update(_get_fstab_mounted_device_files(fstab_mounts, blkid_info))
-    if 'pvs.devices' in filters and Pvs in broker:
-        files.remove('pvs.devices')
-        pvs_info = broker[Pvs]
-        files.update(set([item['PV'] for item in pvs_info]))
-    if files:
-        return ' '.join(sorted(files))
-    raise SkipComponent
-
-
 @datasource(HostContext)
 def files_dirs_number(broker):
     """Return a dict of file numbers from the spec filter"""

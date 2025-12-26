@@ -7,9 +7,6 @@ and their content format is similar to a '.ini' file.
 
 Parsers included in this module are:
 
-SystemdDocker - file ``/usr/lib/systemd/system/docker.service``
----------------------------------------------------------------
-
 SystemdLogindConf - file ``/etc/systemd/logind.conf``
 -----------------------------------------------------
 
@@ -29,12 +26,11 @@ SystemdOriginAccounting - file ``/etc/systemd/system.conf.d/origin-accounting.co
 ------------------------------------------------------------------------------------
 """
 
+from insights import CommandParser
 from insights.core import ConfigParser, LegacyItemAccess
 from insights.core.plugins import parser
 from insights.parsr import iniparser
 from insights.specs import Specs
-from insights import CommandParser
-from insights.util import deprecated
 
 
 class SystemdConf(CommandParser, LegacyItemAccess, ConfigParser):
@@ -57,45 +53,6 @@ class SystemdConf(CommandParser, LegacyItemAccess, ConfigParser):
                 section_dict[name] = options[0] if len(options) == 1 else options
             dict_all[section.name] = section_dict
         self.data = dict_all
-
-
-@parser(Specs.systemd_docker)
-class SystemdDocker(SystemdConf):
-    """
-    Class for docker service systemd configuration.
-
-    Typical content of ``/usr/lib/systemd/system/docker.service`` file is::
-
-        [Service]
-        Type=notify
-        EnvironmentFile=-/etc/sysconfig/docker
-        EnvironmentFile=-/etc/sysconfig/docker-storage
-        EnvironmentFile=-/etc/sysconfig/docker-network
-        Environment=GOTRACEBACK=crash
-        ExecStart=/bin/sh -c '/usr/bin/docker-current daemon \\
-            --authorization-plugin=rhel-push-plugin \\
-            --exec-opt native.cgroupdriver=systemd \\
-            $OPTIONS \\
-            $DOCKER_STORAGE_OPTIONS \\
-            $DOCKER_NETWORK_OPTIONS \\
-            $ADD_REGISTRY \\
-            $BLOCK_REGISTRY \\
-            $INSECURE_REGISTRY \\
-            2>&1 | /usr/bin/forward-journald -tag docker'
-        LimitNOFILE=1048576
-
-    Example:
-        >>> docker_service["Service"]["ExecStart"].endswith("-tag docker'")
-        True
-        >>> len(docker_service["Service"]["EnvironmentFile"])
-        3
-    """
-
-    def __init__(self, *args, **kwargs):
-        deprecated(SystemdDocker, "This Parser is deprecated", "3.7.0")
-        super(SystemdDocker, self).__init__(*args, **kwargs)
-
-    pass
 
 
 @parser(Specs.systemd_system_conf)
