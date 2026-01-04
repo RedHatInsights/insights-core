@@ -27,17 +27,16 @@ runtime = set(
         'six',
         'requests',
         'redis',
-        'rpm; python_version >= "3.6"',
+        'rpm',
         'cachecontrol',
         'cachecontrol[redis]',
         'cachecontrol[filecache]',
         'defusedxml',
         'lockfile',
-        'jinja2<=2.11.3; python_version <= "2.7"',
-        'jinja2; python_version > "2.7" and python_version <= "3.6"',
+        'jinja2; python_version <= "3.6"',
         'jinja2>=3.1.6;  python_version > "3.6"',
         'pyyaml',
-        'setuptools; python_version >= "3.12"',
+        'setuptools; python_version < "3.10"',
     ]
 )
 
@@ -74,8 +73,9 @@ docs = set(
         'Sphinx',
         'nbsphinx',
         'sphinx_rtd_theme',
-        'ipython<8.7.0',
-        'MarkupSafe==2.0.1',
+        'ipython<8.7.0; python_version <= "3.6"',
+        'ipython; python_version > "3.6"',
+        'MarkupSafe',
         'colorama',
         'Pygments',
         'jedi',
@@ -85,8 +85,7 @@ docs = set(
 testing = set(
     [
         'coverage',
-        'pytest~=4.6.0; python_version == "2.7"',
-        'pytest; python_version >= "3"',
+        'pytest',
         'pytest-cov',
     ]
 )
@@ -145,14 +144,11 @@ if __name__ == "__main__":
             'Natural Language :: English',
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python',
-            'Programming Language :: Python :: 2.7',
-            'Programming Language :: Python :: 3.3',
-            'Programming Language :: Python :: 3.4',
-            'Programming Language :: Python :: 3.5',
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.8',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: 3.11',
+            'Programming Language :: Python :: 3.12',
         ],
         entry_points=entry_points,
         include_package_data=True,
