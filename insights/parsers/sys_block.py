@@ -6,6 +6,9 @@ This module contains the following parsers:
 
 StableWrites - file ``/sys/block/*/queue/stable_writes``
 --------------------------------------------------------
+
+MaxSegmentSize - file ``/sys/block/*/queue/max_segment_size``
+-------------------------------------------------------------
 """
 from insights import Parser, parser
 from insights.core.exceptions import ParseException
@@ -51,3 +54,37 @@ class StableWrites(Parser):
     def device(self):
         """ str: Block device name from file path."""
         return self._device
+
+
+@parser(Specs.sys_block_queue_max_segment_size)
+class MaxSegmentSize(Parser):
+    """
+    Class for parsing the ``/sys/block/*/queue/max_segment_size`` files.
+
+    Typical content of the file is::
+
+        4294967295
+
+    Examples:
+        >>> type(max_segment_size)
+        <class 'insights.parsers.sys_block.MaxSegmentSize'>
+        >>> max_segment_size.max_segment_size
+        4294967295
+        >>> max_segment_size.device
+        'sda'
+
+    Raises:
+        ParseException: When content is empty or unparsable
+    """
+
+    def parse_content(self, content):
+        if len(content) != 1:
+            raise ParseException('Error: {0}'.format(content or 'empty file'))
+        try:
+            self._max_segment_size = int(content[0].strip())
+            self._device = self.file_path.split('/')[-3]
+        except ValueError:
+            raise ParseException("Error: unparsable content: {0}".format(content[0]))
+
+    max_segment_size = property(lambda self: self._max_segment_size)
+    device = property(lambda self: self._device)

@@ -893,6 +893,7 @@ class DefaultSpecs(Specs):
         ]
     )
     sys_block_queue_stable_writes = glob_file("/sys/block/*/queue/stable_writes")
+    sys_block_queue_max_segment_size = glob_file("/sys/block/*/queue/max_segment_size")
     sys_fs_cgroup_memory_tasks_number = sys_fs_cgroup_memory.tasks_number
     sys_fs_cgroup_uniq_memory_swappiness = sys_fs_cgroup_memory.uniq_memory_swappiness
     sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
