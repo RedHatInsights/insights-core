@@ -72,6 +72,9 @@ def candlepin_broker(broker):
                 content=[
                     line for line in ET.tostring(root).decode('utf-8').splitlines() if line.strip()
                 ],
+                ctx=broker.get(HostContext),
+                cleaner=broker.get("cleaner"),
+                no_obfuscate=['ipv4', 'ipv6', 'mac'],
                 relative_path='insights_datasources/candlepin_broker.xml',
             )
     except Exception as e:

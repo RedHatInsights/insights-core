@@ -52,9 +52,12 @@ def leapp_report(broker):
                                 )
                             results.append(ret)
                 if results:
-                    relative_path = 'insights_datasources/leapp_report'
                     return DatasourceProvider(
-                        content=json.dumps(results), relative_path=relative_path
+                        content=json.dumps(results),
+                        ctx=broker.get(HostContext),
+                        cleaner=broker.get("cleaner"),
+                        no_obfuscate=['ipv4', 'ipv6', 'mac'],
+                        relative_path='insights_datasources/leapp_report',
                     )
                 raise SkipComponent("Nothing")
     except Exception as e:
@@ -114,9 +117,12 @@ def migration_results(broker):
                                 ret[key] = sub_ret
                     results.append(ret) if ret else None
                 if results:
-                    relative_path = 'insights_datasources/leapp_migration_results'
                     return DatasourceProvider(
-                        content=json.dumps(results), relative_path=relative_path
+                        content=json.dumps(results),
+                        ctx=broker.get(HostContext),
+                        cleaner=broker.get("cleaner"),
+                        no_obfuscate=['ipv4', 'ipv6', 'mac'],
+                        relative_path='insights_datasources/leapp_migration_results',
                     )
                 raise SkipComponent("Nothing")
     except Exception as e:
