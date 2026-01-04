@@ -2,10 +2,14 @@ import pytest
 import sys
 import tempfile
 
-from insights.core.hydration import get_all_files
 from os import chmod, makedirs
 from os.path import join
 from shutil import rmtree
+from unittest.mock import patch
+
+from insights.core.context import HostArchiveContext, SerializedArchiveContext, SosArchiveContext
+from insights.core.exceptions import ContextException
+from insights.core.hydration import get_all_files, create_context
 
 
 def test_get_all_files():
@@ -43,4 +47,53 @@ def test_get_all_files_oserror(caplog):
 
     chmod(join(tmp_dir, "sys"), 0o777)
     chmod(d, 0o777)
+    rmtree(tmp_dir, ignore_errors=True)
+
+
+def test_create_context_no_expected():
+    tmp_dir = tempfile.mkdtemp()
+
+    d = join(tmp_dir, 'data')
+    makedirs(d)
+
+    open(join(tmp_dir, 'insights_archive.txt'), 'a').close()
+
+    context = create_context(tmp_dir)
+    assert SerializedArchiveContext == type(context), context
+
+    rmtree(tmp_dir, ignore_errors=True)
+
+
+@patch('insights.core.hydration.log')
+def test_create_context_with_expected(log):
+    tmp_dir = tempfile.mkdtemp()
+
+    d1 = join(tmp_dir, 'data')
+    makedirs(d1)
+    d2 = join(d1, 'insights_commands')
+    makedirs(d2)
+
+    open(join(tmp_dir, 'insights_archive.txt'), 'a').close()
+    open(join(d2, 'uname_-a'), 'a').close()
+
+    # Try to identify SerializedArchiveContext first and match
+    context = create_context(tmp_dir, SerializedArchiveContext)
+    assert SerializedArchiveContext == type(context), context
+    assert context.root == tmp_dir, context.root
+
+    # Try to identify HostArchiveContext first and match
+    context = create_context(tmp_dir, HostArchiveContext)
+    assert HostArchiveContext == type(context), context
+    assert context.root == d1, context.root
+
+    # Try to identify SosArchiveContext first and NOT match
+    with pytest.raises(ContextException) as ce:
+        create_context(tmp_dir, SosArchiveContext)
+    assert "ExecutionContext missing match:" in str(ce)
+    assert f"specified: '{SosArchiveContext.__module__}.{SosArchiveContext.__name__}'" in str(ce)
+    assert (
+        f"identified: '{SerializedArchiveContext.__module__}.{SerializedArchiveContext.__name__}({tmp_dir})'"
+        in str(ce)
+    )
+
     rmtree(tmp_dir, ignore_errors=True)

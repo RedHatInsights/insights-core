@@ -74,3 +74,31 @@ def test_unrecognized():
     files = ["/foo/junk", "/bar/junk"]
     actual = ExecutionContextMeta.identify(files)
     assert actual == (None, None), actual
+
+
+def test_archive_context_expected():
+    files = ["/foo/junk", "/insights_archive.txt"]
+    actual = ExecutionContextMeta.identify(files, expected=SerializedArchiveContext)
+    assert actual == ("/", SerializedArchiveContext), actual
+
+    files = ["/foo/junk", "/sos_commands/things"]
+    actual = ExecutionContextMeta.identify(files, expected=SerializedArchiveContext)
+    assert actual == ("/", SosArchiveContext), actual
+
+    files = ["/foo/junk", "/data/insights_commands", "/insights_archive.txt"]
+    actual = ExecutionContextMeta.identify(files, expected=SerializedArchiveContext)
+    assert actual == ("/", SerializedArchiveContext), actual
+
+    # When no --context is specified, try the ExecutionContext in reverse order of loading
+    files = ["/foo/junk", "/data/insights_commands", "/insights_archive.txt"]
+    actual = ExecutionContextMeta.identify(files, expected=None)
+    assert actual == ("/", SerializedArchiveContext), actual
+
+    # "/data/insights_commands" is identify when trying HostArchiveContext
+    files = ["/foo/junk", "/data/insights_commands", "/insights_archive.txt"]
+    actual = ExecutionContextMeta.identify(files, expected=HostArchiveContext)
+    assert actual == ("/data", HostArchiveContext), actual
+
+    files = ["/foo/junk", "/bar/junk"]
+    actual = ExecutionContextMeta.identify(files, expected=HostArchiveContext)
+    assert actual == (None, None), actual
