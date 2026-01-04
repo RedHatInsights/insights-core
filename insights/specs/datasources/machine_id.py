@@ -53,6 +53,7 @@ def dup_machine_id_info(broker):
                     item.get('fqdn') for item in res_json['results'] if item.get('fqdn')
                 ]
                 content = '%s %s' % (machine_id, ','.join(duplicate_hostnames))
+                # cleaner is not required
                 return DatasourceProvider(
                     content=[content], relative_path='insights_datasources/duplicate_machine_id'
                 )
