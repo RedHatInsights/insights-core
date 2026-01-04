@@ -12,12 +12,13 @@ SubscriptionManagerListConsumed - command ``subscription-manager list --consumed
 SubscriptionManagerListInstalled - command ``subscription-manager list --installed``
 ------------------------------------------------------------------------------------
 """
+
 import re
+
 from datetime import datetime
-import six
+from insights import parser, CommandParser
+from insights.parsers import keyword_search
 from insights.specs import Specs
-from .. import parser, CommandParser
-from . import keyword_search
 
 
 class SubscriptionManagerList(CommandParser):
@@ -30,6 +31,7 @@ class SubscriptionManagerList(CommandParser):
         records (list): A list of dict with the output info, it's empty when the ``error`` occurs
         error (str): The raised exception when there is traceback
     """
+
     def parse_content(self, content):
         self.records = []
         current_record = {}
@@ -63,12 +65,10 @@ class SubscriptionManagerList(CommandParser):
                 current_record[key] = value
                 # Do some type conversions and add-ons
                 if key == 'Active' and value in ('True', 'False'):
-                    current_record[key] = (value == 'True')
+                    current_record[key] = value == 'True'
                 elif key in ('Starts', 'Ends'):
                     try:
-                        current_record[key + ' timestamp'] = datetime.strptime(
-                            value, '%m/%d/%y'
-                        )
+                        current_record[key + ' timestamp'] = datetime.strptime(value, '%m/%d/%y')
                     except ValueError:
                         pass
             elif not record_start_key:
@@ -78,11 +78,9 @@ class SubscriptionManagerList(CommandParser):
             match = cont_val_re.search(line)
             if match:
                 # Add this value to the current key:
-                if isinstance(current_record[key], six.string_types):
+                if isinstance(current_record[key], str):
                     # Convert the single string into a list
-                    current_record[key] = [
-                        current_record[key], match.group('value')
-                    ]
+                    current_record[key] = [current_record[key], match.group('value')]
                 else:
                     current_record[key].append(match.group('value'))
 
@@ -162,16 +160,14 @@ class SubscriptionManagerListConsumed(SubscriptionManagerList):
         >>> consumed.all_current  # Are all subscriptions listed as current?
         True
     """
+
     @property
     def all_current(self):
         """
         (bool) Does every subscription record have the Status Details value
         set to 'Subscription is current'?
         """
-        return all(
-            sub['Status Details'] == 'Subscription is current'
-            for sub in self.records
-        )
+        return all(sub['Status Details'] == 'Subscription is current' for sub in self.records)
 
 
 @parser(Specs.subscription_manager_list_installed)
@@ -218,13 +214,11 @@ class SubscriptionManagerListInstalled(SubscriptionManagerList):
         True
 
     """
+
     @property
     def all_subscribed(self):
         """
         (bool) Does every product record have the Status value set to
         'Subscribed'?
         """
-        return all(
-            sub['Status'] == 'Subscribed'
-            for sub in self.records
-        )
+        return all(sub['Status'] == 'Subscribed' for sub in self.records)

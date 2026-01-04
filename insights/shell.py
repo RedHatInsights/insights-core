@@ -6,7 +6,6 @@ import importlib
 import inspect
 import os
 import re
-import six
 import traceback
 import yaml
 
@@ -220,7 +219,7 @@ class Models(dict):
         results.append("Exceptions")
         results.append("==========")
         results.extend(self._show_exceptions(comp))
-        IPython.core.page.page(six.u(os.linesep.join(results)))
+        IPython.core.page.page(u'{0}'.format(os.linesep.join(results)))
 
     def evaluate_all(self, match=None, ignore="spec"):
         """
@@ -453,7 +452,7 @@ class Models(dict):
             results.append(
                 ansiformat(self._get_color(comp), "{} {}".format(name, dr.get_name(comp)))
             )
-        IPython.core.page.page(six.u(os.linesep.join(results)))
+        IPython.core.page.page(u'{0}'.format(os.linesep.join(results)))
 
     def reset_requested(self):
         """Reset requested state so you can work on a new rule."""
@@ -467,7 +466,7 @@ class Models(dict):
         imported.
         """
         try:
-            if isinstance(comp, six.string_types):
+            if isinstance(comp, str):
                 comp = self.get(comp) or dr.get_component(comp) or importlib.import_module(comp)
             comp = inspect.getmodule(comp)
             ip = IPython.get_ipython()
@@ -494,7 +493,7 @@ class Models(dict):
                     else:
                         color = "gray"
                     results.append("{} {}".format(ansiformat(color, prefix), line))
-                IPython.core.page.page(six.u(os.linesep.join(results)))
+                IPython.core.page.page(u'{0}'.format(os.linesep.join(results)))
             else:
                 ip.inspector.pinfo(comp, detail_level=1)
         except:
@@ -622,7 +621,7 @@ class Models(dict):
             for c in graph[name]:
                 results.extend(self._show_tree(c, depth=depth, dep_getter=dep_getter))
                 results.append("")
-        IPython.core.page.page(six.u(os.linesep.join(results)))
+        IPython.core.page.page(u'{0}'.format(os.linesep.join(results)))
 
     def show_failed(self, match=None, ignore="spec"):
         """
@@ -651,7 +650,7 @@ class Models(dict):
                     dashes = bottom_dashes if i == last else mid_dashes
                     results.append(ansiformat(color, dashes + str(ex)))
                 results.append("")
-        IPython.core.page.page(six.u(os.linesep.join(results)))
+        IPython.core.page.page(u'{0}'.format(os.linesep.join(results)))
 
     def _show_exceptions(self, comp):
         name = dr.get_name(comp)
@@ -681,7 +680,7 @@ class Models(dict):
             name = dr.get_name(comp)
             if match.test(name) and not ignore.test(name):
                 results.extend(self._show_exceptions(comp))
-        IPython.core.page.page(six.u(os.linesep.join(results)))
+        IPython.core.page.page(u'{0}'.format(os.linesep.join(results)))
 
     def show_rule_report(self, match=None, ignore=None):
         """
@@ -709,7 +708,7 @@ class Models(dict):
                 report.append(ansiformat(color, "-" * len(name)))
                 report.append(hits[name])
                 report.append("")
-        IPython.core.page.page(six.u(os.linesep.join(report)))
+        IPython.core.page.page(u'{0}'.format(os.linesep.join(results)))
 
     def show_timings(self, match=None, ignore="spec", group=dr.GROUPS.single):
         """
@@ -737,7 +736,7 @@ class Models(dict):
         for timing, name, color in sorted(results, reverse=True):
             report.append(ansiformat(color, "{:.10f}: {}".format(timing, name)))
 
-        IPython.core.page.page(six.u(os.linesep.join(report)))
+        IPython.core.page.page(u'{0}'.format(os.linesep.join(results)))
 
     def find(self, match=None, ignore=None):
         """
@@ -769,7 +768,7 @@ class Models(dict):
                     for i, ex in enumerate(exes):
                         dashes = bottom_dashes if i == last else mid_dashes
                         results.append(ansiformat(color, dashes + str(ex)))
-        IPython.core.page.page(six.u(os.linesep.join(results)))
+        IPython.core.page.page(u'{0}'.format(os.linesep.join(results)))
 
 
 class Holder(dict):

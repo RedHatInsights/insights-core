@@ -7,7 +7,6 @@ import logging
 import hashlib
 import os
 import re
-import six
 
 from insights.cleaner.utilities import write_report
 
@@ -47,7 +46,7 @@ class Hostname(object):
             return self._hn_db[hn]
         # Handle domain
         hn_sp = hn.split('.')
-        obf_hn = hashlib.sha1(hn_sp[0].encode('utf-8') if six.PY3 else hn_sp[0]).hexdigest()[:12]
+        obf_hn = hashlib.sha1(hn_sp[0].encode('utf-8')).hexdigest()[:12]
         if len(hn_sp) > 1:
             obf_hn = '{0}.{1}'.format(obf_hn, 'example.com')
         self._hn_db[hn] = obf_hn

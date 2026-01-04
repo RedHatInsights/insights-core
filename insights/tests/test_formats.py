@@ -1,5 +1,7 @@
 import pytest
-from six import StringIO
+
+from io import StringIO
+
 from insights import dr, make_fail, rule
 from insights.formats.text import HumanReadableFormat
 from insights.formats._yaml import YamlFormat

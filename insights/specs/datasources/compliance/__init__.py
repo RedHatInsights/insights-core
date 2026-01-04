@@ -1,6 +1,5 @@
 import copy
 import os
-import six
 import tempfile
 
 from glob import glob
@@ -120,8 +119,6 @@ class ComplianceClient:
 
     def find_scap_policy(self, profile_ref_id):
         grepcmd = 'grep -H ' + profile_ref_id + ' ' + ' '.join(self.profile_files())
-        if not six.PY3:
-            grepcmd = grepcmd.encode()
         rc, grep = call(grepcmd, keep_rc=True)
         if rc:
             logger.error(
@@ -154,8 +151,6 @@ class ComplianceClient:
         oscap_command = self.build_oscap_command(
             profile_ref_id, policy_xml, output_path, tailoring_file_path
         )
-        if not six.PY3:
-            oscap_command = oscap_command.encode()
         rc, oscap = call(oscap_command, keep_rc=True, env=env)
 
         if rc and rc == OUT_OF_MEMORY_STATUS:

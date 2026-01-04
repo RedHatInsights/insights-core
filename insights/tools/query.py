@@ -15,6 +15,7 @@ There are several other options to the script. ``insights-info -h`` for more
 info.
 
 """
+
 from __future__ import print_function
 import argparse
 import importlib
@@ -25,10 +26,17 @@ import re
 import sys
 import yaml
 
-from six.moves import StringIO
+from io import StringIO
 
-from insights import (apply_default_enabled, apply_configs, dr, get_filters,
-        load_default_plugins, load_packages, parse_plugins)
+from insights import (
+    apply_default_enabled,
+    apply_configs,
+    dr,
+    get_filters,
+    load_default_plugins,
+    load_packages,
+    parse_plugins,
+)
 from insights.core.plugins import datasource, is_type
 from insights.core import taglang
 from insights.core import spec_factory as sf
@@ -81,16 +89,44 @@ def glob2re(pat):
 def parse_args():
     p = argparse.ArgumentParser(__doc__.strip())
     p.add_argument("paths", nargs="*", help="Files or commands to use for component activation.")
-    p.add_argument("-c", "--components", help="Comma separated list of components that have already executed. Names without '.' are assumed to be in insights.specs.Specs.")
+    p.add_argument(
+        "-c",
+        "--components",
+        help="Comma separated list of components that have already executed. Names without '.' are assumed to be in insights.specs.Specs.",
+    )
     p.add_argument("--config", help="Configure components.")
-    p.add_argument("-i", "--info", help="Comma separated list of components to get dependency info about.", action="store_true")
-    p.add_argument("-p", "--preload", help="Comma separated list of packages or modules to preload.")
-    p.add_argument("-d", "--pydoc", help="Show pydoc for the given object. E.g.: insights-info -d insights.rule")
+    p.add_argument(
+        "-i",
+        "--info",
+        help="Comma separated list of components to get dependency info about.",
+        action="store_true",
+    )
+    p.add_argument(
+        "-p", "--preload", help="Comma separated list of packages or modules to preload."
+    )
+    p.add_argument(
+        "-d",
+        "--pydoc",
+        help="Show pydoc for the given object. E.g.: insights-info -d insights.rule",
+    )
     p.add_argument("-k", "--pkg-query", help="Expression to select rules by package.")
-    p.add_argument("-s", "--source", help="Show source for the given object. E.g.: insights-info -s insights.core.plugins.rule")
-    p.add_argument("-S", "--specs", help="Show specs for the given name.  E.g.: insights-info -S uname", action="store_true")
+    p.add_argument(
+        "-s",
+        "--source",
+        help="Show source for the given object. E.g.: insights-info -s insights.core.plugins.rule",
+    )
+    p.add_argument(
+        "-S",
+        "--specs",
+        help="Show specs for the given name.  E.g.: insights-info -S uname",
+        action="store_true",
+    )
     p.add_argument("--tags", help="Expression to select rules by tag.")
-    p.add_argument("-t", "--types", help="Filter results based on component type; e.g. 'rule,parser'. Names without '.' are assumed to be in insights.core.plugins.")
+    p.add_argument(
+        "-t",
+        "--types",
+        help="Filter results based on component type; e.g. 'rule,parser'. Names without '.' are assumed to be in insights.core.plugins.",
+    )
     p.add_argument("-v", "--verbose", help="Print component dependencies.", action="store_true")
     return p.parse_args()
 
@@ -123,12 +159,14 @@ def get_components(comps, default_module):
 
 
 def get_datasources():
-    ds_types = (sf.simple_file,
-                sf.glob_file,
-                sf.simple_command,
-                sf.first_file,
-                sf.foreach_execute,
-                sf.foreach_collect)
+    ds_types = (
+        sf.simple_file,
+        sf.glob_file,
+        sf.simple_command,
+        sf.first_file,
+        sf.foreach_execute,
+        sf.foreach_collect,
+    )
     ds = dr.COMPONENTS_BY_TYPE[datasource]
     return [d for d in ds if isinstance(d, ds_types)]
 
@@ -153,9 +191,9 @@ def matches(d, path):
                 search_tgt = pat_sp[-2]
                 return search_tgt.startswith(path) and not d.ignore_func(path)
             # Glob check the last part: `startswith` or glob match
-            if ((search_tgt.startswith(path) or
-                 re.match(glob2re(search_tgt), path)) and
-                    not d.ignore_func(path)):
+            if (
+                search_tgt.startswith(path) or re.match(glob2re(search_tgt), path)
+            ) and not d.ignore_func(path):
                 return True
         return False
 
@@ -258,7 +296,7 @@ def dump_ds(d, space=""):
 
 
 def print_component(comp, verbose=False, specs=False):
-    if (specs or (not specs and not is_type(comp, datasource))):
+    if specs or (not specs and not is_type(comp, datasource)):
         print(dr.get_name(comp))
 
     if not verbose:
@@ -389,7 +427,9 @@ def main():
 
         def pkg_query(c):
             return pred([dr.get_module_name(c)])
+
     else:
+
         def pkg_query(c):
             return True
 
@@ -398,7 +438,9 @@ def main():
 
         def tags_query(c):
             return pred(dr.get_tags(c))
+
     else:
+
         def tags_query(c):
             return True
 

@@ -2,7 +2,6 @@
 YumConf - file ``/etc/yum.conf``
 ================================
 """
-import six
 
 from insights.core import IniConfigFile
 from insights.core.filters import add_filter
@@ -59,6 +58,7 @@ class YumConf(IniConfigFile):
         >>> yconf.items('main') == expected
         True
     """
+
     def parse_content(self, content):
         super(YumConf, self).parse_content(content)
         # File /etc/yum.conf may contain repos definitions.
@@ -68,7 +68,7 @@ class YumConf(IniConfigFile):
             for key in ('gpgkey', 'baseurl'):
                 try:
                     value = self.get(section, key)
-                    if value and isinstance(value, six.string_types):
+                    if value and isinstance(value, str):
                         self.set(section, key, value.split(','))
                 except NoOptionError:
                     pass

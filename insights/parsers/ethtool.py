@@ -42,19 +42,15 @@ TimeStamp - command ``/sbin/ethtool -T {interface}``
 ----------------------------------------------------
 
 """
+
 import os
 import re
-import sys
 
 from collections import namedtuple
 from insights.core import CommandParser, LegacyItemAccess
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
-
-if sys.version_info[0] == 3:
-    # Python 3
-    unicode = str
 
 
 def extract_iface_name_from_path(path, name):
@@ -303,10 +299,7 @@ class Features(LegacyItemAccess, CommandParser):
                 fixed = "fixed" in value
                 if fixed:
                     value = value.split()[0].strip()
-                self.data[key.strip()] = {
-                    "on": value == "on",
-                    "fixed": fixed
-                }
+                self.data[key.strip()] = {"on": value == "on", "fixed": fixed}
 
 
 @parser(Specs.ethtool_a)
@@ -397,7 +390,7 @@ class Pause(CommandParser):
         for line in content[1:]:
             if line.strip():
                 (key, value) = [s.strip() for s in line.split(":", 1)]
-                self.data[key] = (value == "on")
+                self.data[key] = value == "on"
                 # Can't use key if it has a space in it, and we provide these
                 # as properties anyway.
                 # setattr(self, key, value == "on")
@@ -502,15 +495,15 @@ class CoalescingInfo(CommandParser):
             raise ParseException("Command output missing value data")
 
         second_line_content = content[1].split(" ")
-        self.data["adaptive-rx"] = (second_line_content[2] == "on")
-        self.adaptive_rx = (second_line_content[2] == "on")
-        self.data["adaptive-tx"] = (second_line_content[5] == "on")
-        self.adaptive_tx = (second_line_content[5] == "on")
+        self.data["adaptive-rx"] = second_line_content[2] == "on"
+        self.adaptive_rx = second_line_content[2] == "on"
+        self.data["adaptive-tx"] = second_line_content[5] == "on"
+        self.adaptive_tx = second_line_content[5] == "on"
 
         for line in content[2:]:
             if line.strip():
                 (key, value) = [s.strip() for s in line.split(":", 1)]
-                if unicode(value).isnumeric():
+                if str(value).isnumeric():
                     value = int(value)
                     self.data[key] = value
                     setattr(self, key.replace("-", "_"), value)
@@ -571,6 +564,7 @@ class Ring(CommandParser):
         2047
 
     """
+
     __default_params = set(["rx", "rx_mini", "rx_jumbo", "tx"])
 
     Parameters = namedtuple("Parameters", ["rx", "rx_mini", "rx_jumbo", "tx"])
@@ -625,8 +619,9 @@ class Ring(CommandParser):
             elif ':' in line:
                 # key: value, store in section data for now
                 key, value = (s.strip() for s in line.split(":", 1))
-                parsed_value = int(value) if unicode(value).isnumeric() else (
-                                -1 if value == 'n/a' else -2)
+                parsed_value = (
+                    int(value) if str(value).isnumeric() else (-1 if value == 'n/a' else -2)
+                )
                 parsed_key = key.replace(" ", "_").lower()
                 if parsed_key in self.__default_params:
                     section_data[parsed_key] = parsed_value
@@ -731,7 +726,7 @@ class Statistics(CommandParser):
             # there.
             i = line.rfind(':')
             key = line[:i].strip()
-            value = line[i + 2:].strip()
+            value = line[i + 2 :].strip()
             value = int(value)
             self.data[key] = value
 

@@ -5,7 +5,6 @@ import functools
 import platform
 import os
 import warnings
-import datetime
 
 
 TMP_DIR = os.path.join("/tmp", "insights-web")
@@ -37,31 +36,6 @@ def parse_bool(s, default=False):
     if s is None:
         return default
     return TRUTH.get(s.lower(), default)
-
-
-# python2 doesn't have a utc tzinfo by default
-# see https://docs.python.org/2/library/datetime.html#tzinfo-objects
-try:
-    utc = datetime.timezone.utc
-except:
-
-    class UTC(datetime.tzinfo):
-        """
-        A tzinfo class for UTC.
-        """
-
-        ZERO = datetime.timedelta(0)
-
-        def utcoffset(self, dt):
-            return self.ZERO
-
-        def tzname(self, dt):
-            return "UTC"
-
-        def dst(self, dt):
-            return self.ZERO
-
-    utc = UTC()
 
 
 def which(cmd, env=None):

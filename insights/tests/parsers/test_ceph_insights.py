@@ -1,8 +1,7 @@
+import doctest
 from insights.parsers.ceph_insights import CephInsights
 from insights.parsers import ceph_insights
 from insights.tests import context_wrap
-import six
-import doctest
 
 TEST_DATA = """
 {
@@ -1469,11 +1468,14 @@ TEST_DATA = """
 }
 """
 
-DEV_TEST_DATA = """
+DEV_TEST_DATA = (
+    """
 *** DEVELOPER MODE: setting PATH, PYTHONPATH and LD_LIBRARY_PATH ***
 2018-09-26 11:32:02.830 7f39e866c700 -1 WARNING: all dangerous and experimental features are enabled.
 2018-09-26 11:32:02.879 7f39e866c700 -1 WARNING: all dangerous and experimental features are enabled.
-""" + TEST_DATA
+"""
+    + TEST_DATA
+)
 
 
 def test_ceph_insights():
@@ -1483,7 +1485,7 @@ def test_ceph_insights():
         assert ceph is not None
 
         assert isinstance(ceph.version, dict)
-        assert isinstance(ceph.version["full"], six.string_types)
+        assert isinstance(ceph.version["full"], str)
         for key in ("release", "major", "minor"):
             assert isinstance(ceph.version[key], int)
 
@@ -1506,8 +1508,6 @@ def test_ceph_insights():
 
 
 def test_ceph_insights_documentation():
-    env = {
-        'ceph_insights': CephInsights(context_wrap(TEST_DATA))
-    }
+    env = {'ceph_insights': CephInsights(context_wrap(TEST_DATA))}
     failed, total = doctest.testmod(ceph_insights, globs=env)
     assert failed == 0

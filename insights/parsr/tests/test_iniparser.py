@@ -1,7 +1,6 @@
 # coding:UTF-8
 from insights.parsr.iniparser import parse_doc
 from insights.parsr.query import last
-from six import PY2
 from copy import deepcopy
 
 
@@ -81,12 +80,8 @@ def test_unicode():
     assert res["global"]["secret-name"][last].value == '"vsphere-creds"'
     assert res["global"]["secret-namespace"][last].value == "kube-system"
 
-    if PY2:
-        assert res["workspace"]["datacenter"][last].value == "1-?????????"
-        assert res["workspace"]["folder"][last].value == '"/1-?????????/xxxxxxxxx"'
-    else:
-        assert res["workspace"]["datacenter"][last].value == "1-???"
-        assert res["workspace"]["folder"][last].value == '"/1-???/xxxxxxxxx"'
+    assert res["workspace"]["datacenter"][last].value == "1-???"
+    assert res["workspace"]["folder"][last].value == '"/1-???/xxxxxxxxx"'
 
 
 def test_deepcopy():
