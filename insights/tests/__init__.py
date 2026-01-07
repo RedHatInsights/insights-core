@@ -180,7 +180,11 @@ def run_test(component, input_data, expected=_UNDEFINED, return_make_none=False,
 
     def get_filtered_specs(module):
         filtered = set()
-        mods = dir(importlib.import_module(module))
+        considered_modules = [module]
+        _spm = module.split('.')
+        sup_modules = ['.'.join(_spm[:-1]), '.'.join(_spm[:-2]), '.'.join(_spm[:-3])]
+        considered_modules.extend([mod + '.__init__' for mod in sup_modules if mod])
+        mods = set.union(*[set(dir(importlib.import_module(mod))) for mod in considered_modules])
         for comp, parsers in COMPONENT_FILTERED_PARSERS.items():
             if comp in mods:
                 for parser in parsers:

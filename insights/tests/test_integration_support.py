@@ -1,11 +1,21 @@
 import pytest
 
-from insights.plugins.ps_rule_fakes import (psaux_no_filter,
-                                            psauxww_ds_filter,
-                                            psalxwww_parser_filter)
+from insights.plugins.ps_rule_fakes import (
+    psaux_no_filter,
+    psauxww_ds_filter,
+    psalxwww_parser_filter,
+)
 from insights.plugins.rule_with_combiner_and_parser_parser_filtered import parser_is_filtered
-from insights.plugins.rule_with_combiner_and_parser_parser_not_filtered import parser_is_not_filtered
+from insights.plugins.rule_with_combiner_and_parser_parser_not_filtered import (
+    parser_is_not_filtered,
+)
 from insights.plugins.rule_with_combiner_only import parser_is_not_used
+from insights.plugins.rule_with_combiner_from_init_mod import (
+    parser_is_not_used_here_and_init_module,
+)
+from insights.plugins.domain.rule_with_combiner_from_upper_init_mod import (
+    parser_is_not_used_here_and_upper_init_module,
+)
 from insights.specs import Specs
 from insights.tests import InputData, run_test
 
@@ -81,3 +91,33 @@ def test_run_test_parser_is_not_filtered():
     with pytest.raises(Exception) as ex:
         run_test(parser_is_not_filtered, input_data, None)
     assert 'must add filters to' in str(ex)
+
+
+def test_run_test_parser_is_not_used_here_and_init_module():
+    """
+    1. The rule import one Condition from module ./__init__.py .
+    2. The imported Condition uses Combiner that depends upon a filterable Parser.
+    3. The rule does NOT depend upon (import) the filterable Parser directly.
+    4. The filterable Parser is NOT filtered in the rule as well.
+    5. The filterable Parser is NOT filtered in the imported Condition as well.
+    """
+    input_data = InputData("fake_input")
+    input_data.add(Specs.dmesg, "FAKE_CONTENT")
+    result = run_test(parser_is_not_used_here_and_init_module, input_data)
+    # No Exception raised
+    assert result
+
+
+def test_run_test_parser_is_not_used_here_and_upper_init_module():
+    """
+    1. The rule import one Condition from module ../__init__.py .
+    2. The imported Condition uses Combiner that depends upon a filterable Parser.
+    3. The rule does NOT depend upon (import) the filterable Parser directly.
+    4. The filterable Parser is NOT filtered in the rule as well.
+    5. The filterable Parser is NOT filtered in the imported Condition as well.
+    """
+    input_data = InputData("fake_input")
+    input_data.add(Specs.dmesg, "FAKE_CONTENT")
+    result = run_test(parser_is_not_used_here_and_upper_init_module, input_data)
+    # No Exception raised
+    assert result
