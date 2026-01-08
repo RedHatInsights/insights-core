@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.11
+Version:        3.7.0
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,16 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Jan 08 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.0-1
+- fix: handle no account_number in response data (#4691) (lichen@redhat.com)
+- fix: apply redacting and obfuscating for datasource specs (#4682)
+  (xiangceliu@redhat.com)
+- fix(malware-detection): malware scan yara error handling (#4679)
+  (63891960+mtclinton@users.noreply.github.com)
+- Add new spec sys_block_queue_max_segment_size (#4664) (986222045@qq.com)
+- Add new spec ossl_files (#4673) (986222045@qq.com)
+- Add new spec ethtool_priv_flags (#4667) (986222045@qq.com)
+
 * Thu Dec 11 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.11-1
 - fix(parser): Deprecate the SsTUPLN parser (#4663) (xiangceliu@redhat.com)
 - feat: add filter "Name:" to InstalledProductIDs spec (#4661)

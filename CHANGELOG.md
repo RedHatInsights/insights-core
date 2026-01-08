@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.7.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.0) (2026-01-08)
+
+- fix: handle no account_number in response data ([PR 4691](https://github.com/RedHatInsights/insights-core/pull/4691))
+- fix: apply redacting and obfuscating for datasource specs ([PR 4682](https://github.com/RedHatInsights/insights-core/pull/4682))
+- fix(malware-detection): malware scan yara error handling ([PR 4679](https://github.com/RedHatInsights/insights-core/pull/4679))
+- Add new spec sys_block_queue_max_segment_size ([PR 4664](https://github.com/RedHatInsights/insights-core/pull/4664))
+- Add new spec ossl_files ([PR 4673](https://github.com/RedHatInsights/insights-core/pull/4673))
+- Add new spec ethtool_priv_flags ([PR 4667](https://github.com/RedHatInsights/insights-core/pull/4667))
+
 # [insights-core-3.6.11](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.11) (2025-12-11)
 
 - fix(parser): Deprecate the SsTUPLN parser ([PR 4663](https://github.com/RedHatInsights/insights-core/pull/4663))
