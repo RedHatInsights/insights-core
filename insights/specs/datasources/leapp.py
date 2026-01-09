@@ -9,6 +9,7 @@ from insights.core.context import HostContext
 from insights.core.exceptions import ContentException, SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider
+from insights.specs import Specs
 
 
 @datasource(HostContext)
@@ -54,10 +55,10 @@ def leapp_report(broker):
                 if results:
                     return DatasourceProvider(
                         content=json.dumps(results),
+                        relative_path='insights_datasources/leapp_report',
+                        ds=Specs.leapp_report,
                         ctx=broker.get(HostContext),
                         cleaner=broker.get("cleaner"),
-                        no_obfuscate=['ipv4', 'ipv6', 'mac'],
-                        relative_path='insights_datasources/leapp_report',
                     )
                 raise SkipComponent("Nothing")
     except Exception as e:
@@ -119,10 +120,10 @@ def migration_results(broker):
                 if results:
                     return DatasourceProvider(
                         content=json.dumps(results),
+                        relative_path='insights_datasources/leapp_migration_results',
+                        ds=Specs.leapp_migration_results,
                         ctx=broker.get(HostContext),
                         cleaner=broker.get("cleaner"),
-                        no_obfuscate=['ipv4', 'ipv6', 'mac'],
-                        relative_path='insights_datasources/leapp_migration_results',
                     )
                 raise SkipComponent("Nothing")
     except Exception as e:

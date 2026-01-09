@@ -46,9 +46,9 @@ def users_count_map_selinux_user(broker):
     if users_info:
         return DatasourceProvider(
             json.dumps(users_info),
+            relative_path='insights_datasources/linux_users_count_map_selinux_user',
+            ds=Specs.users_count_map_selinux_user,
             ctx=broker.get(HostContext),
             cleaner=broker.get("cleaner"),
-            no_obfuscate=['ipv4', 'ipv6', 'mac'],
-            relative_path='insights_datasources/linux_users_count_map_selinux_user',
         )
     raise SkipComponent

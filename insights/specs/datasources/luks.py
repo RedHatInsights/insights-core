@@ -135,10 +135,10 @@ def luks_data_sources(broker):
         datasources.append(
             DatasourceProvider(
                 content=filtered_content,
+                relative_path=relative_path,
+                ds=Specs.cryptsetup_luksDump,
                 ctx=broker.get(HostContext),
                 cleaner=broker.get("cleaner"),
-                no_obfuscate=['ipv4', 'ipv6', 'mac'],
-                relative_path=relative_path,
             )
         )
 
