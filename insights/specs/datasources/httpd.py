@@ -12,6 +12,7 @@ from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider
 from insights.parsers.mount import ProcMounts
+from insights.specs import Specs
 from insights.specs.datasources import get_running_commands
 
 
@@ -71,10 +72,10 @@ def httpd_on_nfs(broker):
             }
             return DatasourceProvider(
                 content=json.dumps(result_dict),
+                relative_path='insights_datasources/httpd_on_nfs',
+                ds=Specs.httpd_on_nfs,
                 ctx=broker.get(HostContext),
                 cleaner=broker.get("cleaner"),
-                no_obfuscate=['ipv4', 'ipv6', 'mac'],
-                relative_path='insights_datasources/httpd_on_nfs',
             )
     raise SkipComponent
 

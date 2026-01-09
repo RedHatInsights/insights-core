@@ -77,9 +77,9 @@ def cmd_and_pkg(broker):
         if pkg_cmd:
             return DatasourceProvider(
                 '\n'.join(pkg_cmd),
+                relative_path='insights_datasources/package_provides_command',
+                ds=Specs.package_provides_command,
                 ctx=broker.get(HostContext),
                 cleaner=broker.get("cleaner"),
-                no_obfuscate=['ipv4', 'ipv6', 'mac'],
-                relative_path='insights_datasources/package_provides_command',
             )
     raise SkipComponent
