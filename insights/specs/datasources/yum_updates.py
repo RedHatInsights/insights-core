@@ -11,6 +11,7 @@ from functools import cmp_to_key
 
 from insights import datasource, HostContext, SkipComponent
 from insights.core.spec_factory import DatasourceProvider
+from insights.specs import Specs
 from insights.util.rpm_vercmp import version_compare
 
 
@@ -336,8 +337,8 @@ def yum_updates(broker):
 
     return DatasourceProvider(
         content=json.dumps(response),
+        relative_path='insights_datasources/yum_updates',
+        ds=Specs.yum_updates,
         ctx=broker.get(HostContext),
         cleaner=broker.get("cleaner"),
-        no_obfuscate=['ipv6', 'mac'],
-        relative_path='insights_datasources/yum_updates',
     )

@@ -79,10 +79,10 @@ def ps_eo_cmd(broker):
     if len(data) > 1:
         return DatasourceProvider(
             '\n'.join(data),
+            relative_path='insights_datasources/ps_eo_cmd',
+            ds=Specs.ps_eo_cmd,
             ctx=broker.get(HostContext),
             cleaner=broker.get("cleaner"),
-            no_obfuscate=['ipv4', 'ipv6', 'mac'],
-            relative_path='insights_datasources/ps_eo_cmd',
         )
 
     raise SkipComponent()
@@ -139,9 +139,9 @@ def jboss_runtime_versions(broker):
     if len(data) > 0:
         return DatasourceProvider(
             json.dumps(data),
+            relative_path='insights_datasources/jboss_runtime_versions',
+            ds=Specs.jboss_runtime_versions,
             ctx=broker.get(HostContext),
             cleaner=broker.get("cleaner"),
-            no_obfuscate=['ipv4', 'ipv6', 'mac'],
-            relative_path='insights_datasources/jboss_runtime_versions',
         )
     raise SkipComponent()

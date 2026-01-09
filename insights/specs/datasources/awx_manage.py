@@ -47,10 +47,10 @@ def check_license_data(broker):
             if filter_result:
                 return DatasourceProvider(
                     content=json.dumps(collections.OrderedDict(sorted(filter_result.items()))),
+                    relative_path='insights_datasources/awx_manage_check_license_data',
+                    ds=Specs.awx_manage_check_license_data,
                     ctx=broker.get(HostContext),
                     cleaner=broker.get("cleaner"),
-                    no_obfuscate=['ipv4', 'ipv6', 'mac'],
-                    relative_path='insights_datasources/awx_manage_check_license_data',
                 )
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))

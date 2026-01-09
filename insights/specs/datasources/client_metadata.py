@@ -16,6 +16,7 @@ from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent, ContentException
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider
+from insights.specs import Specs
 
 try:
     from insights_client.constants import InsightsConstants as wrapper_constants
@@ -42,10 +43,10 @@ def ansible_host(broker):
     if insights_config and insights_config.ansible_host:
         return DatasourceProvider(
             content=insights_config.ansible_host,
+            relative_path='ansible_host',
+            ds=Specs.ansible_host,
             ctx=broker.get(HostContext),
             cleaner=broker.get("cleaner"),
-            no_obfuscate=['ipv4', 'ipv6', 'mac'],
-            relative_path='ansible_host',
         )
     raise SkipComponent
 
@@ -70,11 +71,9 @@ def basic_auth_insights_client(broker):
         if insights_config.password:
             result['pass_set'] = True
         if result:
+            # cleaner is not required per the content
             return DatasourceProvider(
                 content=json.dumps(result),
-                ctx=broker.get(HostContext),
-                cleaner=broker.get("cleaner"),
-                no_obfuscate=['ipv4', 'ipv6', 'mac'],
                 relative_path='basic_conf',
             )
     raise SkipComponent
@@ -169,10 +168,10 @@ def branch_info(broker):
             branch_info = insights_config.branch_info
     return DatasourceProvider(
         content=json.dumps(branch_info),
+        relative_path='branch_info',
+        ds=Specs.branch_info,
         ctx=broker.get(HostContext),
         cleaner=broker.get("cleaner"),
-        no_obfuscate=['ipv4', 'ipv6', 'mac'],
-        relative_path='branch_info',
     )
 
 
@@ -192,10 +191,10 @@ def display_name(broker):
     if insights_config and insights_config.display_name:
         return DatasourceProvider(
             content=insights_config.display_name,
+            relative_path='display_name',
+            ds=Specs.display_name,
             ctx=broker.get(HostContext),
             cleaner=broker.get("cleaner"),
-            no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'],
-            relative_path='display_name',
         )
     raise SkipComponent
 
@@ -279,10 +278,10 @@ def tags(broker):
             # - insights-archive-xxx/data/tags.json
             return DatasourceProvider(
                 content=json.dumps(t),
+                relative_path='tags.json',
+                ds=Specs.tags,
                 ctx=broker.get(HostContext),
                 cleaner=broker.get("cleaner"),
-                no_obfuscate=['ipv4', 'ipv6', 'mac'],
-                relative_path='tags.json',
             )
         msg = "Empty YAML. Unable to load '%s'." % tags_file_path
         logger.error(msg)

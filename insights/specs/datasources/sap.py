@@ -95,9 +95,9 @@ def ld_library_path_of_user(broker):
     if llds:
         return DatasourceProvider(
             '\n'.join(llds),
+            relative_path='insights_datasources/ld_library_path_of_user',
+            ds=Specs.ld_library_path_of_user,
             ctx=broker.get(HostContext),
             cleaner=broker.get("cleaner"),
-            no_obfuscate=['ipv4', 'ipv6', 'mac'],
-            relative_path='insights_datasources/ld_library_path_of_user',
         )
     raise SkipComponent('')

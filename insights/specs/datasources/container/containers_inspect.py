@@ -94,10 +94,10 @@ def containers_inspect_data_datasource(broker):
             if total_results:
                 return DatasourceProvider(
                     content=json.dumps(total_results),
+                    relative_path='insights_containers/containers_inspect',
+                    ds=Specs.containers_inspect,
                     ctx=broker.get(HostContext),
                     cleaner=broker.get("cleaner"),
-                    no_obfuscate=['ipv4', 'ipv6', 'mac'],
-                    relative_path='insights_containers/containers_inspect',
                 )
     except Exception as e:
         raise ContentException("Unexpected content exception:{e}".format(e=str(e)))
