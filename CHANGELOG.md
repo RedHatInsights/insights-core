@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.7.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.1) (2026-01-09)
+
+- fix(datasource cleanning): clean datasource based on spec entry ([PR 4693](https://github.com/RedHatInsights/insights-core/pull/4693))
+
 # [insights-core-3.7.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.0) (2026-01-08)
 
 - fix: handle no account_number in response data ([PR 4691](https://github.com/RedHatInsights/insights-core/pull/4691))

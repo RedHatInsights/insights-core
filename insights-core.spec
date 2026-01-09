@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.0
+Version:        3.7.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,10 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Fri Jan 09 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.1-1
+- fix(datasource cleanning): clean datasource based on spec entry (#4693)
+  (xiangceliu@redhat.com)
+
 * Thu Jan 08 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.0-1
 - fix: handle no account_number in response data (#4691) (lichen@redhat.com)
 - fix: apply redacting and obfuscating for datasource specs (#4682)
