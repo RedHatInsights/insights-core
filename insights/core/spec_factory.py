@@ -167,8 +167,6 @@ class DatasourceProvider(ContentProvider):
         ds=None,
         ctx=None,
         cleaner=None,
-        no_obfuscate=None,
-        no_redact=False,
     ):
         super(DatasourceProvider, self).__init__()
         self.relative_path = relative_path.lstrip("/")
@@ -178,8 +176,8 @@ class DatasourceProvider(ContentProvider):
         self.ds = ds or self
         self.ctx = ctx
         self.cleaner = cleaner
-        self.no_obfuscate = no_obfuscate or []
-        self.no_redact = no_redact
+        self.no_obfuscate = getattr(self.ds, 'no_obfuscate', [])
+        self.no_redact = getattr(self.ds, 'no_redact', False)
 
     def _stream(self):
         """

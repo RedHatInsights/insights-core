@@ -44,10 +44,10 @@ def lpstat_protocol_printers_info(broker):
         if result:
             return DatasourceProvider(
                 content="\n".join(result),
+                relative_path='insights_datasources/lpstat_protocol_printers',
+                ds=Specs.lpstat_protocol_printers,
                 ctx=broker.get(HostContext),
                 cleaner=broker.get("cleaner"),
-                no_obfuscate=['ipv4', 'ipv6', 'mac'],
-                relative_path='insights_datasources/lpstat_protocol_printers',
             )
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
@@ -94,9 +94,9 @@ def lpstat_queued_jobs_count(broker):
         if cnt:
             return DatasourceProvider(
                 content="{0}".format(cnt),
+                relative_path='insights_datasources/lpstat_queued_jobs_count',
+                ds=Specs.lpstat_queued_jobs_count,
                 ctx=broker.get(HostContext),
                 cleaner=broker.get("cleaner"),
-                no_obfuscate=['ipv4', 'ipv6', 'mac'],
-                relative_path='insights_datasources/lpstat_queued_jobs_count',
             )
     raise SkipComponent

@@ -84,10 +84,10 @@ def cloud_cfg(broker):
                 if result:
                     return DatasourceProvider(
                         content=yaml.dump(result),
+                        relative_path=relative_path,
+                        ds=Specs.cloud_cfg_filtered,
                         ctx=broker.get(HostContext),
                         cleaner=broker.get("cleaner"),
-                        no_obfuscate=['ipv4', 'ipv6', 'mac'],
-                        relative_path=relative_path,
                     )
             raise SkipComponent("Invalid YAML format")
     except Exception as e:
