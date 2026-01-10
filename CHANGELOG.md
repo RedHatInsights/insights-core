@@ -2,6 +2,20 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.7.1.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.1.1) (2026-01-10)
+
+- fix(datasource cleanning): clean datasource based on spec entry ([PR 4692](https://github.com/RedHatInsights/insights-core/pull/4692))
+- fix: handle no account_number in response data ([PR 4687](https://github.com/RedHatInsights/insights-core/pull/4687))
+- chore(build): remove python2 requires from setup/pyproject ([PR 4686](https://github.com/RedHatInsights/insights-core/pull/4686))
+- fix: apply redacting and obfuscating for datasource specs ([PR 4681](https://github.com/RedHatInsights/insights-core/pull/4681))
+- fix: remove six from the core part code ([PR 4671](https://github.com/RedHatInsights/insights-core/pull/4671))
+- fix(malware-detection): malware scan yara error handling ([PR 4678](https://github.com/RedHatInsights/insights-core/pull/4678))
+- Add new spec sys_block_queue_max_segment_size ([PR 4645](https://github.com/RedHatInsights/insights-core/pull/4645))
+- Add new spec ossl_files ([PR 4668](https://github.com/RedHatInsights/insights-core/pull/4668))
+- Add new spec ethtool_priv_flags ([PR 4666](https://github.com/RedHatInsights/insights-core/pull/4666))
+- chore(build): update packit to build with specific release ([PR 4685](https://github.com/RedHatInsights/insights-core/pull/4685))
+- fix(test): modify filter for spec sshd_test_mode ([PR 4683](https://github.com/RedHatInsights/insights-core/pull/4683))
+
 # [insights-core-3.6.11.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.11.1) (2025-12-15)
 
 - chore: print version.release in 'insights.version' module ([PR 4670](https://github.com/RedHatInsights/insights-core/pull/4670))

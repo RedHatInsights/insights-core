@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.6.11.1
+Version:        3.7.1.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -122,6 +122,25 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Sat Jan 10 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.1.1-1
+- fix(datasource cleanning): clean datasource based on spec entry (#4692)
+  (xiangceliu@redhat.com)
+- fix: handle no account_number in response data (#4687) (lichen@redhat.com)
+- chore(build): remove python2 requires from setup/pyproject (#4686)
+  (xiangceliu@redhat.com)
+- fix: apply redacting and obfuscating for datasource specs (#4681)
+  (xiangceliu@redhat.com)
+- fix: remove six from the core part code (#4671) (xiangceliu@redhat.com)
+- fix(malware-detection): malware scan yara error handling (#4678)
+  (63891960+mtclinton@users.noreply.github.com)
+- Add new spec sys_block_queue_max_segment_size (#4645) (986222045@qq.com)
+- Add new spec ossl_files (#4668) (986222045@qq.com)
+- Add new spec ethtool_priv_flags (#4666) (986222045@qq.com)
+- chore(build): update packit to build with specific release (#4685)
+  (xiangceliu@redhat.com)
+- fix(test): modify filter for spec sshd_test_mode (#4683)
+  (zhangqianqian@users.noreply.github.com)
+
 * Mon Dec 15 2025 Xiangce Liu <xiangceliu@redhat.com> 3.6.11.1-1
 - chore: print version.release in 'insights.version' module (#4670)
   (xiangceliu@redhat.com)
