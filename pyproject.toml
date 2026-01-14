@@ -48,7 +48,7 @@ develop = ["pre-commit", "wheel"]
 docs = [
     "MarkupSafe",
     "Pygments",
-    "Sphinx",
+    "Sphinx<=8.2.3",
     "colorama",
     "docutils",
     "ipython",
