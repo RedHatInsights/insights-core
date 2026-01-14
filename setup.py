@@ -70,7 +70,7 @@ develop = set(
 docs = set(
     [
         'docutils',
-        'Sphinx',
+        'Sphinx<=8.2.3',
         'nbsphinx',
         'sphinx_rtd_theme',
         'ipython<8.7.0; python_version <= "3.6"',
