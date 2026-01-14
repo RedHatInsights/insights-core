@@ -9,8 +9,8 @@ from insights import collect
 from insights.cleaner import Cleaner
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
-from insights.core import dr
-from insights.core import filters
+from insights.core import dr, filters
+from insights.core.exceptions import ContentException
 from insights.core.context import HostContext
 from insights.core.filters import add_filter
 from insights.core.plugins import datasource
@@ -35,7 +35,7 @@ this_file = os.path.abspath(__file__).rstrip("c")
 test_large_file = '/tmp/_insights_test.large_file_filter'
 test_large_file_without_filter = '/tmp/_insights_test.large_file_without_filter'
 test_one_line_left = '/tmp/_insights_test.one_line_left'
-test_empty_after_filter = '/tmp/_insights_test.empty_after_filter'
+test_file_empty_after_filter = '/tmp/_insights_test.file_empty_after_filter'
 
 specs_manifest = """
 ---
@@ -89,7 +89,8 @@ class Specs(SpecSet):
     smpl_file_w_filter = RegistryPoint(filterable=True)
     first_file_spec_w_filter = RegistryPoint(filterable=True)
     first_of_spec_w_filter = RegistryPoint(filterable=True)
-    empty_after_filter = RegistryPoint(filterable=True)
+    file_empty_after_filter = RegistryPoint(filterable=True)
+    cmd_empty_after_filter = RegistryPoint(filterable=True)
     cmd_w_args_filter = RegistryPoint(filterable=True)
     large_filter = RegistryPoint(filterable=True)
     large_file_without_filter = RegistryPoint(filterable=False)
@@ -116,12 +117,13 @@ class Stuff(Specs):
     first_file_spec_w_filter = first_file([here + "/../spec_tests.py", "/etc/os-release"])
     first_of_spec_w_filter = first_of(
         [
-            simple_command("echo -n ' hello 1'"),
+            simple_command("echo -n ' hello 2'"),
             simple_file(this_file),
         ]
     )
 
-    empty_after_filter = simple_file(test_empty_after_filter)
+    file_empty_after_filter = simple_file(test_file_empty_after_filter)
+    cmd_empty_after_filter = simple_command("echo -n ' no_filter'")
     cmd_w_args_filter = command_with_args('ls -lt %s', files2)
     large_filter = simple_file(test_large_file)
     large_file_without_filter = simple_file(test_large_file_without_filter)
@@ -145,7 +147,8 @@ class stage(dr.ComponentType):
     Stuff.large_filter,
     Stuff.large_file_without_filter,
     Stuff.one_line_left,
-    optional=[Stuff.empty_after_filter],
+    Stuff.file_empty_after_filter,
+    Stuff.cmd_empty_after_filter,
 )
 def dostuff(broker):
     assert Stuff.many_glob_filter in broker
@@ -157,8 +160,8 @@ def dostuff(broker):
     assert Stuff.first_of_spec_w_filter in broker
     assert Stuff.cmd_w_args_filter in broker
     assert Stuff.one_line_left in broker
-
-    assert Stuff.empty_after_filter not in broker
+    assert Stuff.file_empty_after_filter in broker
+    assert Stuff.cmd_empty_after_filter in broker
 
 
 # File content
@@ -175,9 +178,9 @@ with open(here + "/../spec_tests.py") as f:
 
 
 def setup_function(func):
-    if func == test_specs_filters_collect:
+    if func in (test_specs_filters_collect, test_specs_filters_spec_factory):
         # empty relevant files
-        with open(test_empty_after_filter, 'w') as t:
+        with open(test_file_empty_after_filter, 'w') as t:
             t.write('no-filter')
     with open(test_large_file, 'w') as fd:
         for i in range(filters.MAX_MATCH + 1):
@@ -198,8 +201,8 @@ def teardown_function(func):
     dr.TYPE_OBSERVERS = defaultdict(set)
     dr.ENABLED = defaultdict(lambda: True)
 
-    if os.path.exists(test_empty_after_filter):
-        os.remove(test_empty_after_filter)
+    if os.path.exists(test_file_empty_after_filter):
+        os.remove(test_file_empty_after_filter)
     if os.path.exists(test_large_file):
         os.remove(test_large_file)
     if os.path.exists(test_large_file_without_filter):
@@ -216,7 +219,8 @@ def test_specs_filters_spec_factory():
     add_filter(Stuff.smpl_file_w_filter, "def get")
     add_filter(Stuff.first_file_spec_w_filter, ["def report_", "rhel"])
     add_filter(Stuff.first_of_spec_w_filter, ["def test", " hello "])
-    add_filter(Stuff.empty_after_filter, " hello ")
+    add_filter(Stuff.file_empty_after_filter, " hello ")
+    add_filter(Stuff.cmd_empty_after_filter, " hello ")
     add_filter(Stuff.cmd_w_args_filter, [" ", ":"])
     add_filter(Stuff.large_filter, ["Some"])
     add_filter(Stuff.one_line_left, ["test data"], 1)
@@ -232,8 +236,14 @@ def test_specs_filters_spec_factory():
     assert broker[Stuff.smpl_file_w_filter].content == smpl_file_w_filter_content
     assert broker[Stuff.first_file_spec_w_filter].content == first_file_w_filter_content
     assert len(broker[Stuff.first_of_spec_w_filter].content) == 1
-    assert len(broker.exceptions) == 1  # empty_after_filter
-    assert len(broker.tracebacks) == 1  # empty_after_filter
+    with pytest.raises(ContentException) as ce:
+        assert broker[Stuff.file_empty_after_filter].content is None
+    assert "Empty (after filtering)" in str(ce)
+    assert "file_empty_after_filter" in str(ce)
+    with pytest.raises(ContentException) as ce:
+        assert broker[Stuff.cmd_empty_after_filter].content is None
+    assert "Empty (after filtering)" in str(ce)
+    assert "no_filter" in str(ce)
 
 
 def test_line_terminators():
@@ -244,7 +254,8 @@ def test_line_terminators():
     add_filter(Stuff.smpl_file_w_filter, "def get")
     add_filter(Stuff.first_file_spec_w_filter, ["def report_", "rhel"])
     add_filter(Stuff.first_of_spec_w_filter, ["def test", " hello "])
-    add_filter(Stuff.empty_after_filter, " hello ")
+    add_filter(Stuff.file_empty_after_filter, " hello ")
+    add_filter(Stuff.cmd_empty_after_filter, " hello ")
     add_filter(Stuff.cmd_w_args_filter, [" ", ":"])
     add_filter(Stuff.large_filter, ["Some"])
     add_filter(Stuff.one_line_left, ["test data"], 1)
@@ -297,9 +308,9 @@ def test_exp_no_filters():
     assert exception_cnt == 1111111111
 
 
-@pytest.mark.parametrize("obfuscate", [True, False])
+@pytest.mark.parametrize("obfuscation_list", ['hostname', 'ipv4', 'ipv6', 'mac'], [])
 @patch('insights.cleaner.Cleaner.generate_report', return_value=None)
-def test_specs_filters_collect(gen, obfuscate):
+def test_specs_filters_collect(gen, obfuscation_list):
     add_filter(Stuff.many_glob_filter, " ")
     add_filter(Stuff.many_foreach_exe_filter, " ")
     add_filter(Stuff.many_foreach_clc_filter, " ")
@@ -307,7 +318,8 @@ def test_specs_filters_collect(gen, obfuscate):
     add_filter(Stuff.smpl_file_w_filter, "def get")
     add_filter(Stuff.first_file_spec_w_filter, [" hello ", "Test"])
     add_filter(Stuff.first_of_spec_w_filter, ["def test", " hello "])
-    add_filter(Stuff.empty_after_filter, " hello ")
+    add_filter(Stuff.file_empty_after_filter, " hello ")
+    add_filter(Stuff.cmd_empty_after_filter, " hello ")
     add_filter(Stuff.cmd_w_args_filter, [" ", ":"])
     add_filter(Stuff.large_filter, ["Some"])
     add_filter(Stuff.one_line_left, ["test data"], 1)
@@ -315,8 +327,7 @@ def test_specs_filters_collect(gen, obfuscate):
     manifest = collect.load_manifest(specs_manifest)
     for pkg in manifest.get("plugins", {}).get("packages", []):
         dr.load_components(pkg, exclude=None)
-    # For verifying convenience, test obfuscate=False only
-    conf = InsightsConfig(obfuscate=obfuscate, obfuscate_hostname=obfuscate, manifest=manifest)
+    conf = InsightsConfig(obfuscation_list=obfuscation_list, manifest=manifest)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
     output_path, errors = collect.collect(
@@ -336,7 +347,11 @@ def test_specs_filters_collect(gen, obfuscate):
             meta_data = os.path.join(meta_data_root, file_name)
             with open(meta_data, 'r') as fp:
                 mdata = json.load(fp)
+                errors = mdata.get('errors')
                 results = mdata.get('results')
+                for error in errors:
+                    if "empty_after_filter" in spec:
+                        assert "Empty (after filtering)" in error
                 if not isinstance(results, list):
                     results = [results]
                 count += 1
@@ -364,6 +379,6 @@ def test_specs_filters_collect(gen, obfuscate):
                             assert new_content[0] != org_content[0]
                             # the last line is kept
                             assert new_content[-1].strip() == org_content[-1].strip()
-    assert count == 11  # Number of Specs
+    assert count == 12  # Number of Specs with results
 
     arch.delete_archive_dir()
