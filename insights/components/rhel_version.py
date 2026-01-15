@@ -152,7 +152,7 @@ class IsRhel10(IsRhel):
 @component(RedHatRelease)
 class IsGtOrRhel84(IsGtRhel):
     """
-    This component checks if the RHEL version is 8.4 or grater than 8.4.
+    This component checks if the RHEL version is 8.4 or greater than 8.4.
 
     Attributes:
         major (int): The major version of RHEL.
@@ -169,7 +169,7 @@ class IsGtOrRhel84(IsGtRhel):
 @component(RedHatRelease)
 class IsGtOrRhel86(IsGtRhel):
     """
-    This component checks if the RHEL version is 8.6 or grater than 8.6.
+    This component checks if the RHEL version is 8.6 or greater than 8.6.
 
     Attributes:
         major (int): The major version of RHEL.
@@ -186,7 +186,7 @@ class IsGtOrRhel86(IsGtRhel):
 @component(RedHatRelease)
 class IsGtRhel86(IsGtRhel):
     """
-    This component checks if the RHEL version is grater than 8.6.
+    This component checks if the RHEL version is greater than 8.6.
 
     Attributes:
         major (int): The major version of RHEL.
@@ -198,3 +198,21 @@ class IsGtRhel86(IsGtRhel):
 
     def __init__(self, rhel):
         super(IsGtRhel86, self).__init__(rhel, 8, 6, equal=False)
+
+
+@component(RedHatRelease)
+class IsGtRhel9(IsGtRhel):
+    """
+    This component checks if the RHEL version is greater than 9.
+
+    Attributes:
+        major (int): The major version of RHEL.
+        minor (int): The minor version of RHEL.
+
+    Raises:
+        SkipComponent: When RHEL version is 9.x or less than 9.0
+    """
+
+    def __init__(self, rhel):
+        # Set the top as major = 10, minor = 0 to ensure RHEL < 10.0 to be skipped
+        super(IsGtRhel9, self).__init__(rhel, 10, 0, equal=True)
