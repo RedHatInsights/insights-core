@@ -22,7 +22,7 @@ def get_formatter(name):
 
 
 class FormatterAdapterMeta(type):
-    """ Automatically registers subclasses for later lookup. """
+    """Automatically registers subclasses for later lookup."""
 
     def __init__(cls, name, bases, dct):
         if name not in ("FormatterAdapter", "EvaluatorFormatterAdapter"):
@@ -34,11 +34,11 @@ class FormatterAdapter(six.with_metaclass(FormatterAdapterMeta)):
 
     @staticmethod
     def configure(p):
-        """ Override to add arguments to the ArgumentParser. """
+        """Override to add arguments to the ArgumentParser."""
         pass
 
     def __init__(self, args=None):
-        """ Subclasses get passed the parsed args. """
+        """Subclasses get passed the parsed args."""
         pass
 
     def preprocess(self, broker):
@@ -81,19 +81,32 @@ class EvaluatorFormatterAdapter(FormatterAdapter):
     Base class for formatters that want to serialize a SingleEvaluator after
     execution.
     """
+
     Impl = None
 
     @staticmethod
     def configure(p):
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
-        p.add_argument("-r", "--render-content", help="Render rule content in json output.", action="store_true")
-        p.add_argument("-S", "--show-rules", nargs="+",
-                       choices=["fail", "info", "pass", "none", "metadata", "fingerprint"],
-                       metavar="TYPE",
-                       help="Show results per rule's type: 'fail', 'info', 'pass', 'none', 'metadata', and 'fingerprint'")
-        p.add_argument("-F", "--fail-only",
-                       help="Show FAIL results only. Conflict with '-m', will be dropped when using them together. This option is deprecated by '-S fail'",
-                       action="store_true")
+        p.add_argument(
+            "-r",
+            "--render-content",
+            help="Render rule content in json output.",
+            action="store_true",
+        )
+        p.add_argument(
+            "-S",
+            "--show-rules",
+            nargs="+",
+            choices=["fail", "info", "pass", "none", "metadata", "fingerprint"],
+            metavar="TYPE",
+            help="Show results per rule's type: 'fail', 'info', 'pass', 'none', 'metadata', and 'fingerprint'. This option must not appear immediately before the archive path argument.",
+        )
+        p.add_argument(
+            "-F",
+            "--fail-only",
+            help="Show FAIL results only. Conflict with '-m', will be dropped when using them together. This option is deprecated by '-S fail'",
+            action="store_true",
+        )
 
     def __init__(self, args=None):
         if args:
@@ -164,12 +177,16 @@ try:
             try:
                 text = Template(content).render(val)
             except jinja2Exceptions.UndefinedError as err:
-                text = '\n'.join([str(val),
-                                "CONTENT:",
-                                "--------",
-                                content,
-                                "Failed to render the Content above:",
-                                "    " + str(err)])
+                text = '\n'.join(
+                    [
+                        str(val),
+                        "CONTENT:",
+                        "--------",
+                        content,
+                        "Failed to render the Content above:",
+                        "    " + str(err),
+                    ]
+                )
             finally:
                 return text
         return str(val)
