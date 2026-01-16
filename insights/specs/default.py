@@ -16,7 +16,7 @@ import signal
 # - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
-from insights.components.rhel_version import IsGtOrRhel84
+from insights.components.rhel_version import IsGtOrRhel84, IsGtRhel9
 from insights.components.satellite import (
     IsSatellite,
     IsSatellite611,
@@ -839,7 +839,7 @@ class DefaultSpecs(Specs):
     sctp_asc = simple_file('/proc/net/sctp/assocs')
     sctp_eps = simple_file('/proc/net/sctp/eps')
     sctp_snmp = simple_file('/proc/net/sctp/snmp')
-    sealert = simple_command('/usr/bin/sealert -l "*"', deps=[SELinuxEnabled])
+    sealert = simple_command('/usr/bin/sealert -l "*"', deps=[IsGtRhel9, SELinuxEnabled])
     secure = simple_file("/var/log/secure")
     securetty = simple_file("/etc/securetty")
     selinux_config = simple_file("/etc/selinux/config")

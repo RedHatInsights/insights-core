@@ -209,10 +209,12 @@ plugins:
     - name: insights.components.rhel_version.IsGtOrRhel84
       enabled: true
 
-    # needed for sealert spec
+    # needed for spec: sealert
     - name: insights.parsers.selinux_config.SelinuxConfig
       enabled: true
     - name: insights.components.selinux.SELinuxEnabled
+      enabled: true
+    - name: insights.components.rhel_version.IsGtRhel9
       enabled: true
 
     # needed for 'fstab_mounted.dirs' to 'ls_lan', 'fstab_mounted.devices' to 'ls_lH_files'
