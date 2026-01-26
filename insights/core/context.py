@@ -147,7 +147,16 @@ class ExecutionContextMeta(type):
     # Remember that contexts are tried *in reverse order* so that they
     # may be overridden by just loading a plugin.
     @classmethod
-    def identify(cls, files):
+    def identify(cls, files, expected=None):
+        # When "--context" is specified, try the expected context first
+        if expected:
+            root, ctx = expected.handles(files)
+            if ctx is not None:
+                return (root, ctx)
+        # When "--context" is specified but expected context is not found,
+        # it won't execute the plugins beacuse of context missing match.
+        # But in order to showcase the suggested context in the error mesaages,
+        # it's good to continue identifying with the full list.
         for e in reversed(cls.registry):
             root, ctx = e.handles(files)
             if ctx is not None:
