@@ -7,11 +7,10 @@ from __future__ import absolute_import
 import json
 import logging
 import os
-import six
 import stat
 import yaml
 
-from six.moves import configparser as ConfigParser
+import configparser as ConfigParser
 
 from insights.client.constants import InsightsConstants as constants
 
@@ -38,7 +37,7 @@ def correct_format(parsed_data, expected_keys, filename):
         if not isinstance(data, list):
             return False
         for l in data:
-            if not isinstance(l, six.string_types):
+            if not isinstance(l, str):
                 return False
         return True
 
@@ -177,15 +176,10 @@ class InsightsUploadConf(object):
                         + ', '.join(expected_keys)
                         + '.'
                     )
-                if six.PY3:
-                    rm_conf[item] = [
-                        v.strip()
-                        for v in value.strip().encode('utf-8').decode('unicode-escape').split(',')
-                    ]
-                else:
-                    rm_conf[item] = [
-                        v.strip() for v in value.strip().decode('string-escape').split(',')
-                    ]
+                rm_conf[item] = [
+                    v.strip()
+                    for v in value.strip().encode('utf-8').decode('unicode-escape').split(',')
+                ]
             self.rm_conf = rm_conf
         except ConfigParser.Error as e:
             # can't parse config file at all
