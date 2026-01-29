@@ -962,7 +962,9 @@ class DefaultSpecs(Specs):
         "/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +"
     )
     tty_console_active = simple_file("sys/class/tty/console/active")
-    tuned_adm = simple_command("/usr/sbin/tuned-adm list")
+    tuned_adm = simple_command(
+        "/usr/sbin/tuned-adm list", deps=[[IsGtRhel9, SELinuxDisabled]]
+    )  # "RHEL 10 and newer" OR "selinux is disabled". RHEL-142141
     udev_66_md_rules = first_file(
         ["/etc/udev/rules.d/66-md-auto-readd.rules", "/usr/lib/udev/rules.d/66-md-auto-readd.rules"]
     )
