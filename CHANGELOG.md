@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.7.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.2) (2026-01-29)
+
+- spec: add ansible_telemetry to collection ([PR 4701](https://github.com/RedHatInsights/insights-core/pull/4701))
+- fix: update the help message to -S/--show-rules option ([PR 4703](https://github.com/RedHatInsights/insights-core/pull/4703))
+- fix: traceback info in metadata JSON of filterable specs ([PR 4697](https://github.com/RedHatInsights/insights-core/pull/4697))
+- fix(doc): avoid too extensive cross-ref check ([PR 4696](https://github.com/RedHatInsights/insights-core/pull/4696))
+
 # [insights-core-3.7.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.1) (2026-01-09)
 
 - fix(datasource cleanning): clean datasource based on spec entry ([PR 4693](https://github.com/RedHatInsights/insights-core/pull/4693))

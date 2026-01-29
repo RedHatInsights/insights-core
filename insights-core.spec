@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.1
+Version:        3.7.2
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,14 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Jan 29 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.2-1
+- spec: add ansible_telemetry to collection (#4701) (xiangceliu@redhat.com)
+- fix: update the help message to -S/--show-rules option (#4703)
+  (xiangceliu@redhat.com)
+- fix: traceback info in metadata JSON of filterable specs (#4697)
+  (xiangceliu@redhat.com)
+- fix(doc): avoid too extensive cross-ref check (#4696) (xiangceliu@redhat.com)
+
 * Fri Jan 09 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.1-1
 - fix(datasource cleanning): clean datasource based on spec entry (#4693)
   (xiangceliu@redhat.com)
