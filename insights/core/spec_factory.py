@@ -287,6 +287,7 @@ class TextFileProvider(FileProvider):
         self.loaded = True
         args = self.create_args()
         if args:
+            # "keep_rc = True" to ignore failure of 'grep'
             rc, out = self.ctx.shell_out(args, keep_rc=True, env=SAFE_ENV)
             self.rc = rc
             return out
@@ -411,6 +412,8 @@ class CommandOutputProvider(ContentProvider):
         if self.split and self._filters:
             log.debug("Pre-filtering  %s", self.relative_path)
             command.append(["grep", "-F", "--", "\n".join(self._filters.keys())])
+            # "keep_rc = True" to ignore failure of 'grep'
+            self.keep_rc = True
 
         return command
 

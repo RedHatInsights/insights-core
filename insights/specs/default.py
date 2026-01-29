@@ -16,7 +16,7 @@ import signal
 # - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
-from insights.components.rhel_version import IsGtOrRhel84
+from insights.components.rhel_version import IsGtOrRhel84, IsGtRhel9
 from insights.components.satellite import (
     IsSatellite,
     IsSatellite611,
@@ -118,11 +118,15 @@ class DefaultSpecs(Specs):
     malware_detection = malware_detection_ds.malware_detection
 
     # Regular collection specs
-    # ansible_telemetry = simple_command("/usr/share/ansible/telemetry/telemetry.py")
     abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
     alternatives_display_python = simple_command("/usr/sbin/alternatives --display python")
     amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
+    ansible_telemetry = simple_command(
+        "/usr/bin/env python3 /usr/share/ansible/telemetry/telemetry.py",
+        save_as="ansible_telemetry",
+        keep_rc=True,
+    )
     audit_log = simple_file("/var/log/audit/audit.log")
     auditctl_rules = simple_command("/sbin/auditctl -l")
     auditctl_status = simple_command("/sbin/auditctl -s")
@@ -825,7 +829,7 @@ class DefaultSpecs(Specs):
     sctp_asc = simple_file('/proc/net/sctp/assocs')
     sctp_eps = simple_file('/proc/net/sctp/eps')
     sctp_snmp = simple_file('/proc/net/sctp/snmp')
-    sealert = simple_command('/usr/bin/sealert -l "*"', deps=[SELinuxEnabled])
+    sealert = simple_command('/usr/bin/sealert -l "*"', deps=[IsGtRhel9, SELinuxEnabled])
     secure = simple_file("/var/log/secure")
     securetty = simple_file("/etc/securetty")
     selinux_config = simple_file("/etc/selinux/config")

@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.7.1.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.1.2) (2026-01-16)
+
+- fix: traceback info in metadata JSON of filterable specs ([PR 4694](https://github.com/RedHatInsights/insights-core/pull/4694))
+- fix(spec): stop collecting sealert on RHEL 9 and older ([PR 4698](https://github.com/RedHatInsights/insights-core/pull/4698))
+- fix(doc): avoid too extensive cross-ref check ([PR 4695](https://github.com/RedHatInsights/insights-core/pull/4695))
+
 # [insights-core-3.7.1.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.1.1) (2026-01-10)
 
 - fix(datasource cleanning): clean datasource based on spec entry ([PR 4692](https://github.com/RedHatInsights/insights-core/pull/4692))

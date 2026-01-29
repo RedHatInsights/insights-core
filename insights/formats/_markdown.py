@@ -33,22 +33,35 @@ class MarkdownFormat(Formatter):
             used in general.
         stream (file-like): Output is written to stream. Defaults to sys.stdout.
     """
+
     response = namedtuple('response', 'label title')
 
-    def __init__(self,
-                 broker,
-                 missing=False,
-                 tracebacks=False,
-                 dropped=False,
-                 show_rules=None,
-                 stream=sys.stdout):
+    def __init__(
+        self,
+        broker,
+        missing=False,
+        tracebacks=False,
+        dropped=False,
+        show_rules=None,
+        stream=sys.stdout,
+    ):
         super(MarkdownFormat, self).__init__(broker, stream=stream)
         self.missing = missing
         self.tracebacks = tracebacks
         self.dropped = dropped
         self.show_rules = [] if show_rules is None else show_rules
 
-        self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'info': 0, 'none': 0, 'metadata': 0, 'metadata_key': 0, 'fingerprint': 0, 'exception': 0}
+        self.counts = {
+            'skip': 0,
+            'pass': 0,
+            'rule': 0,
+            'info': 0,
+            'none': 0,
+            'metadata': 0,
+            'metadata_key': 0,
+            'fingerprint': 0,
+            'exception': 0,
+        }
         self.responses = {
             'skip': self.response(label="SKIP", title="Missing Deps: "),
             'pass': self.response(label="PASS", title="Passed      : "),
@@ -58,7 +71,7 @@ class MarkdownFormat(Formatter):
             'metadata': self.response(label="META", title="Metadata    : "),
             'metadata_key': self.response(label="META", title="Metadata Key: "),
             'fingerprint': self.response(label="FINGERPRINT", title="Fingerprint : "),
-            'exception': self.response(label="EXCEPT", title="Exceptions  : ")
+            'exception': self.response(label="EXCEPT", title="Exceptions  : "),
         }
 
     def print_header(self, header, level):
@@ -80,7 +93,7 @@ class MarkdownFormat(Formatter):
         return self
 
     def show_tracebacks(self):
-        """ Show tracebacks """
+        """Show tracebacks"""
         if self.broker.tracebacks:
             print(file=self.stream)
             self.print_header("Tracebacks", 2)
@@ -90,7 +103,7 @@ class MarkdownFormat(Formatter):
             print("```", file=self.stream)
 
     def show_dropped(self):
-        """ Show dropped files """
+        """Show dropped files"""
         ctx = _find_context(self.broker)
         if ctx and ctx.all_files:
             ds = self.broker.get_by_type(datasource)
@@ -108,7 +121,8 @@ class MarkdownFormat(Formatter):
             print("```", file=self.stream)
 
     def show_description(self):
-        """ Prints the formatted response for the matching return type """
+        """Prints the formatted response for the matching return type"""
+
         def print_missing(c, v):
             resp = self.responses[v["type"]]
             name = "[%s] %s" % (resp.label, dr.get_name(c))
@@ -149,9 +163,8 @@ class MarkdownFormat(Formatter):
             if _type:
                 if self.missing and _type == 'skip':
                     print_missing(c, v)
-                elif (
-                        (self.show_rules and _type in self.show_rules) or
-                        (not self.show_rules and _type not in ['skip', 'none'])
+                elif (self.show_rules and _type in self.show_rules) or (
+                    not self.show_rules and _type not in ['skip', 'none']
                 ):
                     printit(c, v)
         print(file=self.stream)
@@ -163,7 +176,9 @@ class MarkdownFormat(Formatter):
         print("```", file=self.stream)
 
     def postprocess(self):
-        self.print_header("Insights Core Run ({})".format(datetime.datetime.now().strftime('%x %X')), 1)
+        self.print_header(
+            "Insights Core Run ({})".format(datetime.datetime.now().strftime('%x %X')), 1
+        )
         print(file=self.stream)
         self.print_header("Command Line", 2)
         print("`{}`".format(" ".join(sys.argv)))
@@ -179,20 +194,32 @@ class MarkdownFormat(Formatter):
 
 
 class MarkdownFormatAdapter(FormatterAdapter):
-    """ Displays results in a human readable format. """
+    """Displays results in a human readable format."""
 
     @staticmethod
     def configure(p):
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
-        p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true")
+        p.add_argument(
+            "-d",
+            "--dropped",
+            help="Show collected files that weren't processed.",
+            action="store_true",
+        )
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
-        p.add_argument("-S", "--show-rules", nargs="+",
-                       choices=["fail", "info", "pass", "none", "metadata", "fingerprint"],
-                       metavar="TYPE",
-                       help="Show results per rule's type: 'fail', 'info', 'pass', 'none', 'metadata', and 'fingerprint'")
-        p.add_argument("-F", "--fail-only",
-                       help="Show FAIL results only. Conflict with '-m', will be dropped when using them together. This option is deprecated by '-S fail'",
-                       action="store_true")
+        p.add_argument(
+            "-S",
+            "--show-rules",
+            nargs="+",
+            choices=["fail", "info", "pass", "none", "metadata", "fingerprint"],
+            metavar="TYPE",
+            help="Show results per rule's type: 'fail', 'info', 'pass', 'none', 'metadata', and 'fingerprint'. This option must not appear immediately before the archive path argument.",
+        )
+        p.add_argument(
+            "-F",
+            "--fail-only",
+            help="Show FAIL results only. Conflict with '-m', will be dropped when using them together. This option is deprecated by '-S fail'",
+            action="store_true",
+        )
 
     def __init__(self, args=None):
         self.missing = args.missing
@@ -209,8 +236,9 @@ class MarkdownFormatAdapter(FormatterAdapter):
         self.dropped = args.dropped
 
     def preprocess(self, broker):
-        self.formatter = MarkdownFormat(broker,
-                self.missing, self.tracebacks, self.dropped, self.show_rules)
+        self.formatter = MarkdownFormat(
+            broker, self.missing, self.tracebacks, self.dropped, self.show_rules
+        )
         self.formatter.preprocess()
 
     def postprocess(self, broker):
