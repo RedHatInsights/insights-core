@@ -489,6 +489,7 @@ class Specs(SpecSet):
         filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
     modprobe = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    mokutil_db_short = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     mokutil_list_enrolled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     mokutil_sbstate = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     mongod_conf = RegistryPoint(multi_output=True, filterable=True)
