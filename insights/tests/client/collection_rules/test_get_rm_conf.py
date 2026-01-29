@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 
-import six
 import sys
 import pytest
 from .helpers import insights_upload_conf
@@ -16,12 +15,7 @@ removed_files = ["/etc/some_file", "/tmp/another_file"]
 
 
 def patch_open(filedata):
-    if six.PY3:
-        open_name = 'builtins.open'
-    else:
-        open_name = '__builtin__.open'
-
-    return patch(open_name, mock.mock_open(read_data=filedata), create=True)
+    return patch('builtins.open', mock.mock_open(read_data=filedata), create=True)
 
 
 # Tests for the correct_format function

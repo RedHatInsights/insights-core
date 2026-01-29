@@ -14,10 +14,7 @@ from pytest import raises
 
 from insights.client.constants import InsightsConstants as constants
 from insights.client.apps.ansible import playbook_verifier
-from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError, get_play_revocation_list, normalize_play_py2, load_playbook_yaml  # noqa
-
-
-SKIP_ON_3 = pytest.mark.skipif(sys.version_info[0] > 2, reason="Only required in Python 2")
+from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError, get_play_revocation_list, load_playbook_yaml  # noqa
 
 
 class TestErrors:
@@ -199,27 +196,6 @@ class TestErrors:
         assert revoked_error in str(error.value)
 
 
-@SKIP_ON_3
-def test_normalize_snippet():
-    playbook = '''task:
-  when:
-    - '"pam" in ansible_facts.packages'
-    - result_pam_file_present.stat.exists'''
-
-    snippet = load_playbook_yaml(playbook)
-
-    want = {
-        'task': {
-            'when': [
-                '"pam" in ansible_facts.packages',
-                'result_pam_file_present.stat.exists'
-            ]
-        }
-    }
-
-    assert normalize_play_py2(snippet) == want
-
-
 class TestExcludeDynamicElements:
     def test_ok_signature(self):
         source = {
@@ -388,9 +364,6 @@ class TestPlaybookSerializer:
         ],
     )
     def test_strings_unicode(self, source, expected):
-        if sys.version_info < (3, 0):
-            raise pytest.skip("Unicode characters are not supported on Python 2 systems")
-
         result = playbook_verifier.PlaybookSerializer.serialize(source)
         assert result == expected
 

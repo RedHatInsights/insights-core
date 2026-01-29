@@ -7,7 +7,6 @@ import logging
 import logging.handlers
 import os
 import time
-import six
 
 from insights.util.rpm_vercmp import version_compare
 
@@ -130,7 +129,7 @@ def configure_level(config):
     config_level = 'DEBUG' if config.verbose else config.loglevel
 
     init_log_level = logging.getLevelName(config_level)
-    if type(init_log_level) in six.string_types:
+    if type(init_log_level) is str:
         print("Invalid log level %s, defaulting to DEBUG" % config_level)
         init_log_level = logging.DEBUG
 
@@ -374,10 +373,7 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
 
             # Write to last upload file
             with open(constants.last_upload_results_file, 'w') as handler:
-                if six.PY3:
-                    handler.write(upload.text)
-                else:
-                    handler.write(upload.text.encode('utf-8'))
+                handler.write(upload.text)
             os.chmod(constants.last_upload_results_file, 0o644)
             write_to_disk(constants.lastupload_file)
             os.chmod(constants.lastupload_file, 0o644)

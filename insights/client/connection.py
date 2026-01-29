@@ -5,7 +5,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 import requests
 import os
-import six
 import json
 import logging
 import platform
@@ -15,14 +14,8 @@ import errno
 # import io
 from tempfile import TemporaryFile
 # from datetime import datetime, timedelta
-try:
-    # python 2
-    from urlparse import urlparse
-    from urllib import quote
-except ImportError:
-    # python 3
-    from urllib.parse import urlparse
-    from urllib.parse import quote
+from urllib.parse import urlparse
+from urllib.parse import quote
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         machine_id_exists,
@@ -114,7 +107,7 @@ class InsightsConnection(object):
             # else:
             # self.cert_verify = True
         else:
-            if isinstance(self.cert_verify, six.string_types):
+            if isinstance(self.cert_verify, str):
                 if self.cert_verify.lower() == 'false':
                     self.cert_verify = False
                 elif self.cert_verify.lower() == 'true':
@@ -198,7 +191,7 @@ class InsightsConnection(object):
             log_message += " headers={headers}".format(headers=kwargs["headers"])
         if "files" in kwargs.keys():
             attachments = []
-            for name, content in six.iteritems(kwargs["files"]):
+            for name, content in kwargs["files"].items():
                 if isinstance(content, tuple):
                     attachments.append("{name}:{file}".format(name=name, file=content[0]))
                 else:
@@ -551,9 +544,7 @@ class InsightsConnection(object):
 
         # logger.debug(u'Saving branch info to file.')
         # with io.open(constants.cached_branch_info, encoding='utf8', mode='w') as f:
-        #     # json.dump is broke in py2 so use dumps
-        #     bi_str = json.dumps(branch_info, ensure_ascii=False)
-        #     f.write(bi_str)
+        #     json.dump(branch_info, f, ensure_ascii=False)
         self.config.branch_info = branch_info
         return branch_info
 
