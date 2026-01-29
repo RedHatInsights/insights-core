@@ -6,11 +6,16 @@ MokutilSbstate - command ``mokutil --sb-state``
 from insights.core import CommandParser
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.mokutil_sbstate)
 class MokutilSbstate(CommandParser):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.mokutil.MokutilSbstate` instead.
+
     Class for parsing the ``mokutil --sb-state`` command.
 
     Attributes:
@@ -28,6 +33,10 @@ class MokutilSbstate(CommandParser):
         >>> mokutil.secureboot_enabled
         True
     """
+
+    def __init__(self, *args, **kwargs):
+        deprecated(MokutilSbstate, "Please use the :class:`insights.parsers.mokutil.MokutilSbstate` instead.", "3.8.0")
+        super(MokutilSbstate, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         self.secureboot_enabled = None
