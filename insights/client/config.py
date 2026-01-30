@@ -4,9 +4,8 @@ import argparse
 import copy
 import logging
 import os
-import six
 
-from six.moves import configparser as ConfigParser
+import configparser as ConfigParser
 
 from insights.cleaner import DEFAULT_OBFUSCATIONS
 from insights.client.utilities import get_rhel_version, get_egg_version_tuple
@@ -19,10 +18,6 @@ except:
     from constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
-if six.PY2:
-    # to avoid "No handler" issue of python 2.7
-    # https://docs.python.org/2.7/howto/logging.html#configuring-logging-for-a-library
-    logger.addHandler(logging.NullHandler())
 
 
 DEFAULT_OPTS = {
@@ -658,7 +653,7 @@ class InsightsConfig(object):
                     d[key] = parsedconfig.getint(constants.app_name, key)
                 if key == 'http_timeout':
                     d[key] = parsedconfig.getfloat(constants.app_name, key)
-                if key in DEFAULT_BOOLS and isinstance(d[key], six.string_types):
+                if key in DEFAULT_BOOLS and isinstance(d[key], str):
                     d[key] = parsedconfig.getboolean(constants.app_name, key)
             except ValueError as e:
                 if self._print_errors:
@@ -718,7 +713,7 @@ class InsightsConfig(object):
                 # discard old options
                 self.obfuscate = self.obfuscate_hostname = None
             # Re-format the new obfuscation_list
-            if isinstance(self.obfuscation_list, six.string_types):
+            if isinstance(self.obfuscation_list, str):
                 obf_opt = set(
                     opt.strip() for opt in self.obfuscation_list.strip('\'"').split(',') if opt
                 )
