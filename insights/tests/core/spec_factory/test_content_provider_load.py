@@ -67,7 +67,7 @@ def sample_file(tmpdir_factory):
     [
         (Stuff.large_file, [], "- 949Some test data", 51),
         (Stuff.large_file_wf, ["9Some"], "- 949Some test data", 6),
-    ]
+    ],
 )
 def test_load(log, reset_filters, sample_file, spec, filters, expected_first_line, expected_lines):
     root, relpath = sample_file
@@ -75,7 +75,7 @@ def test_load(log, reset_filters, sample_file, spec, filters, expected_first_lin
     for filter_kw in filters:
         add_filter(spec, filter_kw)
 
-    _, broker = initialize_broker(root, context=HostArchiveContext, broker=dr.Broker())
+    _, broker = initialize_broker(root, broker=dr.Broker())
     broker = dr.run(dr.get_dependency_graph(dostuff), broker=broker)
 
     assert spec in broker
