@@ -9,6 +9,7 @@ from insights.core.plugins import datasource
 from insights.parsers.lsmod import LsMod
 from insights.parsers.uname import Uname
 from insights.specs import Specs
+from insights.specs.datasources import DEFAULT_SHELL_TIMEOUT
 
 
 @datasource(Uname, HostContext)
@@ -30,7 +31,7 @@ def current_version(broker):
     return broker[Uname].kernel
 
 
-@datasource(Specs.grubby_default_kernel, HostContext)
+@datasource(HostContext)
 def default_version(broker):
     """
     This datasource provides the default kernel version.
@@ -46,8 +47,11 @@ def default_version(broker):
         SkipComponent: When output is empty or an error occurs
     """
     try:
-        content = broker[Specs.grubby_default_kernel].content
-        if len(content) == 1 and len(content[0].split()) == 1:
+        ctx = broker[HostContext]
+        ret, content = ctx.shell_out(
+            "/sbin/grubby --default-kernel", keep_rc=True, timeout=DEFAULT_SHELL_TIMEOUT
+        )
+        if ret == 0 and len(content) == 1 and len(content[0].split()) == 1:
             default_kernel = content[0]
             return default_kernel.lstrip("/boot/vmlinuz-")
     except Exception as e:
