@@ -219,6 +219,10 @@ plugins:
     - name: insights.components.rhel_version.IsGtRhel9
       enabled: true
 
+    # needed for spec: tuned_adm and ansible_telemetry
+    - name: insights.components.selinux.SELinuxDisabled
+      enabled: true
+
     # needed for 'fstab_mounted.dirs' to 'ls_lan', 'fstab_mounted.devices' to 'ls_lH_files'
     - name: insights.parsers.fstab.FSTab
       enabled: true

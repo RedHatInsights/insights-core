@@ -23,7 +23,7 @@ from insights.components.satellite import (
     IsSatellite614AndLater,
     IsSatelliteLessThan614,
 )
-from insights.components.selinux import SELinuxEnabled
+from insights.components.selinux import SELinuxEnabled, SELinuxDisabled
 from insights.components.virtualization import IsBareMetal
 from insights.core.context import HostContext
 from insights.core.spec_factory import (
@@ -125,8 +125,9 @@ class DefaultSpecs(Specs):
     ansible_telemetry = simple_command(
         "/usr/bin/env python3 /usr/share/ansible/telemetry/telemetry.py",
         save_as="ansible_telemetry",
+        deps=[SELinuxDisabled],
         keep_rc=True,
-    )
+    )  # Collect it only when SELinux is disabled. RHEL-145269, RHEL-145268
     audit_log = simple_file("/var/log/audit/audit.log")
     auditctl_rules = simple_command("/sbin/auditctl -l")
     auditctl_status = simple_command("/sbin/auditctl -s")
