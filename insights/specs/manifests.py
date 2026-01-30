@@ -210,6 +210,8 @@ plugins:
       enabled: true
 
     # needed for spec: sealert
+    - name: insights.parsers.sestatus.SEStatus
+      enabled: true
     - name: insights.parsers.selinux_config.SelinuxConfig
       enabled: true
     - name: insights.components.selinux.SELinuxEnabled
