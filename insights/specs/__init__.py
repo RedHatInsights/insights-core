@@ -809,6 +809,7 @@ class Specs(SpecSet):
     sssd_config = RegistryPoint()
     sssd_conf_d = RegistryPoint(multi_output=True)
     sssd_logs = RegistryPoint(multi_output=True, filterable=True)
+    strings_shimx64_efi = RegistryPoint(filterable=True)
     subscription_manager_facts = RegistryPoint(filterable=True)
     subscription_manager_id = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     subscription_manager_installed_product_ids = RegistryPoint(
