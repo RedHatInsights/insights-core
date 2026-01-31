@@ -52,7 +52,12 @@ from insights.core.context import (
     HostContext,
     SerializedArchiveContext,
 )
-from insights.core.exceptions import InvalidArchive, InvalidContentType, SkipComponent
+from insights.core.exceptions import (
+    ContextImportError,
+    InvalidArchive,
+    InvalidContentType,
+    SkipComponent,
+)
 from insights.core.filters import add_filter, apply_filters, get_filters
 from insights.core.hydration import create_context, initialize_broker
 from insights.core.plugins import (
@@ -298,9 +303,19 @@ def _load_context(path):
     if path is None:
         return
 
-    if "." not in path:
-        path = ".".join(["insights.core.context", path])
-    return dr.get_component(path)
+    module, _, name = path.rpartition(".")
+    if not module:
+        module = "insights.core.context"
+    full_path = ".".join([module, name])
+
+    context = dr.get_component(full_path)
+    if context is None:
+        msg = "Cannot import execution context '{1}' from '{0}'.".format(module, name)
+        if path != full_path:
+            msg += " Try using a fully qualified name."
+        raise ContextImportError(msg)
+
+    return context
 
 
 def run(
@@ -349,7 +364,7 @@ def run(
         )
         p.add_argument(
             "--context",
-            help="Execution Context. Defaults to HostContext if an archive isn't passed.",
+            help="Execution context. If not specified, the execution context is chosen automatically based on loaded plugins and the archive argument.",
         )
         p.add_argument(
             "--no-load-default", help="Don't load the default plugins.", action="store_true"
@@ -525,7 +540,7 @@ def run(
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
         return broker
-    except (InvalidContentType, InvalidArchive):
+    except InvalidContentType:
         if args and args.archive:
             path = args.archive
             msg = "Invalid directory or archive. Did you mean to pass -p {p}?"

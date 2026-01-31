@@ -40,11 +40,24 @@ class CalledProcessError(Exception):
 
 class InvalidArchive(Exception):
     """
-    Raised when archive cannot be identified or missing expected structure.
+    Raised when execution context initialization fails for a given archive (path).
+
+    There are two main cases how this can happen:
+
+    *   An execution context specified by a user cannot be initialized under the given path.
+    *   Automatic execution context detection fails (e.g. because the path was empty).
     """
 
     def __init__(self, msg):
         super(InvalidArchive, self).__init__(msg)
+        self.msg = msg
+
+
+class ContextImportError(Exception):
+    """Raised when a given execution context cannot be found (imported)."""
+
+    def __init__(self, msg):
+        super(ContextImportError, self).__init__(msg)
         self.msg = msg
 
 

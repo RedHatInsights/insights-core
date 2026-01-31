@@ -2,14 +2,19 @@ import logging
 import os
 
 from insights.core import archives, dr
-from insights.core.context import (ClusterArchiveContext, ExecutionContextMeta, HostArchiveContext,
-                                   SerializedArchiveContext)
+from insights.core.context import (
+    ClusterArchiveContext,
+    ExecutionContextMeta,
+    HostArchiveContext,
+    SerializedArchiveContext,
+)
 from insights.core.exceptions import InvalidArchive
 from insights.core.serde import Hydration
 
 log = logging.getLogger(__name__)
 
 if hasattr(os, "scandir"):
+
     def get_all_files(path):
         with os.scandir(path) as it:
             for ent in it:
@@ -22,8 +27,8 @@ if hasattr(os, "scandir"):
                 except OSError as ex:
                     log.exception(ex)
 
-
 else:
+
     def get_all_files(path):
         for root, _, files in os.walk(path):
             for f in files:
@@ -32,11 +37,7 @@ else:
                     yield full_path
 
 
-def identify(files):
-    common_path, ctx = ExecutionContextMeta.identify(files)
-    if ctx:
-        return common_path, ctx
-
+def _identify_fallback(files):
     common_path = os.path.dirname(os.path.commonprefix(files))
     if not common_path:
         raise InvalidArchive("Unable to determine common path")
@@ -44,21 +45,72 @@ def identify(files):
     return common_path, HostArchiveContext
 
 
-def create_context(path, context=None):
+def identify(files):
+    common_path, ctx = ExecutionContextMeta.identify(files)
+    if ctx:
+        return common_path, ctx
+
+    return _identify_fallback(files)
+
+
+def _create_cluster_archive_context(path):
     top = os.listdir(path)
-    arc = [os.path.join(path, f) for f in top
-           if f.endswith(archives.COMPRESSION_TYPES) and
-           os.path.isfile(os.path.join(path, f))]
-    if arc:
-        return ClusterArchiveContext(path, all_files=arc)
+    arc = [
+        os.path.join(path, f)
+        for f in top
+        if f.endswith(archives.COMPRESSION_TYPES) and os.path.isfile(os.path.join(path, f))
+    ]
 
-    all_files = list(get_all_files(path))
+    return ClusterArchiveContext(path, all_files=arc) if arc else None
+
+
+def _create_user_defined_context(path, context, all_files):
+    ctx = None
+
+    if context is ClusterArchiveContext:
+        # ClusterArchiveContext does not support the handles() method
+        ctx = _create_cluster_archive_context(path)
+    else:
+        common_path, _context = context.handles(all_files)
+        if _context:
+            ctx = _context(common_path, all_files=all_files)
+
+    if not ctx:
+        raise InvalidArchive(
+            "Cannot find execution context '{0}.{1}' in path: {2}".format(
+                context.__module__,
+                context.__name__,
+                path,
+            )
+        )
+
+    return ctx
+
+
+def _create_autodetected_context(path, all_files):
     if not all_files:
-        raise InvalidArchive("No files in archive")
+        raise InvalidArchive(
+            "Cannot detect execution context: No files in path: {0}".format(path)
+        )
 
+    # ClusterArchiveContext does not support the handles() method
+    ctx = _create_cluster_archive_context(path)
+    if ctx:
+        return ctx
+
+    # use standard auto-detection (falls back to HostArchiveContext if nothing else is detected)
     common_path, ctx = identify(all_files)
-    context = context or ctx
-    return context(common_path, all_files=all_files)
+    return ctx(common_path, all_files=all_files)
+
+
+def create_context(path, context=None):
+    all_files = list(get_all_files(path))
+
+    if context:
+        return _create_user_defined_context(path, context, all_files)
+
+    else:
+        return _create_autodetected_context(path, all_files)
 
 
 def initialize_broker(path, context=None, broker=None):
