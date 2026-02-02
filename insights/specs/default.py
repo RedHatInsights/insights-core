@@ -331,12 +331,7 @@ class DefaultSpecs(Specs):
     flatpak_list = simple_command("/usr/bin/flatpak list")
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     fstab = simple_file("/etc/fstab")
-    fw_security = first_of(
-        [
-            simple_command("/usr/bin/fwupdmgr security --force --json", deps=[IsBareMetal]),
-            simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal]),
-        ]
-    )
+    fw_security = simple_command("/usr/bin/fwupdmgr security --force --json", deps=[IsBareMetal])
     galera_cnf = first_file(
         [
             "/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf",
@@ -514,7 +509,7 @@ class DefaultSpecs(Specs):
     lscpu = simple_command("/usr/bin/lscpu")
     lsinitrd_kdump_image = command_with_args("/usr/bin/lsinitrd -k %skdump", kernel.current_version)
     lsmod = simple_command("/sbin/lsmod")
-    lsof = first_of([simple_command("/usr/bin/lsof"), simple_command("/usr/sbin/lsof")])
+    lsof = simple_command("/usr/bin/lsof")
     lspci = simple_command("/sbin/lspci -k")
     lspci_vmmkn = simple_command("/sbin/lspci -vmmkn")
     luksmeta = foreach_execute(
@@ -966,9 +961,7 @@ class DefaultSpecs(Specs):
         ["/etc/udev/rules.d/66-md-auto-readd.rules", "/usr/lib/udev/rules.d/66-md-auto-readd.rules"]
     )
     udev_fc_wwpn_id_rules = simple_file("/usr/lib/udev/rules.d/59-fc-wwpn-id.rules")
-    uname = first_of(
-        [simple_command("/usr/bin/uname -a"), simple_command("/bin/uname -a")]  # RHEL 6
-    )
+    uname = simple_command("/usr/bin/uname -a")
     up2date = simple_file("/etc/sysconfig/rhn/up2date")
     up2date_log = simple_file("/var/log/up2date")
     uptime = simple_command("/usr/bin/uptime")
