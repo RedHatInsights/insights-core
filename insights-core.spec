@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.1.2
+Version:        3.7.2.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -122,6 +122,22 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Tue Feb 03 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.2.1-1
+- spec: stop collecting tuned_adm on RHEL 9 when SELinux enabled (#4711)
+  (xiangceliu@redhat.com)
+- chore(spec): remove cmd path added to support old RHEL (#4718)
+  (xiangceliu@redhat.com)
+- spec: don't collect ansible_telemetry when SELinux is enabled (#4712)
+  (xiangceliu@redhat.com)
+- fix(manifest): add SELinuxDisable to configs of default manifest (#4713)
+  (xiangceliu@redhat.com)
+- chore(component): update and add new selinux components (#4709)
+  (xiangceliu@redhat.com)
+- chore(parser): refine the SEStatus parser (#4706) (xiangceliu@redhat.com)
+- spec: add ansible_telemetry to collection (#4700) (xiangceliu@redhat.com)
+- fix: update the help message to -S/--show-rules option (#4702)
+  (xiangceliu@redhat.com)
+
 * Fri Jan 16 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.1.2-1
 - fix: traceback info in metadata JSON of filterable specs (#4694)
   (xiangceliu@redhat.com)
