@@ -9,7 +9,6 @@ from insights.client.constants import InsightsConstants as constants
 import re
 from unittest import mock
 from unittest.mock import patch
-import six
 import pytest
 import errno
 from json import loads as json_load
@@ -245,12 +244,7 @@ def test_read_pidfile():
     '''
     Test a pidfile that exists
     '''
-    if six.PY3:
-        open_name = 'builtins.open'
-    else:
-        open_name = '__builtin__.open'
-
-    with patch(open_name, create=True) as mock_open:
+    with patch('builtins.open', create=True) as mock_open:
         mock_open.side_effect = [mock.mock_open(read_data='420').return_value]
         assert util.read_pidfile() == '420'
 
@@ -259,12 +253,7 @@ def test_read_pidfile_failure():
     '''
     Test a pidfile that does not exist
     '''
-    if six.PY3:
-        open_name = 'builtins.open'
-    else:
-        open_name = '__builtin__.open'
-
-    with patch(open_name, create=True) as mock_open:
+    with patch('builtins.open', create=True) as mock_open:
         mock_open.side_effect = IOError
         assert util.read_pidfile() is None
 
