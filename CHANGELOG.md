@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.7.2.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.2.2) (2026-02-05)
+
+- chore(setup): remove six from the dependencies ([PR 4719](https://github.com/RedHatInsights/insights-core/pull/4719))
+- fix(test): add filter for spec strings_shimx64_efi ([PR 4721](https://github.com/RedHatInsights/insights-core/pull/4721))
+- chore: drop python2 support from insights-client ([PR 4707](https://github.com/RedHatInsights/insights-core/pull/4707))
+
 # [insights-core-3.7.2.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.2.1) (2026-02-03)
 
 - spec: stop collecting tuned_adm on RHEL 9 when SELinux enabled ([PR 4711](https://github.com/RedHatInsights/insights-core/pull/4711))

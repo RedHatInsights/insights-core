@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.2.1
+Version:        3.7.2.2
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -122,6 +122,14 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Feb 05 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.2.2-1
+- chore(setup): remove six from the dependencies (#4719)
+  (xiangceliu@redhat.com)
+- fix(test): add filter for spec strings_shimx64_efi (#4721)
+  (zhangqianqian@users.noreply.github.com)
+- chore: drop python2 support from insights-client (#4707)
+  (pschrimp@redhat.com)
+
 * Tue Feb 03 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.2.1-1
 - spec: stop collecting tuned_adm on RHEL 9 when SELinux enabled (#4711)
   (xiangceliu@redhat.com)
