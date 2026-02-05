@@ -48,6 +48,16 @@ class InvalidArchive(Exception):
         self.msg = msg
 
 
+class ContextException(Exception):
+    """
+    Raised when execution context cannot be identified or missing expected context.
+    """
+
+    def __init__(self, msg):
+        super(ContextException, self).__init__(msg)
+        self.msg = msg
+
+
 class InvalidContentType(InvalidArchive):
     """
     Raised when invalid content_type is specified.

@@ -1,6 +1,9 @@
 import logging
 import os
+
+from collections import OrderedDict
 from contextlib import contextmanager
+
 from insights.util import streams, subproc
 
 log = logging.getLogger(__name__)
@@ -153,6 +156,20 @@ class ExecutionContextMeta(type):
             if ctx is not None:
                 return (root, ctx)
         return (None, None)
+
+    @classmethod
+    def identify_all(cls, files):
+        """
+        Different with ``identify`` which returns the first ExecutionContext
+        immediately once identified, this ``identify_all`` returns all the
+        ExecutionContext identified in the given ``files`` in order.
+        """
+        ctxs = OrderedDict()
+        for e in reversed(cls.registry):
+            root, ctx = e.handles(files)
+            if ctx is not None:
+                ctxs[root] = ctx
+        return ctxs
 
 
 class ExecutionContext(object, metaclass=ExecutionContextMeta):
