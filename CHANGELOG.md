@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.7.2.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.2.1) (2026-02-03)
+
+- spec: stop collecting tuned_adm on RHEL 9 when SELinux enabled ([PR 4711](https://github.com/RedHatInsights/insights-core/pull/4711))
+- chore(spec): remove cmd path added to support old RHEL ([PR 4718](https://github.com/RedHatInsights/insights-core/pull/4718))
+- spec: don't collect ansible_telemetry when SELinux is enabled ([PR 4712](https://github.com/RedHatInsights/insights-core/pull/4712))
+- fix(manifest): add SELinuxDisable to configs of default manifest ([PR 4713](https://github.com/RedHatInsights/insights-core/pull/4713))
+- chore(component): update and add new selinux components ([PR 4709](https://github.com/RedHatInsights/insights-core/pull/4709))
+- chore(parser): refine the SEStatus parser ([PR 4706](https://github.com/RedHatInsights/insights-core/pull/4706))
+- spec: add ansible_telemetry to collection ([PR 4700](https://github.com/RedHatInsights/insights-core/pull/4700))
+- fix: update the help message to -S/--show-rules option ([PR 4702](https://github.com/RedHatInsights/insights-core/pull/4702))
+
 # [insights-core-3.7.1.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.1.2) (2026-01-16)
 
 - fix: traceback info in metadata JSON of filterable specs ([PR 4694](https://github.com/RedHatInsights/insights-core/pull/4694))

@@ -1,6 +1,5 @@
 import logging
 
-import six
 from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.comments import (
     CommentedMap,
     CommentedSeq,
@@ -31,7 +30,7 @@ class PlaybookSerializer:
             return cls._list(value)
         if isinstance(value, int) or isinstance(value, float):
             return str(value)
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             return cls._str(value)
 
         logger.debug("Value type not recognized, it may misbehave: {value} ({typ})".format(

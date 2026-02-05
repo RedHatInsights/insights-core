@@ -7,14 +7,10 @@ import pkgutil
 import sys
 import tempfile
 
-import six
-
 import insights.client.apps.ansible
 from insights.client.apps.ansible.playbook_verifier.serializer import PlaybookSerializer
 from insights.client.apps.ansible.playbook_verifier.contrib import gnupg
 from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel import yaml
-from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.comments import CommentedMap, CommentedSeq
-from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.scalarint import ScalarInt
 from insights.client.constants import InsightsConstants as constants
 
 
@@ -65,48 +61,6 @@ def load_playbook_yaml(playbook):
         raise PlaybookVerificationError("Could not load the playbook.")
 
 
-def normalize_play_py2(play):
-    """In Python 2, get rid of any default unicode values.
-
-    :param play: The Ansible play.
-    :type play: dict | yaml.comments.CommentedMap
-
-    :returns: Play with Unicode characters removed.
-    :rtype: CommentedMap
-    """
-    result = CommentedMap()
-    for key, value in play.iteritems():
-        if isinstance(value, CommentedMap):
-            result[key] = CommentedMap(normalize_play_py2(value))
-            continue
-
-        if isinstance(value, CommentedSeq):
-            new_sequence = CommentedSeq()
-            for item in value:
-                if isinstance(item, six.text_type):
-                    new_sequence.append(item.encode('ascii', 'ignore'))
-                    continue
-                if isinstance(item, CommentedMap):
-                    new_sequence.append(normalize_play_py2(item))
-                    continue
-                new_sequence.append(item)
-
-            result[key] = new_sequence
-            continue
-
-        if isinstance(value, six.text_type):
-            result[key] = value.encode('ascii', 'ignore')
-            continue
-
-        if isinstance(value, ScalarInt):
-            result[key] = int(value)
-            continue
-
-        result[key] = value
-
-    return result
-
-
 def serialize_play(play):
     """Convert the play object to bytes.
 
@@ -115,8 +69,6 @@ def serialize_play(play):
     :returns: Serialized play.
     :rtype: bytes
     """
-    if six.PY2:
-        return str(normalize_play_py2(play)).encode("utf-8")
     if sys.version_info < (3, 12):
         return str(play).encode("utf-8")
     return PlaybookSerializer.serialize(play).encode("utf-8")

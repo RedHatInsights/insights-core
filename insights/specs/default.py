@@ -23,7 +23,7 @@ from insights.components.satellite import (
     IsSatellite614AndLater,
     IsSatelliteLessThan614,
 )
-from insights.components.selinux import SELinuxEnabled
+from insights.components.selinux import SELinuxEnabled, SELinuxDisabled
 from insights.components.virtualization import IsBareMetal
 from insights.core.context import HostContext
 from insights.core.spec_factory import (
@@ -125,8 +125,9 @@ class DefaultSpecs(Specs):
     ansible_telemetry = simple_command(
         "/usr/bin/env python3 /usr/share/ansible/telemetry/telemetry.py",
         save_as="ansible_telemetry",
+        deps=[SELinuxDisabled],
         keep_rc=True,
-    )
+    )  # Collect it only when SELinux is disabled. RHEL-145269, RHEL-145268
     audit_log = simple_file("/var/log/audit/audit.log")
     auditctl_rules = simple_command("/sbin/auditctl -l")
     auditctl_status = simple_command("/sbin/auditctl -s")
@@ -331,12 +332,7 @@ class DefaultSpecs(Specs):
     flatpak_list = simple_command("/usr/bin/flatpak list")
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     fstab = simple_file("/etc/fstab")
-    fw_security = first_of(
-        [
-            simple_command("/usr/bin/fwupdmgr security --force --json", deps=[IsBareMetal]),
-            simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal]),
-        ]
-    )
+    fw_security = simple_command("/usr/bin/fwupdmgr security --force --json", deps=[IsBareMetal])
     galera_cnf = first_file(
         [
             "/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf",
@@ -514,7 +510,7 @@ class DefaultSpecs(Specs):
     lscpu = simple_command("/usr/bin/lscpu")
     lsinitrd_kdump_image = command_with_args("/usr/bin/lsinitrd -k %skdump", kernel.current_version)
     lsmod = simple_command("/sbin/lsmod")
-    lsof = first_of([simple_command("/usr/bin/lsof"), simple_command("/usr/sbin/lsof")])
+    lsof = simple_command("/usr/bin/lsof")
     lspci = simple_command("/sbin/lspci -k")
     lspci_vmmkn = simple_command("/sbin/lspci -vmmkn")
     luksmeta = foreach_execute(
@@ -962,14 +958,14 @@ class DefaultSpecs(Specs):
         "/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +"
     )
     tty_console_active = simple_file("sys/class/tty/console/active")
-    tuned_adm = simple_command("/usr/sbin/tuned-adm list")
+    tuned_adm = simple_command(
+        "/usr/sbin/tuned-adm list", deps=[[IsGtRhel9, SELinuxDisabled]]
+    )  # "RHEL 10 and newer" OR "selinux is disabled". RHEL-142141
     udev_66_md_rules = first_file(
         ["/etc/udev/rules.d/66-md-auto-readd.rules", "/usr/lib/udev/rules.d/66-md-auto-readd.rules"]
     )
     udev_fc_wwpn_id_rules = simple_file("/usr/lib/udev/rules.d/59-fc-wwpn-id.rules")
-    uname = first_of(
-        [simple_command("/usr/bin/uname -a"), simple_command("/bin/uname -a")]  # RHEL 6
-    )
+    uname = simple_command("/usr/bin/uname -a")
     up2date = simple_file("/etc/sysconfig/rhn/up2date")
     up2date_log = simple_file("/var/log/up2date")
     uptime = simple_command("/usr/bin/uptime")

@@ -210,11 +210,17 @@ plugins:
       enabled: true
 
     # needed for spec: sealert
+    - name: insights.parsers.sestatus.SEStatus
+      enabled: true
     - name: insights.parsers.selinux_config.SelinuxConfig
       enabled: true
     - name: insights.components.selinux.SELinuxEnabled
       enabled: true
     - name: insights.components.rhel_version.IsGtRhel9
+      enabled: true
+
+    # needed for spec: tuned_adm and ansible_telemetry
+    - name: insights.components.selinux.SELinuxDisabled
       enabled: true
 
     # needed for 'fstab_mounted.dirs' to 'ls_lan', 'fstab_mounted.devices' to 'ls_lH_files'

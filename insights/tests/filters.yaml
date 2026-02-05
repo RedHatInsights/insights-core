@@ -407,6 +407,8 @@ insights.specs.Specs.sshd_test_mode:
   permitemptypasswords: 10
 insights.specs.Specs.sssd_logs:
   WARNING: 1
+insights.specs.Specs.strings_shimx64_efi:
+  'Secure Boot': 5
 insights.specs.Specs.subscription_manager_facts:
   instance_id: 10
 insights.specs.Specs.subscription_manager_installed_product_ids:

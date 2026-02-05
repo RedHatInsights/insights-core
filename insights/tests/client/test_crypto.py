@@ -98,7 +98,7 @@ def _initialize_gpg_environment(home):
         f.write(GPG_PUBLIC_KEY)
     # It is strictly not necessary to import both public and private keys,
     #  the private key should be enough.
-    #  However, the Python 2.6 CI image requires that.
+
     process = subprocess.Popen(
         ["/usr/bin/gpg", "--homedir", home, "--import", public_key],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
