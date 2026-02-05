@@ -24,7 +24,6 @@ entry_points = {
 
 runtime = set(
     [
-        'six',
         'requests',
         'redis',
         'rpm',
