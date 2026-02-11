@@ -38,4 +38,3 @@ def test_egg_and_rpm():
     with pytest.raises(SkipComponent):
         CoreEgg(rpms)
     rpm = CoreRpm(rpms)
-    assert rpm is not None

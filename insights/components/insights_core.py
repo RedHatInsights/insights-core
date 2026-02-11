@@ -2,11 +2,19 @@
 Insights Core related Components
 ================================
 
+<<<<<<< HEAD
 CoreEgg - If collector is based on Egg
 --------------------------------------
 
 CoreRpm - If collector is based on Rpm
 --------------------------------------
+=======
+Egg - If collector is based on Egg
+----------------------------------
+
+Rpm - If collector is based on Rpm
+----------------------------------
+>>>>>>> fa0afe9c (feat: add components Egg/Rpm to identify the current collector)
 """
 
 from insights.core.exceptions import SkipComponent
