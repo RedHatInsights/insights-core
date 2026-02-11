@@ -873,6 +873,7 @@ class DefaultSpecs(Specs):
     sshd_test_mode = simple_command("/usr/sbin/sshd -T")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     sssd_conf_d = glob_file("/etc/sssd/conf.d/*.conf")
+    strings_shimx64_efi = simple_command('/bin/strings /boot/efi/EFI/redhat/shimx64.efi')
     subscription_manager_facts = simple_command(
         "/usr/sbin/subscription-manager facts",
         override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"},
