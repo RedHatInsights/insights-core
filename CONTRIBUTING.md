@@ -190,32 +190,6 @@ should be carefully documented.  They should be able to use generated
 documentation to understand, for example, the data models exposed by
 parser classes.
 
-### RPM/Egg Delivery
-
-From RHEL 9.8/10.2, it's decided by Insights BU that the insights-core
-will be delivered with RPM to the customer.  For RHEL version older than
-RHEL 9.8/10.2, the Egg delivery is still supported.  For more detials
-see [T.B.D](https://console.redhat.com/).
-To achieve this goal and for maintenance convenience, starting
-from [insights-core-3.6.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.6.6):
-- The master branch is used for both Insights Engine and RPM delivery
-  RPM related updates should go to the master branch only
-- A new [3.0_egg](https://github.com/RedHatInsights/insights-core/tree/3.0_egg) branch is created for Egg delivery based on the master branch
-  Egg related updates should go to the `3.0_egg` branch only
-- The [3.0](https://github.com/RedHatInsights/insights-core/tree/3.0) branch will be frozen and read-only.
-- To keep backward compatibility for Egg delivery, all core related updates
-  (framework, data processing, data collection) should be backported to the
-  `3.0_egg` branch after the PR is reviewed and before it's merged.
-  Below is suggested backport steps:
-
-        git checkout <branch_of_the_existing_PR>
-        BRANCH_NM=$(git rev-parse --abbrev-ref HEAD)  # branch name
-        COMMIT_ID=$(git rev-parse --short HEAD)       # commit-id
-        git fetch upstream 3.0_egg
-        git checkout -b ${BRANCH_NM}_egg upstream/3.0_egg
-        git cherry-pick -x ${COMMIT_ID}               # NOTE "-x" is recommended
-        git push origin ${BRANCH_NM}_egg
-
 
 ## Review Checklist
 
