@@ -547,6 +547,7 @@ class DefaultSpecs(Specs):
     messages = simple_file("/var/log/messages")
     modinfo_filtered_modules = command_with_args('modinfo %s', kernel.kernel_module_filters)
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
+    mokutil_db_short = simple_command("/bin/mokutil --db --short")
     mokutil_list_enrolled = simple_command("/bin/mokutil --list-enrolled", keep_rc=True)
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
     mount = simple_command("/bin/mount")
@@ -865,6 +866,7 @@ class DefaultSpecs(Specs):
     sshd_test_mode = simple_command("/usr/sbin/sshd -T")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     sssd_conf_d = glob_file("/etc/sssd/conf.d/*.conf")
+    strings_shimx64_efi = simple_command('/bin/strings /boot/efi/EFI/redhat/shimx64.efi')
     subscription_manager_facts = simple_command(
         "/usr/sbin/subscription-manager facts",
         override_env={"LC_ALL": "C.UTF-8", "LANG": "C.UTF-8"},
