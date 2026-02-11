@@ -6,8 +6,6 @@ Check all that apply:
 * [ ] No Sensitive Data in this change?
 * [ ] Is this PR to correct an issue?
 * [ ] Is this PR an enhancement?
-* [ ] Need backport to `3.0_egg`? Yes, refer to [RPM/Egg Delivery](https://github.com/RedHatInsights/insights-core/blob/master/CONTRIBUTING.md#rpmegg-delivery) to open a new PR.
-* [ ] Is this a backport from `master`? Yes, this is a backport of #PR-ID
 <!--
 Replace the "PR-ID", if this PR needs to be backported from the master branch.
 -->
