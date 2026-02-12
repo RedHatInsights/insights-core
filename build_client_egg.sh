@@ -17,7 +17,7 @@ fi
 
 rm -f insights.zip
 rm -rf insights_core.egg-info
-cp MANIFEST.in.client MANIFEST.in
+cp MANIFEST.in.client.egg MANIFEST.in
 # use the insights/tests/filters.yaml for testing
 if [ "$TARGET" == "testing" ]; then
     cp -f insights/tests/filters.yaml insights/filters.yaml
