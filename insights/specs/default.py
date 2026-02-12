@@ -679,6 +679,7 @@ class DefaultSpecs(Specs):
         "/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv"
     )
     podman_list_containers = simple_command("/usr/bin/podman ps --all --no-trunc")
+    podman_system_info = simple_command("/usr/bin/podman system info --format=json")
     postconf = simple_command("/usr/sbin/postconf")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postfix_master = simple_file("/etc/postfix/master.cf")
