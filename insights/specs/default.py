@@ -107,6 +107,7 @@ class DefaultSpecs(Specs):
     blacklisted_specs = client_metadata.blacklisted_specs
     branch_info = client_metadata.branch_info
     display_name = client_metadata.display_name
+    egg_release = client_metadata.egg_release  # Egg only
     tags = client_metadata.tags
     version_info = client_metadata.version_info
 
