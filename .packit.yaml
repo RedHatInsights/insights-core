@@ -9,7 +9,7 @@ actions:
     - sed -i -e '/insights-.*=/d' -e '/mangle =/d' pyproject.toml setup.py
     - sed -i -e 's/^.*$/99.dev/' insights/RELEASE
     - cp insights/tests/filters.yaml insights/filters.yaml
-    - cp MANIFEST.in.client MANIFEST.in
+    - cp MANIFEST.in.client.rpm MANIFEST.in
   get-current-version:
     - awk '/^Version:/ {print $2;}' insights-core.spec
   create-archive:
