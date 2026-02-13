@@ -1,9 +1,9 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ContentException, ParseException, SkipComponent
+from insights.core.exceptions import ContentException, ParseException
 from insights.parsers import awx_manage
-from insights.parsers.awx_manage import AnsibleTowerLicenseType, AnsibleTowerLicense, AwxManagePrintSettings
+from insights.parsers.awx_manage import AnsibleTowerLicense, AwxManagePrintSettings
 from insights.tests import context_wrap
 from insights.tests.parsers import skip_component_check
 
@@ -45,24 +45,6 @@ AWX_MANAGE_PRINT_SETTINGS = '''
 '''.strip()
 
 
-def test_ansible_tower_license_type():
-    ret = AnsibleTowerLicenseType(context_wrap(NO_LICENSE))
-    assert ret.type == 'none'
-    ret = AnsibleTowerLicenseType(context_wrap(GOOD_LICENSE))
-    assert ret.type == 'enterprise'
-
-
-def test_ansible_tower_license_ab_type():
-    with pytest.raises(SkipComponent):
-        AnsibleTowerLicenseType(context_wrap(NG_COMMAND_0))
-
-    with pytest.raises(ContentException):
-        AnsibleTowerLicenseType(context_wrap(NG_COMMAND_1))
-
-    with pytest.raises(ParseException):
-        AnsibleTowerLicenseType(context_wrap(NG_COMMAND_2))
-
-
 def test_ansible_tower_license_data():
     ret = AnsibleTowerLicense(context_wrap(AWX_MANAGE_LICENSE))
     assert ret.get("license_type") == 'enterprise'
@@ -94,9 +76,8 @@ def test_awx_manage_print_settings():
 
 def test_awx_manage_doc_examples():
     env = {
-        'awx_license': AnsibleTowerLicenseType(context_wrap(GOOD_LICENSE)),
         'awx_manage_license': AnsibleTowerLicense(context_wrap(AWX_MANAGE_LICENSE)),
-        'settings': AwxManagePrintSettings(context_wrap(AWX_MANAGE_PRINT_SETTINGS))
+        'settings': AwxManagePrintSettings(context_wrap(AWX_MANAGE_PRINT_SETTINGS)),
     }
     failed, total = doctest.testmod(awx_manage, globs=env)
     assert failed == 0

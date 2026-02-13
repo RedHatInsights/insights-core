@@ -2,7 +2,7 @@
 import doctest
 
 from insights.parsers import ls as ls_module
-from insights.parsers.ls import FileListing, LSlan, LSlHFiles, FileListingNoHeader
+from insights.parsers.ls import FileListing, LSlan, FileListingNoHeader
 from insights.tests import context_wrap
 
 SINGLE_DIRECTORY = """
@@ -448,7 +448,6 @@ def test_files_created_with_selinux_disabled():
 def test_doc_example():
     env = {
         'ls_lan': LSlan(context_wrap(FILE_LISTING_DOC)),
-        'ls_files': LSlHFiles(context_wrap(LS_FILE_PERMISSIONS_DOC)),
         'ls_files_no_header': FileListingNoHeader(context_wrap(LS_FILE_NO_HEADER_DOC)),
     }
     failed, total = doctest.testmod(ls_module, globs=env)
