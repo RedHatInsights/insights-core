@@ -547,6 +547,7 @@ class DefaultSpecs(Specs):
     messages = simple_file("/var/log/messages")
     modinfo_filtered_modules = command_with_args('modinfo %s', kernel.kernel_module_filters)
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
+    modules_load_d = glob_file("/etc/modules-load.d/*.conf")
     mokutil_db_short = simple_command("/bin/mokutil --db --short")
     mokutil_list_enrolled = simple_command("/bin/mokutil --list-enrolled", keep_rc=True)
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
