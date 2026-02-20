@@ -16,6 +16,7 @@ import signal
 # - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
+from insights.components.insights_core import CoreEgg, CoreRpm
 from insights.components.rhel_version import IsGtOrRhel84, IsGtRhel9
 from insights.components.satellite import (
     IsSatellite,
@@ -135,8 +136,9 @@ class DefaultSpecs(Specs):
     audispd_conf = simple_file("/etc/audisp/audispd.conf")
     ausearch_insights = simple_command(
         "/usr/sbin/ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts recent",
+        deps=[SELinuxEnabled, CoreRpm],
         keep_rc=True,
-    )
+    )  # SELinux is Enabled AND collect with RPM.
     aws_instance_id_doc = command_with_args(
         '/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5',
         aws.aws_imdsv2_token,
@@ -840,7 +842,9 @@ class DefaultSpecs(Specs):
     sctp_asc = simple_file('/proc/net/sctp/assocs')
     sctp_eps = simple_file('/proc/net/sctp/eps')
     sctp_snmp = simple_file('/proc/net/sctp/snmp')
-    sealert = simple_command('/usr/bin/sealert -l "*"', deps=[IsGtRhel9, SELinuxEnabled])
+    sealert = simple_command(
+        '/usr/bin/sealert -l "*"', deps=[IsGtRhel9, SELinuxEnabled, CoreRpm]
+    )  # Newer than RHEL 9 AND SELinux is Enabled AND collect with RPM.
     secure = simple_file("/var/log/secure")
     securetty = simple_file("/etc/securetty")
     selinux_config = simple_file("/etc/selinux/config")
@@ -962,8 +966,8 @@ class DefaultSpecs(Specs):
     )
     tty_console_active = simple_file("sys/class/tty/console/active")
     tuned_adm = simple_command(
-        "/usr/sbin/tuned-adm list", deps=[[IsGtRhel9, SELinuxDisabled]]
-    )  # "RHEL 10 and newer" OR "selinux is disabled". RHEL-142141
+        "/usr/sbin/tuned-adm list", deps=[[IsGtRhel9, SELinuxDisabled, CoreEgg]]
+    )  # Newer than RHEL 9 OR SELinux is disabled OR collect with Egg. RHEL-142141
     udev_66_md_rules = first_file(
         ["/etc/udev/rules.d/66-md-auto-readd.rules", "/usr/lib/udev/rules.d/66-md-auto-readd.rules"]
     )
