@@ -937,11 +937,13 @@ class DefaultSpecs(Specs):
         ]
     )  # XML
     teamdctl_config_dump = foreach_execute(
-        ethernet.team_interfaces, "/usr/bin/teamdctl %s config dump"
-    )
+        ethernet.team_interfaces, "/usr/bin/teamdctl %s config dump",
+        deps=[SELinuxDisabled],
+    )  # RHEL-150529
     teamdctl_state_dump = foreach_execute(
-        ethernet.team_interfaces, "/usr/bin/teamdctl %s state dump"
-    )
+        ethernet.team_interfaces, "/usr/bin/teamdctl %s state dump",
+        deps=[SELinuxDisabled],
+    )  # RHEL-150529
     testparm_s = simple_command("/usr/bin/testparm -s")
     testparm_v_s = simple_command("/usr/bin/testparm -v -s")
     thp_enabled = simple_file("/sys/kernel/mm/transparent_hugepage/enabled")
