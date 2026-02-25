@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.7.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.4) (2026-02-25)
+
+- Revert "fix: handle no account_number in response data (4687)" ([PR 4736](https://github.com/RedHatInsights/insights-core/pull/4736))
+
+# [insights-core-3.7.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.3) (2026-02-20)
+
+- fix: don't collect teamd specs when SELinux is enabled ([PR 4734](https://github.com/RedHatInsights/insights-core/pull/4734))
+- chore(build): add build_client_egg script back to master ([PR 4722](https://github.com/RedHatInsights/insights-core/pull/4722))
+
 # [insights-core-3.7.2.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.2.2) (2026-02-05)
 
 - chore(setup): remove six from the dependencies ([PR 4719](https://github.com/RedHatInsights/insights-core/pull/4719))

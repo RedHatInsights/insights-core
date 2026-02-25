@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.3
+Version:        3.7.4
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -122,6 +122,10 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Feb 26 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.4-1
+- Revert "fix: handle no account_number in response data (#4687)" (#4736)
+  (xiangceliu@redhat.com)
+
 * Fri Feb 20 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.3-1
 - fix: don't collect teamd specs when SELinux is enabled (#4734)
   (xiangceliu@redhat.com)
