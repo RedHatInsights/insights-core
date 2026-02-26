@@ -22,7 +22,6 @@ from insights.core.exceptions import (
 from insights.core.serde import deserializer, serializer
 from insights.parsr import iniparser
 from insights.parsr.query import Directive, Entry, Result, Section, compile_queries
-from insights.util import deprecated
 
 try:
     from yaml import CSafeLoader as SafeLoader
@@ -913,7 +912,6 @@ class Scannable(six.with_metaclass(ScanMeta, Parser)):
     """
 
     def __init__(self, *args, **kwargs):
-        deprecated(Scannable, "Please use the :class:`insights.core.Parser` instead.", "3.3.0")
         super(Scannable, self).__init__(*args, **kwargs)
 
     @classmethod
@@ -1052,12 +1050,8 @@ class TextFileOutput(six.with_metaclass(ScanMeta, Parser)):
         """
         Parse the line into a dictionary and return it. Only wrap with
         `raw_line` by default.
-
-        .. warning::
-            The key `raw_message` is deprecated and will be removed from
-            version `3.7.0`
         """
-        return {'raw_line': line, 'raw_message': line}
+        return {'raw_line': line}
 
     def _valid_search(self, s, check=all):
         """
@@ -1406,77 +1400,6 @@ class LogFileOutput(TextFileOutput):
                 # If we're including lines, add this continuation line
                 if including_lines:
                     yield self._parse_line(line)
-
-
-class LazyLogFileOutput(LogFileOutput):
-    """
-    Another class for parsing log file content. Doesn't like the LogFileOutput,
-    this LazyLogFileOutput doesn't load the content during initialization.
-    Its content will be loaded later whenever the parser instance being used.
-    It's useful for the cases where need to load thousands of files that
-    belong to one single Spec in one pass of running.
-    If any "scan" functions are pre-defined with it, to ensure the "scan"
-    results being available, the `do_scan` method should be called explicitly
-    before using them.
-    Other than the lazy content loading feature, it's the same as its base
-    LogFileOutput.
-
-    Examples:
-        >>> class LzayLogOne(LazyLogFileOutput):
-        >>> LazyLogOne.keep_scan('get_one', 'one')
-        >>> LazyLogOne.last_scan('last_match', 'file')
-        >>> LazyLogOne.token_scan('find_it', 'more')
-        >>> my_log1 = LazyLogOne(context_wrap(contents, path='/var/log/log1'))
-        >>> hasattr(my_log1, 'get_one')
-        False
-        >>> hasattr(my_log1, 'last_match')
-        False
-        >>> hasattr(my_log1, 'find_id')
-        False
-        >>> my_log1.do_scan('get_one')
-        >>> my_log1.get_one
-        [{'raw_line': 'Text file line one'}]
-        >>> my_log1.do_scan()
-        >>> hasattr(my_log1, 'last_match')
-        True
-        >>> hasattr(my_log1, 'find_id')
-        True
-        >>> my_log2 = LazyLogOne(context_wrap(contents, path='/var/log/log2'))
-        >>> my_log2.get(['three', 'more'])
-        [{'raw_line': 'Text file line three, and more'}]
-    """
-
-    def __init__(self, *args, **kwargs):
-        deprecated(LazyLogFileOutput, "Use LogFileOutput instead.", "3.7.0")
-        super(LazyLogFileOutput, self).__init__(*args, **kwargs)
-
-    def _handle_content(self, context):
-        self._lines = None
-        self._context = context
-        self._scanned = set()
-
-    def do_scan(self, result_key=None):
-        """
-        Do the actual scanning operations as per the specified `result_key`.
-        When `result_key` is not specified, all registered scanners will be
-        executed.  Each registered scanner can only be executed once.
-        """
-        if result_key:
-            if result_key not in self._scanned and result_key in self.scanners:
-                self.scanners[result_key](self)
-                self._scanned.add(result_key)
-        else:
-            for key, scanner in self.scanners.items():
-                if key not in self._scanned:
-                    self._scanned.add(key)
-                    scanner(self)
-
-    @property
-    def lines(self):
-        if self._lines is None:
-            # one-shot load all content lines here
-            self._lines = self._context.content
-        return self._lines
 
 
 class Syslog(LogFileOutput):
