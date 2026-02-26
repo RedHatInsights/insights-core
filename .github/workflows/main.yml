@@ -2,9 +2,9 @@ name: Insights Core Test
 
 on:
   push:
-    branches: [ "3.0_egg" ]
+    branches: [ "el7_egg" ]
   pull_request:
-    branches: [ "3.0_egg" ]
+    branches: [ "el7_egg" ]
 
 jobs:
   code-test:
@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-versions: ["3.9", "3.11", "3.12"]
+        python-versions: ["3.9", "3.11"]
 
     steps:
     - uses: actions/checkout@v4
