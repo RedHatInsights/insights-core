@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.7.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.4) (2026-02-26)
+
+- fix(ci/cd): update el7's ci/cd for el7_egg branch ([PR 4738](https://github.com/RedHatInsights/insights-core/pull/4738))
+- Revert "fix: handle no account_number in response data (4687)" (#4736)
+- feat: New spec "strings /boot/efi/EFI/redhat/shimx64.efi" and its parser ([PR 4717](https://github.com/RedHatInsights/insights-core/pull/4717))
+- feat: New spec "/bin/mokutil --db --short" and the parser ([PR 4716](https://github.com/RedHatInsights/insights-core/pull/4716))
+- fix(manifest): add SELinuxDisable to configs of default manifest ([PR 4714](https://github.com/RedHatInsights/insights-core/pull/4714))
+- chore(component): update and add new selinux components ([PR 4710](https://github.com/RedHatInsights/insights-core/pull/4710))
+- chore(parser): refine the SEStatus parser ([PR 4708](https://github.com/RedHatInsights/insights-core/pull/4708))
+
 # [insights-core-3.7.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.2) (2026-01-29)
 
 - spec: add ansible_telemetry to collection ([PR 4701](https://github.com/RedHatInsights/insights-core/pull/4701))
