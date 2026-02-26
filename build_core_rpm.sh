@@ -34,7 +34,7 @@ elif [ "$TARGET" == "release" ] || [ "$TARGET" == "testing" ]; then
         echo "Building insights-core RPM for testing with insights-client."
         BUILDTARGET="with_selinux 0"
     fi
-    MANIFEST="MANIFEST.in.client"
+    MANIFEST="MANIFEST.in.client.rpm"
     # - remove depedencies for data processing
     sed -i -e '/cachecontrol/d' -e '/defusedxml/d' -e '/jinja2/d' -e '/lockfile/d' -e '/redis/d' -e '/setuptools;/d' pyproject.toml setup.py
     # - remove entrypoints for data processing

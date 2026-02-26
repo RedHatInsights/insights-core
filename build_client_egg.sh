@@ -17,7 +17,7 @@ fi
 
 rm -f insights.zip
 rm -rf insights_core.egg-info
-cp MANIFEST.in.client MANIFEST.in
+cp MANIFEST.in.client.egg MANIFEST.in
 $PYTHON setup.py egg_info
 mkdir -p tmp/EGG-INFO
 cp insights_core.egg-info/* tmp/EGG-INFO

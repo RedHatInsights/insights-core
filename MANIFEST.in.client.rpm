@@ -1,0 +1,17 @@
+graft insights/client
+include LICENSE
+include NOTICE
+include insights/COMMIT
+include insights/NAME
+include insights/RELEASE
+include insights/VERSION
+include insights/compliance_obfuscations.yaml
+include insights/defaults.yaml
+include insights/filters.yaml
+prune examples
+prune insights/client/apps
+prune insights/parsr/examples/tests
+prune insights/parsr/query/tests
+prune insights/parsr/tests
+prune insights/plugins
+prune insights/tests
