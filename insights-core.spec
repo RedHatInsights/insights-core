@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.2
+Version:        3.7.4
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,32 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Feb 26 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.4-1
+- Revert "fix: handle no account_number in response data (#4687)" (#4736)
+  (xiangceliu@redhat.com)
+- feat: New spec "strings /boot/efi/EFI/redhat/shimx64.efi" and its parser
+  (#4717) (44796653+huali027@users.noreply.github.com)
+- feat: New spec "/bin/mokutil --db --short" and the parser (#4716)
+  (44796653+huali027@users.noreply.github.com)
+- fix(manifest): add SELinuxDisable to configs of default manifest (#4714)
+  (xiangceliu@redhat.com)
+- chore(component): update and add new selinux components (#4710)
+  (xiangceliu@redhat.com)
+- chore(parser): refine the SEStatus parser (#4708) (xiangceliu@redhat.com)
+
+* Thu Feb 26 2026 Xiangce Liu <xiangceliu@redhat.com>
+- Revert "fix: handle no account_number in response data (#4687)" (#4736)
+  (xiangceliu@redhat.com)
+- feat: New spec "strings /boot/efi/EFI/redhat/shimx64.efi" and its parser
+  (#4717) (44796653+huali027@users.noreply.github.com)
+- feat: New spec "/bin/mokutil --db --short" and the parser (#4716)
+  (44796653+huali027@users.noreply.github.com)
+- fix(manifest): add SELinuxDisable to configs of default manifest (#4714)
+  (xiangceliu@redhat.com)
+- chore(component): update and add new selinux components (#4710)
+  (xiangceliu@redhat.com)
+- chore(parser): refine the SEStatus parser (#4708) (xiangceliu@redhat.com)
+
 * Thu Jan 29 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.2-1
 - spec: add ansible_telemetry to collection (#4701) (xiangceliu@redhat.com)
 - fix: update the help message to -S/--show-rules option (#4703)
