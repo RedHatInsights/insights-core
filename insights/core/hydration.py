@@ -46,9 +46,9 @@ def _identify_fallback(files):
 
 
 def identify(files):
-    common_path, ctx = ExecutionContextMeta.identify(files)
-    if ctx:
-        return common_path, ctx
+    common_path, context= ExecutionContextMeta.identify(files)
+    if context:
+        return common_path, context
 
     return _identify_fallback(files)
 
@@ -99,8 +99,8 @@ def _create_autodetected_context(path, all_files):
         return ctx
 
     # use standard auto-detection (falls back to HostArchiveContext if nothing else is detected)
-    common_path, ctx = identify(all_files)
-    return ctx(common_path, all_files=all_files)
+    common_path, context = identify(all_files)
+    return context(common_path, all_files=all_files)
 
 
 def create_context(path, context=None):
