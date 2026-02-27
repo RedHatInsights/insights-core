@@ -46,7 +46,7 @@ def _identify_fallback(files):
 
 
 def identify(files):
-    common_path, context= ExecutionContextMeta.identify(files)
+    common_path, context = ExecutionContextMeta.identify(files)
     if context:
         return common_path, context
 
