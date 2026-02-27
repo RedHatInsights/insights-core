@@ -250,6 +250,8 @@ TEST_CASES_USER_DEFINED_NOT_FOUND = [
         ],
     ],
     [
+        # Automatic detection would choose one of the present contexts, so applying the fallback
+        # mechanism does not make sense in this case.
         "HostArchiveContext, some other contexts",
         HostArchiveContext,
         [
@@ -258,6 +260,13 @@ TEST_CASES_USER_DEFINED_NOT_FOUND = [
         ],
     ],
     [
+        # Automatic detection would choose HostArchiveContext in this case because of the fallback
+        # mechanism. At the time of writing, it is not clear what use case the fallback mechanism is
+        # for. It is not what users of the `--context` command line option would expect (e.g. users
+        # that work with OCP data). That is why we deviate from the automatic detection in this case
+        # and report an error instead of forcing the HostArchiveContext selection. If there is a use case
+        # for forcing an execution context even if the context cannot be initialized properly, it
+        # should be a feature that works for all execution contexts, not just HostArchiveContext.
         "HostArchiveContext, no other contexts",
         HostArchiveContext,
         [
