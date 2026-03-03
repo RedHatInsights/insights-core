@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.0.1-1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0.1-1) (2026-03-03)
+
+- fix(RHINENG-24334): rename "ls" related specs ([PR 4511](https://github.com/RedHatInsights/insights-core/pull/4511))
+
 # [insights-core-3.5.0-3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0-3) (2025-08-29)
 
 - fix: reduce the size of CalledProcessError exception ([PR 4528](https://github.com/RedHatInsights/insights-core/pull/4528))
