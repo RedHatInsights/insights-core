@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.0.2-1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0.2-1) (2026-03-03)
+
+- fix(RHINENG-24334): rename "ls" related specs ([PR 4511](https://github.com/RedHatInsights/insights-core/pull/4511))
+
 # [insights-core-3.5.0-3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0-3) (2025-08-29)
 
 - chore: do not collect ls_dev anymore in core collection ([PR 4453](https://github.com/RedHatInsights/insights-core/pull/4453))
