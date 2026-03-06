@@ -13,7 +13,6 @@ malware-detection - "--collector malware-detection"
 compliance - "--compliance"
 ---------------------------
 
-
 .. note::
     Define the manifest for the App and add to the manifests `dict` at the
     end of this file.
@@ -107,13 +106,7 @@ plugins:
       enabled: true
 
     # needed for identifying RHEL major version
-    - name: insights.components.rhel_version.IsRhel6
-      enabled: true
-    - name: insights.components.rhel_version.IsRhel7
-      enabled: true
-    - name: insights.components.rhel_version.IsRhel8
-      enabled: true
-    - name: insights.components.rhel_version.IsRhel9
+    - name: insights.components.rhel_version
       enabled: true
     - name: insights.components.rhel_version.IsGtRhel9
       enabled: true
@@ -125,11 +118,7 @@ plugins:
       enabled: true
     - name: insights.combiners.cloud_provider.CloudProvider
       enabled: true
-    - name: insights.components.cloud_provider.IsAWS
-      enabled: true
-    - name: insights.components.cloud_provider.IsAzure
-      enabled: true
-    - name: insights.components.cloud_provider.IsGCP
+    - name: insights.components.cloud_provider
       enabled: true
 
     # needed for ceph specs
@@ -179,15 +168,7 @@ plugins:
       enabled: true
     - name: insights.combiners.satellite_version.CapsuleVersion
       enabled: true
-    - name: insights.components.satellite.IsSatellite
-      enabled: true
-    - name: insights.components.satellite.IsSatellite614AndLater
-      enabled: true
-    - name: insights.components.satellite.IsSatelliteLessThan614
-      enabled: true
-    - name: insights.components.satellite.IsSatellite611
-      enabled: true
-    - name: insights.components.satellite.IsCapsule
+    - name: insights.components.satellite
       enabled: true
 
     # needed for container specs
@@ -200,19 +181,12 @@ plugins:
     #  'fstab_mounted.devices' to 'ls_lH_files''
     - name: insights.parsers.blkid.BlockIDInfo
       enabled: true
-    - name: insights.components.cryptsetup.HasCryptsetupWithTokens
-      enabled: true
-    - name: insights.components.cryptsetup.HasCryptsetupWithoutTokens
-      enabled: true
+    - name: insights.components.cryptsetup
 
     # needed for 'iris' specs
     - name: insights.parsers.iris.IrisList
       enabled: true
     - name: insights.parsers.iris.IrisCpf
-      enabled: true
-
-    # needed for spec: subscription_manager_syspurpose
-    - name: insights.components.rhel_version.IsGtOrRhel84
       enabled: true
 
     # needed for SELinux relevant specs
