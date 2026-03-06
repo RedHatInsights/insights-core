@@ -108,8 +108,6 @@ plugins:
     # needed for identifying RHEL major version
     - name: insights.components.rhel_version
       enabled: true
-    - name: insights.components.rhel_version.IsGtRhel9
-      enabled: true
 
     # needed for cloud specs
     - name: insights.parsers.yum.YumRepoList
@@ -164,9 +162,7 @@ plugins:
       enabled: true
 
     # needed for satellite server specs
-    - name: insights.combiners.satellite_version.SatelliteVersion
-      enabled: true
-    - name: insights.combiners.satellite_version.CapsuleVersion
+    - name: insights.combiners.satellite_version
       enabled: true
     - name: insights.components.satellite
       enabled: true
