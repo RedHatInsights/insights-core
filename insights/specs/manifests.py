@@ -101,6 +101,10 @@ plugins:
     - name: insights.parsers.mount.ProcMounts
       enabled: true
 
+    # needed for probing collector
+    - name: insights.components.insights_core
+      enabled: true
+
     # needed for identifying RHEL major version
     - name: insights.components.rhel_version
       enabled: true
