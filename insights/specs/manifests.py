@@ -104,6 +104,8 @@ plugins:
     # needed for identifying RHEL major version
     - name: insights.components.rhel_version
       enabled: true
+    - name: insights.components.rhel_version.IsGtRhel9
+      enabled: true
 
     # needed for cloud specs
     - name: insights.parsers.yum.YumRepoList
