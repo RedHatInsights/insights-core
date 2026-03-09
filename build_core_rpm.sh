@@ -47,13 +47,14 @@ fi
 rm -rf BUILD BUILDROOT RPMS SRPMS insights_core.egg-info
 if [ "$TARGET" == "testing" ]; then
     # For testing, release = $branch_name
-    # - e.g. x.y.z.1-$branch_name
+    # - e.g. x.y.z-$branch_name
     BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
     echo $BRANCH_NAME > insights/RELEASE
     sed -i -e "s/\(.\)%{?dist}/\1.${BRANCH_NAME}%{?dist}/g" insights-core.spec
+    cp -f insights/tests/filters.yaml insights/filters.yaml
 fi
 # Prepare the tarball
-# - dist/insights-core.x.y.z.1.tar.gz
+# - dist/insights-core.x.y.z.tar.gz
 git rev-parse --short HEAD > insights/COMMIT
 cp $MANIFEST MANIFEST.in
 # Build tarball in venv

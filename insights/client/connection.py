@@ -847,7 +847,7 @@ class InsightsConnection(object):
             try:
                 system_json = system.json()
                 machine_id = system_json["machine_id"]
-                account_number = system_json.get("account_number", 'undefined')
+                account_number = system_json["account_number"]
                 logger.info("You successfully registered %s to account %s." % (machine_id, account_number))
             except:
                 logger.debug('Received invalid JSON on system registration.')
