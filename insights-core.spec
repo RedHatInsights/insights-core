@@ -50,6 +50,7 @@ Summary:            Insights Core SELinux policy
 License:            Apache-2.0
 
 BuildArch:          noarch
+BuildRequires:      pkgconfig(systemd)
 BuildRequires:      selinux-policy-devel
 
 Requires:           selinux-policy >= %{selinux_policy_version}
