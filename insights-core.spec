@@ -13,8 +13,8 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.2.2
-Release:        1%{?dist}
+Version:        3.99.0
+Release:        dev%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
 License:        Apache-2.0
@@ -50,6 +50,7 @@ Summary:            Insights Core SELinux policy
 License:            Apache-2.0
 
 BuildArch:          noarch
+BuildRequires:      pkgconfig(systemd)
 BuildRequires:      selinux-policy-devel
 
 Requires:           selinux-policy >= %{selinux_policy_version}

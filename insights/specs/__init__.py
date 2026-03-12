@@ -486,6 +486,7 @@ class Specs(SpecSet):
         filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
     modprobe = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    modules_load_d = RegistryPoint(multi_output=True)
     mokutil_db_short = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     mokutil_list_enrolled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     mokutil_sbstate = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
@@ -634,6 +635,7 @@ class Specs(SpecSet):
     pmrep_metrics = RegistryPoint()
     podman_list_containers = RegistryPoint()
     podman_list_images = RegistryPoint()
+    podman_system_info = RegistryPoint()
     postconf = RegistryPoint(filterable=True)
     postconf_builtin = RegistryPoint(filterable=True)
     postfix_master = RegistryPoint()

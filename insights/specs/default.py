@@ -16,6 +16,7 @@ import signal
 # - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
+from insights.components.insights_core import CoreEgg, CoreRpm
 from insights.components.rhel_version import IsGtOrRhel84, IsGtRhel9
 from insights.components.satellite import (
     IsSatellite,
@@ -107,6 +108,7 @@ class DefaultSpecs(Specs):
     blacklisted_specs = client_metadata.blacklisted_specs
     branch_info = client_metadata.branch_info
     display_name = client_metadata.display_name
+    egg_release = client_metadata.egg_release  # Egg only
     tags = client_metadata.tags
     version_info = client_metadata.version_info
 
@@ -125,9 +127,8 @@ class DefaultSpecs(Specs):
     ansible_telemetry = simple_command(
         "/usr/bin/env python3 /usr/share/ansible/telemetry/telemetry.py",
         save_as="ansible_telemetry",
-        deps=[SELinuxDisabled],
         keep_rc=True,
-    )  # Collect it only when SELinux is disabled. RHEL-145269, RHEL-145268
+    )
     audit_log = simple_file("/var/log/audit/audit.log")
     auditctl_rules = simple_command("/sbin/auditctl -l")
     auditctl_status = simple_command("/sbin/auditctl -s")
@@ -135,8 +136,9 @@ class DefaultSpecs(Specs):
     audispd_conf = simple_file("/etc/audisp/audispd.conf")
     ausearch_insights = simple_command(
         "/usr/sbin/ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts recent",
+        deps=[SELinuxEnabled, CoreRpm],
         keep_rc=True,
-    )
+    )  # SELinux is Enabled AND collect with RPM.
     aws_instance_id_doc = command_with_args(
         '/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5',
         aws.aws_imdsv2_token,
@@ -533,6 +535,7 @@ class DefaultSpecs(Specs):
     messages = simple_file("/var/log/messages")
     modinfo_filtered_modules = command_with_args('modinfo %s', kernel.kernel_module_filters)
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
+    modules_load_d = glob_file("/etc/modules-load.d/*.conf")
     mokutil_db_short = simple_command("/bin/mokutil --db --short")
     mokutil_list_enrolled = simple_command("/bin/mokutil --list-enrolled", keep_rc=True)
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
@@ -665,6 +668,7 @@ class DefaultSpecs(Specs):
         "/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv"
     )
     podman_list_containers = simple_command("/usr/bin/podman ps --all --no-trunc")
+    podman_system_info = simple_command("/usr/bin/podman system info --format=json")
     postconf = simple_command("/usr/sbin/postconf")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postfix_master = simple_file("/etc/postfix/master.cf")
@@ -826,7 +830,9 @@ class DefaultSpecs(Specs):
     sctp_asc = simple_file('/proc/net/sctp/assocs')
     sctp_eps = simple_file('/proc/net/sctp/eps')
     sctp_snmp = simple_file('/proc/net/sctp/snmp')
-    sealert = simple_command('/usr/bin/sealert -l "*"', deps=[IsGtRhel9, SELinuxEnabled])
+    sealert = simple_command(
+        '/usr/bin/sealert -l "*"', deps=[IsGtRhel9, SELinuxEnabled, CoreRpm]
+    )  # Newer than RHEL 9 AND SELinux is Enabled AND collect with RPM.
     secure = simple_file("/var/log/secure")
     securetty = simple_file("/etc/securetty")
     selinux_config = simple_file("/etc/selinux/config")
@@ -924,11 +930,13 @@ class DefaultSpecs(Specs):
         ]
     )  # XML
     teamdctl_config_dump = foreach_execute(
-        ethernet.team_interfaces, "/usr/bin/teamdctl %s config dump"
-    )
+        ethernet.team_interfaces, "/usr/bin/teamdctl %s config dump",
+        deps=[SELinuxDisabled],
+    )  # RHEL-150529
     teamdctl_state_dump = foreach_execute(
-        ethernet.team_interfaces, "/usr/bin/teamdctl %s state dump"
-    )
+        ethernet.team_interfaces, "/usr/bin/teamdctl %s state dump",
+        deps=[SELinuxDisabled],
+    )  # RHEL-150529
     testparm_s = simple_command("/usr/bin/testparm -s")
     testparm_v_s = simple_command("/usr/bin/testparm -v -s")
     thp_enabled = simple_file("/sys/kernel/mm/transparent_hugepage/enabled")
@@ -945,8 +953,8 @@ class DefaultSpecs(Specs):
     )
     tty_console_active = simple_file("sys/class/tty/console/active")
     tuned_adm = simple_command(
-        "/usr/sbin/tuned-adm list", deps=[[IsGtRhel9, SELinuxDisabled]]
-    )  # "RHEL 10 and newer" OR "selinux is disabled". RHEL-142141
+        "/usr/sbin/tuned-adm list", deps=[[IsGtRhel9, SELinuxDisabled, CoreEgg]]
+    )  # Newer than RHEL 9 OR SELinux is disabled OR collect with Egg. RHEL-142141
     udev_66_md_rules = first_file(
         ["/etc/udev/rules.d/66-md-auto-readd.rules", "/usr/lib/udev/rules.d/66-md-auto-readd.rules"]
     )
