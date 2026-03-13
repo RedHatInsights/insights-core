@@ -12,47 +12,8 @@ AwxManagePrintSettings - command ``/usr/bin/awx-manage print_settings``
 """
 
 from insights.core import CommandParser, JSONParser
-from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.util import deprecated
-
-
-@parser(Specs.awx_manage_check_license)
-class AnsibleTowerLicenseType(CommandParser, JSONParser):
-    """
-    .. warning::
-        This class is deprecated and will be removed from 3.7.0.
-        Please use the :class:`AnsibleTowerLicense` instead.
-
-    Parses the output of command  ``/usr/bin/awx-manage check_license``
-
-    Sample output of the command::
-
-        enterprise
-
-    Attributes:
-        type (str): The license type, e.g. "enterprise"
-
-    Examples:
-        >>> type(awx_license)
-        <class 'insights.parsers.awx_manage.AnsibleTowerLicenseType'>
-        >>> awx_license.type == "enterprise"
-        True
-    """
-
-    def __init__(self, *args, **kwargs):
-        deprecated(
-            AnsibleTowerLicenseType, "Please use the :class:`AnsibleTowerLicense` instead.", "3.7.0"
-        )
-        super(AnsibleTowerLicenseType, self).__init__(*args, **kwargs)
-
-    def parse_content(self, content):
-        if not content:
-            raise SkipComponent
-        if len(content) != 1:
-            raise ParseException("Invalid output: {0}".format(content))
-        self.type = content[0].strip()
 
 
 @parser(Specs.awx_manage_check_license_data)
