@@ -940,6 +940,7 @@ class DefaultSpecs(Specs):
     testparm_s = simple_command("/usr/bin/testparm -s")
     testparm_v_s = simple_command("/usr/bin/testparm -v -s")
     thp_enabled = simple_file("/sys/kernel/mm/transparent_hugepage/enabled")
+    thp_shmem_enabled = simple_file("/sys/kernel/mm/transparent_hugepage/shmem_enabled")
     thp_use_zero_page = simple_file("/sys/kernel/mm/transparent_hugepage/use_zero_page")
     timedatectl_status = simple_command('/usr/bin/timedatectl status')
     tmpfilesd = glob_file(
