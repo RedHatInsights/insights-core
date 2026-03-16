@@ -8,9 +8,6 @@ Parsers included in this module are:
 GrubbyDefaultIndex - command ``grubby --default-index``
 -------------------------------------------------------
 
-GrubbyDefaultKernel - command ``grubby --default-kernel``
----------------------------------------------------------
-
 GrubbyInfoAll - command ``grubby --info=ALL``
 ---------------------------------------------
 """
@@ -20,7 +17,6 @@ from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import parse_cmdline_args
 from insights.specs import Specs
-from insights.util import deprecated
 
 
 @parser(Specs.grubby_default_index)
@@ -59,71 +55,6 @@ class GrubbyDefaultIndex(CommandParser):
             raise ParseException('Invalid output: {0}'.format(content))
 
         self.default_index = int(default_index_line.strip())
-
-
-@parser(Specs.grubby_default_kernel)
-class GrubbyDefaultKernel(CommandParser):
-    """
-    .. warning::
-        This class is deprecated and will be removed from 3.7.0.
-        Please use the :class:`insights.combiners.grubby.Grubby` instead.
-
-    This parser parses the output of command ``grubby --default-kernel``.
-
-    The typical output of this command is::
-
-        /boot/vmlinuz-2.6.32-573.el6.x86_64
-
-    Examples:
-
-        >>> grubby_default_kernel.default_kernel
-        '/boot/vmlinuz-2.6.32-573.el6.x86_64'
-
-    Raises:
-        SkipComponent: When output is empty
-        ParseException: When output is invalid
-
-    Attributes:
-        default_kernel(str): The default kernel name for next boot
-    """
-
-    def __init__(self, context):
-        deprecated(
-            GrubbyDefaultKernel,
-            "Please use the :class:`insights.combiners.grubby.Grubby` instead.",
-            "3.7.0",
-        )
-        super(GrubbyDefaultKernel, self).__init__(context)
-
-    def parse_content(self, content):
-        if not content:
-            raise SkipComponent('Empty output')
-
-        # Skip the error lines to find the real default-kernel line.
-        # Typically, the default-kernel line is the last line in content.
-        default_kernel_str = None
-
-        if len(content) == 1:
-            default_kernel_str = content[0].strip()
-        else:
-            for idx in range(len(content) - 1, -1, -1):
-                line = content[idx]
-                if line.startswith('/boot/') and '/boot/vmlinuz-' in line:
-                    if not default_kernel_str:
-                        default_kernel_str = line.strip()
-                    else:
-                        raise ParseException(
-                            'Invalid output: duplicate kernel lines: {0}'.format(line)
-                        )
-
-        if not default_kernel_str:
-            raise ParseException('Invalid output: no kernel line: {0}'.format(content))
-        if len(default_kernel_str.split()) > 1:
-            raise ParseException(
-                'Invalid output: unparsable kernel line: {0}'.format(default_kernel_str)
-            )
-
-        self.default_kernel = default_kernel_str
 
 
 @parser(Specs.grubby_info_all)

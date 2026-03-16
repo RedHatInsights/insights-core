@@ -484,8 +484,8 @@ def os_release_info():
             ctx = Context(content=data, path=p, relative_path=p)
             if p == "/etc/os-release":
                 rls = OsRelease(ctx)
-                os_family = rls.data.get("NAME")
-                os_release = rls.data.get("VERSION_ID")
+                os_family = rls.get("NAME")
+                os_release = rls.get("VERSION_ID")
             elif p == "/etc/redhat-release":
                 rls = RedhatRelease(ctx)
                 os_family = rls.product

@@ -16,6 +16,7 @@ import signal
 # - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
+from insights.components.insights_core import CoreEgg, CoreRpm
 from insights.components.rhel_version import IsGtOrRhel84, IsGtRhel9
 from insights.components.satellite import (
     IsSatellite,
@@ -107,6 +108,7 @@ class DefaultSpecs(Specs):
     blacklisted_specs = client_metadata.blacklisted_specs
     branch_info = client_metadata.branch_info
     display_name = client_metadata.display_name
+    egg_release = client_metadata.egg_release  # Egg only
     tags = client_metadata.tags
     version_info = client_metadata.version_info
 
@@ -134,8 +136,9 @@ class DefaultSpecs(Specs):
     audispd_conf = simple_file("/etc/audisp/audispd.conf")
     ausearch_insights = simple_command(
         "/usr/sbin/ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts recent",
+        deps=[SELinuxEnabled, CoreRpm],
         keep_rc=True,
-    )
+    )  # SELinux is Enabled AND collect with RPM.
     aws_instance_id_doc = command_with_args(
         '/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5',
         aws.aws_imdsv2_token,
@@ -156,7 +159,6 @@ class DefaultSpecs(Specs):
         aws.aws_imdsv2_token,
         deps=[aws.aws_imdsv2_token],
     )
-    awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
     awx_manage_check_license_data = awx_manage.check_license_data
     awx_manage_print_settings = simple_command(
         "/usr/bin/awx-manage print_settings INSIGHTS_TRACKING_STATE SYSTEM_UUID INSTALL_UUID TOWER_URL_BASE AWX_CLEANUP_PATHS AWX_PROOT_BASE_PATH LOG_AGGREGATOR_ENABLED LOG_AGGREGATOR_LEVEL --format json"
@@ -276,13 +278,6 @@ class DefaultSpecs(Specs):
     dnf_module_list = simple_command(
         "/usr/bin/dnf -C --noplugins module list", signum=signal.SIGTERM
     )  # used by puptoo
-    docker_info = simple_command("/usr/bin/docker info")  # v3.7.0
-    docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")  # v3.7.0
-    docker_list_images = simple_command(
-        "/usr/bin/docker images --all --no-trunc --digests"
-    )  # v3.7.0
-    docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")  # v3.7.0
-    docker_sysconfig = simple_file("/etc/sysconfig/docker")  # v3.7.0
     dotnet_version = simple_command("/usr/bin/dotnet --version")
     doveconf = simple_command("/usr/bin/doveconf")
     dracut_kdump_capture_service = simple_file(
@@ -359,13 +354,10 @@ class DefaultSpecs(Specs):
     group_info = command_with_args("/usr/bin/getent group %s", user_group.group_filters)
     grub2_cfg = simple_file("/boot/grub2/grub.cfg")
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
-    grubby_default_index = simple_command(
-        "/usr/sbin/grubby --default-index"
-    )  # only RHEL7 and updwards
-    grubby_default_kernel = simple_command("/sbin/grubby --default-kernel")
-    grubby_info_all = simple_command("/usr/sbin/grubby --info=ALL")
     grub_conf = simple_file("/boot/grub/grub.conf")
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
+    grubby_default_index = simple_command("/usr/sbin/grubby --default-index")
+    grubby_info_all = simple_command("/usr/sbin/grubby --info=ALL")
     grubenv = simple_command("/usr/bin/grub2-editenv list", keep_rc=True)
     haproxy_cfg = first_file(
         [
@@ -475,9 +467,6 @@ class DefaultSpecs(Specs):
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
     lpstat_queued_jobs_count = lpstat.lpstat_queued_jobs_count
     lru_gen_enabled = simple_file("/sys/kernel/mm/lru_gen/enabled")
-    ls_files = command_with_args(
-        '/bin/ls -lH %s', ls.list_files_with_lH, save_as='ls_files', keep_rc=True
-    )
     ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, save_as='ls_la', keep_rc=True)
     ls_la_filtered = command_with_args(
         '/bin/ls -la %s', ls.list_with_la_filtered, save_as='ls_la_filtered', keep_rc=True
@@ -546,6 +535,7 @@ class DefaultSpecs(Specs):
     messages = simple_file("/var/log/messages")
     modinfo_filtered_modules = command_with_args('modinfo %s', kernel.kernel_module_filters)
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
+    modules_load_d = glob_file("/etc/modules-load.d/*.conf")
     mokutil_db_short = simple_command("/bin/mokutil --db --short")
     mokutil_list_enrolled = simple_command("/bin/mokutil --list-enrolled", keep_rc=True)
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
@@ -678,6 +668,7 @@ class DefaultSpecs(Specs):
         "/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv"
     )
     podman_list_containers = simple_command("/usr/bin/podman ps --all --no-trunc")
+    podman_system_info = simple_command("/usr/bin/podman system info --format=json")
     postconf = simple_command("/usr/sbin/postconf")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postfix_master = simple_file("/etc/postfix/master.cf")
@@ -839,7 +830,9 @@ class DefaultSpecs(Specs):
     sctp_asc = simple_file('/proc/net/sctp/assocs')
     sctp_eps = simple_file('/proc/net/sctp/eps')
     sctp_snmp = simple_file('/proc/net/sctp/snmp')
-    sealert = simple_command('/usr/bin/sealert -l "*"', deps=[IsGtRhel9, SELinuxEnabled])
+    sealert = simple_command(
+        '/usr/bin/sealert -l "*"', deps=[IsGtRhel9, SELinuxEnabled, CoreRpm]
+    )  # Newer than RHEL 9 AND SELinux is Enabled AND collect with RPM.
     secure = simple_file("/var/log/secure")
     securetty = simple_file("/etc/securetty")
     selinux_config = simple_file("/etc/selinux/config")
@@ -927,7 +920,6 @@ class DefaultSpecs(Specs):
     systemctl_show_target = simple_command("/bin/systemctl show *.target")
     systemctl_status_all = simple_command("/bin/systemctl status --all")  # used by puptoo
     systemd_analyze_blame = simple_command("/bin/systemd-analyze blame")
-    systemd_docker = simple_command("/usr/bin/systemctl cat docker.service")  # v3.7.0
     systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
     systemd_openshift_node = simple_command("/usr/bin/systemctl cat atomic-openshift-node.service")
     systemd_system_conf = simple_file("/etc/systemd/system.conf")
@@ -961,8 +953,8 @@ class DefaultSpecs(Specs):
     )
     tty_console_active = simple_file("sys/class/tty/console/active")
     tuned_adm = simple_command(
-        "/usr/sbin/tuned-adm list", deps=[[IsGtRhel9, SELinuxDisabled]]
-    )  # "RHEL 10 and newer" OR "selinux is disabled". RHEL-142141
+        "/usr/sbin/tuned-adm list", deps=[[IsGtRhel9, SELinuxDisabled, CoreEgg]]
+    )  # Newer than RHEL 9 OR SELinux is disabled OR collect with Egg. RHEL-142141
     udev_66_md_rules = first_file(
         ["/etc/udev/rules.d/66-md-auto-readd.rules", "/usr/lib/udev/rules.d/66-md-auto-readd.rules"]
     )

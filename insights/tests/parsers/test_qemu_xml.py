@@ -690,37 +690,16 @@ def test_blank_xml():
     assert xml.parse_dom() == {}
 
 
-def test_rhosp_xml():
-    xml = qemu_xml.OpenStackInstanceXML(context_wrap(XML_RHOSP, path='/etc/libvirt/qemu/instance-000008d6.xml'))
-    assert xml.domain_name == 'instance-000008d6'
-    assert xml.nova.get('version') == '14.0.3-8.el7ost'
-    assert xml.nova.get('instance_name') == 'django_vm_001'
-    assert xml.nova.get('user') == 'django_user_01'
-    assert xml.nova.get('root_disk_type') == 'image'
-    assert xml.nova.get('flavor_vcpus') == '4'
-
-    rhosp_xml_2 = qemu_xml.OpenStackInstanceXML(context_wrap(XML_RHOSP_2, path='/etc/libvirt/qemu/instance-000008d7.xml'))
-    assert rhosp_xml_2.nova == {'version': '14.0.3-8.el7ost', 'instance_name': 'VM_AT_01', 'created': '2017-10-09 08:51:28'}
-    assert rhosp_xml_2.domain_name == 'instance-000008d7'
-
-    # XML not having OSP metadata
-    xml = qemu_xml.OpenStackInstanceXML(context_wrap(XML_NUMA, path='/etc/libvirt/qemu/numa_instance_001.xml'))
-    assert xml.domain_name == 'numa_instance_001'
-
-    # The XML struture is different from OSP instance XML
-    xml = qemu_xml.OpenStackInstanceXML(context_wrap(XML_IDM_CLIENT, path='/etc/libvirt/qemu/idm_001.xml'))
-    assert xml.domain_name == 'idm_001'
-
-
 def test_documentation():
-    env = {'xml_numa': qemu_xml.QemuXML(context_wrap(XML_NUMA, path='/etc/libvirt/qemu/vm.xml')),
-           'rhosp_xml': qemu_xml.OpenStackInstanceXML(context_wrap(XML_RHOSP, path='/etc/libvirt/qemu/instance-000008d6.xml'))}
+    env = {'xml_numa': qemu_xml.QemuXML(context_wrap(XML_NUMA, path='/etc/libvirt/qemu/vm.xml'))}
     failed_count, tests = doctest.testmod(qemu_xml, globs=env)
     assert failed_count == 0
 
 
 def test_var_qemu_xml():
-    xml = qemu_xml.VarQemuXML(context_wrap(XML_IDM_CLIENT, path='/var/run/libvirt/qemu/test-idm-client-ccveu-net.xml'))
+    xml = qemu_xml.VarQemuXML(
+        context_wrap(XML_IDM_CLIENT, path='/var/run/libvirt/qemu/test-idm-client-ccveu-net.xml')
+    )
     assert xml.file_name == 'test-idm-client-ccveu-net.xml'
     assert xml.vm_name == 'test-idm-client-ccveu-net'
     assert len(xml.get("qemuCaps")) == 3
@@ -729,5 +708,7 @@ def test_var_qemu_xml():
     assert disks[0].get('device', None) == 'cdrom'
 
     # No 'name' found
-    xml = qemu_xml.VarQemuXML(context_wrap(XML_IDM_CLIENT_NO_NAME, path='/var/run/libvirt/qemu/no_name.xml'))
+    xml = qemu_xml.VarQemuXML(
+        context_wrap(XML_IDM_CLIENT_NO_NAME, path='/var/run/libvirt/qemu/no_name.xml')
+    )
     assert xml.vm_name is None
