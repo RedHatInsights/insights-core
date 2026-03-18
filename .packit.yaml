@@ -20,7 +20,9 @@ actions:
 jobs:
   - job: copr_build
     trigger: pull_request
-    branch: master
+    branch:
+      - master
+      - release
     targets:
       - rhel-9-x86_64
       - rhel-9-aarch64
