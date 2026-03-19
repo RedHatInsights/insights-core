@@ -70,7 +70,7 @@ def _get_fstab_mounted_device_files(fstab_mounts, blkid_info):
             blkid_name = blk_label_name_map.get(fs_spec_pair[1])
             result.append(blkid_name)
         # Filter out devices like tmpfs, sysfs, proc ...
-        elif "/" in fs_spec and "bind" not in record['fs_mntops']:
+        elif fs_spec.startswith('/') and "bind" not in record['fs_mntops']:
             result.append(fs_spec)
     return set(result)
 
