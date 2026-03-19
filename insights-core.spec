@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.4
+Version:        3.7.5
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -123,6 +123,48 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Mar 19 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.5-1
+- Fix: Update ls to handle special lines (#4750) (986222045@qq.com)
+- feat: Malware Detection wildcards support and fix concurrent scan false
+  positives (#4746) (63891960+mtclinton@users.noreply.github.com)
+- chore(pre-commit): update and add new hook conventional-pre-commit
+  (xiangceliu@redhat.com)
+- chore(build): enable packit building for release branch
+  (xiangceliu@redhat.com)
+- feat: add all rules scanned to malware detection upload (#4735)
+  (63891960+mtclinton@users.noreply.github.com)
+- fix(data-processing): fix unpredictable behavior of --context (#4740)
+  (71874510+jholecek-rh@users.noreply.github.com)
+- chore: remove planned deprecations for v3.7.0 (xiangceliu@redhat.com)
+- fix(rpm-build): add 'BuildRequires: pkgconfig(systemd)' back for insights-
+  core-selinux (xiangceliu@redhat.com)
+- feat: New spec "/etc/modules-load.d/*.conf" and its parser (shlao@redhat.com)
+- chore(spec): New spec "podman system info --json" for data analysis
+  (huali@redhat.com)
+- chore(manifests): remove/merge remained useless components (#4747)
+  (xiangceliu@redhat.com)
+- chore(manifests): use the base module instead of component (#4730)
+  (xiangceliu@redhat.com)
+- chore: add egg_release back to collection with a condition (#4729)
+  (xiangceliu@redhat.com)
+- fix(build): prepare the filters.yaml before setting up  (#4745)
+  (xiangceliu@redhat.com)
+- chore(spec): update SELinux relevant specs (#4728) (xiangceliu@redhat.com)
+- chore(spec): remove SELinuxDisable depdencies from ansible_telemetry (#4731)
+  (xiangceliu@redhat.com)
+- chore: remove unused lines from PR template (#4725) (xiangceliu@redhat.com)
+- chore(test): don't pass context when root is passed to initialize_broker
+  (#4720) (xiangceliu@redhat.com)
+- chore: update PR template and remove RPM/Egg delivery guide (#4723)
+  (xiangceliu@redhat.com)
+- feat: New spec "strings /boot/efi/EFI/redhat/shimx64.efi" and its parser
+  (#4705) (44796653+huali027@users.noreply.github.com)
+- feat: New spec "/bin/mokutil --db --short" and the parser (#4704)
+  (44796653+huali027@users.noreply.github.com)
+- fix(ci/cd): enable CI/CD for release branch (xiangceliu@redhat.com)
+- feat: add CoreEgg/CoreRpm to identify current collector (#4724)
+  (xiangceliu@redhat.com)
+
 * Thu Feb 26 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.4-1
 - Revert "fix: handle no account_number in response data (#4687)" (#4736)
   (xiangceliu@redhat.com)
