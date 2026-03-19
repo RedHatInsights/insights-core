@@ -1,6 +1,14 @@
-# Change Log
+# Change Log for insights-core.el7.egg
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+
+# [insights-core-3.7.5.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.5.1) (2026-03-19)
+
+- Fix: Update ls to handle special lines ([PR 4750](https://github.com/RedHatInsights/insights-core/pull/4750))
+- feat: Malware Detection wildcards support and fix concurrent scan false positives ([PR 4746](https://github.com/RedHatInsights/insights-core/pull/4746))
+- feat: add all rules scanned to malware detection upload ([PR 4735](https://github.com/RedHatInsights/insights-core/pull/4735))
+- chore: remove planned deprecations for v3.7.0 ([PR 4699](https://github.com/RedHatInsights/insights-core/pull/4699))
+- fix(test): add filters.yaml for building Egg ([PR 4744](https://github.com/RedHatInsights/insights-core/pull/4744))
 
 # [insights-core-3.7.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.4) (2026-02-26)
 
