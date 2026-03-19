@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.4
+Version:        3.7.5.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,13 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Mar 19 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.5.1-1
+- Fix: Update ls to handle special lines (#4750) (986222045@qq.com)
+- feat: New spec "/etc/modules-load.d/*.conf" and its parser (shlao@redhat.com)
+- chore(spec): New spec "podman system info --json" for data analysis
+  (huali@redhat.com)
+- chore: remove planned deprecations for v3.7.0 (xiangceliu@redhat.com)
+- fix(test): add filters.yaml for building Egg (#4744) (xiangceliu@redhat.com)
 * Thu Feb 26 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.4-1
 - fix(ci/cd): update el7's ci/cd for el7_egg branch (#4738)
   (xiangceliu@redhat.com)
