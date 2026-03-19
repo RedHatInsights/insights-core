@@ -215,6 +215,13 @@ def parse(lines, root=None):
         A dictionary representing the ls output. It's keyed by the path
         containing each ls stanza.
     """
+
+    known_errors = [
+        "ls: cannot access",
+        "No such file or directory",
+        "ls: unrecognized option",
+        "/bin/ls --help' for more information",
+    ]
     doc = {}
     entries = []
     error_lines = []
@@ -225,7 +232,7 @@ def parse(lines, root=None):
         # Skip empty line and non-exist dir line
         if not line:
             continue
-        elif "ls: cannot access" in line or "No such file or directory" in line:
+        elif any(err in line for err in known_errors):
             error_lines.append(line)
             continue
         elif line[0] == "/" and line[-1] == ":":
