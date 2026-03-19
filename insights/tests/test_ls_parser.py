@@ -185,6 +185,11 @@ No such file or directory
 adsf
 """
 
+LS_ERROR_LINES = """
+/bin/ls: unrecognized option '--xx.xx.xxx.xx:/opt/carga_alocacao'
+Try '/bin/ls --help' for more information.
+"""
+
 
 def test_parse_selinux():
     results = parse(SELINUX_DIRECTORY.splitlines(), "/boot")
@@ -352,3 +357,10 @@ def test_rhel8_selinux():
     assert res["date"] == "Apr  8 16:41"
     assert res["name"] == "abcd-efgh-ijkl-mnop"
     assert res["dir"] == "/var/lib/nova/instances"
+
+
+def test_error_lines():
+    results = parse(LS_ERROR_LINES.splitlines())
+    assert len(results['error_lines']) == 2
+    assert results['error_lines'][0] == "/bin/ls: unrecognized option '--xx.xx.xxx.xx:/opt/carga_alocacao'"
+    assert results['error_lines'][1] == "Try '/bin/ls --help' for more information."
