@@ -635,6 +635,7 @@ class Specs(SpecSet):
     pmrep_metrics = RegistryPoint()
     podman_list_containers = RegistryPoint()
     podman_list_images = RegistryPoint()
+    podman_ps_all_json = RegistryPoint()
     podman_system_info = RegistryPoint()
     postconf = RegistryPoint(filterable=True)
     postconf_builtin = RegistryPoint(filterable=True)
