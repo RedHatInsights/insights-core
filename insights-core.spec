@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.0.1
+Version:        3.5.0.3
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,8 +50,13 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Fri Mar 27 2026 Xiangce Liu <xiangceliu@redhat.com> 3.5.0.3-1
+- fix: revert the cmd&args key for CommandOutputProvider in meta_data (#4539)
+  (xiangceliu@redhat.com)
+
 * Tue Mar 03 2026 Xiangce Liu <xiangceliu@redhat.com> 3.5.0.1-1
 - fix(RHINENG-24334): rename "ls" related specs (#4511) (xiangceliu@redhat.com)
+
 * Fri Aug 29 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.0-3
 - fix: reduce the size of CalledProcessError exception (#4528)
   (xiangceliu@redhat.com)
