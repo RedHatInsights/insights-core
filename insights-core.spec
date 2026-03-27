@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.5.0.2
+Version:        3.5.0.4
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,15 +50,22 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Fri Mar 27 2026 Xiangce Liu <xiangceliu@redhat.com> 3.5.0.4-1
+- fix: revert the cmd&args key for CommandOutputProvider in meta_data (#4539)
+  (xiangceliu@redhat.com)
+
 * Tue Mar 03 2026 Xiangce Liu <xiangceliu@redhat.com> 3.5.0.2-1
 - fix(RHINENG-24334): rename "ls" related specs (#4511) (xiangceliu@redhat.com)
+
 * Fri Aug 29 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.0-3
 - chore: do not collect ls_dev anymore in core collection (#4453)
   (xiangceliu@redhat.com)
 - chore: stop collecting ls_boot/ls_sys_firmware (#4406)
   (xiangceliu@redhat.com)
+
 - fix: override LANG to 'C.UTF-8' for subscription-manager (#4510)
   (xiangceliu@redhat.com)
+
 * Thu Jan 02 2025 Xiangce Liu <xiangceliu@redhat.com> 3.5.0-1
 - fix: typo options to the ls_lanRL spec (#4323) (xiangceliu@redhat.com)
 - chore: remove planned deprecations for bumping 3.5.0 (#4308)
