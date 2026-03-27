@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.5.0.3-1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0.3-1) (2026-03-27)
+
+- fix: revert the cmd&args key for CommandOutputProvider in meta_data ([PR 4539](https://github.com/RedHatInsights/insights-core/pull/4539))
+
 # [insights-core-3.5.0.1-1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.5.0.1-1) (2026-03-03)
 
 - fix(RHINENG-24334): rename "ls" related specs ([PR 4511](https://github.com/RedHatInsights/insights-core/pull/4511))
