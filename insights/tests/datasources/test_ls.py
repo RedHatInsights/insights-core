@@ -65,6 +65,16 @@ FSTAB_DUPLICATE_CONTEXT = """
 /dev/mapper/rhel_rhel7-hana3 /hana/data/rhel7-hana1                       xfs     defaults        0 0
 """.strip()
 
+FSTAB_NFS = """
+10.xx.xxx.01:/opt/appfiles/p_07503_sccd /opt/appfiles/p_07503_sccd nfs defaults,rw,sync,vers=4        0 0
+--10.xx.xxx.02:/opt/programas/sccd/was8/profiles/p_07503_sccd/integracao /opt/appfiles/integracao nfs defaults,rw,sync,vers=4      0 0
+10.xx.xxx.03:/opt/jmsfiles/p_07503_sccd/ /opt/jmsfiles nfs defaults,rw,sync,vers=4      0 0
+10.xx.xxx.04:/opt/appfiles21/p_07503_sccd /opt/appfiles21/p_07503_sccd nfs defaults,rw,sync,vers=4        0 0
+--10.xx.xxx.05:/opt/carga_alocacao /opt/carga_alocacao  nfs defaults,rw,sync,vers=4        0 0
+--10.xx.xxx.06:/opt/ilmtfiles/p_07503_sccd /opt/ilmtfiles/p_07503_sccd  nfs defaults,rw,sync,vers=4        0 0
+--10.xx.xxx.07:/opt/jsonfile /opt/jsonfile  nfs defaults,rw,sync,vers=4        0 0
+""".strip()
+
 
 def setup_function(func):
     if func is test_la_empty:
@@ -98,10 +108,9 @@ def setup_function(func):
         filters.add_filter(
             Specs.ls_ldH_items, ["/etc/redhat-release", '/var/log/messages', 'pvs.devices']
         )
-    if func is test_ldH_files_fstab_blkid:
+    if func in (test_ldH_files_fstab_blkid, test_ldH_files_fstab_blkid_nfs):
         filters.add_filter(
-            Specs.ls_ldH_items,
-            ["/etc/redhat-release", '/var/log/messages', 'fstab_mounted.devices'],
+            Specs.ls_ldH_items, ["/etc/redhat-release", '/var/log/messages', 'fstab_mounted.devices']
         )
     if func is test_ldZ_with_fstab_mounted_filter:
         filters.add_filter(Specs.ls_ldZ_items, ["/", '/mnt', 'fstab_mounted.dirs'])
@@ -192,6 +201,17 @@ def test_ldH_files_fstab_blkid():
     assert (
         ret
         == '/dev/mapper/rhel-home /dev/mapper/rhel-root /dev/mapper/rhel-var /dev/sdb2 /etc/redhat-release /var/log/messages'
+    )
+
+
+def test_ldH_files_fstab_blkid_nfs():
+    fstab_info = FSTab(context_wrap(FSTAB_NFS))
+    blkid_info = BlockIDInfo(context_wrap(BLKID_DATA))
+    broker = {FSTab: fstab_info, BlockIDInfo: blkid_info}
+    ret = list_with_ldH(broker)
+    assert (
+        ret
+        == '/etc/redhat-release /var/log/messages'
     )
 
 
