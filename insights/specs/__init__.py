@@ -832,6 +832,7 @@ class Specs(SpecSet):
     swift_object_expirer_conf = RegistryPoint()
     swift_proxy_server_conf = RegistryPoint()
     sys_block_queue_stable_writes = RegistryPoint(multi_output=True)
+    sys_block_queue_discard_max_bytes = RegistryPoint(multi_output=True)
     sys_block_queue_max_segment_size = RegistryPoint(multi_output=True)
     sys_fs_cgroup_memory_tasks_number = RegistryPoint()  # No need to clean
     sys_fs_cgroup_uniq_memory_swappiness = RegistryPoint()  # No need to clean
