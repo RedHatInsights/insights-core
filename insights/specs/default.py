@@ -46,6 +46,7 @@ from insights.specs import Specs
 from insights.specs.datasources import (
     aws,
     awx_manage,
+    azure,
     client_metadata,
     cloud_init,
     corosync as corosync_ds,
@@ -167,6 +168,7 @@ class DefaultSpecs(Specs):
         "/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmId?api-version=2021-12-13&format=text --connect-timeout 5",
         deps=[IsAzure],
     )
+    azure_instance_compute_metadata = azure.azure_instance_compute_metadata
     azure_instance_plan = simple_command(
         "/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2021-12-13&format=json --connect-timeout 5",
         deps=[IsAzure],
@@ -930,11 +932,13 @@ class DefaultSpecs(Specs):
         ]
     )  # XML
     teamdctl_config_dump = foreach_execute(
-        ethernet.team_interfaces, "/usr/bin/teamdctl %s config dump",
+        ethernet.team_interfaces,
+        "/usr/bin/teamdctl %s config dump",
         deps=[SELinuxDisabled],
     )  # RHEL-150529
     teamdctl_state_dump = foreach_execute(
-        ethernet.team_interfaces, "/usr/bin/teamdctl %s state dump",
+        ethernet.team_interfaces,
+        "/usr/bin/teamdctl %s state dump",
         deps=[SELinuxDisabled],
     )  # RHEL-150529
     testparm_s = simple_command("/usr/bin/testparm -s")
