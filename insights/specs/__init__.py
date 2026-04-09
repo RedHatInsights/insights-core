@@ -889,6 +889,7 @@ class Specs(SpecSet):
     testparm_s = RegistryPoint(filterable=True)
     testparm_v_s = RegistryPoint(filterable=True)
     thp_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    thp_shmem_enabled = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     thp_use_zero_page = RegistryPoint()
     timedatectl_status = RegistryPoint()
     tmpfilesd = RegistryPoint(multi_output=True)
