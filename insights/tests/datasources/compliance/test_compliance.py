@@ -239,19 +239,23 @@ def test_tailored_file_is_downloaded_if_needed(config, call):
     )
 
 
+@patch("insights.specs.datasources.compliance.time.sleep")
 @patch("insights.specs.datasources.compliance.open", new_callable=mock_open)
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
-def test_tailored_file_fails_to_download(config, call):
+def test_tailored_file_fails_to_download(config, call, sleep_mock):
     compliance_client = ComplianceClient(config=config)
-    compliance_client.conn.session.get = Mock(
-        return_value=Mock(
-            status_code=403,
-            ok=False,
-            headers={"Content-Type": "application/xml"},
-            json=Mock(return_value={'data': []}),
-        )
+    bad_response = Mock(
+        status_code=403,
+        ok=False,
+        headers={"Content-Type": "application/xml"},
+        json=Mock(return_value={'data': []}),
     )
-    assert compliance_client.download_tailoring_file({'id': 'foo', 'ref_id': 'aaaaa'}) is None
+    compliance_client.conn.session.get = Mock(return_value=bad_response)
+    with raises(SystemExit) as exc:
+        compliance_client.download_tailoring_file({'id': 'foo', 'ref_id': 'aaaaa'})
+    assert exc.value.code == constants.sig_kill_bad
+    assert compliance_client.conn.session.get.call_count == 3
+    assert sleep_mock.call_count == 2
 
     compliance_client.conn.session.get = Mock(
         return_value=Mock(
@@ -271,6 +275,26 @@ def test_tailored_file_fails_to_download(config, call):
         )
     )
     assert compliance_client.download_tailoring_file({'id': 'foo', 'ref_id': 'aaaaa'}) is None
+
+
+@patch("insights.specs.datasources.compliance.time.sleep")
+@patch("insights.specs.datasources.compliance.open", new_callable=mock_open)
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
+def test_tailoring_file_retries_transient_errors_then_succeeds(config, mock_open_file, sleep_mock):
+    compliance_client = ComplianceClient(os_version=['6', '5'], config=config)
+    fail = Mock(status_code=504, ok=False, headers={})
+    ok_response = Mock(
+        status_code=200,
+        content=b"<Tailoring/>",
+        headers={"Content-Type": "application/xml"},
+    )
+    compliance_client.conn.session.get = Mock(side_effect=[fail, fail, ok_response])
+    path = compliance_client.download_tailoring_file(
+        {'id': 'foo', 'ref_id': 'aaaaa', 'os_minor_version': '5'}
+    )
+    assert 'oscap_tailoring_file-aaaaa' in path
+    assert compliance_client.conn.session.get.call_count == 3
+    assert sleep_mock.call_count == 2
 
 
 @patch("insights.specs.datasources.compliance.open", new_callable=mock_open)
