@@ -1,6 +1,7 @@
 import copy
 import os
 import tempfile
+import time
 
 from glob import glob
 from logging import getLogger
@@ -21,6 +22,8 @@ SCAP_DATASTREAMS_PATH = '/usr/share/xml/scap/'
 SSG_PACKAGE = 'scap-security-guide'
 REQUIRED_PACKAGES = [SSG_PACKAGE, 'openscap-scanner', 'openscap']
 OOM_ERROR_LINK = 'https://access.redhat.com/articles/6999111'
+TAILORING_FETCH_ATTEMPTS = 3
+TAILORING_FETCH_RETRY_DELAY_SEC = 10
 
 # SSG versions that need the <version> in XML repaired
 VERSIONS_FOR_REPAIR = '0.1.18 0.1.19 0.1.21 0.1.25'.split()
@@ -50,28 +53,45 @@ class ComplianceClient:
                 policy['ref_id']
             )
         )
-        response = self.conn.session.get(
-            "{0}/compliance/v2/policies/{1}/tailorings/{2}/tailoring_file".format(
-                self.conn.base_url, policy['id'], self.os_minor
-            )
+        url = "{0}/compliance/v2/policies/{1}/tailorings/{2}/tailoring_file".format(
+            self.conn.base_url, policy['id'], self.os_minor
         )
-        logger.debug("Response code: {0}".format(response.status_code))
-
-        if response.status_code == 204:
+        response = None
+        for attempt in range(1, TAILORING_FETCH_ATTEMPTS + 1):
+            response = self.conn.session.get(url)
             logger.debug(
-                "Policy {0} is not tailored, continuing with default rule and value selections...".format(
-                    policy['ref_id']
+                "Response code: {0} (attempt {1}/{2})".format(
+                    response.status_code, attempt, TAILORING_FETCH_ATTEMPTS
                 )
             )
-            return None
 
-        if not response.ok:
-            logger.debug(
-                "Something went wrong during downloading the tailoring file of {0}. The expected status code is 200, got {1}".format(
-                    policy['ref_id'], response.status_code
+            if response.status_code == 204:
+                logger.debug(
+                    "Policy {0} is not tailored, continuing with default rule and value selections...".format(
+                        policy['ref_id']
+                    )
+                )
+                return None
+
+            if 200 <= response.status_code < 300:
+                break
+
+            logger.warning(
+                "Something went wrong during downloading the tailoring file of {0}. "
+                "The expected status code is 200, got {1} (attempt {2} of {3}).".format(
+                    policy['ref_id'], response.status_code, attempt, TAILORING_FETCH_ATTEMPTS
                 )
             )
-            return None
+            if attempt < TAILORING_FETCH_ATTEMPTS:
+                time.sleep(TAILORING_FETCH_RETRY_DELAY_SEC)
+        else:
+            logger.error(
+                "Failed to download tailoring file for policy {0} after {1} attempts (last HTTP status {2}). "
+                "Refusing to run the scan without a definitive tailoring response from the service.".format(
+                    policy['ref_id'], TAILORING_FETCH_ATTEMPTS, response.status_code
+                )
+            )
+            exit(constants.sig_kill_bad)
 
         if response.content is None or response.headers['Content-Type'] != "application/xml":
             logger.debug(response.content)
