@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.5
+Version:        3.7.6
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -123,6 +123,11 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Wed Apr 22 2026 Jaylin Zhou <zzhou@redhat.com> 3.7.6-1
+- fix: add retry for fetching tailoring file (#4768)
+  (33912805+LightOfHeaven1994@users.noreply.github.com)
+- Add new spec sys_block_queue_discard_max_bytes (#4766) (986222045@qq.com)
+
 * Thu Mar 19 2026 Xiangce Liu <xiangceliu@redhat.com> 3.7.5-1
 - Fix: Update ls to handle special lines (#4750) (986222045@qq.com)
 - feat: Malware Detection wildcards support and fix concurrent scan false
