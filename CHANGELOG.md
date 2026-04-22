@@ -3,6 +3,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.7.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.6) (2026-04-22)
+
+- fix: add retry for fetching tailoring file ([PR 4768](https://github.com/RedHatInsights/insights-core/pull/4768))
+- Add new spec sys_block_queue_discard_max_bytes ([PR 4766](https://github.com/RedHatInsights/insights-core/pull/4766))
+
 # [insights-core-3.7.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.5) (2026-03-19)
 
 - Fix: Update ls to handle special lines ([PR 4750](https://github.com/RedHatInsights/insights-core/pull/4750))
