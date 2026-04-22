@@ -13,8 +13,12 @@ AzureInstanceType - 'vmSize' of Azure Instance
 AzureInstancePlan - 'plan' of Azure Instance
 --------------------------------------------
 
+AzureInstanceComputeMetadata - 'compute' metadata of Azure Instance
+--------------------------------------------------------------------
+
 AzurePublicIpv4Addresses - list of public IPv4 addresses
 --------------------------------------------------------
+
 """
 
 import json
@@ -22,9 +26,18 @@ import json
 from uuid import UUID
 
 from insights.core import CommandParser
+from insights.core import JSONParser
 from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.util import deprecated
+
+# TODO: Need to migrate the `add_filters` to filter-requester.
+# Note. Please pay attention to the sensitive data when adding new fields to the filter.
+add_filter(
+    Specs.azure_instance_compute_metadata, ['licenseType', 'vmSize', 'vmId', 'plan', 'offer']
+)
 
 
 def validate_content(content):
@@ -54,6 +67,14 @@ class AzureInstanceID(CommandParser):
         >>> azure_id.id
         'f904ece8-c6c1-4b5c-881f-309b50f25e50'
     """
+
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            AzureInstanceID,
+            "Please use the :py:class:`AzureInstanceComputeMetadata` instead.",
+            "3.9.0",
+        )
+        super(AzureInstanceID, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         validate_content(content)
@@ -107,6 +128,14 @@ class AzureInstanceType(CommandParser):
         >>> azure_type.raw
         'Standard_L64s_v2'
     """
+
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            AzureInstanceType,
+            "Please use the :py:class:`AzureInstanceComputeMetadata` instead.",
+            "3.9.0",
+        )
+        super(AzureInstanceType, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         validate_content(content)
@@ -164,6 +193,14 @@ class AzureInstancePlan(CommandParser):
         True
     """
 
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            AzureInstancePlan,
+            "Please use the :py:class:`AzureInstanceComputeMetadata` instead.",
+            "3.9.0",
+        )
+        super(AzureInstancePlan, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         validate_content(content)
 
@@ -181,6 +218,46 @@ class AzureInstancePlan(CommandParser):
         return "<azure_plan_name: {n}, product: {pr}, publisher: {pu}, raw: {r}".format(
             n=self.name, pr=self.product, pu=self.publisher, r=self.raw
         )
+
+
+@parser(Specs.azure_instance_compute_metadata)
+class AzureInstanceComputeMetadata(JSONParser):
+    """
+    Class for parsing the Azure Instance compute metadata returned by the
+    ``azure_instance_compute_metadata`` datasource.
+
+    The datasource collects filtered fields from the Azure Instance Metadata Service endpoint:
+    ``http://169.254.169.254/metadata/instance/compute?api-version=2021-12-13&format=json``
+
+    This parser extends JSONParser and provides dictionary-style access to the filtered metadata
+    fields. Available fields depend on the configured filters. More fields would be included
+    according to the custom filters. For example:
+    - ``fieldKey1`` - Field value 1
+    - ``fieldKey2`` - Field value 2
+
+    Typical content of the filtered JSON data::
+
+        {
+            "fieldKey1": "Field value 1",
+            "fieldKey2": "Field value 2"
+        }
+
+    Raises:
+        SkipComponent: When content is empty, curl error occurs, or no filters defined.
+
+    Examples:
+        >>> azure_instance_compute_metadata['licenseType']
+        ''
+        >>> azure_instance_compute_metadata['vmId']
+        '3c29e210-0669-496f-812a-2fffffffffff'
+        >>> azure_instance_compute_metadata['plan']
+        {'name': '', 'product': 'planProduct', 'publisher': ''}
+        >>> azure_instance_compute_metadata['plan']['product']
+        'planProduct'
+    """
+
+    def __repr__(self):
+        return "<azure_instance_compute_metadata: vmId:{id}>".format(id=self.data.get("vmId"))
 
 
 @parser(Specs.azure_load_balancer)
