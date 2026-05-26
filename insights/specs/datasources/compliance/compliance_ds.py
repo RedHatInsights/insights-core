@@ -175,6 +175,8 @@ def compliance(broker):
         # OSCAP scan
         for policy in policies:
             profile_ref_id = policy['ref_id']
+            backend_ssg_version = compliance.fetch_tailoring_ssg_version(policy)
+            compliance.verify_ssg_version(policy, backend_ssg_version)
             file_name = 'oscap_results-{0}'.format(profile_ref_id)
             results_file = NamedTemporaryFile(prefix=file_name, suffix='.xml', delete=True)
             tailoring_file = compliance.download_tailoring_file(policy)

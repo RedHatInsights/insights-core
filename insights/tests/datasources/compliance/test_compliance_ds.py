@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from insights.core.exceptions import SkipComponent
 from insights.client.config import InsightsConfig
+from insights.client.constants import InsightsConstants as constants
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.os_release import OsRelease
 from insights.parsers.redhat_release import RedhatRelease
@@ -107,6 +108,10 @@ def test_package_check():
     return_value=None,
 )
 @patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_ssg_version",
+    return_value='0.1.73',
+)
+@patch(
     "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
     return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
 )
@@ -119,7 +124,7 @@ def test_package_check():
     compliance=True,
     obfuscation_list=[],
 )
-def test_compliance_ds(config, policies, dt_file, run_scan, ntmpf):
+def test_compliance_ds(config, policies, ssg_version, dt_file, run_scan, ntmpf):
     content = """
 <xml>
     <TestResult xmlns="http://checklists.nist.gov/xccdf/1.2">
@@ -169,6 +174,10 @@ def test_compliance_ds(config, policies, dt_file, run_scan, ntmpf):
     return_value=None,
 )
 @patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_ssg_version",
+    return_value='0.1.73',
+)
+@patch(
     "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
     return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
 )
@@ -181,7 +190,7 @@ def test_compliance_ds(config, policies, dt_file, run_scan, ntmpf):
     compliance=True,
     obfuscation_list=['ipv4', 'ipv6'],
 )
-def test_compliance_ds_with_obfuscation(config, policies, dt_file, run_scan, ntmpf):
+def test_compliance_ds_with_obfuscation(config, policies, ssg_version, dt_file, run_scan, ntmpf):
     content = """
 <xml>
     <TestResult xmlns="http://checklists.nist.gov/xccdf/1.2">
@@ -261,6 +270,10 @@ def test_compliance_ds_with_obfuscation(config, policies, dt_file, run_scan, ntm
     return_value=None,
 )
 @patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_ssg_version",
+    return_value='0.1.73',
+)
+@patch(
     "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
     return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
 )
@@ -273,7 +286,7 @@ def test_compliance_ds_with_obfuscation(config, policies, dt_file, run_scan, ntm
     compliance=True,
     obfuscation_list=['ipv4', 'ipv6', 'hostname'],
 )
-def test_compliance_ds_with_hostname_obfuscation(config, policies, dt_file, run_scan, ntmpf):
+def test_compliance_ds_with_hostname_obfuscation(config, policies, ssg_version, dt_file, run_scan, ntmpf):
     content = """
 <xml>
     <TestResult xmlns="http://checklists.nist.gov/xccdf/1.2">
@@ -368,6 +381,10 @@ def test_compliance_ds_with_hostname_obfuscation(config, policies, dt_file, run_
     return_value=None,
 )
 @patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_ssg_version",
+    return_value='0.1.25',
+)
+@patch(
     "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
     return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
 )
@@ -379,7 +396,7 @@ def test_compliance_ds_with_hostname_obfuscation(config, policies, dt_file, run_
     compressor='gz',
     compliance=True,
 )
-def test_compliance_ds_with_results_repaired(config, policies, dt_file, run_scan, ntmpf):
+def test_compliance_ds_with_results_repaired(config, policies, ssg_version, dt_file, run_scan, ntmpf):
     tmp_file = NamedTemporaryFile(mode='w', delete=False)
     tmp_file.write(
         """
@@ -397,6 +414,71 @@ def test_compliance_ds_with_results_repaired(config, policies, dt_file, run_scan
     # repaired data is not write back to the file
     content = ' '.join(ret[0].content)
     assert '<version>0.1.25</version>' in content
+
+
+@patch("insights.specs.datasources.compliance.ComplianceClient.run_scan", return_value=None)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_ssg_version",
+    return_value='0.1.99',
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=True,
+    obfuscation_list=[],
+)
+def test_compliance_ds_ssg_version_mismatch_exits(config, policies, ssg_version, run_scan):
+    """Scan must be aborted when the backend SSG version differs from the installed one."""
+    broker = {os_version: ['8', '10'], package_check: '0.1.72', 'client_config': config}
+    with raises(SystemExit) as exc:
+        compliance(broker)
+    assert exc.value.code == constants.sig_kill_bad
+    run_scan.assert_not_called()
+
+
+@patch("insights.specs.datasources.compliance.compliance_ds.NamedTemporaryFile")
+@patch("insights.specs.datasources.compliance.ComplianceClient.run_scan", return_value=None)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.download_tailoring_file",
+    return_value=None,
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.fetch_tailoring_ssg_version",
+    return_value='0.1.72',
+)
+@patch(
+    "insights.specs.datasources.compliance.ComplianceClient.get_system_policies",
+    return_value=[{'ref_id': 'foo', 'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5'}],
+)
+@patch(
+    "insights.client.config.InsightsConfig",
+    base_url='localhost/app',
+    systemid='',
+    proxy=None,
+    compressor='gz',
+    compliance=True,
+    obfuscation_list=[],
+)
+def test_compliance_ds_ssg_version_match_proceeds(config, policies, ssg_version, dt_file, run_scan, ntmpf):
+    """Scan must proceed normally when the backend SSG version matches the installed one."""
+    content = "<xml><result>pass</result></xml>"
+    tmp_file = NamedTemporaryFile(mode='w', delete=False)
+    tmp_file.write(content)
+    tmp_file.close()
+    ntmpf.return_value = tmp_file
+    broker = {os_version: ['8', '10'], package_check: '0.1.72', 'client_config': config}
+    ret = compliance(broker)
+    os.remove(tmp_file.name)
+    run_scan.assert_called_once()
+    assert len(ret) == 1
+    assert ret[0].relative_path == 'oscap_results-foo.xml'
 
 
 @patch("insights.specs.datasources.compliance.compliance_ds.sys")

@@ -486,6 +486,86 @@ def test_policy_link_unassign(config, log):
     log.info.assert_called_with("Successfully unassigned policy (ID {0}).\n".format(policy_id))
 
 
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
+def test_fetch_tailoring_ssg_version_returns_version(config):
+    compliance_client = ComplianceClient(os_version=['8', '10'], config=config)
+    policy = {'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5', 'ref_id': 'foo'}
+    compliance_client.conn.session.get = Mock(
+        return_value=Mock(
+            status_code=200,
+            json=Mock(return_value={'data': {'security_guide_version': '0.1.72'}}),
+        )
+    )
+    assert compliance_client.fetch_tailoring_ssg_version(policy) == '0.1.72'
+    url = "https://localhost.com/app/compliance/v2/policies/{0}/tailorings/{1}".format(
+        policy['id'], '10'
+    )
+    compliance_client.conn.session.get.assert_called_with(url)
+
+
+@patch("insights.specs.datasources.compliance.time.sleep")
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
+def test_fetch_tailoring_ssg_version_retries_then_exits_on_non_200(config, log, sleep_mock):
+    compliance_client = ComplianceClient(os_version=['8', '10'], config=config)
+    policy = {'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5', 'ref_id': 'foo'}
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=503))
+    with raises(SystemExit) as exc:
+        compliance_client.fetch_tailoring_ssg_version(policy)
+    assert exc.value.code == constants.sig_kill_bad
+    assert compliance_client.conn.session.get.call_count == 3
+    assert sleep_mock.call_count == 2
+    assert 'foo' in log.error.call_args[0][0]
+    assert '503' in log.error.call_args[0][0]
+
+
+@patch("insights.specs.datasources.compliance.time.sleep")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
+def test_fetch_tailoring_ssg_version_retries_transient_errors_then_succeeds(config, sleep_mock):
+    compliance_client = ComplianceClient(os_version=['8', '10'], config=config)
+    policy = {'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5', 'ref_id': 'foo'}
+    fail = Mock(status_code=504)
+    ok = Mock(status_code=200, json=Mock(return_value={'data': {'security_guide_version': '0.1.72'}}))
+    compliance_client.conn.session.get = Mock(side_effect=[fail, fail, ok])
+    assert compliance_client.fetch_tailoring_ssg_version(policy) == '0.1.72'
+    assert compliance_client.conn.session.get.call_count == 3
+    assert sleep_mock.call_count == 2
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
+def test_verify_ssg_version_exits_on_mismatch(config, log):
+    compliance_client = ComplianceClient(os_version=['8', '10'], ssg_version='0.1.72', config=config)
+    policy = {'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5', 'ref_id': 'foo'}
+    with raises(SystemExit) as exc:
+        compliance_client.verify_ssg_version(policy, '0.1.73')
+    assert exc.value.code == constants.sig_kill_bad
+    log.error.assert_called_once()
+    assert 'foo' in log.error.call_args[0][0]
+    assert '0.1.73' in log.error.call_args[0][0]
+    assert '0.1.72' in log.error.call_args[0][0]
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
+def test_verify_ssg_version_passes_on_match(config, log):
+    compliance_client = ComplianceClient(os_version=['8', '10'], ssg_version='0.1.72', config=config)
+    policy = {'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5', 'ref_id': 'foo'}
+    compliance_client.verify_ssg_version(policy, '0.1.72')
+    log.error.assert_not_called()
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
+def test_verify_ssg_version_exits_when_backend_version_is_none(config, log):
+    """None should never arrive here in practice, but if it does the scan must fail."""
+    compliance_client = ComplianceClient(os_version=['8', '10'], ssg_version='0.1.72', config=config)
+    policy = {'id': 'def76af0-9b6f-4b37-ac6c-db61354acbb5', 'ref_id': 'foo'}
+    with raises(SystemExit) as exc:
+        compliance_client.verify_ssg_version(policy, None)
+    assert exc.value.code == constants.sig_kill_bad
+
+
 @patch('insights.specs.datasources.compliance.logger')
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_policy_link_unassign_invalid_policy_id(config, log):
