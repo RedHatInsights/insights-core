@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.6
+Version:        3.7.7
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -123,6 +123,10 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Sat Jun 13 2026 Ping Qin <piqin@redhat.com> 3.7.7-1
+- feat: Add new datasource spec azure_instance_compute_metadata (#4772)
+  (30404410+qinpingli@users.noreply.github.com)
+
 * Wed Apr 22 2026 Jaylin Zhou <zzhou@redhat.com> 3.7.6-1
 - fix: add retry for fetching tailoring file (#4768)
   (33912805+LightOfHeaven1994@users.noreply.github.com)
