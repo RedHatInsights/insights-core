@@ -3,6 +3,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.7.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.7) (2026-06-16)
+
+- feat: Add new datasource spec azure_instance_compute_metadata ([PR 4772](https://github.com/RedHatInsights/insights-core/pull/4772))
+
 # [insights-core-3.7.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.6) (2026-04-22)
 
 - fix: add retry for fetching tailoring file ([PR 4768](https://github.com/RedHatInsights/insights-core/pull/4768))
