@@ -5,6 +5,7 @@ from insights.core.exceptions import ContentException, ParseException, SkipCompo
 from insights.parsers import azure_instance
 from insights.parsers.azure_instance import (
     AzureInstanceID,
+    AzureInstanceComputeMetadata,
     AzureInstancePlan,
     AzureInstanceType,
     AzurePublicIpv4Addresses,
@@ -74,6 +75,11 @@ curl: (7) couldn't connect to host
 """.strip()
 AZURE_PLAN_AB_3 = """
 curl: (28) connect() timed out!
+""".strip()
+
+# For AzureInstanceComputeMetadata
+AZURE_INSTANCE_COMPUTE_METADATA = """
+{"licenseType": "", "offer": "RHEL", "plan": {"name": "", "product": "planProduct", "publisher": ""}, "vmId": "3c29e210-0669-496f-812a-2fffffffffff", "vmSize": "Standard_B1s"}
 """.strip()
 
 # For AzurePublicIpv4Addresses and AzurePublicHostname
@@ -239,9 +245,33 @@ def test_azure_instance_plan():
     assert azure.raw == '{"name": "", "product": "", "publisher": ""}'
 
 
+# Test AzureInstanceComputeMetadata
+def test_azure_instance_compute_metadata_empty():
+    with pytest.raises(SkipComponent):
+        AzureInstanceComputeMetadata(context_wrap(""))
+
+
+def test_azure_instance_compute_metadata():
+    azure = AzureInstanceComputeMetadata(context_wrap(AZURE_INSTANCE_COMPUTE_METADATA))
+    assert "licenseType" in azure
+    assert azure["licenseType"] == ""
+    assert azure["vmSize"] == "Standard_B1s"
+    assert azure["vmId"] == "3c29e210-0669-496f-812a-2fffffffffff"
+    assert azure["plan"] == {"name": "", "product": "planProduct", "publisher": ""}
+    assert azure["plan"]["name"] == ""
+    assert azure["offer"] == "RHEL"
+    assert azure.get("offer") == "RHEL"
+    assert "someRandomKey" not in azure
+    assert azure.get("someRandomKey") is None
+    assert repr(azure) == "<azure_instance_compute_metadata: vmId:3c29e210-0669-496f-812a-2fffffffffff>"
+
+
 def test_doc_examples():
     env = {
         'azure_id': AzureInstanceID(context_wrap(AZURE_ID_1)),
+        'azure_instance_compute_metadata': AzureInstanceComputeMetadata(
+            context_wrap(AZURE_INSTANCE_COMPUTE_METADATA)
+        ),
         'azure_plan': AzureInstancePlan(context_wrap(AZURE_PLAN_DOC)),
         'azure_type': AzureInstanceType(context_wrap(AZURE_TYPE_DOC)),
     }
