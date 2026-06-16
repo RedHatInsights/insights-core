@@ -6,6 +6,8 @@ insights.specs.Specs.audit_log:
   type=AVC: 10
 insights.specs.Specs.awx_manage_check_license_data:
   product_name: 10
+insights.specs.Specs.azure_instance_compute_metadata:
+  offer: 1
 insights.specs.Specs.candlepin_error_log:
   WARNING: 1
 insights.specs.Specs.candlepin_log:

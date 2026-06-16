@@ -45,6 +45,9 @@ class Specs(SpecSet):
     awx_manage_check_license_data = RegistryPoint(filterable=True)
     awx_manage_print_settings = RegistryPoint()
     azure_instance_id = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    azure_instance_compute_metadata = RegistryPoint(
+        filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
+    )
     azure_instance_plan = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     azure_instance_type = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     azure_load_balancer = RegistryPoint()
