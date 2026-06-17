@@ -4,6 +4,10 @@
 
 # insights-core-3.7.5.1 (2026-03-19)
 
+- feat: Add new datasource spec azure_instance_compute_metadata ([PR 4772](https://github.com/RedHatInsights/insights-core/pull/4772))
+
+# insights-core-3.7.5.1 (2026-03-19)
+
 - Fix: Update ls to handle special lines ([PR 4750](https://github.com/RedHatInsights/insights-core/pull/4750))
 - feat: Malware Detection wildcards support and fix concurrent scan false positives ([PR 4746](https://github.com/RedHatInsights/insights-core/pull/4746))
 - feat: add all rules scanned to malware detection upload ([PR 4735](https://github.com/RedHatInsights/insights-core/pull/4735))
