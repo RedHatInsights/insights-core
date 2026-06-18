@@ -219,6 +219,7 @@ class InsightsArchiveSpecs(Specs):
     max_uid = simple_file("insights_commands/awk_-F_if_3_max_max_3_END_print_max_.etc.passwd")
     md5chk_files = glob_file("insights_commands/md5sum_*")
     mdadm_D = simple_file("insights_commands/mdadm_-D_.dev.md")
+    mdadm_detail_platform = simple_file("insights_commands/mdadm_--detail-platform")
     mount = simple_file("insights_commands/mount")
     mokutil_sbstate = simple_file("insights_commands/mokutil_--sb-state")
     multicast_querier = simple_file(

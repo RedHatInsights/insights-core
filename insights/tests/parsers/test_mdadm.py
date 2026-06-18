@@ -1,5 +1,5 @@
 from insights.parsers import mdadm
-from insights.parsers.mdadm import MDAdmMetadata, MDAdmDetail
+from insights.parsers.mdadm import MDAdmMetadata, MDAdmDetail, MDAdmDetailPlatform
 from insights.core.exceptions import SkipComponent
 from insights.tests import context_wrap
 
@@ -380,6 +380,26 @@ def test_mdadm_d_exceptions():
                       MDADM_D_CONTENT_EMPTY_DATA_1,
                       MDADM_D_CONTENT_EMPTY_DATA_2])))
     assert 'Empty parsed device' in str(exc)
+
+
+MDADM_DETAIL_PLATFORM_CONTENT = """
+       Platform : Intel(R) Rapid Storage Technology
+        Version : 14.8.0.2377
+    RAID Levels : raid0 raid1 raid10 raid5
+    Chunk Sizes : 4k 8k 16k 32k 64k 128k
+      Max Disks : 7
+""".strip()
+
+
+def test_mdadm_detail_platform():
+    mdadm = MDAdmDetailPlatform(context_wrap(MDADM_DETAIL_PLATFORM_CONTENT))
+    assert mdadm["Platform"] == "Intel(R) Rapid Storage Technology"
+
+
+def test_mdadm_detail_platform_empty():
+    with pytest.raises(SkipComponent) as exc:
+        MDAdmDetailPlatform(context_wrap(""))
+    assert "Empty content of command output" in str(exc)
 
 
 def test_doc_examples():
