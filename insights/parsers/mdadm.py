@@ -256,10 +256,26 @@ class MDAdmDetailPlatform(CommandParser, dict):
         Max Volumes : 2 per array, 4 per controller
         I/O Controller : /sys/devices/pci0000:00/0000:00:1f.2 (SATA)
         Port4 : /dev/sdd (ZDEEX7A8)
+
+    Examples:
+        >>> mdadm_plat["Platform"]
+        'Intel(R) Rapid Storage Technology'
+        >>> mdadm_plat["Version"]
+        '14.8.0.2377'
+        >>> mdadm_plat["Max Disks"]
+        '7'
+
+    Raises:
+        SkipComponent: When content is empty or no platform data is found.
     """
 
     def parse_content(self, content):
         if len(content) == 0:
             raise SkipComponent("Empty content of command output")
+
         for key, val in split_kv_pairs(content, split_on=':').items():
             self[key] = val
+
+        # If no data was parsed, skip
+        if len(self) == 0:
+            raise SkipComponent("No platform data found")

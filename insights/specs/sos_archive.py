@@ -168,7 +168,6 @@ class SosSpecs(Specs):
     manila_conf = first_file(["/var/lib/config-data/puppet-generated/manila/etc/manila/manila.conf", "/etc/manila/manila.conf"])
     mdadm_D = simple_file("sos_commands/md/mdadm_-D_.dev.md")
     mdadm_E = glob_file("sos_commands/md/mdadm_-E_*")
-    mdadm_detail_platform = simple_file("sos_commands/md/mdadm_--detail-platform")
     mistral_executor_log = simple_file("/var/log/mistral/executor.log")
     mlx4_port = glob_file("/sys/bus/pci/devices/*/mlx4_port[0-9]")
     modinfo_filtered_modules = simple_file("sos_commands/kernel/modinfo_ALL_MODULES")
