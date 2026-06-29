@@ -20,7 +20,7 @@ class Hostname(object):
     .. note::
 
         Currently, only the system hostname will be obfuscated, see:
-        - https://docs.redhat.com/en/documentation/red_hat_insights/1-latest/html/client_configuration_guide_for_red_hat_insights/assembly-client-data-obfuscation#proc-obfuscating-hostname_insights-cg-obfuscation
+        - https://docs.redhat.com/en/documentation/red_hat_lightspeed/1-latest/html/client_configuration_guide_for_red_hat_lightspeed_with_fedramp/client-data-obfuscation#proc-obfuscating-hostname
 
     """
 
