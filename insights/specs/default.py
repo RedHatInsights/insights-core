@@ -32,6 +32,7 @@ from insights.core.spec_factory import (
     command_with_args,
     container_collect,
     container_execute,
+    container_foreach_execute,
     first_file,
     first_of,
     foreach_collect,
@@ -82,6 +83,7 @@ from insights.specs.datasources import (
 )
 from insights.specs.datasources.compliance import compliance_ds
 from insights.specs.datasources.container import containers_inspect, running_rhel_containers
+from insights.specs.datasources.container.containers_inspect import container_merged_dirs
 from insights.specs.datasources.container.nginx_conf import nginx_conf as container_nginx_conf_ds
 from insights.specs.datasources.malware_detection import malware_detection_ds
 from insights.specs.datasources.pcp import (
@@ -1019,11 +1021,13 @@ class DefaultSpecs(Specs):
     container_dotnet_version = container_execute(
         running_rhel_containers, "/usr/bin/dotnet --version"
     )
-    container_installed_rpms = container_execute(
-        running_rhel_containers,
-        "/usr/bin/rpm -qa --qf '{0}'".format(_rpm_format),
+    # Uses container_foreach_execute with container overlay MergedDir to run rpm queries on the host
+    # instead of inside containers via podman exec. This eliminates container resource consumption
+    # (~15MB memory spike per exec) while maintaining identical RPM output format and parser compatibility.
+    container_installed_rpms = container_foreach_execute(
+        container_merged_dirs,
+        "/usr/bin/rpm -qa --root %s --dbpath /var/lib/rpm --qf '{0}'".format(_rpm_format),
         context=HostContext,
-        signum=signal.SIGTERM,
     )
     container_mssql_api_assessment = container_collect(
         running_rhel_containers, "/var/opt/mssql/log/assessments/assessment-latest"
