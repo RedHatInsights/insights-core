@@ -16,5 +16,8 @@ def test_load_default_plugins_does_not_disable_warnings():
             DeprecationWarning,
         )
 
-    assert len(caught) == 1
-    assert issubclass(caught[0].category, DeprecationWarning)
+    dep_warnings = [w for w in caught if issubclass(w.category, DeprecationWarning)]
+    assert any(
+        "SampleCondition has been deprecated" in str(w.message)
+        for w in dep_warnings
+    )
