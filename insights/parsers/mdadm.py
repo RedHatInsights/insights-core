@@ -64,6 +64,7 @@ class MDAdmMetadata(CommandParser, dict):
         >>> mdadm["Events"]
         60
     """
+
     def parse_content(self, content):
         mdadm_dev = "/mdadm_-E_.dev."
         if mdadm_dev in self.file_path:
@@ -88,6 +89,7 @@ class MDAdmDetailDevice(dict):
     The md device's properties in <property name> : <property value> format
     will be stored seprately, and are accessable via <property name>.
     """
+
     def parse_device(self, content, device_start_index, table_start_index, index):
 
         self['device_name'] = content[device_start_index].split(':')[0]
@@ -235,3 +237,45 @@ class MDAdmDetail(CommandParser, list):
         # Empty prased data
         if len(self) < 1:
             raise SkipComponent('Empty parsed device')
+
+
+@parser(Specs.mdadm_detail_platform)
+class MDAdmDetailPlatform(CommandParser, dict):
+    """
+    Parser for output of ``mdadm --detail-platform``.
+
+    Sample output::
+
+        Platform : Intel(R) Rapid Storage Technology
+        Version : 14.8.0.2377
+        RAID Levels : raid0 raid1 raid10 raid5
+        Chunk Sizes : 4k 8k 16k 32k 64k 128k
+        2TB volumes : supported
+        2TB disks : supported
+        Max Disks : 7
+        Max Volumes : 2 per array, 4 per controller
+        I/O Controller : /sys/devices/pci0000:00/0000:00:1f.2 (SATA)
+        Port4 : /dev/sdd (ZDEEX7A8)
+
+    Examples:
+        >>> mdadm_plat["Platform"]
+        'Intel(R) Rapid Storage Technology'
+        >>> mdadm_plat["Version"]
+        '14.8.0.2377'
+        >>> mdadm_plat["Max Disks"]
+        '7'
+
+    Raises:
+        SkipComponent: When content is empty or no platform data is found.
+    """
+
+    def parse_content(self, content):
+        if len(content) == 0:
+            raise SkipComponent("Empty content of command output")
+
+        for key, val in split_kv_pairs(content, split_on=':').items():
+            self[key] = val
+
+        # If no data was parsed, skip
+        if len(self) == 0:
+            raise SkipComponent("No platform data found")
