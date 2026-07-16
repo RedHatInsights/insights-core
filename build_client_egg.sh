@@ -17,7 +17,7 @@ fi
 
 rm -f insights.zip
 rm -rf insights_core.egg-info
-cp MANIFEST.in.client MANIFEST.in
+cp MANIFEST.in.client.egg MANIFEST.in
 # use the insights/tests/filters.yaml for testing
 if [ "$TARGET" == "testing" ]; then
     cp -f insights/tests/filters.yaml insights/filters.yaml
@@ -28,6 +28,7 @@ cp insights_core.egg-info/* tmp/EGG-INFO
 cp -r insights tmp
 cd tmp
 # remove unneeded bits to save on space
+rm -f insights/client/phase/v2.py
 rm -rf insights/archive
 find insights -path '*tests/*' -delete
 find insights -name '*.pyc' -delete
