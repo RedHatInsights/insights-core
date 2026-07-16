@@ -5,7 +5,7 @@ Utilities for POSIX Bracket Expressions
 
 Per the Insights Client Configuration Guide, the "POSIX Bracket Expressions",
 is also supported by the "file-content-redaction.yaml":
--  https://access.redhat.com/documentation/en-us/red_hat_insights/2023/html/client_configuration_guide_for_red_hat_insights/con-insights-client-data-redaction_insights-cg-data-redaction#proc-insights-client-cg-redact-pattern-keyword-yaml_insights-cg-data-redaction
+-  https://docs.redhat.com/en/documentation/red_hat_lightspeed/1-latest/html/client_configuration_guide_for_red_hat_lightspeed_with_fedramp/client-data-redaction#proc-insights-client-cg-redact-pattern-keyword-yaml
 
 
 This module provides a method to convert the "POSIX Bracket Expressions" to
