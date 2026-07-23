@@ -535,6 +535,61 @@ class ContainerCommandProvider(ContainerProvider):
         return 'ContainerCommandProvider("%r")' % self.cmd
 
 
+class HostBasedContainerCommandProvider(CommandOutputProvider):
+    """
+    Provider for commands executed on the host that produce container-related data.
+
+    Unlike ContainerCommandProvider which parses 'podman exec' commands, this class runs commands
+    directly on the host using container metadata (e.g., overlay paths). The image, engine, and container_id
+    are set explicitly rather than parsed from the command string.
+
+    Inherits from CommandOutputProvider directly to keep the hierarchy shallow and separate from in-container providers.
+    Uses root="insights_containers" to honor the existing archive convention for container-related data.
+    """
+
+    def __init__(
+        self,
+        cmd_path,
+        ctx,
+        image=None,
+        engine=None,
+        container_id=None,
+        args=None,
+        split=True,
+        keep_rc=False,
+        ds=None,
+        timeout=None,
+        inherit_env=None,
+        override_env=None,
+        signum=None,
+        cleaner=None,
+    ):
+        super(HostBasedContainerCommandProvider, self).__init__(
+            cmd_path,
+            ctx,
+            root="insights_containers",
+            save_as=None,
+            args=args,
+            split=split,
+            keep_rc=keep_rc,
+            ds=ds,
+            timeout=timeout,
+            inherit_env=inherit_env,
+            override_env=override_env,
+            signum=signum,
+            cleaner=cleaner,
+        )
+        self.image = image
+        self.engine = engine
+        self.container_id = container_id
+        self.relative_path = os.path.join(
+            container_id, "insights_commands", mangle_command(self.cmd)
+        )
+
+    def __repr__(self):
+        return 'HostBasedContainerCommandProvider("%r")' % self.cmd
+
+
 class RegistryPoint(object):
     # Marker class for declaring that an element of a `SpecSet` subclass
     # is a registry point against which further subclasses can register
@@ -1409,6 +1464,120 @@ class container_execute(foreach_execute):
         raise ContentException("No results found for [%s]" % self.cmd)
 
 
+class container_foreach_execute(foreach_execute):
+    """
+    Execute a command on the host for each container using data from a provider datasource.
+
+    This is similar to container_execute, but instead of running commands inside containers
+    with 'podman exec', it runs commands on the host using container-related data (e.g, overlay
+    filesystem paths) from the provider datasource.
+
+    The provider datasource should return a list of tuples where:
+    - First 3 elements are (image, engine, container_id)
+    - Fourth element is: the value to substitute into command (e.g, merged_dir path)
+    - Remaining elements (if any) are: additional arguments for command substitution
+
+    Args:
+        provider (list): A datasource that returns a list of tuples with format (image, engine, container_id,
+                        substitution_value, <optional_args>)
+        cmd (str): A command template with %s placeholder(s). The first %s will be replaced with the substitution_value
+                (4th tuple element), and any additional %s will be replaced with optional_args.
+        context (ExecutionContext): The context under which the datasource should run.
+        split (bool): Whether the output should be split into a list of lines.
+        keep_rc (bool): Whether to return the error code. If False, non-zero return codes raise CalledProcessError. If
+                        True, return code and output are returned.
+        timeout (int): Seconds to wait for command completion. None for infinite.
+        inherit_env (list): Environment variables to override from the calling process.
+        override_env (dict): Environment variables to override in the calling process.
+
+    Returns:
+        function: A datasource that returns a list of HostBasedContainerCommandProvider outputs, each preserving
+        container metadata (image, engine, container_id).
+
+    Example:
+        If provider returns: ("rhel8", "podman", "/var/lib/.../merged")
+        AND cmd is: "/usr/bin/rpm -qa --root %s"
+        Then the_cmd becomes: "/usr/bin/rpm -qa --root /var/lib/.../merged"
+    """
+
+    def __call__(self, broker):
+        result = []
+        source = broker[self.provider]
+        cleaner = broker.get('cleaner')
+        ctx = broker[self.context]
+
+        if isinstance(source, ContentProvider):
+            source = source.content
+        if not isinstance(source, (list, set)):
+            source = [source]
+
+        for e in source:
+            try:
+                # e = (image, engine, container_id, substitution_value, <optional_args>)
+                image, engine, cid = e[0], e[1], e[2]
+
+                # Fourth element is the value to substitute into command
+                # (e.g, merged_dir for rpm --root command)
+                substitution_value = e[3]
+
+                # Any remaining elements are additional args for the command
+                additional_args = e[4:] if len(e) > 4 else ()
+
+                # Build args tuple: (substitution_value, <additional_args>)
+                all_agrs = (substitution_value,) + additional_args if additional_args else (substitution_value,)
+
+                # Substitute all args at once
+                # Note: we must handle rpm format strings that contain %{...} carefully
+                # The self.cmd should only have one %s (for merged_dir), but may have %{Name} etf for rpm
+                if "%s" in self.cmd:
+                    try:
+                        the_cmd = self.cmd % all_agrs
+                    except (TypeError, ValueError):
+                        # If % substitution fails (e.g, due to %{...} in rpm format),
+                        # fall back to simple string replacement for the first %s only
+                        the_cmd = self.cmd.replace("%s", substitution_value, 1)
+                        # Then handle additional args if any
+                        for arg in additional_args:
+                            the_cmd = the_cmd.replace("%s", str(arg), 1)
+                else:
+                    the_cmd = self.cmd
+
+                cmd_exec = self.cmd.split(None, 1)[0]
+                wrapped_cmd = 'sh -c "command -v {0} > /dev/null && {1}"'.format(cmd_exec, the_cmd)
+
+                # Create HostBasedContainerCommandProvider to preserve metadata
+                # This provider doesn't parse the command string like ContainerCommandProvider.
+                # so it works with host-side commands that don't follow 'podman exec' format
+
+                ccp = HostBasedContainerCommandProvider(
+                    wrapped_cmd,
+                    ctx,
+                    image=image,
+                    engine=engine,
+                    container_id=cid,
+                    args=e,
+                    split=self.split,
+                    keep_rc=self.keep_rc,
+                    ds=self,
+                    timeout=self.timeout,
+                    inherit_env=self.inherit_env,
+                    override_env=self.override_env,
+                    signum=self.signum,
+                    cleaner=cleaner,
+                )
+
+                result.append(ccp)
+
+            except NoFilterException as nfe:
+                raise nfe
+            except Exception:
+                log.debug(traceback.format_exc())
+
+        if result:
+            return result
+        raise ContentException("No results found for [%s]" % self.cmd)
+
+
 class container_collect(foreach_execute):
     """
     Collects the files at the resulting path in running containers.
@@ -1742,6 +1911,40 @@ def serialize_container_command(obj, root):
 
 @deserializer(ContainerCommandProvider)
 def deserialize_container_command(_type, data, root, ctx, ds):
+    rel = data["relative_path"]
+    res = SerializedOutputProvider(rel, root=root, ctx=ctx, ds=ds)
+    res.rc = data["rc"]
+    res.cmd = data["cmd"]
+    res.args = data["args"]
+    res.image = data["image"]
+    res.engine = data["engine"]
+    res.container_id = data["container_id"]
+    return res
+
+
+@serializer(HostBasedContainerCommandProvider)
+def serialize_oob_container_command(obj, root):
+    rel = os.path.join("insights_containers", obj.relative_path)
+    if obj.save_as:
+        rel = os.path.join("insights_containers", obj.save_as)
+        if obj.save_as.endswith("/"):
+            rel = os.path.join(rel, os.path.basename(obj.relative_path))
+    dst = os.path.join(root, rel)
+    rc = obj.write(dst)
+    return {
+        "rc": rc,
+        "cmd": None,
+        "args": obj.args,
+        "save_as": bool(obj.save_as),
+        "relative_path": rel,
+        "image": obj.image,
+        "engine": obj.engine,
+        "container_id": obj.container_id,
+    }
+
+
+@deserializer(HostBasedContainerCommandProvider)
+def desdeserialize_oob_container_command(_type, data, root, ctx, ds):
     rel = data["relative_path"]
     res = SerializedOutputProvider(rel, root=root, ctx=ctx, ds=ds)
     res.rc = data["rc"]
