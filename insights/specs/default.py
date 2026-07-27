@@ -46,6 +46,7 @@ from insights.specs import Specs
 from insights.specs.datasources import (
     aws,
     awx_manage,
+    azure,
     client_metadata,
     cloud_init,
     corosync as corosync_ds,
@@ -167,6 +168,7 @@ class DefaultSpecs(Specs):
         "/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmId?api-version=2021-12-13&format=text --connect-timeout 5",
         deps=[IsAzure],
     )
+    azure_instance_compute_metadata = azure.azure_instance_compute_metadata
     azure_instance_plan = simple_command(
         "/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2021-12-13&format=json --connect-timeout 5",
         deps=[IsAzure],
@@ -529,6 +531,7 @@ class DefaultSpecs(Specs):
     )
     md5chk_files = foreach_execute(md5chk.files, "/usr/bin/md5sum %s", keep_rc=True)
     mdadm_D = command_with_args("/usr/sbin/mdadm -D %s", mdadm.raid_devices, keep_rc=True)
+    mdadm_detail_platform = simple_command("/usr/sbin/mdadm --detail-platform")
     mdatp_managed = simple_file("/etc/opt/microsoft/mdatp/managed/mdatp_managed.json")
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
@@ -887,6 +890,7 @@ class DefaultSpecs(Specs):
         ]
     )
     sys_block_queue_stable_writes = glob_file("/sys/block/*/queue/stable_writes")
+    sys_block_queue_discard_max_bytes = glob_file("/sys/block/*/queue/discard_max_bytes")
     sys_block_queue_max_segment_size = glob_file("/sys/block/*/queue/max_segment_size")
     sys_fs_cgroup_memory_tasks_number = sys_fs_cgroup_memory.tasks_number
     sys_fs_cgroup_uniq_memory_swappiness = sys_fs_cgroup_memory.uniq_memory_swappiness
@@ -930,11 +934,13 @@ class DefaultSpecs(Specs):
         ]
     )  # XML
     teamdctl_config_dump = foreach_execute(
-        ethernet.team_interfaces, "/usr/bin/teamdctl %s config dump",
+        ethernet.team_interfaces,
+        "/usr/bin/teamdctl %s config dump",
         deps=[SELinuxDisabled],
     )  # RHEL-150529
     teamdctl_state_dump = foreach_execute(
-        ethernet.team_interfaces, "/usr/bin/teamdctl %s state dump",
+        ethernet.team_interfaces,
+        "/usr/bin/teamdctl %s state dump",
         deps=[SELinuxDisabled],
     )  # RHEL-150529
     testparm_s = simple_command("/usr/bin/testparm -s")

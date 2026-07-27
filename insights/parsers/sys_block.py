@@ -9,6 +9,9 @@ StableWrites - file ``/sys/block/*/queue/stable_writes``
 
 MaxSegmentSize - file ``/sys/block/*/queue/max_segment_size``
 -------------------------------------------------------------
+
+DiscardMaxBytes - file ``/sys/block/*/queue/discard_max_bytes``
+---------------------------------------------------------------
 """
 from insights import Parser, parser
 from insights.core.exceptions import ParseException
@@ -87,4 +90,38 @@ class MaxSegmentSize(Parser):
             raise ParseException("Error: unparsable content: {0}".format(content[0]))
 
     max_segment_size = property(lambda self: self._max_segment_size)
+    device = property(lambda self: self._device)
+
+
+@parser(Specs.sys_block_queue_discard_max_bytes)
+class DiscardMaxBytes(Parser):
+    """
+    Class for parsing the ``/sys/block/*/queue/discard_max_bytes`` files.
+
+    Typical content of the file is::
+
+        0
+
+    Examples:
+        >>> type(discard_max_bytes)
+        <class 'insights.parsers.sys_block.DiscardMaxBytes'>
+        >>> discard_max_bytes.discard_max_bytes
+        0
+        >>> discard_max_bytes.device
+        'sda'
+
+    Raises:
+        ParseException: When content is empty or unparsable
+    """
+
+    def parse_content(self, content):
+        if len(content) != 1:
+            raise ParseException('Error: {0}'.format(content or 'empty file'))
+        try:
+            self._discard_max_bytes = int(content[0].strip())
+            self._device = self.file_path.split('/')[-3]
+        except ValueError:
+            raise ParseException("Error: unparsable content: {0}".format(content[0]))
+
+    discard_max_bytes = property(lambda self: self._discard_max_bytes)
     device = property(lambda self: self._device)

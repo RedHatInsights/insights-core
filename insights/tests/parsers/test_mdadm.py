@@ -1,5 +1,5 @@
 from insights.parsers import mdadm
-from insights.parsers.mdadm import MDAdmMetadata, MDAdmDetail
+from insights.parsers.mdadm import MDAdmMetadata, MDAdmDetail, MDAdmDetailPlatform
 from insights.core.exceptions import SkipComponent
 from insights.tests import context_wrap
 
@@ -382,12 +382,46 @@ def test_mdadm_d_exceptions():
     assert 'Empty parsed device' in str(exc)
 
 
+MDADM_DETAIL_PLATFORM_CONTENT = """
+       Platform : Intel(R) Rapid Storage Technology
+        Version : 14.8.0.2377
+    RAID Levels : raid0 raid1 raid10 raid5
+    Chunk Sizes : 4k 8k 16k 32k 64k 128k
+      Max Disks : 7
+""".strip()
+
+
+def test_mdadm_detail_platform():
+    mdadm = MDAdmDetailPlatform(context_wrap(MDADM_DETAIL_PLATFORM_CONTENT))
+
+    assert mdadm["Platform"] == "Intel(R) Rapid Storage Technology"
+    assert mdadm["Version"] == "14.8.0.2377"
+    assert mdadm["RAID Levels"] == "raid0 raid1 raid10 raid5"
+    assert mdadm["Chunk Sizes"] == "4k 8k 16k 32k 64k 128k"
+    assert mdadm["Max Disks"] == "7"
+
+
+def test_mdadm_detail_platform_empty():
+    with pytest.raises(SkipComponent) as exc:
+        MDAdmDetailPlatform(context_wrap(""))
+    assert "Empty content of command output" in str(exc)
+
+
+def test_mdadm_detail_platform_no_data():
+    # Test when content exists but no valid key-value pairs are found
+    invalid_content = "Some random output without proper format"
+    with pytest.raises(SkipComponent) as exc:
+        MDAdmDetailPlatform(context_wrap(invalid_content))
+    assert "No platform data found" in str(exc)
+
+
 def test_doc_examples():
     env = {
         'mdadm': MDAdmMetadata(context_wrap(
             MDADM_CONTENT, path='insights_commands/mdadm_-E_.dev.loop0'
         )),
-        'mdadm_d': MDAdmDetail(context_wrap('\n'.join([MDADM_D_CONTENT_MD2, MDADM_D_CONTENT_MD1])))
+        'mdadm_d': MDAdmDetail(context_wrap('\n'.join([MDADM_D_CONTENT_MD2, MDADM_D_CONTENT_MD1]))),
+        'mdadm_plat': MDAdmDetailPlatform(context_wrap(MDADM_DETAIL_PLATFORM_CONTENT))
     }
     failed, total = doctest.testmod(mdadm, globs=env)
     assert failed == 0

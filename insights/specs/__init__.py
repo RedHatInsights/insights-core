@@ -45,6 +45,9 @@ class Specs(SpecSet):
     awx_manage_check_license_data = RegistryPoint(filterable=True)
     awx_manage_print_settings = RegistryPoint()
     azure_instance_id = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
+    azure_instance_compute_metadata = RegistryPoint(
+        filterable=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
+    )
     azure_instance_plan = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     azure_instance_type = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     azure_load_balancer = RegistryPoint()
@@ -474,6 +477,7 @@ class Specs(SpecSet):
     md5chk_files = RegistryPoint(multi_output=True)
     mdadm_D = RegistryPoint()
     mdadm_E = RegistryPoint(multi_output=True)
+    mdadm_detail_platform = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     mdatp_managed = RegistryPoint()
     mdstat = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     meminfo = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
@@ -832,6 +836,7 @@ class Specs(SpecSet):
     swift_object_expirer_conf = RegistryPoint()
     swift_proxy_server_conf = RegistryPoint()
     sys_block_queue_stable_writes = RegistryPoint(multi_output=True)
+    sys_block_queue_discard_max_bytes = RegistryPoint(multi_output=True)
     sys_block_queue_max_segment_size = RegistryPoint(multi_output=True)
     sys_fs_cgroup_memory_tasks_number = RegistryPoint()  # No need to clean
     sys_fs_cgroup_uniq_memory_swappiness = RegistryPoint()  # No need to clean
