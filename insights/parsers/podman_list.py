@@ -47,7 +47,7 @@ class PodmanListImages(DockerListImages):
 class PodmanListContainers(DockerListContainers):
     """
     .. warning::
-        This class is deprecated and will be removed from 3.8.0.
+        This class is deprecated and will be removed from 3.9.0.
         Please use the :class:`insights.parsers.podman.PodmanPsAllJson` instead.
 
     Handle the list of podman containers using the
