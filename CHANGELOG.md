@@ -2,7 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
-# insights-core-3.7.5.1 (2026-03-19)
+# insights-core-3.7.8.1 (2026-07-27)
+
+- feat: New spec "podman ps --all --no-trunc --size --format=json" ([PR 4790](https://github.com/RedHatInsights/insights-core/pull/4790))
+- feat: Add new spec thp_shmem_enabled ([PR 4789](https://github.com/RedHatInsights/insights-core/pull/4789))
+- fix(RHINENG-22265): Fix broken documentation links in code-comments ([PR 4788](https://github.com/RedHatInsights/insights-core/pull/4788))
+- feat: add spec and parser for mdadm_detail_platform (RHINENG-27037) ([PR 4787](https://github.com/RedHatInsights/insights-core/pull/4787))
+
+# insights-core-3.7.7.1 (2026-06-16)
 
 - feat: Add new datasource spec azure_instance_compute_metadata ([PR 4772](https://github.com/RedHatInsights/insights-core/pull/4772))
 
