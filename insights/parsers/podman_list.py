@@ -11,6 +11,7 @@ For more details, please refer to the
 """
 from insights import parser
 from insights.specs import Specs
+from insights.util import deprecated
 from insights.parsers.docker_list import DockerListContainers, DockerListImages
 
 
@@ -45,6 +46,10 @@ class PodmanListImages(DockerListImages):
 @parser(Specs.podman_list_containers)
 class PodmanListContainers(DockerListContainers):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.8.0.
+        Please use the :class:`insights.parsers.podman.PodmanPsAllJson` instead.
+
     Handle the list of podman containers using the
     `class:insights.parsers.docker_list.DockerListContainers` parser class.
 
@@ -67,4 +72,7 @@ class PodmanListContainers(DockerListContainers):
         >>> containers.containers['tender_rosalind']['STATUS']
         'Exited (137) 18 hours ago'
     """
-    pass
+
+    def __init__(self, *args, **kwargs):
+        deprecated(PodmanListContainers, "Please use the :class:`insights.parsers.podman.PodmanPsAllJson` instead.", "3.8.0")
+        super(PodmanListContainers, self).__init__(*args, **kwargs)
