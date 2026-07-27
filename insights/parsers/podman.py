@@ -74,17 +74,15 @@ class PodmanPsAllJson(JSONParser):
         data (list): A list containing the parsed container information as dictionaries
 
     Examples:
-        >>> type(podman_ps_json.data)
-        <class 'list'>
-        >>> len(podman_ps_json.data)
-        2
-        >>> podman_ps_json.data[0]["Id"]
-        '03e2861336a76e29155836113ff6560cb70780c32f95062642993b2b3d0fc216'
-        >>> podman_ps_json.data[0]["State"]
-        'running'
-        >>> podman_ps_json.data[0]["Names"]
-        ['angry_saha']
-        >>> podman_ps_json.data[0]["Image"]
-        'rhel7_httpd'
+        >>> len(podman_ps_json.data) == 2
+        True
+        >>> podman_ps_json.data[0]["Id"] == '03e2861336a76e29155836113ff6560cb70780c32f95062642993b2b3d0fc216'
+        True
+        >>> podman_ps_json.data[0]["State"] == 'running'
+        True
+        >>> podman_ps_json.data[0]["Names"] == ['angry_saha']
+        True
+        >>> podman_ps_json.data[0]["Image"] == 'rhel7_httpd'
+        True
     """
     pass
