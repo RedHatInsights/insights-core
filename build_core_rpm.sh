@@ -19,28 +19,35 @@ if [[ "${PYTHON_VERSION%%.*}" != "3" ]]; then
 fi
 
 # Check build target
+
+# playbook-verifier will be excluded from rpm package by default
+MANIFEST="MANIFEST.in.rpm"
 if [ "$TARGET" == "internal" ]; then
     # backforward compatible with internal RPM building
     echo "Building insights-core RPM for internal usage."
     BUILDTARGET="for_internal 1"
-    MANIFEST="MANIFEST.in.core"
-elif [ "$TARGET" == "release" ] || [ "$TARGET" == "testing" ]; then
+elif [ "$TARGET" == "release" ] || [ "$TARGET" == "testing" ] || [ "$TARGET" == "legacy_release" ]; then
     if [ "$TARGET" == "release" ]; then
         # for RPM release
         echo "Building insights-core RPM for insights-client."
         BUILDTARGET="with_selinux 1"
+    elif [ "$TARGET" == "legacy_release" ]; then
+        # for RHEL10.2.z and RHEL9.8.z RPM release
+        echo "Building insights-core RPM for RHEL10.2.z or RHEL9.8.z."
+        BUILDTARGET="with_selinux 1"
+        # use rpm_legacy MANIFEST file
+        MANIFEST="MANIFEST.in.rpm_legacy"
     else
         # for RPM testing (PR Check)
         echo "Building insights-core RPM for testing with insights-client."
         BUILDTARGET="with_selinux 0"
     fi
-    MANIFEST="MANIFEST.in.client"
     # - remove depedencies for data processing
     sed -i -e '/cachecontrol/d' -e '/defusedxml/d' -e '/jinja2/d' -e '/lockfile/d' -e '/redis/d' -e '/setuptools;/d' pyproject.toml setup.py
     # - remove entrypoints for data processing
     sed -i -e '/insights-.*=/d' -e '/mangle =/d' pyproject.toml setup.py
 else
-    echo "Error: invalid build target: '$TARGET'. Use 'internal', 'release', or 'testing'"
+    echo "Error: invalid build target: '$TARGET'. Use 'internal', 'release', 'legacy_release', or 'testing'"
     exit 1
 fi
 
