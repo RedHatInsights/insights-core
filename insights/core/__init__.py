@@ -1176,6 +1176,30 @@ class TextFileOutput(Parser, metaclass=ScanMeta):
         cls.scan(result_key, _scan)
 
 
+def _parse_no_year_safe(logstamp, time_format, logs_have_year):
+    """Parse logstamp with time_format, side-stepping strptime's 1900-default-year ambiguity.
+
+    When time_format has no year component, strptime defaults to 1900, which is not
+    a leap year, causing "Feb 29" to raise ValueError. Since the parsed year is always
+    discarded or overwritten by every caller, we inject an explicit leap year (2000)
+    up front instead of relying on the deprecated implicit default.
+
+    Args:
+        logstamp (str): The timestamp string to parse
+        time_format (str): The strptime format string
+        logs_have_year (bool): Whether the format contains %Y or %y
+
+    Returns:
+        datetime.datetime: The parsed datetime object
+
+    Raises:
+        ValueError: If the timestamp is genuinely invalid (e.g., Feb 30, or wrong month/day)
+    """
+    if logs_have_year:
+        return datetime.datetime.strptime(logstamp, time_format)
+    return datetime.datetime.strptime('2000 ' + logstamp, '%Y ' + time_format)
+
+
 class LogFileOutput(TextFileOutput):
     """
     Class for parsing log file content.  For more details check it's super
@@ -1326,9 +1350,9 @@ class LogFileOutput(TextFileOutput):
             logs_have_year = '%Y' in time_format or '%y' in time_format
             time_re = re.compile('(' + timefmt_re.sub(replacer, time_format) + ')')
 
-            # Curry strptime with time_format string.
+            # Curry _parse_no_year_safe with time_format string.
             def test_parser(logstamp):
-                return datetime.datetime.strptime(logstamp, time_format)
+                return _parse_no_year_safe(logstamp, time_format, logs_have_year)
 
             parse_fn = test_parser
         elif isinstance(time_format, list):
@@ -1338,14 +1362,16 @@ class LogFileOutput(TextFileOutput):
             )
 
             def test_all_parsers(logstamp):
-                # One of these must match, because the regex has selected only
-                # strings that will match.
+                # Try each format. If all fail, raise ValueError describing the failure.
+                last_error = None
                 for tf in time_format:
                     try:
-                        ts = datetime.datetime.strptime(logstamp, tf)
-                    except ValueError:
-                        pass
-                return ts
+                        return _parse_no_year_safe(logstamp, tf, '%Y' in tf or '%y' in tf)
+                    except ValueError as e:
+                        last_error = e
+                if last_error:
+                    raise last_error
+                raise ValueError(f"No time format matched '{logstamp}'")
 
             parse_fn = test_all_parsers
         else:
@@ -1372,7 +1398,13 @@ class LogFileOutput(TextFileOutput):
             # Otherwise, search all lines
             match = time_re.search(line)
             if match:
-                logstamp = parse_fn(match.group(0))
+                try:
+                    logstamp = parse_fn(match.group(0))
+                except ValueError:
+                    # Timestamp did not parse validly (e.g., Feb 30, or a format
+                    # mismatch in multi-format logs). Skip this line and continue
+                    # including/excluding based on prior state.
+                    continue
                 if not logs_have_year:
                     # Substitute timestamp year for logstamp year
                     logstamp = logstamp.replace(year=timestamp.year)
@@ -1466,8 +1498,9 @@ class Syslog(LogFileOutput):
             info_splits = info.rsplit(None, 2)
             if len(info_splits) == 3:
                 logstamp = info_splits[0]
+                logs_have_year = '%Y' in self.time_format or '%y' in self.time_format
                 try:
-                    datetime.datetime.strptime(logstamp, self.time_format)
+                    _parse_no_year_safe(logstamp, self.time_format, logs_have_year)
                 except ValueError:
                     return msg_info
                 msg_info['timestamp'] = logstamp
