@@ -17,6 +17,35 @@ May 10 15:36:19 lxc-rhel68-sat56 yum[11954]: Updated: sos-3.2-40.el6.noarch
 """.strip()
 
 
+MSGINFO_FEB29 = """
+Feb 28 12:00:01 testhost CROND[1234]: (root) CMD (/usr/bin/test)
+Feb 29 09:15:42 testhost watchdog[5678]: shutting down the system because of error 1
+Feb 29 10:30:00 testhost sshd[9012]: Accepted publickey for user1
+Mar  1 08:00:01 testhost CROND[3456]: (root) CMD (/usr/bin/test)
+""".strip()
+
+
+def test_syslog_feb29():
+    """Feb 29 log lines must parse correctly despite strptime defaulting to 1900 (not a leap year)."""
+    msg_info = Syslog(context_wrap(MSGINFO_FEB29))
+    feb29_lines = msg_info.get('shutting down')
+    assert len(feb29_lines) == 1
+    assert feb29_lines[0].get('timestamp') == 'Feb 29 09:15:42'
+    assert feb29_lines[0].get('hostname') == 'testhost'
+    assert feb29_lines[0].get('procname') == 'watchdog[5678]'
+    assert feb29_lines[0].get('message') == 'shutting down the system because of error 1'
+
+    sshd_lines = msg_info.get('Accepted publickey')
+    assert len(sshd_lines) == 1
+    assert sshd_lines[0].get('timestamp') == 'Feb 29 10:30:00'
+    assert sshd_lines[0].get('procname') == 'sshd[9012]'
+
+    all_lines = msg_info.get('CMD')
+    assert len(all_lines) == 2
+    assert all_lines[0].get('timestamp') == 'Feb 28 12:00:01'
+    assert all_lines[1].get('timestamp') == 'Mar  1 08:00:01'
+
+
 def test_syslog():
     msg_info = Syslog(context_wrap(MSGINFO))
     bona_list = msg_info.get('(root) LIST (root)')
