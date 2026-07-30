@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.8
+Version:        3.8.0
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -123,6 +123,10 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Jul 30 2026 Ping Qin <piqin@redhat.com> 3.8.0-1
+- feat: exclude insights.client.apps module from rpm building
+  (30404410+qinpingli@users.noreply.github.com)
+
 * Mon Jul 27 2026 Ping Qin <piqin@redhat.com> 3.7.8-1
 - feat: New spec "podman ps --all --no-trunc --size --format=json" 
   (#4790) (30404410+qinpingli@users.noreply.github.com)
@@ -132,6 +136,7 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
   (#4788) (30404410+qinpingli@users.noreply.github.com)
 - feat: add spec and parser for mdadm_detail_platform (RHINENG-27037) 
   (#4787) (30404410+qinpingli@users.noreply.github.com)
+
 * Sat Jun 13 2026 Ping Qin <piqin@redhat.com> 3.7.7-1
 - feat: Add new datasource spec azure_instance_compute_metadata (#4772)
   (30404410+qinpingli@users.noreply.github.com)

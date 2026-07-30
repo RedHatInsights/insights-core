@@ -3,6 +3,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.8.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.0) (2026-07-30)
+
+- feat: exclude insights.client.apps module from rpm building ([PR 4796](https://github.com/RedHatInsights/insights-core/pull/4796))
+
 # [insights-core-3.7.8](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.8) (2026-07-27)
 
 - feat: New spec "podman ps --all --no-trunc --size --format=json" ([PR 4790](https://github.com/RedHatInsights/insights-core/pull/4790))
