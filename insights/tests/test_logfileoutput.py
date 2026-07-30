@@ -321,3 +321,140 @@ def test_logs_with_milliseconds():
     log = FakeTowerLog(ctx)
     assert len(log.lines) == 4
     assert len(list(log.get_after(datetime(2020, 5, 28, 19, 25, 46, 944)))) == 3
+
+
+# Tests for leap-year handling in no-year-format logs (cpython#70647)
+
+LOGS_FEB29_NO_YEAR = """
+Feb 28 10:00:00 msg before feb29
+Feb 29 14:30:00 feb29 leap day marker
+Mar  1 09:15:00 msg after leap day
+""".strip()
+
+
+class LogsNoYearFormat(LogFileOutput):
+    time_format = '%b %d %H:%M:%S'
+
+
+def test_logfileoutput_get_after_feb29_no_year():
+    """LogFileOutput.get_after() must handle Feb 29 with no-year time_format."""
+    ctx = context_wrap(LOGS_FEB29_NO_YEAR, path='/var/log/test.log')
+    log = LogsNoYearFormat(ctx)
+    lines = list(log.get_after(datetime(2000, 2, 1)))
+    assert len(lines) == 3
+    # Verify Feb 29 line is included and parsed correctly (must be line 2)
+    assert 'Feb 29 14:30:00' in lines[1].get('raw_message', '')
+    assert 'feb29 leap day' in lines[1].get('raw_message', '')
+
+
+LOGS_INVALID_DATE_NO_YEAR = """
+Feb 28 10:00:00 valid line before
+Feb 30 14:30:00 invalid feb 30 should be skipped
+Mar  1 09:15:00 valid line after
+""".strip()
+
+
+def test_logfileoutput_get_after_invalid_date_no_year():
+    """LogFileOutput.get_after() must gracefully skip invalid dates in no-year format."""
+    ctx = context_wrap(LOGS_INVALID_DATE_NO_YEAR, path='/var/log/test.log')
+    log = LogsNoYearFormat(ctx)
+    lines = list(log.get_after(datetime(2000, 2, 1)))
+    # Feb 30 is invalid and should be skipped, leaving 2 valid lines
+    assert len(lines) == 2
+    assert 'before' in lines[0].get('raw_message', '')
+    assert 'after' in lines[1].get('raw_message', '')
+
+
+LOGS_FEB29_WITH_YEAR = """
+2000-02-28 10:00:00 before leap day
+2000-02-29 14:30:00 leap29 marker
+2000-03-01 09:15:00 after leap day
+""".strip()
+
+
+class LogsWithYearFormat(LogFileOutput):
+    time_format = '%Y-%m-%d %H:%M:%S'
+
+
+def test_logfileoutput_get_after_with_year():
+    """LogFileOutput.get_after() must work correctly with year in time_format."""
+    ctx = context_wrap(LOGS_FEB29_WITH_YEAR, path='/var/log/test.log')
+    log = LogsWithYearFormat(ctx)
+    lines = list(log.get_after(datetime(2000, 2, 1)))
+    assert len(lines) == 3
+    # Verify Feb 29 2000 (a real leap year) is parsed correctly (must be line 2)
+    assert '2000-02-29 14:30:00' in lines[1].get('raw_message', '')
+    assert 'leap29 marker' in lines[1].get('raw_message', '')
+
+
+LOGS_MULTI_FORMAT_NO_YEAR = """
+Feb 28 10:00:00 old syslog format before feb29
+Feb 29 14:30:00 leap day in syslog format
+Mar  1 09:15:00 new syslog format after leap day
+""".strip()
+
+LOGS_MULTI_FORMAT_INVALID = """
+2000-02-28 10:00:00 valid line before
+2000-02-30 14:30:00 invalid feb 30, no format accepts it
+2000-03-01 09:15:00 valid line after
+""".strip()
+
+
+class LogsListFormatNoYear(LogFileOutput):
+    """List-based time_format with NO YEAR (tests line 1358-1374 multi-format path
+    with the leap-year bug that _parse_no_year_safe fixes)."""
+    time_format = ['%b %d %H:%M:%S', '%b %d %H:%M:%S']  # Both formats, no year
+
+
+class LogsDictFormatNoYear(LogFileOutput):
+    """Dict-based time_format with NO YEAR (tests dict-to-list conversion at
+    line 1347-1348 and the no-year leap-day bug)."""
+    time_format = {'fmt1': '%b %d %H:%M:%S', 'fmt2': '%b %d %H:%M:%S'}
+
+
+class LogsListFormatInvalid(LogFileOutput):
+    """List-based time_format where an invalid date causes all formats to fail
+    (tests line 1372-1374 else condition when last_error is raised)."""
+    time_format = ['%Y-%m-%d %H:%M:%S', '%y%m%d %H:%M:%S']
+
+
+def test_logfileoutput_list_format_feb29_no_year():
+    """LogFileOutput.get_after() with list time_format (no year) must handle Feb 29.
+
+    Tests line 1358-1374 (list branch) with _parse_no_year_safe fixing the Feb 29 bug.
+    """
+    ctx = context_wrap(LOGS_MULTI_FORMAT_NO_YEAR, path='/var/log/test.log')
+    log = LogsListFormatNoYear(ctx)
+    lines = list(log.get_after(datetime(2000, 2, 1)))
+    # Should parse all 3 lines including Feb 29 (via _parse_no_year_safe)
+    assert len(lines) == 3
+    # Verify the Feb 29 line is parsed
+    assert 'Feb 29 14:30:00' in lines[1].get('raw_message', '')
+
+
+def test_logfileoutput_dict_format_feb29_no_year():
+    """LogFileOutput.get_after() with dict time_format (no year) must handle Feb 29.
+
+    Tests dict-to-list conversion at line 1347-1348 and _parse_no_year_safe fix.
+    """
+    ctx = context_wrap(LOGS_MULTI_FORMAT_NO_YEAR, path='/var/log/test.log')
+    log = LogsDictFormatNoYear(ctx)
+    lines = list(log.get_after(datetime(2000, 2, 1)))
+    # Should parse all 3 lines (dict converted to list, Feb 29 handled)
+    assert len(lines) == 3
+    # Verify the Feb 29 line is parsed
+    assert 'Feb 29 14:30:00' in lines[1].get('raw_message', '')
+
+
+def test_logfileoutput_list_format_invalid_date_all_formats_fail():
+    """LogFileOutput.get_after() with list time_format must skip dates invalid in all formats.
+
+    Tests line 1372-1374 else condition: when all formats fail, last_error is raised.
+    """
+    ctx = context_wrap(LOGS_MULTI_FORMAT_INVALID, path='/var/log/test.log')
+    log = LogsListFormatInvalid(ctx)
+    lines = list(log.get_after(datetime(2000, 2, 1)))
+    # Feb 30 is invalid in both formats, should be skipped, leaving 2 valid lines
+    assert len(lines) == 2
+    assert 'before' in lines[0].get('raw_message', '')
+    assert 'after' in lines[1].get('raw_message', '')
