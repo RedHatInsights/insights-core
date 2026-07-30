@@ -1469,7 +1469,15 @@ class Syslog(LogFileOutput):
                 try:
                     datetime.datetime.strptime(logstamp, self.time_format)
                 except ValueError:
-                    return msg_info
+                    if '%y' not in self.time_format.lower():
+                        try:
+                            # strptime defaults to 1900 (not a leap year), so
+                            # "Feb 29" raises ValueError. Retry with a leap year.
+                            datetime.datetime.strptime("2000 " + logstamp, "%Y " + self.time_format)
+                        except ValueError:
+                            return msg_info
+                    else:
+                        return msg_info
                 msg_info['timestamp'] = logstamp
                 msg_info['hostname'] = info_splits[1]
                 msg_info['procname'] = info_splits[2]
