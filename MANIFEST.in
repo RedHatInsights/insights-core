@@ -1,3 +1,4 @@
+# Use to build sdist and wheel
 include insights/defaults.yaml
 include insights/NAME
 include insights/VERSION
