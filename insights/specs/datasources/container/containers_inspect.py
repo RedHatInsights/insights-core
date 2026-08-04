@@ -3,6 +3,7 @@ Custom datasources for containers inspect information
 """
 
 import json
+import logging
 import os
 
 from insights.core.context import HostContext
@@ -12,6 +13,8 @@ from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, foreach_execute
 from insights.specs import Specs
 from insights.specs.datasources.container import running_rhel_containers
+
+log = logging.getLogger(__name__)
 
 
 @datasource(running_rhel_containers, HostContext)
@@ -101,4 +104,59 @@ def containers_inspect_data_datasource(broker):
                 )
     except Exception as e:
         raise ContentException("Unexpected content exception:{e}".format(e=str(e)))
+    raise SkipComponent
+
+
+@datasource(LocalSpecs.containers_inspect_data_raw, running_rhel_containers, HostContext)
+def container_merged_dirs(broker):
+    """
+    This datasource extracts the MergedDir path from container inspect output for containers using overlay
+    storage driver.
+
+    The MergedDir is the unified view of all container layers and is used to run host-side RPM queries without
+    entering the container, eliminating container resource consumption.
+
+    Uses ``LocalSpecs.containers_inspect_data_raw`` so that ``/usr/bin/docker|podman inspect <container ID>``
+    runs only once per container, shared with ``containers_inspect_data_datasource``.
+
+    Returns:
+        list: List of tuples ``(image, engine, container_id, merged_dir)``
+              where merged_dir is the path to the container's overlay merged directory.
+
+    Raises:
+        SkipComponent: When no containers have valid overlay MergedDir or any exception occurs.
+    """
+    image_map = {}
+    for container in broker[running_rhel_containers]:
+        image, engine, container_id = container
+        image_map[container_id] = image
+
+    results = []
+
+    for item in broker[LocalSpecs.containers_inspect_data_raw]:
+        try:
+            inspect_data = json.loads(''.join(item.content))[0]
+
+            if not hasattr(item, 'args') or not item.args:
+                continue
+
+            engine, container_id = item.args
+            image = image_map.get(container_id, '')
+
+            merged_dir = inspect_data.get("GraphDriver", {}).get("Data", {}).get("MergedDir")
+            if not merged_dir:
+                continue
+
+            if not os.path.exists(merged_dir):
+                log.debug("MergedDir path does not exist: %s for container %s", merged_dir, container_id)
+                continue
+
+            results.append((image, engine, container_id, merged_dir))
+
+        except (json.JSONDecodeError, KeyError, IndexError, ValueError, AttributeError):
+            continue
+
+    if results:
+        return results
+
     raise SkipComponent

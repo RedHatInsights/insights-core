@@ -2,7 +2,7 @@ import json
 import pytest
 
 from collections import defaultdict
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from insights.core import dr, filters
 from insights.core.exceptions import SkipComponent
@@ -11,6 +11,7 @@ from insights.specs import Specs
 from insights.specs.datasources.container import running_rhel_containers
 from insights.specs.datasources.container.containers_inspect import (
     LocalSpecs,
+    container_merged_dirs,
     containers_inspect_data_datasource,
     running_rhel_containers_id,
 )
@@ -1060,3 +1061,326 @@ def test_containers_inspect_datasource_NG_output_2():
     with pytest.raises(SkipComponent) as e:
         containers_inspect_data_datasource(broker)
     assert 'Unexpected content exception' in str(e)
+
+
+"""container_merged_dirs tests"""
+
+INSPECT_MERGED_OVERLAY = """
+[
+    {
+        "Id": "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8",
+        "Created": "2022-10-21T23:47:24.506159696-04:00",
+        "GraphDriver": {
+            "Name": "overlay",
+            "Data": {
+                "LowerDir": "/var/lib/containers/storage/overlay/37a6f5f155300a48480d92a4ecf01c8694e39c3f8a52f77a39f154e5e0a3598f/diff",
+                "MergedDir": "/var/lib/containers/storage/overlay/de84239ee747de645c453b3b81e10849ea3e957e4316bc84ed3d0c32d7de88ee/merged",
+                "UpperDir": "/var/lib/containers/storage/overlay/de84239ee747de645c453b3b81e10849ea3e957e4316bc84ed3d0c32d7de88ee/diff",
+                "WorkDir": "/var/lib/containers/storage/overlay/de84239ee747de645c453b3b81e10849ea3e957e4316bc84ed3d0c32d7de88ee/work"
+            }
+        }
+    }
+]
+"""
+
+INSPECT_MERGED_NO_GRAPHDRIVER = """
+[
+    {
+        "Id": "28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e",
+        "Created": "2022-10-21T23:47:24.506159696-04:00"
+    }
+]
+"""
+
+INSPECT_MERGED_NO_DATA = """
+[
+    {
+        "Id": "528890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54",
+        "Created": "2022-10-21T23:47:24.506159696-04:00",
+        "GraphDriver": {
+            "Name": "overlay"
+        }
+    }
+]
+"""
+
+INSPECT_MERGED_NO_MERGEDDIR = """
+[
+    {
+        "Id": "38fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e",
+        "Created": "2022-10-21T23:47:24.506159696-04:00",
+        "GraphDriver": {
+            "Name": "overlay",
+            "Data": {
+                "LowerDir": "/var/lib/containers/storage/overlay/37a6f5f155300a48480d92a4ecf01c8694e39c3f8a52f77a39f154e5e0a3598f/diff"
+            }
+        }
+    }
+]
+"""
+
+INSPECT_MERGED_MALFORMED = """
+[
+    {
+        "Id": "malformed
+"""
+
+INSPECT_MERGED_OVERLAY_2 = """
+[
+    {
+        "Id": "c7efee959ea88ae637c1b87716eabc966ab456f2beea2622d0c13710e8a56fe3",
+        "Created": "2022-10-22T10:20:30.123456789-04:00",
+        "GraphDriver": {
+            "Name": "overlay",
+            "Data": {
+                "LowerDir": "/var/lib/containers/storage/overlay/abc123/diff",
+                "MergedDir": "/var/lib/containers/storage/overlay/xyz789/merged",
+                "UpperDir": "/var/lib/containers/storage/overlay/xyz789/diff",
+                "WorkDir": "/var/lib/containers/storage/overlay/xyz789/work"
+            }
+        }
+    }
+]
+"""
+
+CONTAINERS_FOR_MERGED = [
+    ("registry.access.redhat.com/rhel", "podman", "aeaea3ead527"),
+    ("registry.access.redhat.com/rhel8", "docker", "c7efee959ea8"),
+    ("registry.access.redhat.com/rhel", "podman", "28fb57be8bb2"),
+]
+
+
+def test_container_merged_dirs_valid_overlay():
+    """Test extraction of MergedDir from valid overlay container"""
+    inspect_data = Mock()
+    inspect_data.content = INSPECT_MERGED_OVERLAY.splitlines()
+    inspect_data.cmd = "/usr/bin/podman inspect aeaea3ead527"
+    inspect_data.args = ("podman", "aeaea3ead527")
+
+    broker = {
+        LocalSpecs.containers_inspect_data_raw: [inspect_data],
+        running_rhel_containers: [
+            ("registry.access.redhat.com/rhel", "podman", "aeaea3ead527"),
+        ],
+    }
+
+    with patch('insights.specs.datasources.container.containers_inspect.os.path.exists', return_value=True):
+        result = container_merged_dirs(broker)
+
+    assert len(result) == 1
+    assert result[0][0] == "registry.access.redhat.com/rhel"
+    assert result[0][1] == "podman"
+    assert result[0][2] == "aeaea3ead527"
+    assert result[0][3] == "/var/lib/containers/storage/overlay/de84239ee747de645c453b3b81e10849ea3e957e4316bc84ed3d0c32d7de88ee/merged"
+
+
+def test_container_merged_dirs_multiple_containers():
+    """Test extraction from multiple containers with mixed validity"""
+    inspect_valid_1 = Mock()
+    inspect_valid_1.content = INSPECT_MERGED_OVERLAY.splitlines()
+    inspect_valid_1.cmd = "/usr/bin/podman inspect aeaea3ead527"
+    inspect_valid_1.args = ("podman", "aeaea3ead527")
+
+    inspect_valid_2 = Mock()
+    inspect_valid_2.content = INSPECT_MERGED_OVERLAY_2.splitlines()
+    inspect_valid_2.cmd = "/usr/bin/docker inspect c7efee959ea8"
+    inspect_valid_2.args = ("docker", "c7efee959ea8")
+
+    inspect_no_graphdriver = Mock()
+    inspect_no_graphdriver.content = INSPECT_MERGED_NO_GRAPHDRIVER.splitlines()
+    inspect_no_graphdriver.cmd = "/usr/bin/podman inspect 28fb57be8bb2"
+    inspect_no_graphdriver.args = ("podman", "28fb57be8bb2")
+
+    broker = {
+        LocalSpecs.containers_inspect_data_raw: [
+            inspect_valid_1,
+            inspect_no_graphdriver,
+            inspect_valid_2,
+        ],
+        running_rhel_containers: CONTAINERS_FOR_MERGED,
+    }
+
+    with patch('insights.specs.datasources.container.containers_inspect.os.path.exists', return_value=True):
+        result = container_merged_dirs(broker)
+
+    assert len(result) == 2
+    assert result[0][0] == "registry.access.redhat.com/rhel"
+    assert result[0][1] == "podman"
+    assert result[1][0] == "registry.access.redhat.com/rhel8"
+    assert result[1][1] == "docker"
+
+
+def test_container_merged_dirs_no_graphdriver():
+    """Test that containers without GraphDriver are skipped"""
+    inspect_data = Mock()
+    inspect_data.content = INSPECT_MERGED_NO_GRAPHDRIVER.splitlines()
+    inspect_data.cmd = "/usr/bin/podman inspect 28fb57be8bb2"
+    inspect_data.args = ("podman", "28fb57be8bb2")
+
+    broker = {
+        LocalSpecs.containers_inspect_data_raw: [inspect_data],
+        running_rhel_containers: CONTAINERS_FOR_MERGED,
+    }
+
+    with pytest.raises(SkipComponent):
+        container_merged_dirs(broker)
+
+
+def test_container_merged_dirs_no_data():
+    """Test that containers without GraphDriver.Data are skipped"""
+    inspect_data = Mock()
+    inspect_data.content = INSPECT_MERGED_NO_DATA.splitlines()
+    inspect_data.cmd = "/usr/bin/podman inspect 528890e93bf7"
+    inspect_data.args = ("podman", "528890e93bf7")
+
+    broker = {
+        LocalSpecs.containers_inspect_data_raw: [inspect_data],
+        running_rhel_containers: CONTAINERS_FOR_MERGED,
+    }
+
+    with pytest.raises(SkipComponent):
+        container_merged_dirs(broker)
+
+
+def test_container_merged_dirs_no_mergeddir():
+    """Test that containers without MergedDir field are skipped"""
+    inspect_data = Mock()
+    inspect_data.content = INSPECT_MERGED_NO_MERGEDDIR.splitlines()
+    inspect_data.cmd = "/usr/bin/podman inspect 38fb57be8bb2"
+    inspect_data.args = ("podman", "38fb57be8bb2")
+
+    broker = {
+        LocalSpecs.containers_inspect_data_raw: [inspect_data],
+        running_rhel_containers: CONTAINERS_FOR_MERGED,
+    }
+
+    with pytest.raises(SkipComponent):
+        container_merged_dirs(broker)
+
+
+def test_container_merged_dirs_malformed_json():
+    """Test that containers with malformed JSON are skipped gracefully"""
+    inspect_malformed = Mock()
+    inspect_malformed.content = INSPECT_MERGED_MALFORMED.splitlines()
+    inspect_malformed.cmd = "/usr/bin/podman inspect malformed"
+    inspect_malformed.args = ("podman", "malformed")
+
+    inspect_valid = Mock()
+    inspect_valid.content = INSPECT_MERGED_OVERLAY.splitlines()
+    inspect_valid.cmd = "/usr/bin/podman inspect aeaea3ead527"
+    inspect_valid.args = ("podman", "aeaea3ead527")
+
+    broker = {
+        LocalSpecs.containers_inspect_data_raw: [
+            inspect_malformed,
+            inspect_valid,
+        ],
+        running_rhel_containers: [
+            ("registry.access.redhat.com/rhel", "podman", "aeaea3ead527"),
+        ],
+    }
+
+    with patch('insights.specs.datasources.container.containers_inspect.os.path.exists', return_value=True):
+        result = container_merged_dirs(broker)
+
+    assert len(result) == 1
+    assert result[0][2] == "aeaea3ead527"
+
+
+def test_container_merged_dirs_missing_args():
+    """Test that containers without args attribute are skipped"""
+    inspect_data = Mock(spec=['content', 'cmd'])
+    inspect_data.content = INSPECT_MERGED_OVERLAY.splitlines()
+    inspect_data.cmd = "/usr/bin/podman inspect aeaea3ead527"
+
+    broker = {
+        LocalSpecs.containers_inspect_data_raw: [inspect_data],
+        running_rhel_containers: CONTAINERS_FOR_MERGED,
+    }
+
+    with pytest.raises(SkipComponent):
+        container_merged_dirs(broker)
+
+
+def test_container_merged_dirs_empty_args():
+    """Test that containers with empty args are skipped"""
+    inspect_data = Mock()
+    inspect_data.content = INSPECT_MERGED_OVERLAY.splitlines()
+    inspect_data.cmd = "/usr/bin/podman inspect aeaea3ead527"
+    inspect_data.args = ()
+
+    broker = {
+        LocalSpecs.containers_inspect_data_raw: [inspect_data],
+        running_rhel_containers: CONTAINERS_FOR_MERGED,
+    }
+
+    with pytest.raises(SkipComponent):
+        container_merged_dirs(broker)
+
+
+def test_container_merged_dirs_nonexistent_path():
+    """Test that containers with non-existent MergedDir paths are skipped"""
+    inspect_data = Mock()
+    inspect_data.content = INSPECT_MERGED_OVERLAY.splitlines()
+    inspect_data.cmd = "/usr/bin/podman inspect aeaea3ead527"
+    inspect_data.args = ("podman", "aeaea3ead527")
+
+    broker = {
+        LocalSpecs.containers_inspect_data_raw: [inspect_data],
+        running_rhel_containers: [
+            ("registry.access.redhat.com/rhel", "podman", "aeaea3ead527"),
+        ],
+    }
+
+    with patch('insights.specs.datasources.container.containers_inspect.os.path.exists', return_value=False):
+        with pytest.raises(SkipComponent):
+            container_merged_dirs(broker)
+
+
+def test_container_merged_dirs_valid_path_checks():
+    """Test that valid, accessible paths pass all edge case checks"""
+    inspect_data = Mock()
+    inspect_data.content = INSPECT_MERGED_OVERLAY.splitlines()
+    inspect_data.cmd = "/usr/bin/podman inspect aeaea3ead527"
+    inspect_data.args = ("podman", "aeaea3ead527")
+
+    broker = {
+        LocalSpecs.containers_inspect_data_raw: [inspect_data],
+        running_rhel_containers: [
+            ("registry.access.redhat.com/rhel", "podman", "aeaea3ead527"),
+        ],
+    }
+
+    with patch('insights.specs.datasources.container.containers_inspect.os.path.exists', return_value=True):
+        result = container_merged_dirs(broker)
+
+        assert len(result) == 1
+        assert result[0][0] == "registry.access.redhat.com/rhel"
+        assert result[0][2] == "aeaea3ead527"
+
+
+def test_container_merged_dirs_mixed_path_validity():
+    """Test that only containers with valid, accessible paths are included"""
+    inspect_valid = Mock()
+    inspect_valid.content = INSPECT_MERGED_OVERLAY.splitlines()
+    inspect_valid.cmd = "/usr/bin/podman inspect aeaea3ead527"
+    inspect_valid.args = ("podman", "aeaea3ead527")
+
+    inspect_nonexistent = Mock()
+    inspect_nonexistent.content = INSPECT_MERGED_OVERLAY_2.splitlines()
+    inspect_nonexistent.cmd = "/usr/bin/docker inspect c7efee959ea8"
+    inspect_nonexistent.args = ("docker", "c7efee959ea8")
+
+    broker = {
+        LocalSpecs.containers_inspect_data_raw: [inspect_valid, inspect_nonexistent],
+        running_rhel_containers: CONTAINERS_FOR_MERGED,
+    }
+
+    def mock_exists(path):
+        return path == "/var/lib/containers/storage/overlay/de84239ee747de645c453b3b81e10849ea3e957e4316bc84ed3d0c32d7de88ee/merged"
+
+    with patch('insights.specs.datasources.container.containers_inspect.os.path.exists', side_effect=mock_exists):
+        result = container_merged_dirs(broker)
+
+        assert len(result) == 1
+        assert result[0][2] == "aeaea3ead527"
