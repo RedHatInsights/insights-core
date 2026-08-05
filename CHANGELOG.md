@@ -2,6 +2,8 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+- fix(dr): clear exception tracebacks after run to prevent memory leak from circular references ([PR 4763](https://github.com/RedHatInsights/insights-core/pull/4763))
+
 # [insights-core-3.7.2.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.7.2.2) (2026-02-05)
 
 - chore(setup): remove six from the dependencies ([PR 4719](https://github.com/RedHatInsights/insights-core/pull/4719))
