@@ -323,6 +323,7 @@ class SosSpecs(Specs):
     sysconfig_mongod = glob_file(["etc/sysconfig/mongod", "etc/opt/rh/rh-mongodb26/sysconfig/mongod"])
     sysconfig_nfs = simple_file("/etc/sysconfig/nfs")
     sysctl = simple_file("sos_commands/kernel/sysctl_-a")
+    sysroles_fingerprint = simple_file("/var/log/sysroles.jsonl")
     systemctl_list_unit_files = simple_file("sos_commands/systemd/systemctl_list-unit-files")
     systemctl_list_units = first_file(["sos_commands/systemd/systemctl_list-units", "sos_commands/systemd/systemctl_list-units_--all"])
     systemctl_show_all_services = simple_file("sos_commands/systemd/systemctl_show_service_--all")
