@@ -251,6 +251,14 @@ insights.specs.datasources.pcp
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.pesign
+---------------------------------
+
+.. automodule:: insights.specs.datasources.pesign
+    :members: shim_certs
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.ps
 -----------------------------
 

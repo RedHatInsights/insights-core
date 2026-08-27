@@ -71,6 +71,7 @@ from insights.specs.datasources import (
     mdadm,
     mount as mount_ds,
     package_provides,
+    pesign,
     ps,
     rpm,
     sap,
@@ -658,6 +659,7 @@ class DefaultSpecs(Specs):
     )
     pcs_quorum_status = simple_command("/usr/sbin/pcs quorum status")
     pcs_status = simple_command("/usr/sbin/pcs status")
+    pesign_shim_certificates = pesign.shim_certs
     pidstat = simple_command("/usr/bin/pidstat")
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
