@@ -919,6 +919,7 @@ class DefaultSpecs(Specs):
     sysctl_conf = simple_file("/etc/sysctl.conf")
     sysctl_d_conf_etc = glob_file("/etc/sysctl.d/*.conf")
     sysctl_d_conf_usr = glob_file("/usr/lib/sysctl.d/*.conf")
+    sysroles_fingerprint = simple_file("/var/log/sysroles.jsonl")
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
     systemctl_get_default = simple_command("/bin/systemctl get-default")
     systemctl_list_unit_files = simple_command("/bin/systemctl list-unit-files")
