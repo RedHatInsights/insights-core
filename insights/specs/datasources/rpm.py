@@ -3,7 +3,6 @@ Custom datasource for RPM command
 """
 
 import grp
-import pwd
 import signal
 
 from collections import defaultdict
@@ -14,6 +13,7 @@ from insights.core.filters import get_filters
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
 from insights.specs import Specs
+from insights.specs.datasources.user_group import all_users
 
 
 def _make_rpm_formatter(fmt=None):
@@ -57,14 +57,17 @@ def get_shells():
         return set(line.strip() for line in file if "nologin" not in line)
 
 
-def get_users():
+def get_users(entries):
     """
     Returns all users with shell specified in get_shells() except for root.
+
+    Args:
+        entries: Passwd entries as returned by ``pwd.getpwall()``.
     """
     shells = get_shells()
     users = set()
 
-    for user in pwd.getpwall():
+    for user in entries:
         name = user[0]
         shell = user[6]
 
@@ -95,7 +98,7 @@ def get_groups(users):
     return groups
 
 
-@datasource(LocalSpecs.rpm_args, HostContext)
+@datasource(LocalSpecs.rpm_args, all_users, HostContext)
 def pkgs_with_writable_dirs(broker):
     r"""
     Custom datasource for CVE-2021-35937, CVE-2021-35938, and CVE-2021-35939.
@@ -119,7 +122,7 @@ def pkgs_with_writable_dirs(broker):
     if not content or "command not found" in content[0]:
         raise SkipComponent
 
-    users = get_users()
+    users = get_users(broker[all_users])
     groups = get_groups(users)
 
     dir_package = defaultdict(set)
