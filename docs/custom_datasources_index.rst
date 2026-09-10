@@ -259,6 +259,14 @@ insights.specs.datasources.pesign
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.podman
+---------------------------------
+
+.. automodule:: insights.specs.datasources.podman
+    :members: podman_ps_all_json_rootless, podman_rootless_users
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.ps
 -----------------------------
 
