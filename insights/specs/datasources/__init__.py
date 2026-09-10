@@ -10,10 +10,36 @@ template to ensure it is loaded.
 """
 
 import os
+import re
 import time
 
 DEFAULT_SHELL_TIMEOUT = 10
 """ int: Default timeout in seconds for ctx.shell_out() commands, must be provided as an arg """
+
+_SAFE_USERNAME = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_.-]*$")
+""" Pattern: allow-list of characters permitted in a username used in a command. """
+
+
+def is_safe_username(name):
+    """
+    Return whether ``name`` is safe to interpolate into a command run as root.
+
+    Datasources that discover usernames (e.g. from ``pwd.getpwall()`` or ``ps``
+    output) may feed them into commands such as ``runuser -l <name> -c '...'``.
+    Those commands are executed without a shell, but a crafted username can still
+    forge extra ``argv`` tokens once the command string is split (for example a
+    name like ``root -c payload`` would inject an attacker-controlled ``-c``).
+    To prevent this argument injection an allow-list is applied: the username may
+    only contain letters, digits, ``_``, ``.`` and ``-``, and must not start with
+    ``-`` (which would be parsed as an option).
+
+    Arguments:
+        name (str): The username to validate.
+
+    Returns:
+        bool: ``True`` if the username is safe to use in a command.
+    """
+    return bool(name) and bool(_SAFE_USERNAME.match(name))
 
 
 def get_running_commands(ps, ctx, commands):
