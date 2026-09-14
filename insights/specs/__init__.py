@@ -873,6 +873,7 @@ class Specs(SpecSet):
     sysctl_conf_initramfs = RegistryPoint(multi_output=True)
     sysctl_d_conf_etc = RegistryPoint(multi_output=True)
     sysctl_d_conf_usr = RegistryPoint(multi_output=True)
+    sysroles_fingerprint = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     systemctl_cat_dnsmasq_service = RegistryPoint()
     systemctl_cat_rpcbind_socket = RegistryPoint()
     systemctl_get_default = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
