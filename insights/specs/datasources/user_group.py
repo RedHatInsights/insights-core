@@ -13,13 +13,19 @@ from insights.core.exceptions import SkipComponent
 from insights.core.filters import get_filters
 from insights.core.plugins import datasource
 from insights.specs import Specs
+from insights.specs.datasources import is_safe_username
 
 
 @datasource(HostContext)
 def all_users(broker):
     """
-    Return the full passwd database (``pwd.getpwall()``) as a list of
-    ``pwd.struct_passwd`` entries.
+    Return the passwd database (``pwd.getpwall()``) as a list of
+    ``pwd.struct_passwd`` entries, filtered to only include entries whose
+    username passes :func:`~insights.specs.datasources.is_safe_username`.
+
+    Usernames that contain shell metacharacters, begin with ``-``, or are
+    otherwise unsafe to interpolate into commands are excluded so that
+    downstream datasources do not need to validate names individually.
 
     ``pwd.getpwall()`` can be expensive on hosts with many users (for example
     LDAP-backed systems), so this datasource centralises the lookup: other
@@ -33,9 +39,9 @@ def all_users(broker):
     never written to the archive.
 
     Raises:
-        SkipComponent: When no users are found.
+        SkipComponent: When no safe users are found.
     """
-    users = pwd.getpwall()
+    users = [u for u in pwd.getpwall() if is_safe_username(u.pw_name)]
     if not users:
         raise SkipComponent("No users found")
     return users

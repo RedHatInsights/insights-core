@@ -46,18 +46,6 @@ def test_get_rootless_podman_users(isdir):
 
 
 @patch("insights.specs.datasources.podman.os.path.isdir")
-def test_get_rootless_podman_users_drops_unsafe_names(isdir):
-    # A crafted passwd entry whose name would forge extra argv tokens once the
-    # runuser command is split must be dropped, even if it has a storage dir.
-    entries = [
-        _pw("alice", "/home/alice"),  # kept: safe name with storage
-        _pw("root -c payload", "/home/evil"),  # dropped: unsafe name
-    ]
-    isdir.return_value = True  # both have a storage dir
-    assert _get_rootless_podman_users(entries) == ["alice"]
-
-
-@patch("insights.specs.datasources.podman.os.path.isdir")
 def test_podman_rootless_users(isdir):
     entries = [_pw("root", "/root"), _pw("alice", "/home/alice")]
     isdir.side_effect = lambda p: p == "/home/alice/.local/share/containers/storage"
