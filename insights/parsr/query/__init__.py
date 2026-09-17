@@ -87,6 +87,20 @@ class Entry(object):
                 c.parent = self
         super(Entry, self).__init__()
 
+    def detach(self):
+        """Break parent/src references in this subtree to aid garbage collection.
+
+        Call after the Entry tree is no longer needed.  The parent-child
+        circular references prevent the cyclic GC from collecting Entry
+        trees that are still reachable through exception tracebacks or
+        broker state.
+        """
+        self.parent = None
+        self.src = None
+        for c in self.children:
+            if isinstance(c, Entry):
+                c.detach()
+
     def __getattr__(self, name):
         """
         Allows queries based on attribute access so long as they don't conflict
