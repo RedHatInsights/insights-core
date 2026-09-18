@@ -59,6 +59,7 @@ class _ProxyHostHTTPSConnection(HTTPSConnection):
         if not any(key.lower() == 'host' for key in tunnel_headers):
             authority_host = host
             if ':' in authority_host and not authority_host.startswith('['):
+                # Bracket IPv6 destinations to form a valid Host authority.
                 authority_host = '[%s]' % authority_host
             authority_port = self.default_port if port is None else port
             tunnel_headers['Host'] = '%s:%s' % (authority_host, authority_port)
