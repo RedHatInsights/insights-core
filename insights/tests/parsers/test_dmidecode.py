@@ -350,6 +350,28 @@ OEM-specific Type
 
 """
 
+DMIDECODE_3_6 = """
+# dmidecode 3.6
+Getting SMBIOS data from sysfs.
+SMBIOS 2.8 present.
+10 structures occupying 561 bytes.
+Table at 0x000F5960.
+
+Handle 0x0000, DMI type 0, 24 bytes
+Platform Firmware Information
+\tVendor: SeaBIOS
+\tVersion: 1.16.1-1.el9
+\tRelease Date: 04/01/2014
+\tAddress: 0xE8000
+\tRuntime Size: 96 KiB
+\tROM Size: 64 KiB
+\tCharacteristics:
+\t\tFirmware characteristics not supported
+\t\tTargeted content distribution is supported
+\tPlatform Firmware Revision: 0.0
+
+"""
+
 
 def test_get_dmidecode():
     '''
@@ -430,6 +452,15 @@ def test_get_dmidecode():
     assert ret.bios_date == date(2013, 3, 1)
     assert ret.processor_manufacturer == 'Bochs'
 
+    # Verify forward-compatibility to check if new key 'platform_firmware_information' can parse old dmidecode data (for parse_content() method)
+    assert 'platform_firmware_information' in ret
+    assert ret['platform_firmware_information'][0]['vendor'] == 'HP'
+
+    # Test platform_firmware_* properties also work when given older dmidecode output
+    assert ret.platform_firmware == ret['bios_information'][0]
+    assert ret.platform_firmware_vendor == 'HP'
+    assert ret.platform_firmware_date == date(2013, 3, 1)
+
 
 def test_get_dmidecode_fail():
     '''
@@ -440,6 +471,14 @@ def test_get_dmidecode_fail():
 
     assert ret.is_present is False
     assert ret.system_uuid is None
+
+    # When the data is not accessible the properties should return None
+    assert ret.bios is None
+    assert ret.bios_vendor is None
+    assert ret.bios_date is None
+    assert ret.platform_firmware is None
+    assert ret.platform_firmware_vendor is None
+    assert ret.platform_firmware_date is None
 
 
 # def test_virt_what_1():
@@ -551,3 +590,43 @@ def test_dmidecode_oddities():
         'installable_languages': ['1', 'en-US'],
         'currently_installed_language': 'en-US'
     }
+
+
+def test_get_dmidecode_platform_firmware():
+    """
+    Test for dmidecode 3.6+ output format using 'Platform Firmware Information'
+    """
+    context = context_wrap(DMIDECODE_3_6)
+    ret = DMIDecode(context)
+
+    # Verify new key 'platform_firmware_information' parsing
+    assert "platform_firmware_information" in ret
+    assert len(ret.get("platform_firmware_information")) == 1
+    assert ret.get("platform_firmware_information")[0].get("vendor") == "SeaBIOS"
+    assert ret.get("platform_firmware_information")[0].get("version") == "1.16.1-1.el9"
+    assert ret.get("platform_firmware_information")[0].get("release_date") == "04/01/2014"
+    assert ret.get("platform_firmware_information")[0].get("address") == "0xE8000"
+    assert ret.get("platform_firmware_information")[0].get("runtime_size") == "96 KiB"
+    assert ret.get("platform_firmware_information")[0].get("rom_size") == "64 KiB"
+
+    tmp = [
+        "Firmware characteristics not supported",
+        "Targeted content distribution is supported",
+    ]
+
+    assert ret.get("platform_firmware_information")[0].get("characteristics") == tmp
+    assert ret.get("platform_firmware_information")[0].get("platform_firmware_revision") == "0.0"
+
+    # Verify backward-compatibility to check if old key 'bios_information' can parse new dmidecode data (for parse_content() method)
+    assert "bios_information" in ret
+    assert ret["bios_information"][0]["vendor"] == "SeaBIOS"
+
+    # Verify exist bios* properties return data correctly on dmidecode 3.6+
+    assert ret.bios == ret["platform_firmware_information"][0]
+    assert ret.bios_vendor == "SeaBIOS"
+    assert ret.bios_date == date(2014, 4, 1)
+
+    # Verify new platform_firmware_* properties return data correctly on dmidecode 3.6+
+    assert ret.platform_firmware == ret["platform_firmware_information"][0]
+    assert ret.platform_firmware_vendor == "SeaBIOS"
+    assert ret.platform_firmware_date == date(2014, 4, 1)

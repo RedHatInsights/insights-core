@@ -71,6 +71,8 @@ from insights.specs.datasources import (
     mdadm,
     mount as mount_ds,
     package_provides,
+    pesign,
+    podman,
     ps,
     rpm,
     sap,
@@ -449,6 +451,12 @@ class DefaultSpecs(Specs):
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     krb5_localauth_plugin = simple_file("/var/lib/sss/pubconf/krb5.include.d/localauth_plugin")
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
+    kvdo_deduplication_timeout_interval = first_file(
+        [
+            "/sys/kvdo/deduplication_timeout_interval",
+            "/sys/module/kvdo/parameters/deduplication_timeout_interval",
+        ]
+    )
     lastupload = glob_file(
         ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
     )
@@ -658,6 +666,7 @@ class DefaultSpecs(Specs):
     )
     pcs_quorum_status = simple_command("/usr/sbin/pcs quorum status")
     pcs_status = simple_command("/usr/sbin/pcs status")
+    pesign_show_signature_shimx64 = pesign.pesign_show_signature_shimx64
     pidstat = simple_command("/usr/bin/pidstat")
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
@@ -671,6 +680,8 @@ class DefaultSpecs(Specs):
         "/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv"
     )
     podman_list_containers = simple_command("/usr/bin/podman ps --all --no-trunc")
+    podman_ps_all_json = simple_command("/usr/bin/podman ps --all --no-trunc --size --format=json")
+    podman_ps_all_json_rootless = podman.podman_ps_all_json_rootless
     podman_system_info = simple_command("/usr/bin/podman system info --format=json")
     postconf = simple_command("/usr/sbin/postconf")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
@@ -916,6 +927,7 @@ class DefaultSpecs(Specs):
     sysctl_conf = simple_file("/etc/sysctl.conf")
     sysctl_d_conf_etc = glob_file("/etc/sysctl.d/*.conf")
     sysctl_d_conf_usr = glob_file("/usr/lib/sysctl.d/*.conf")
+    sysroles_fingerprint = simple_file("/var/log/sysroles.jsonl")
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
     systemctl_get_default = simple_command("/bin/systemctl get-default")
     systemctl_list_unit_files = simple_command("/bin/systemctl list-unit-files")
@@ -946,6 +958,7 @@ class DefaultSpecs(Specs):
     testparm_s = simple_command("/usr/bin/testparm -s")
     testparm_v_s = simple_command("/usr/bin/testparm -v -s")
     thp_enabled = simple_file("/sys/kernel/mm/transparent_hugepage/enabled")
+    thp_shmem_enabled = simple_file("/sys/kernel/mm/transparent_hugepage/shmem_enabled")
     thp_use_zero_page = simple_file("/sys/kernel/mm/transparent_hugepage/use_zero_page")
     timedatectl_status = simple_command('/usr/bin/timedatectl status')
     tmpfilesd = glob_file(
