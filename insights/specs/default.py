@@ -451,6 +451,12 @@ class DefaultSpecs(Specs):
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     krb5_localauth_plugin = simple_file("/var/lib/sss/pubconf/krb5.include.d/localauth_plugin")
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
+    kvdo_deduplication_timeout_interval = first_file(
+        [
+            "/sys/kvdo/deduplication_timeout_interval",
+            "/sys/module/kvdo/parameters/deduplication_timeout_interval",
+        ]
+    )
     lastupload = glob_file(
         ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
     )

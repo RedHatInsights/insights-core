@@ -394,6 +394,9 @@ class Specs(SpecSet):
     kubepods_cpu_quota = RegistryPoint(
         multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
     )
+    kvdo_deduplication_timeout_interval = RegistryPoint(
+        no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac']
+    )
     lastupload = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     ld_library_path_global_conf = RegistryPoint(no_obfuscate=['ipv4', 'ipv6', 'mac'])
     leapp_migration_results = RegistryPoint()
