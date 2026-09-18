@@ -9,7 +9,6 @@ import json
 import logging
 import platform
 import sys
-import warnings
 import errno
 # import io
 from tempfile import TemporaryFile
@@ -32,7 +31,6 @@ from insights import cleaner, package_info
 from insights.client.collection_rules import InsightsUploadConf
 from insights.util.canonical_facts import get_canonical_facts
 
-warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
 NETWORK = constants.custom_network_log_level
 logger = logging.getLogger(__name__)
