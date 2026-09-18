@@ -456,13 +456,14 @@ def test_policy_link_assign_invalid_policy_id(config, log):
     compliance_client.conn.session.patch = Mock(
         return_value=Mock(status_code=404, json=Mock(return_value={}))
     )
+    compliance_client.get_system_policies = Mock(return_value=[])
     assert compliance_client.policy_link(policy_id, 'patch') == constants.sig_kill_bad
     url = "https://localhost/app/compliance/v2/policies/{0}/systems/{1}".format(
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.patch.assert_called_with(url)
     log.error.assert_called_with(
-        "Policy ID {0} can not be assigned. "
+        "Policy {0} does not exist or is not accessible. "
         "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
             policy_id
         )
@@ -495,13 +496,54 @@ def test_policy_link_unassign_invalid_policy_id(config, log):
     )
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     policy_id = "________-ab56-420b-9e71-878795375af5"
+    compliance_client.get_system_policies = Mock(return_value=[])
     assert compliance_client.policy_link(policy_id, 'delete') == constants.sig_kill_bad
     url = "https://localhost/app/compliance/v2/policies/{0}/systems/{1}".format(
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.delete.assert_called_with(url)
     log.error.assert_called_with(
-        "Policy ID {0} can not be unassigned. "
+        "Policy {0} does not exist or is not accessible. "
+        "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
+            policy_id
+        )
+    )
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_policy_link_assign_already_assigned(config, log):
+    compliance_client = ComplianceClient(config=config)
+    compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
+    policy_id = "d83ddbac-ab56-420b-9e71-878795375af5"
+    compliance_client.conn.session.patch = Mock(
+        return_value=Mock(status_code=404, json=Mock(return_value={}))
+    )
+    compliance_client.get_system_policies = Mock(
+        return_value=[{'id': policy_id, 'title': 'Already assigned policy'}]
+    )
+    assert compliance_client.policy_link(policy_id, 'patch') == constants.sig_kill_bad
+    log.error.assert_called_with(
+        "Policy {0} is already associated to this host. "
+        "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
+            policy_id
+        )
+    )
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_policy_link_assign_lookup_failure(config, log):
+    compliance_client = ComplianceClient(config=config)
+    compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
+    policy_id = "d83ddbac-ab56-420b-9e71-878795375af5"
+    compliance_client.conn.session.patch = Mock(
+        return_value=Mock(status_code=404, json=Mock(return_value={}))
+    )
+    compliance_client.get_system_policies = Mock(side_effect=Exception("connection error"))
+    assert compliance_client.policy_link(policy_id, 'patch') == constants.sig_kill_bad
+    log.error.assert_called_with(
+        "Policy {0} does not exist or is not accessible. "
         "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
             policy_id
         )

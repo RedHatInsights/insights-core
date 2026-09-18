@@ -266,15 +266,23 @@ class ComplianceClient:
         if response.status_code == 202:
             logger.info("Successfully {0} policy (ID {1}).\n".format(operation, policy_id))
             return 0
+
+        try:
+            system_policy_ids = [p['id'] for p in self.get_system_policies() if isinstance(p, dict)]
+        except Exception:
+            system_policy_ids = []
+
+        if policy_id in system_policy_ids:
+            reason = "is already associated to this host"
         else:
-            logger.error(
-                "Policy ID {0} can not be {1}. "
-                "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
-                    policy_id,
-                    operation,
-                )
+            reason = "does not exist or is not accessible"
+        logger.error(
+            "Policy {0} {1}. "
+            "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
+                policy_id, reason
             )
-            return constants.sig_kill_bad
+        )
+        return constants.sig_kill_bad
 
     def get_system_policies(self):
         if self.inventory_id is None:
