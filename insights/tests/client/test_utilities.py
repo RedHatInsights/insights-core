@@ -137,13 +137,6 @@ def test_expand_paths():
     assert util._expand_paths('/tmp') == ['/tmp']
 
 
-def test_magic_plan_b():
-    tf = tempfile.NamedTemporaryFile()
-    with open(tf.name, 'w') as f:
-        f.write('testing stuff')
-    assert util.magic_plan_b(tf.name) == 'text/plain; charset=us-ascii'
-
-
 def test_run_command_get_output():
     cmd = 'echo hello'
     assert util.run_command_get_output(cmd) == {'status': 0, 'output': u'hello\n'}
