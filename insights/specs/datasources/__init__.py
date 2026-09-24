@@ -16,7 +16,7 @@ import time
 DEFAULT_SHELL_TIMEOUT = 10
 """ int: Default timeout in seconds for ctx.shell_out() commands, must be provided as an arg """
 
-_SAFE_USERNAME = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_.-]*$")
+_SAFE_USERNAME = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]*")
 """ Pattern: allow-list of characters permitted in a username used in a command. """
 
 
@@ -39,7 +39,7 @@ def is_safe_username(name):
     Returns:
         bool: ``True`` if the username is safe to use in a command.
     """
-    return bool(name) and bool(_SAFE_USERNAME.match(name))
+    return bool(name) and bool(_SAFE_USERNAME.fullmatch(name))
 
 
 def get_running_commands(ps, ctx, commands):

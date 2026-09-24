@@ -16,7 +16,9 @@ def test_is_safe_username_rejects_unsafe_names():
         "user$(id)",  # command substitution
         "user`id`",  # command substitution
         "user\ttab",  # whitespace
-        "user\nname",  # newline
+        "\ntrusted",  # leading newline
+        "user\nname",  # newline in the middle
+        "trusted\n",  # trailing newline ($ matches before it, fullmatch does not)
         "user'quote",  # quote
         'user"quote',  # quote
     ]
