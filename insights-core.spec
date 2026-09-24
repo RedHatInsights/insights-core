@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.8.1
+Version:        3.8.2
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -123,6 +123,21 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Sep 24 2026 Jan Holeček 3.8.2-1
+- feat: Add kvdo deduplication_timeout_interval spec and parser (#4820)
+  (msunil.ssn@gmail.com)
+- feat: filter unsafe usernames in all_users datasource (#4811)
+  (fstavela@redhat.com)
+- feat: add PodmanContainers combiner merging rootful and rootless (#4811)
+  (fstavela@redhat.com)
+- feat: add PodmanPsAllJsonRootless parser (#4811) (fstavela@redhat.com)
+- feat: collect rootless podman containers per user (#4811)
+  (fstavela@redhat.com)
+- feat: share a single pwd.getpwall lookup across datasources (#4811)
+  (fstavela@redhat.com)
+- Add spec and parser to collect /var/log/sysroles.jsonl containing (#4815)
+  (sabhasin@redhat.com)
+
 * Fri Sep 04 2026 Jan Holeček 3.8.1-1
 - feat(RHINENG-29756): Add search methods to PodmanPsAllJson (#4812)
   (45922782+fstavela@users.noreply.github.com)

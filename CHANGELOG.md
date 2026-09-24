@@ -3,6 +3,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.8.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.2) (2026-09-24)
+
+- feat: Add kvdo deduplication_timeout_interval spec and parser ([PR 4820](https://github.com/RedHatInsights/insights-core/pull/4820))
+- feat: filter unsafe usernames in all_users datasource ([PR 4811](https://github.com/RedHatInsights/insights-core/pull/4811))
+- feat: add PodmanContainers combiner merging rootful and rootless ([PR 4811](https://github.com/RedHatInsights/insights-core/pull/4811))
+- feat: add PodmanPsAllJsonRootless parser ([PR 4811](https://github.com/RedHatInsights/insights-core/pull/4811))
+- feat: collect rootless podman containers per user ([PR 4811](https://github.com/RedHatInsights/insights-core/pull/4811))
+- feat: share a single pwd.getpwall lookup across datasources ([PR 4811](https://github.com/RedHatInsights/insights-core/pull/4811))
+- Add spec and parser to collect /var/log/sysroles.jsonl containing ([PR 4815](https://github.com/RedHatInsights/insights-core/pull/4815))
+
 # [insights-core-3.8.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.1) (2026-09-04)
 
 - feat(RHINENG-29756): Add search methods to PodmanPsAllJson ([PR 4812](https://github.com/RedHatInsights/insights-core/pull/4812))
