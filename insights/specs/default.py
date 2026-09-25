@@ -59,6 +59,7 @@ from insights.specs.datasources import (
     httpd,
     intersystems,
     ipcs,
+    java_purls as java_purls_ds,
     kernel,
     leapp,
     logrotate,
@@ -437,6 +438,7 @@ class DefaultSpecs(Specs):
         ]
     )
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
+    java_purls = java_purls_ds.java_purls
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     jboss_runtime_versions = ps.jboss_runtime_versions
     journal_header = simple_command("/usr/bin/journalctl --no-pager --header")

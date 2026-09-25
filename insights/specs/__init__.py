@@ -355,6 +355,7 @@ class Specs(SpecSet):
     ironic_conf = RegistryPoint(filterable=True)
     ironic_inspector_log = RegistryPoint(filterable=True)
     iscsiadm_m_session = RegistryPoint()
+    java_purls = RegistryPoint()  # detected third-party Java library purls (loaded by running JVMs)
     jbcs_httpd24_httpd_error_log = RegistryPoint(filterable=True)
     jboss_domain_server_log = RegistryPoint(multi_output=True, filterable=True)
     jboss_runtime_versions = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
