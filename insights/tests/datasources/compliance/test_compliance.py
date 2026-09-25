@@ -45,7 +45,7 @@ def test_get_system_policies(legacy_upload, base_url, expected_url):
         return_value=Mock(status_code=200, json=Mock(return_value={'data': ['test']}))
     )
     assert compliance_client.get_system_policies() == ['test']
-    url = "https://{0}/compliance/v2/systems/{1}/policies".format(
+    url = "https://{0}/compliance/v2/systems/{1}/policies?limit=100&offset=0&ids_only=true".format(
         expected_url, compliance_client.inventory_id
     )
     compliance_client.conn.session.get.assert_called_with(url)
@@ -67,10 +67,32 @@ def test_get_system_policies_error(legacy_upload, base_url, expected_url):
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=500))
     assert compliance_client.get_system_policies() == []  # empty
-    url = "https://{0}/compliance/v2/systems/{1}/policies".format(
+    url = "https://{0}/compliance/v2/systems/{1}/policies?limit=100&offset=0&ids_only=true".format(
         expected_url, compliance_client.inventory_id
     )
     compliance_client.conn.session.get.assert_called_with(url)
+
+
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_get_system_policies_paginates(config):
+    # A full page (== limit) triggers a follow-up fetch at the next offset; the
+    # short final page ends the loop. All pages are concatenated.
+    compliance_client = ComplianceClient(config=config)
+    compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
+    first_page = [{'id': str(i)} for i in range(100)]
+    second_page = [{'id': '100'}]
+    compliance_client.conn.session.get = Mock(
+        side_effect=[
+            Mock(status_code=200, json=Mock(return_value={'data': first_page})),
+            Mock(status_code=200, json=Mock(return_value={'data': second_page})),
+        ]
+    )
+    assert compliance_client.get_system_policies() == first_page + second_page
+    base = "https://localhost/app/compliance/v2/systems/{0}/policies".format(
+        compliance_client.inventory_id
+    )
+    compliance_client.conn.session.get.assert_any_call(base + "?limit=100&offset=0&ids_only=true")
+    compliance_client.conn.session.get.assert_any_call(base + "?limit=100&offset=100&ids_only=true")
 
 
 @mark.parametrize("legacy_upload", [True, False])
@@ -456,13 +478,14 @@ def test_policy_link_assign_invalid_policy_id(config, log):
     compliance_client.conn.session.patch = Mock(
         return_value=Mock(status_code=404, json=Mock(return_value={}))
     )
+    compliance_client.get_system_policies = Mock(return_value=[])
     assert compliance_client.policy_link(policy_id, 'patch') == constants.sig_kill_bad
     url = "https://localhost/app/compliance/v2/policies/{0}/systems/{1}".format(
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.patch.assert_called_with(url)
     log.error.assert_called_with(
-        "Policy ID {0} can not be assigned. "
+        "Policy {0} does not exist or is not accessible. "
         "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
             policy_id
         )
@@ -488,21 +511,104 @@ def test_policy_link_unassign(config, log):
 
 @patch('insights.specs.datasources.compliance.logger')
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
-def test_policy_link_unassign_invalid_policy_id(config, log):
+def test_policy_link_unassign_not_associated(config, log):
+    # Unassigning a policy that is not associated is an idempotent no-op: the
+    # requested end-state (policy not assigned) already holds, so return success.
     compliance_client = ComplianceClient(config=config)
     compliance_client.conn.session.delete = Mock(
         return_value=Mock(status_code=404, json=Mock(return_value={}))
     )
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     policy_id = "________-ab56-420b-9e71-878795375af5"
-    assert compliance_client.policy_link(policy_id, 'delete') == constants.sig_kill_bad
+    compliance_client.get_system_policies = Mock(return_value=[])
+    assert compliance_client.policy_link(policy_id, 'delete') == 0
     url = "https://localhost/app/compliance/v2/policies/{0}/systems/{1}".format(
         policy_id, compliance_client.inventory_id
     )
     compliance_client.conn.session.delete.assert_called_with(url)
+    log.info.assert_called_with(
+        "Policy (ID {0}) is not associated to this host; nothing to unassign.\n".format(policy_id)
+    )
+    log.error.assert_not_called()
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_policy_link_unassign_still_associated(config, log):
+    # Delete failed but the policy is still assigned: a genuine failure with an
+    # operation-specific message.
+    compliance_client = ComplianceClient(config=config)
+    compliance_client.conn.session.delete = Mock(
+        return_value=Mock(status_code=404, json=Mock(return_value={}))
+    )
+    compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
+    policy_id = "d83ddbac-ab56-420b-9e71-878795375af5"
+    compliance_client.get_system_policies = Mock(
+        return_value=[{'id': policy_id, 'title': 'Still assigned policy'}]
+    )
+    assert compliance_client.policy_link(policy_id, 'delete') == constants.sig_kill_bad
     log.error.assert_called_with(
-        "Policy ID {0} can not be unassigned. "
+        "Policy {0} could not be unassigned and is still associated to this host. "
         "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
             policy_id
         )
+    )
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_policy_link_assign_already_assigned(config, log):
+    # Assigning a policy that is already associated is an idempotent no-op: the
+    # API returns 404 (the policy is excluded from the assignable set), but the
+    # requested end-state already holds, so return success.
+    compliance_client = ComplianceClient(config=config)
+    compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
+    policy_id = "d83ddbac-ab56-420b-9e71-878795375af5"
+    compliance_client.conn.session.patch = Mock(
+        return_value=Mock(status_code=404, json=Mock(return_value={}))
+    )
+    compliance_client.get_system_policies = Mock(
+        return_value=[{'id': policy_id, 'title': 'Already assigned policy'}]
+    )
+    assert compliance_client.policy_link(policy_id, 'patch') == 0
+    log.info.assert_called_with(
+        "Policy (ID {0}) is already associated to this host; nothing to assign.\n".format(policy_id)
+    )
+    log.error.assert_not_called()
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_policy_link_assign_lookup_failure(config, log):
+    compliance_client = ComplianceClient(config=config)
+    compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
+    policy_id = "d83ddbac-ab56-420b-9e71-878795375af5"
+    compliance_client.conn.session.patch = Mock(
+        return_value=Mock(status_code=404, json=Mock(return_value={}))
+    )
+    compliance_client.get_system_policies = Mock(side_effect=Exception("connection error"))
+    assert compliance_client.policy_link(policy_id, 'patch') == constants.sig_kill_bad
+    log.error.assert_called_with(
+        "Policy {0} does not exist or is not accessible. "
+        "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
+            policy_id
+        )
+    )
+
+
+@patch('insights.specs.datasources.compliance.logger')
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_policy_link_lookup_failure_logged_at_debug(config, log):
+    # The diagnostic lookup failure is swallowed to preserve the link-failure
+    # result, but the exception is recorded at debug for troubleshooting.
+    compliance_client = ComplianceClient(config=config)
+    compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
+    policy_id = "d83ddbac-ab56-420b-9e71-878795375af5"
+    compliance_client.conn.session.patch = Mock(
+        return_value=Mock(status_code=404, json=Mock(return_value={}))
+    )
+    compliance_client.get_system_policies = Mock(side_effect=Exception("connection error"))
+    assert compliance_client.policy_link(policy_id, 'patch') == constants.sig_kill_bad
+    log.debug.assert_called_with(
+        "Could not fetch system policies to diagnose the failure: connection error"
     )
