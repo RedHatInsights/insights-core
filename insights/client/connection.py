@@ -16,6 +16,9 @@ from tempfile import TemporaryFile
 # from datetime import datetime, timedelta
 from urllib.parse import urlparse
 from urllib.parse import quote
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.connection import HTTPSConnection
+from requests.packages.urllib3.connectionpool import HTTPSConnectionPool
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         machine_id_exists,
@@ -46,6 +49,38 @@ URLLIB3_LOGGER = logging.getLogger('requests.packages.urllib3.connectionpool')
 URLLIB3_LOGGER.setLevel(logging.WARNING)
 
 REQUEST_FAILED_EXCEPTIONS = (requests.ConnectionError, requests.Timeout)
+
+
+class _ProxyHostHTTPSConnection(HTTPSConnection):
+    """Add the destination authority to HTTPS proxy CONNECT requests."""
+
+    def set_tunnel(self, host, port=None, headers=None, *args, **kwargs):
+        tunnel_headers = dict(headers or {})
+        if not any(key.lower() == 'host' for key in tunnel_headers):
+            authority_host = host
+            if ':' in authority_host and not authority_host.startswith('['):
+                # Bracket IPv6 destinations to form a valid Host authority.
+                authority_host = '[%s]' % authority_host
+            authority_port = self.default_port if port is None else port
+            tunnel_headers['Host'] = '%s:%s' % (authority_host, authority_port)
+        return super(_ProxyHostHTTPSConnection, self).set_tunnel(
+            host, port, tunnel_headers, *args, **kwargs)
+
+
+class _ProxyHostHTTPSConnectionPool(HTTPSConnectionPool):
+    ConnectionCls = _ProxyHostHTTPSConnection
+
+
+class _ProxyHostHTTPAdapter(HTTPAdapter):
+    """Use a CONNECT-aware connection only for this session's proxies."""
+
+    def proxy_manager_for(self, proxy, **proxy_kwargs):
+        manager = super(_ProxyHostHTTPAdapter, self).proxy_manager_for(
+            proxy, **proxy_kwargs)
+        if not proxy.lower().startswith('socks'):
+            manager.pool_classes_by_scheme = manager.pool_classes_by_scheme.copy()
+            manager.pool_classes_by_scheme['https'] = _ProxyHostHTTPSConnectionPool
+        return manager
 
 # TODO: Document this, or turn it into a real option
 if os.environ.get('INSIGHTS_DEBUG_HTTP'):
@@ -170,6 +205,7 @@ class InsightsConnection(object):
         session.verify = self.cert_verify
         session.proxies = self.proxies
         session.trust_env = False
+        session.mount('https://', _ProxyHostHTTPAdapter())
         return session
 
     def _http_request(self, url, method, log_response_text=True, **kwargs):

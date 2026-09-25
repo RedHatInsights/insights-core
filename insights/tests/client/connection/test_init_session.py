@@ -1,4 +1,6 @@
-from insights.client.connection import InsightsConnection
+from insights.client.connection import (InsightsConnection, _ProxyHostHTTPAdapter,
+                                        _ProxyHostHTTPSConnection,
+                                        _ProxyHostHTTPSConnectionPool)
 from unittest.mock import Mock, patch
 from os import environ as os_environ
 
@@ -138,3 +140,18 @@ def test_get_rhsm_and_env(logger):
     with patch.dict(os_environ, {"NO_PROXY": "redhat.com"}, clear=True):
         connection.get_proxies()
     assert connection.proxies == {"https": config.proxy}
+
+
+@patch("insights.client.connection.HTTPSConnection.set_tunnel")
+def test_https_proxy_tunnel_includes_host_header(set_tunnel):
+    connection = _ProxyHostHTTPSConnection("proxy.example.com")
+
+    connection.set_tunnel(
+        "2001:db8::1", 8443, {"Proxy-Authorization": "Basic token"})
+
+    set_tunnel.assert_called_once_with(
+        "2001:db8::1", 8443,
+        {"Host": "[2001:db8::1]:8443", "Proxy-Authorization": "Basic token"})
+    adapter = _ProxyHostHTTPAdapter()
+    manager = adapter.proxy_manager_for("http://proxy.example.com")
+    assert manager.pool_classes_by_scheme["https"] is _ProxyHostHTTPSConnectionPool
