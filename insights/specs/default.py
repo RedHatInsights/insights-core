@@ -73,6 +73,7 @@ from insights.specs.datasources import (
     mount as mount_ds,
     package_provides,
     pesign,
+    podman,
     ps,
     rpm,
     sap,
@@ -452,6 +453,12 @@ class DefaultSpecs(Specs):
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     krb5_localauth_plugin = simple_file("/var/lib/sss/pubconf/krb5.include.d/localauth_plugin")
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
+    kvdo_deduplication_timeout_interval = first_file(
+        [
+            "/sys/kvdo/deduplication_timeout_interval",
+            "/sys/module/kvdo/parameters/deduplication_timeout_interval",
+        ]
+    )
     lastupload = glob_file(
         ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
     )
@@ -676,6 +683,7 @@ class DefaultSpecs(Specs):
     )
     podman_list_containers = simple_command("/usr/bin/podman ps --all --no-trunc")
     podman_ps_all_json = simple_command("/usr/bin/podman ps --all --no-trunc --size --format=json")
+    podman_ps_all_json_rootless = podman.podman_ps_all_json_rootless
     podman_system_info = simple_command("/usr/bin/podman system info --format=json")
     postconf = simple_command("/usr/sbin/postconf")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
@@ -921,6 +929,7 @@ class DefaultSpecs(Specs):
     sysctl_conf = simple_file("/etc/sysctl.conf")
     sysctl_d_conf_etc = glob_file("/etc/sysctl.d/*.conf")
     sysctl_d_conf_usr = glob_file("/usr/lib/sysctl.d/*.conf")
+    sysroles_fingerprint = simple_file("/var/log/sysroles.jsonl")
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
     systemctl_get_default = simple_command("/bin/systemctl get-default")
     systemctl_list_unit_files = simple_command("/bin/systemctl list-unit-files")

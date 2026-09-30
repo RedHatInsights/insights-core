@@ -8,6 +8,7 @@ from insights.core.plugins import datasource
 from insights.combiners.ps import Ps
 from insights.core.spec_factory import foreach_execute
 from insights.specs import Specs
+from insights.specs.datasources import is_safe_username
 
 
 @datasource(Ps, HostContext)
@@ -26,6 +27,9 @@ def db2_users(broker):
     if ps_list:
         users_result = set(filter(None, [item.get("USER") for item in ps_list]))
         users_result.discard('root')
+        # The username is later interpolated into a command run as root; drop
+        # any name that could forge extra argv tokens (argument injection).
+        users_result = set(filter(is_safe_username, users_result))
         if users_result:
             return sorted(users_result)
         raise SkipComponent("No db2 user is available")
@@ -33,7 +37,9 @@ def db2_users(broker):
 
 
 class LocalSpecs(Specs):
-    db2_databases = foreach_execute(db2_users, "/usr/sbin/runuser -l  %s  -c 'db2 list database directory'")
+    db2_databases = foreach_execute(
+        db2_users, "/usr/sbin/runuser -l  %s  -c 'db2 list database directory'"
+    )
 
 
 @datasource(LocalSpecs.db2_databases, HostContext)

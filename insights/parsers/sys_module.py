@@ -22,6 +22,8 @@ Ql2xMaxLUN - file ``/sys/module/qla2xxx/parameters/ql2xmqsupport``
 ------------------------------------------------------------------
 KernelCrashKexecPostNotifiers - file ``/sys/module/kernel/parameters/crash_kexec_post_notifiers``
 -------------------------------------------------------------------------------------------------
+KvdoDeduplicationTimeoutInterval - file ``/sys/kvdo/deduplication_timeout_interval`` or ``/sys/module/kvdo/parameters/deduplication_timeout_interval``
+------------------------------------------------------------------------------------------------------------------------------------------------------
 """
 from insights.core import Parser
 from insights.core.exceptions import SkipComponent
@@ -214,3 +216,33 @@ class KernelCrashKexecPostNotifiers(SysModuleParameters):
         True
     """
     pass
+
+
+@parser(Specs.kvdo_deduplication_timeout_interval)
+class KvdoDeduplicationTimeoutInterval(Parser):
+    """
+    This class provides parsing for the file ``deduplication_timeout_interval``.
+    On RHEL 8, the file location is ``/sys/kvdo/deduplication_timeout_interval`` and
+    on RHEL 9, the file location is ``/sys/module/kvdo/parameters/deduplication_timeout_interval``.
+
+    Sample Content::
+
+        5000
+
+    Raises:
+        SkipComponent: When content is empty or no parse-able content.
+
+    Attributes:
+        val(int): Deduplication timeout interval for the kvdo module.
+
+    Examples:
+        >>> kvdo_deduplication_timeout_interval.val
+        5000
+    """
+
+    def parse_content(self, content):
+        if not content or len(content) != 1:
+            raise SkipComponent()
+        if not content[0].strip().isdigit():
+            raise ValueError("Unexpected content: {0}".format(content[0]))
+        self.val = int(content[0].strip())

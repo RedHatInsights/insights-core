@@ -7,7 +7,9 @@ from collections import defaultdict
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
+from insights.specs.datasources import rpm as rpm_ds
 from insights.specs.datasources.rpm import LocalSpecs, pkgs_with_writable_dirs, rpm_v_pkg_list
+from insights.specs.datasources.user_group import all_users
 from insights.specs import Specs
 
 RPM_CMD = """
@@ -50,7 +52,7 @@ def teardown_function(func):
     filters.FILTERS = defaultdict(dict)
 
 
-def get_users():
+def get_users(entries):
     return ["apache", "postgres"]
 
 
@@ -63,7 +65,7 @@ def get_groups(users):
 def test_rpm():
     rpm_args = Mock()
     rpm_args.content = RPM_CMD.splitlines()
-    broker = {LocalSpecs.rpm_args: rpm_args}
+    broker = {LocalSpecs.rpm_args: rpm_args, all_users: []}
 
     result = pkgs_with_writable_dirs(broker)
     expected = DatasourceProvider(content=RPM_EXPECTED, relative_path=RELATIVE_PATH)
@@ -71,6 +73,22 @@ def test_rpm():
     assert isinstance(result, DatasourceProvider)
     assert sorted(result.content) == sorted(expected.content)
     assert result.relative_path == expected.relative_path
+
+
+@mock.patch("insights.specs.datasources.rpm.get_shells", return_value={"/bin/bash"})
+def test_get_users_filters_from_entries(get_shells):
+    import pwd
+
+    def _pw(name, shell):
+        # pwd.struct_passwd((name, passwd, uid, gid, gecos, dir, shell))
+        return pwd.struct_passwd((name, "x", 1000, 1000, "", "/home/" + name, shell))
+
+    entries = [
+        _pw("root", "/bin/bash"),  # excluded: root
+        _pw("apache", "/bin/bash"),  # kept: valid login shell
+        _pw("nolog", "/sbin/nologin"),  # excluded: shell not in get_shells()
+    ]
+    assert rpm_ds.get_users(entries) == {"apache"}
 
 
 @pytest.mark.parametrize("no_rpm", [RPM_BAD_CMD, RPM_EMPTY_CMD])

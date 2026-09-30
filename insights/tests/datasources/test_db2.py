@@ -8,7 +8,6 @@ from insights.combiners.ps import Ps
 from insights.core import dr
 from insights.tests import context_wrap
 
-
 PS_AUXCWW = """
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 init
@@ -127,6 +126,25 @@ def test_db2_users():
     broker[Ps] = ps
     result = db2_users(broker)
     assert result == ["dbp1", "dbp2"]
+
+
+PS_AUXCWW_UNSAFE_USER = """
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 init
+dbp1      1161530  0.1  1.3 2306928 314076 ?      Sl   Apr19   8:42 db2sysc
+evil;id  1161533  0.1  1.3 2306928 314076 ?      Sl   Apr19   8:42 db2sysc
+""".strip()
+
+
+def test_db2_users_drops_unsafe_names():
+    # A crafted USER value containing shell metacharacters must be dropped,
+    # keeping only the safe db2 user.
+    ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_UNSAFE_USER))
+    ps = Ps(None, None, None, None, ps_auxcww, None)
+
+    broker = dr.Broker()
+    broker[Ps] = ps
+    assert db2_users(broker) == ["dbp1"]
 
 
 def test_no_db2_users():

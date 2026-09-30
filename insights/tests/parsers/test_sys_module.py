@@ -3,8 +3,18 @@ import pytest
 
 from insights.core.exceptions import SkipComponent
 from insights.parsers import sys_module
-from insights.parsers.sys_module import (DMModUseBlkMq, KernelCrashKexecPostNotifiers, LpfcMaxLUNs, MaxLUNs, Ql2xMaxLUN,
-                                         Ql2xmqSupport, SCSIModMaxReportLUNs, SCSIModUseBlkMq, VHostNetZeroCopyTx)
+from insights.parsers.sys_module import (
+    DMModUseBlkMq,
+    KernelCrashKexecPostNotifiers,
+    KvdoDeduplicationTimeoutInterval,
+    LpfcMaxLUNs,
+    MaxLUNs,
+    Ql2xMaxLUN,
+    Ql2xmqSupport,
+    SCSIModMaxReportLUNs,
+    SCSIModUseBlkMq,
+    VHostNetZeroCopyTx,
+)
 from insights.tests import context_wrap
 
 
@@ -35,6 +45,10 @@ MAX_LUNS = """
 512
 """.strip()
 
+KVDO_DEDUPLICATION_TIMEOUT_INTERVAL = """
+5000
+""".strip()
+
 
 def test_doc_examples():
     env = {
@@ -45,7 +59,10 @@ def test_doc_examples():
         'ql2xmaxlun': Ql2xMaxLUN(context_wrap(MAX_LUNS)),
         'scsi_mod_max_report_luns': SCSIModMaxReportLUNs(context_wrap(MAX_LUNS)),
         'qla2xxx_ql2xmqsupport': Ql2xmqSupport(context_wrap(QLA2XXX_QL2XMQSUPPORT)),
-        'crash_kexec_post_notifiers': KernelCrashKexecPostNotifiers(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_Y))
+        'crash_kexec_post_notifiers': KernelCrashKexecPostNotifiers(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_Y)),
+        'kvdo_deduplication_timeout_interval': KvdoDeduplicationTimeoutInterval(
+            context_wrap(KVDO_DEDUPLICATION_TIMEOUT_INTERVAL)
+        ),
     }
     failed, total = doctest.testmod(sys_module, globs=env)
     assert failed == 0
@@ -102,6 +119,13 @@ def test_MaxLUNs():
     assert scsi_mod_max_luns.val == 512
 
 
+def test_kvdo_deduplication_timeout_interval():
+    kvdo_deduplication_timeout_interval = KvdoDeduplicationTimeoutInterval(
+        context_wrap(KVDO_DEDUPLICATION_TIMEOUT_INTERVAL)
+    )
+    assert kvdo_deduplication_timeout_interval.val == 5000
+
+
 def test_class_exceptions():
     with pytest.raises(SkipComponent):
         dm_mod = DMModUseBlkMq(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_EMPTY))
@@ -134,3 +158,16 @@ def test_class_exceptions():
         crash_kexec_post_notifiers_unknow = KernelCrashKexecPostNotifiers(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_UNKNOW_CASE))
         crash_kexec_post_notifiers_unknow.is_on
     assert "Unexpected value unknow_case, please get raw data from attribute 'val' and tell is_on by yourself." in str(e)
+
+    with pytest.raises(SkipComponent):
+        kvdo_deduplication_timeout_interval_empty = KvdoDeduplicationTimeoutInterval(
+            context_wrap(SCSI_DM_MOD_USE_BLK_MQ_EMPTY)
+        )
+        assert kvdo_deduplication_timeout_interval_empty is None
+
+    with pytest.raises(ValueError) as e:
+        kvdo_deduplication_timeout_interval_not_digit = KvdoDeduplicationTimeoutInterval(
+            context_wrap(SCSI_DM_MOD_USE_BLK_MQ_UNKNOW_CASE)
+        )
+        kvdo_deduplication_timeout_interval_not_digit.val
+    assert "Unexpected content: unknow_case" in str(e)
