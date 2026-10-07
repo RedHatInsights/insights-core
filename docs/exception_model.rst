@@ -119,3 +119,37 @@ make it much easier for the engine to identify and quickly deal with known
 conditions versus unanticipated conditions (i.e., other exceptions being raised)
 which could indicate errors in the parsing code, errors in data collection, or
 data errors.
+
+Exception Traceback Lifecycle
+=============================
+
+When the engine catches an exception during component execution, it stores two
+things via ``broker.add_exception()``:
+
+1. The exception object itself (in ``broker.exceptions``).
+2. A formatted traceback **string** (in ``broker.tracebacks``), captured via
+   ``traceback.format_exc()``.
+
+After storing these, the engine clears ``exception.__traceback__`` (sets it to
+``None``).  This is necessary because Python's live traceback object holds a
+reference to the stack frame, which in turn references all local variables —
+including the ``broker``.  Without clearing it, this creates a circular
+reference chain::
+
+    broker.exceptions -> exception -> __traceback__ -> frame -> broker
+
+This cycle prevents CPython's reference-counting collector from freeing the
+broker and all of its component results.  In long-running services, this
+manifests as a steady memory leak.
+
+Clearing ``__traceback__`` breaks the cycle without losing any debugging
+information, because the human-readable traceback string is already preserved
+in ``broker.tracebacks``.
+
+.. note::
+
+   After ``run()`` completes, ``exception.__traceback__`` is ``None``.
+   All traceback information is available as a formatted string via
+   ``broker.tracebacks[exception]``.  All existing code in the codebase
+   (formatters, tools, serializers) already uses ``broker.tracebacks``
+   exclusively.
