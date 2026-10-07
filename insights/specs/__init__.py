@@ -355,6 +355,10 @@ class Specs(SpecSet):
     ironic_conf = RegistryPoint(filterable=True)
     ironic_inspector_log = RegistryPoint(filterable=True)
     iscsiadm_m_session = RegistryPoint()
+    # Output is public package coordinates (purls), no host PII. Exclude the default network/host obfuscators:
+    # the ipv4 obfuscator rewrites any dotted-quad, which silently corrupts versions like "1.2.3.4" -> fake IP
+    # -> downstream CVE mismatch. (Mirrors selinux_users / abrt_status_bare / display_name.)
+    java_purls = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     jbcs_httpd24_httpd_error_log = RegistryPoint(filterable=True)
     jboss_domain_server_log = RegistryPoint(multi_output=True, filterable=True)
     jboss_runtime_versions = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
