@@ -204,7 +204,11 @@ def test_datasource_end_to_end(isolated_scan):
     result = ds.python_purls(_broker())
     assert isinstance(result, DatasourceProvider)
     assert result.relative_path == "insights_datasources/python_purls.json"
-    payload = json.loads("".join(result.content))
+    # JSONL: one JSON object per line (redaction-resilient), not a single array.
+    text = "\n".join(result.content) if isinstance(result.content, list) else result.content
+    lines = [line for line in text.splitlines() if line.strip()]
+    assert len(lines) == 2
+    payload = [json.loads(line) for line in lines]
     purls = sorted(f["purl"] for f in payload)
     assert purls == ["pkg:pypi/babel@2.9.1", "pkg:pypi/jinja2@2.11.3"]
     # data governance: never an absolute path in the payload (dist basenames only)

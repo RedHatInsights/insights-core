@@ -221,6 +221,9 @@ def python_purls(broker):
     uniq = _dedup(_collect(_scan_dirs(root)))
     if not uniq:
         raise SkipComponent("No Python libraries detected")
-    # Compact JSON (no indent) to minimize archive size. Only dist-info basenames are emitted -- never
-    # absolute paths -- and no pid/hash, per data governance.
-    return DatasourceProvider(content=json.dumps(uniq), relative_path=RELATIVE_PATH)
+    # Emit JSONL -- one compact JSON object per line -- NOT a single JSON array. Customer line-based
+    # redaction (applied at collection) drops whole matching lines; a one-line array is all-or-nothing, so a
+    # single incidental match would silently discard the entire inventory. One record per line bounds the
+    # blast radius to a single package. Only dist-info basenames are emitted (no absolute paths/pid/hash).
+    content = "\n".join(json.dumps(rec) for rec in uniq)
+    return DatasourceProvider(content=content, relative_path=RELATIVE_PATH)
