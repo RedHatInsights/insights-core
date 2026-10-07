@@ -172,6 +172,15 @@ def test_collect_respects_deadline(isolated_scan, monkeypatch):
     assert ds._collect(ds._scan_dirs("/")) == []
 
 
+def test_metadata_files_discovery_honors_deadline(isolated_scan):
+    # Discovery (the glob) is bounded by the deadline too, not just the per-file scan loop: an
+    # already-expired deadline returns nothing even though files exist; no deadline globs normally.
+    for i in range(3):
+        _write_dist_info(isolated_scan, "Pkg%d-1.0.dist-info" % i, "Pkg%d" % i, "1.0")
+    assert ds._metadata_files(ds._scan_dirs("/"), deadline=ds._monotonic() - 1) == {}
+    assert len(ds._metadata_files(ds._scan_dirs("/"))) >= 3
+
+
 # ---------------------------------------------------------------------------
 # dedup
 # ---------------------------------------------------------------------------

@@ -160,10 +160,17 @@ def _scan_dirs(root):
     return dirs
 
 
-def _metadata_files(scan_dirs):
-    """De-duplicated set of dist-info/METADATA + egg-info/PKG-INFO files under the scan roots."""
+def _metadata_files(scan_dirs, deadline=None):
+    """De-duplicated set of dist-info/METADATA + egg-info/PKG-INFO files under the scan roots.
+
+    Discovery itself is bounded by the soft ``deadline`` (checked per scan root): on a pathological
+    site-packages layout (many roots / deep recursive globs) we stop globbing and return what we have so
+    far rather than letting discovery run past the wall-clock budget.
+    """
     found = {}
     for base in scan_dirs:
+        if deadline is not None and _monotonic() > deadline:
+            break
         for pattern in ("*.dist-info/METADATA", "*.egg-info/PKG-INFO"):
             for path in glob.glob(os.path.join(base, pattern)):
                 found.setdefault(os.path.realpath(path), None)
@@ -175,7 +182,8 @@ def _collect(scan_dirs):
     out = []
     deadline = _monotonic() + MAX_SECONDS
     # Sorted for deterministic output order run-to-run (glob/readdir order is not stable).
-    for path in sorted(_metadata_files(scan_dirs)):
+    # The deadline bounds discovery too (not just the per-file scan below).
+    for path in sorted(_metadata_files(scan_dirs, deadline)):
         if len(out) >= MAX_PACKAGES or _monotonic() > deadline:
             break
         name, version = _read_headers(path)
