@@ -350,6 +350,9 @@ def java_purls(broker):
     if not uniq:
         raise SkipComponent("No Java libraries detected")
 
-    # Compact JSON (no indent) to minimize archive size at fleet scale. Only jar basenames are
-    # emitted -- never absolute paths -- and no pid/sha1, per data governance.
-    return DatasourceProvider(content=json.dumps(uniq), relative_path=RELATIVE_PATH)
+    # Emit JSONL -- one compact JSON object per line -- NOT a single JSON array. Customer line-based
+    # redaction (applied at collection) drops whole matching lines; a one-line array is all-or-nothing, so a
+    # single incidental match would silently discard the entire inventory. One record per line bounds the
+    # blast radius to a single jar. Only jar basenames are emitted (no absolute paths/pid/sha1).
+    content = "\n".join(json.dumps(rec) for rec in uniq)
+    return DatasourceProvider(content=content, relative_path=RELATIVE_PATH)

@@ -59,6 +59,11 @@ def _content_str(result):
     return "\n".join(result.content)
 
 
+def _findings(result):
+    """Parse the datasource JSONL output (one JSON object per line) into a list of finding dicts."""
+    return [json.loads(line) for line in _content_str(result).splitlines() if line.strip()]
+
+
 # ---------------------------------------------------------------------------
 # pom.properties / SBOM parsing + purl encoding
 # ---------------------------------------------------------------------------
@@ -142,7 +147,7 @@ def test_max_jars_cap_stops_scan(monkeypatch, tmp_path):
     j2 = _write_jar(tmp_path, "b.jar", {"META-INF/maven/g/b/pom.properties": _pom_props("g", "b", "2")})
     monkeypatch.setattr(ds, "_scanned_jars", lambda root, counter=None: {j1: None, j2: None})
     monkeypatch.setattr(ds, "_open_jars", lambda root, counter=None: {})
-    findings = json.loads(_content_str(ds.java_purls(_broker())))
+    findings = _findings(ds.java_purls(_broker()))
     assert len(findings) == 1  # only one jar analyzed before the cap tripped
 
 
@@ -273,7 +278,7 @@ def test_returns_datasource_provider_with_expected_path(monkeypatch, tmp_path):
     result = ds.java_purls(_broker())
     assert isinstance(result, DatasourceProvider)
     assert result.relative_path == "insights_datasources/java_purls.json"
-    findings = json.loads(_content_str(result))
+    findings = _findings(result)
     assert findings == [{"purl": "pkg:maven/org.foo/bar@1.2.3", "jar": "bar.jar", "source": "pom.properties"}]
 
 
@@ -282,7 +287,7 @@ def test_no_pid_absolute_path_or_sha1_in_output(monkeypatch, tmp_path):
     monkeypatch.setattr(ds, "_scanned_jars", lambda root, counter=None: {})
     monkeypatch.setattr(ds, "_open_jars", lambda root, counter=None: {resolved: "4242"})  # pid present internally
     result = ds.java_purls(_broker())
-    findings = json.loads(_content_str(result))
+    findings = _findings(result)
     assert findings  # guard: an empty list would make the governance checks below pass vacuously
     for f in findings:
         assert set(f.keys()) == {"purl", "jar", "source"}  # no 'pid', no 'sha1' key
@@ -298,7 +303,7 @@ def test_dedup_collapses_duplicate_purls(monkeypatch, tmp_path):
     j2 = _write_jar(tmp_path, "two.jar", {"META-INF/maven/g/a/pom.properties": _pom_props("g", "a", "1")})
     monkeypatch.setattr(ds, "_scanned_jars", lambda root, counter=None: {j1: None, j2: None})
     monkeypatch.setattr(ds, "_open_jars", lambda root, counter=None: {})
-    findings = json.loads(_content_str(ds.java_purls(_broker())))
+    findings = _findings(ds.java_purls(_broker()))
     assert len(findings) == 1
     assert findings[0]["purl"] == "pkg:maven/g/a@1"
 
