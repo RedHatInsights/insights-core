@@ -668,6 +668,10 @@ class Specs(SpecSet):
     pvs_headings = RegistryPoint()
     pvs_noheadings = RegistryPoint()
     pvs_noheadings_all = RegistryPoint()
+    # Output is public package coordinates (purls), no host PII. Exclude the default network/host obfuscators:
+    # the ipv4 obfuscator rewrites any dotted-quad, which silently corrupts versions like "1.2.3.4" -> fake IP
+    # -> downstream CVE mismatch. (Mirrors selinux_users / abrt_status_bare / display_name.)
+    python_purls = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])
     qemu_conf = RegistryPoint()
     qemu_xml = RegistryPoint(multi_output=True)
     ql2xmaxlun = RegistryPoint(no_obfuscate=['hostname', 'ipv4', 'ipv6', 'mac'])

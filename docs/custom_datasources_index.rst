@@ -267,6 +267,14 @@ insights.specs.datasources.ps
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.python_purls
+----------------------------------------
+
+.. automodule:: insights.specs.datasources.python_purls
+    :members: python_purls
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.rpm
 ------------------------------
 
