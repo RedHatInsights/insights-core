@@ -266,26 +266,65 @@ class ComplianceClient:
         if response.status_code == 202:
             logger.info("Successfully {0} policy (ID {1}).\n".format(operation, policy_id))
             return 0
+
+        # A non-202 can also mean the host is already in the requested state: the
+        # API returns 404 ("Policy not found with ID ...") when assigning an
+        # already-assigned policy, because it is excluded from the assignable set.
+        # Probe current assignments to tell an idempotent no-op from a genuine
+        # failure.
+        try:
+            system_policy_ids = [p['id'] for p in self.get_system_policies() if isinstance(p, dict)]
+        except Exception as err:
+            logger.debug("Could not fetch system policies to diagnose the failure: {0}".format(err))
+            system_policy_ids = []
+
+        is_assigned = policy_id in system_policy_ids
+
+        # Idempotent success: the host is already in the requested state, so the
+        # command's goal is met (cf. `mkdir -p` / `rm -f`).
+        if opt == "delete" and not is_assigned:
+            logger.info("Policy (ID {0}) is not associated to this host; nothing to unassign.\n".format(policy_id))
+            return 0
+        if opt != "delete" and is_assigned:
+            logger.info("Policy (ID {0}) is already associated to this host; nothing to assign.\n".format(policy_id))
+            return 0
+
+        # Genuine failure: report an operation-specific reason.
+        if opt == "delete":
+            reason = "could not be unassigned and is still associated to this host"
         else:
-            logger.error(
-                "Policy ID {0} can not be {1}. "
-                "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
-                    policy_id,
-                    operation,
-                )
+            reason = "does not exist or is not accessible"
+        logger.error(
+            "Policy {0} {1}. "
+            "Refer to the /var/log/insights-client/insights-client.log for more details.".format(
+                policy_id, reason
             )
-            return constants.sig_kill_bad
+        )
+        return constants.sig_kill_bad
 
     def get_system_policies(self):
         if self.inventory_id is None:
             # return empty directly when inventory_id cannot be found
             return []
-        url = "{0}/compliance/v2/systems/{1}/policies".format(self.conn.base_url, self.inventory_id)
-        logger.debug("Fetching policies with: {0}".format(url))
-        response = self.conn.session.get(url)
-        logger.debug("Content of the response {0} - {1}".format(response, response.content))
+        # The API caps `limit` at 100, so page through with `offset` until a short
+        # page signals the end. `ids_only=true` keeps each page to bare ids.
+        limit = 100
+        offset = 0
+        policies = []
+        while True:
+            url = "{0}/compliance/v2/systems/{1}/policies?limit={2}&offset={3}&ids_only=true".format(
+                self.conn.base_url, self.inventory_id, limit, offset
+            )
+            logger.debug("Fetching policies with: {0}".format(url))
+            response = self.conn.session.get(url)
+            logger.debug("Content of the response {0} - {1}".format(response, response.content))
 
-        if response.status_code == 200:
-            return response.json().get('data', [])
-        else:
-            return []
+            if response.status_code != 200:
+                # Bail out completely: a partial list could misreport a policy on
+                # a later page as not associated.
+                return []
+            page = response.json().get('data', [])
+            policies.extend(page)
+            if len(page) < limit:
+                return policies
+            offset += limit
