@@ -708,7 +708,7 @@ class Models(dict):
                 report.append(ansiformat(color, "-" * len(name)))
                 report.append(hits[name])
                 report.append("")
-        IPython.core.page.page(u'{0}'.format(os.linesep.join(results)))
+        IPython.core.page.page(u'{0}'.format(os.linesep.join(report)))
 
     def show_timings(self, match=None, ignore="spec", group=dr.GROUPS.single):
         """
