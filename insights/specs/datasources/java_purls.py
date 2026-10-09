@@ -57,6 +57,11 @@ logger = logging.getLogger(__name__)
 NESTED_PREFIXES = ("BOOT-INF/lib/", "WEB-INF/lib/", "lib/")
 RELATIVE_PATH = "insights_datasources/java_purls.json"
 
+# Sentinel groupId for a purl recovered from MANIFEST.MF. A manifest carries the artifact and version
+# but NOT the Maven groupId, so the group is emitted as this sentinel (source="manifest"); a consumer
+# resolves the real group by artifact. See _purls_from_manifest.
+MANIFEST_UNKNOWN_GROUP = "unknown"
+
 # comm/exe basenames treated as a JVM. Bounded on purpose: this is a "loaded-library" inventory of
 # ordinary JVMs, not a claim to find every possible launcher. (jsvc = Commons Daemon, used by Tomcat.)
 JVM_NAMES = ("java", "jsvc")
@@ -159,6 +164,44 @@ def _purls_from_sbom(zf, entry, name):
     return found
 
 
+def _manifest_fields(raw):
+    """Parse the MANIFEST.MF main section into a dict, joining 72-column continuation lines (which
+    begin with a single leading space) onto the preceding header's value."""
+    fields, key = {}, None
+    for line in raw.decode("utf-8", "replace").splitlines():
+        if line[:1] in (" ", "\t") and key is not None:
+            fields[key] += line.strip()
+        elif ":" in line:
+            k, _, v = line.partition(":")
+            key = k.strip()
+            fields[key] = v.strip()
+        else:
+            key = None
+    return fields
+
+
+def _purls_from_manifest(zf, names, name):
+    """Lossy fallback purl from ``META-INF/MANIFEST.MF`` for a jar that carries NO authoritative
+    pom.properties/SBOM (e.g. Gradle-built jars such as the Spring ecosystem, which omit META-INF/maven
+    entirely). The manifest has the artifact (``Implementation-Title``) and ``Implementation-Version``
+    but not the Maven groupId, so the group is emitted as ``MANIFEST_UNKNOWN_GROUP`` and ``source`` is
+    ``"manifest"`` (a consumer resolves the real group by artifact). Emitted only when BOTH fields are
+    present, to keep speculative coordinates out of the output. (COLLECTION-SPEC.md: fall back to the
+    MANIFEST; this fallback is lossy by design.)"""
+    if "META-INF/MANIFEST.MF" not in names:
+        return []
+    raw = _safe_read(zf, "META-INF/MANIFEST.MF")
+    if raw is None:
+        return []
+    fields = _manifest_fields(raw)
+    artifact = fields.get("Implementation-Title")
+    version = fields.get("Implementation-Version")
+    if not artifact or not version:
+        return []
+    purl = "pkg:maven/%s/%s@%s" % (MANIFEST_UNKNOWN_GROUP, _enc(artifact), _enc(version))
+    return [{"purl": purl, "jar": name, "source": "manifest"}]
+
+
 def _collect_purls(zf, names, name, out, counter=None):
     """Append authoritative purls (pom.properties + Spring-Boot SBOM) found in one jar.
     Honors the soft deadline so a single jar with a huge central directory cannot block past it."""
@@ -204,7 +247,11 @@ def _analyze(name, data=None, path=None, depth=MAX_NESTED_DEPTH, out=None, count
         # Context manager guarantees the handle is closed even if reading an entry raises.
         with zipfile.ZipFile(io.BytesIO(data) if data is not None else path) as zf:
             names = zf.namelist()
+            before = len(out)
             _collect_purls(zf, names, name, out, counter)
+            if len(out) == before:
+                # No authoritative pom.properties/SBOM in THIS jar -> lossy MANIFEST fallback.
+                out.extend(_purls_from_manifest(zf, names, name))
             if depth > 0:
                 _recurse_nested(zf, names, depth, out, counter)
     except Exception as e:

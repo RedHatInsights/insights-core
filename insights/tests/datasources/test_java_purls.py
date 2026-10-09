@@ -112,9 +112,52 @@ def test_malformed_sbom_is_skipped_not_crashed():
 
 
 def test_no_pom_yields_no_finding():
-    # A jar with no pom.properties / SBOM resolves to nothing (no sha1 marker is emitted).
+    # A jar with no pom.properties / SBOM and no usable MANIFEST resolves to nothing.
     data = _make_jar({"com/foo/Bar.class": b"cafebabe"})
     assert ds._analyze("mystery.jar", data=data) == []
+
+
+_SPRING_MF = (
+    "Manifest-Version: 1.0\n"
+    "Implementation-Title: spring-expression\n"
+    "Implementation-Version: 5.3.18\n"
+)
+
+
+def test_manifest_fallback_when_no_pom():
+    # A Gradle-built jar (Spring) has a MANIFEST with Implementation-Title/-Version but NO
+    # META-INF/maven -> lossy fallback emits a purl with the sentinel group and source="manifest".
+    data = _make_jar({"META-INF/MANIFEST.MF": _SPRING_MF, "org/springframework/Foo.class": b"x"})
+    out = ds._analyze("spring-expression-5.3.18.jar", data=data)
+    assert out == [{
+        "purl": "pkg:maven/unknown/spring-expression@5.3.18",
+        "jar": "spring-expression-5.3.18.jar", "source": "manifest",
+    }]
+
+
+def test_manifest_fallback_requires_both_fields():
+    # Implementation-Version absent -> no speculative coordinate is emitted.
+    data = _make_jar({"META-INF/MANIFEST.MF": "Manifest-Version: 1.0\nImplementation-Title: foo\n"})
+    assert ds._analyze("foo.jar", data=data) == []
+
+
+def test_pom_properties_preferred_over_manifest():
+    # When an authoritative pom.properties is present, the MANIFEST fallback does NOT fire.
+    data = _make_jar({
+        "META-INF/maven/org.foo/bar/pom.properties": _pom_props("org.foo", "bar", "1.2.3"),
+        "META-INF/MANIFEST.MF": "Manifest-Version: 1.0\nImplementation-Title: bar\nImplementation-Version: 9.9.9\n",
+    })
+    out = ds._analyze("bar.jar", data=data)
+    assert out == [{"purl": "pkg:maven/org.foo/bar@1.2.3", "jar": "bar.jar", "source": "pom.properties"}]
+
+
+def test_manifest_fallback_fires_per_nested_jar():
+    # A Spring jar nested in BOOT-INF/lib (the common real case) is recovered via the fallback.
+    inner = _make_jar({"META-INF/MANIFEST.MF": _SPRING_MF, "org/springframework/Foo.class": b"x"})
+    outer = _make_jar({"BOOT-INF/lib/spring-expression-5.3.18.jar": inner})
+    out = ds._analyze("app.jar", data=outer)
+    assert {"purl": "pkg:maven/unknown/spring-expression@5.3.18",
+            "jar": "spring-expression-5.3.18.jar", "source": "manifest"} in out
 
 
 def test_corrupt_jar_is_skipped_not_crashed():
