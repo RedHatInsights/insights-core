@@ -27,7 +27,7 @@ Only authoritative purls resolved *locally* (pom.properties / SBOM) are emitted 
 never a network call. Shaded / no-pom jars that cannot be resolved on-box are simply omitted; server
 -side ``sha1 -> GAV`` resolution is a separate, future step and is intentionally not represented here.
 
-Output: a JSON array of ``{purl, jar, source}`` objects at
+Output: JSONL -- one compact ``{purl, jar, source}`` object per line -- at
 ``data/insights_datasources/java_purls.json`` (jar is a basename only; no path/pid/hash).
 """
 import glob
