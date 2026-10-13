@@ -31,6 +31,7 @@ from .constants import InsightsConstants as constants
 from insights import cleaner, package_info
 from insights.client.collection_rules import InsightsUploadConf
 from insights.util.canonical_facts import get_canonical_facts
+from insights.util.content_type import from_file
 
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
@@ -889,7 +890,6 @@ class InsightsConnection(object):
         Do an HTTPS upload of the archive
         '''
         file_name = os.path.basename(data_collected)
-        from insights.util.content_type import from_file
         mime_type = from_file(data_collected)
 
         files = {
