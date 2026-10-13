@@ -49,6 +49,7 @@ from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider
+from insights.specs import Specs
 
 logger = logging.getLogger(__name__)
 
@@ -214,7 +215,10 @@ def _dedup(found):
     return uniq
 
 
-@datasource(HostContext, timeout=120)
+# Hard timeout must sit ABOVE the soft wall-clock budget (MAX_SECONDS) so the soft deadline fires first
+# and returns partial results; if an operator raises PYTHON_PURLS_MAX_SECONDS past a fixed hard timeout the
+# SIGALRM would otherwise kill the scan and discard everything. +30s covers the final dedup/serialize.
+@datasource(HostContext, timeout=max(120, MAX_SECONDS + 30))
 def python_purls(broker):
     """Detect installed third-party Python libraries and emit their purls (default collection)."""
     root = broker[HostContext].root or "/"
@@ -226,4 +230,14 @@ def python_purls(broker):
     # single incidental match would silently discard the entire inventory. One record per line bounds the
     # blast radius to a single package. Only dist-info basenames are emitted (no absolute paths/pid/hash).
     content = "\n".join(json.dumps(rec) for rec in uniq)
-    return DatasourceProvider(content=content, relative_path=RELATIVE_PATH)
+    # Pass ds/ctx/cleaner so the collection-time Cleaner actually runs on the emitted lines: customer
+    # keyword/password/pattern redaction + the Specs.python_purls no_obfuscate rules (hostname/ip/mac) apply
+    # to the dist-info basenames and purls. Without this triple the JSONL line-based redaction the format
+    # was designed for never happens.
+    return DatasourceProvider(
+        content=content,
+        relative_path=RELATIVE_PATH,
+        ds=Specs.python_purls,
+        ctx=broker.get(HostContext),
+        cleaner=broker.get("cleaner"),
+    )
