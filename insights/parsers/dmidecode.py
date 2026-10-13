@@ -23,9 +23,13 @@ The common information retrieved from dmidecode is available in several
 convenience properties:
 
 * **system_info** - Information about the machine itself
-* **bios** - the BIOS information
-* **bios_vendor** - the BIOS's 'Vendor' attribute
-* **bios_date** - the BIOS's 'Release Date' attribute
+* **bios** - the BIOS / Platform Firmware information
+* **bios_vendor** - the BIOS's / Platform Firmware's 'Vendor' attribute
+* **bios_date** - the BIOS's / Platform Firmware's 'Release Date' attribute
+* **platform_firmware** - alias of ``bios``, for dmidecode 3.6+ where the
+  'BIOS Information' section was renamed to 'Platform Firmware Information'
+* **platform_firmware_vendor** - alias of ``bios_vendor``
+* **platform_firmware_date** - alias of ``bios_date``
 * **processor_manufacturer** - the processor's 'Manufacturer' attribute
 * **is_present** - this indicates whether dmidecode information was found.
 
@@ -84,7 +88,11 @@ Examples:
     1
     >>> dmi['bios_information'][0]['vendor']
     'HP'
+    >>> dmi['platform_firmware_information'][0]['vendor']
+    'HP'
     >>> dmi.bios_vendor
+    'HP'
+    >>> dmi.platform_firmware_vendor
     'HP'
     >>> dmi.bios_date
     datetime.date(2008, 9, 27)
@@ -113,6 +121,17 @@ class DMIDecode(CommandParser, LegacyItemAccess):
     def parse_content(self, content):
         self.data = parse_dmidecode(content, pythonic_keys=True)
 
+        # If bios_info exists one of the keys was present in parsed data,
+        # assign its value to the missing key for access with both keys.
+        bios_info = self._get_bios_info()
+        if bios_info:
+            self.data.setdefault("platform_firmware_information", bios_info)
+            self.data.setdefault("bios_information", bios_info)
+
+    def _get_bios_info(self):
+        """(list): Helper to fetch the BIOS or Platform Firmware Information block list."""
+        return self.data.get("platform_firmware_information") or self.data.get("bios_information")
+
     @property
     def system_info(self):
         """(str): Convenience method to get system information"""
@@ -127,21 +146,43 @@ class DMIDecode(CommandParser, LegacyItemAccess):
 
     @property
     def bios(self):
-        """(str): Convenience method to get BIOS information"""
-        return self["bios_information"][0] if "bios_information" in self else None
+        """(dict): Convenience method to get BIOS / Platform Firmware information"""
+        bios_info = self._get_bios_info()
+        return bios_info[0] if bios_info else None
 
     @property
     @defaults()
     def bios_vendor(self):
-        """(str): Convenience method to get BIOS vendor"""
-        return self["bios_information"][0]["vendor"]
+        """(str): Convenience method to get BIOS / Platform Firmware vendor"""
+        bios_section = self.bios
+        return bios_section.get("vendor") if bios_section else None
 
     @property
     @defaults()
     def bios_date(self):
-        """(datetime.date): Get the BIOS release date in datetime.date format"""
-        month, day, year = map(int, self["bios_information"][0]["release_date"].split("/"))
-        return date(year, month, day)
+        """(datetime.date): Get the BIOS / Platform Firmware release date in datetime.date format"""
+        bios_section = self.bios
+        if bios_section and "release_date" in bios_section:
+            month, day, year = map(int, bios_section["release_date"].split("/"))
+            return date(year, month, day)
+        return None
+
+    @property
+    def platform_firmware(self):
+        """(dict): Convenience method to get BIOS / Platform Firmware information"""
+        return self.bios
+
+    @property
+    @defaults()
+    def platform_firmware_vendor(self):
+        """(str): Convenience method to get BIOS / Platform Firmware vendor"""
+        return self.bios_vendor
+
+    @property
+    @defaults()
+    def platform_firmware_date(self):
+        """(datetime.date): Get the BIOS / Platform Firmware release date in datetime.date format"""
+        return self.bios_date
 
     @property
     @defaults()

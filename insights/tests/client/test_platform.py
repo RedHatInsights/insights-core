@@ -99,7 +99,7 @@ def test_payload_upload(op, post, c, _legacy_upload_archive, rm_conf):
     _legacy_upload_archive.assert_not_called()
 
 
-@patch('insights.util.content_type.from_file', new=lambda name: 'application/gzip')
+@patch('insights.client.connection.from_file', new=lambda name: 'application/gzip')
 @patch('insights.client.connection.generate_machine_id', mock_machine_id)
 @patch("insights.client.connection.get_canonical_facts", return_value={'test': 'facts'})
 @patch('insights.client.connection.InsightsConnection.post')
