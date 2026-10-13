@@ -23,7 +23,7 @@ to known/allow-listed site-packages roots (extra roots are opt-in via ``PYTHON_P
 the number/size of metadata files read, a soft wall-clock budget, and graceful partial results (never a
 crash) when a cap or the budget is hit.
 
-Output: a JSON array of ``{purl, dist, source, installer}`` objects at
+Output: JSONL -- one compact ``{purl, dist, source, installer}`` object per line -- at
 ``data/insights_datasources/python_purls.json`` (``dist`` is the dist-info/egg-info basename only; no
 absolute path, no pid, no hash; ``installer`` is advisory and may be ``None``).
 """
