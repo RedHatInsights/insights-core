@@ -71,6 +71,21 @@ from insights.util import defaults, enum, KeyPassingDefaultDict
 
 log = logging.getLogger(__name__)
 
+
+def _format_exc_short():
+    """Return a condensed traceback without Python 3.12 caret anchors."""
+    exc_type, exc_value, exc_tb = sys.exc_info()
+    try:
+        parts = traceback.format_exception_only(exc_type, exc_value)
+        if exc_tb is not None:
+            frames = traceback.extract_tb(exc_tb)
+            if frames:
+                last = frames[-1]
+                parts.insert(0, '  File "%s", line %d, in %s\n' % (last.filename, last.lineno, last.name))
+        return "".join(parts)
+    finally:
+        del exc_tb
+
 GROUPS = enum("single", "cluster")
 
 MODULE_NAMES = {}
@@ -922,6 +937,36 @@ class Broker(object):
             self.exceptions[component].append(ex)
             self.tracebacks[ex] = tb
 
+    def cleanup(self):
+        """Release all broker state to prevent memory accumulation between runs.
+
+        Clears exception ``__traceback__`` references (which keep entire call
+        frames alive), then drops all instances, exceptions, tracebacks,
+        and timing data.  Also clears the stdlib ``linecache``, which
+        accumulates source lines from every file that appeared in any
+        traceback.
+        """
+        import linecache
+
+        for exc_list in self.exceptions.values():
+            for exc in exc_list:
+                exc.__traceback__ = None
+        for instance in self.instances.values():
+            items = instance if isinstance(instance, list) else (instance,)
+            for item in items:
+                if hasattr(item, 'cleanup') and callable(item.cleanup):
+                    try:
+                        item.cleanup()
+                    except Exception:
+                        pass
+        self.instances.clear()
+        self.exceptions.clear()
+        self.tracebacks.clear()
+        self.exec_times.clear()
+        self.missing_requirements.clear()
+        linecache.clearcache()
+        BLACKLISTED_SPECS.clear()
+
     def __iter__(self):
         return iter(self.instances)
 
@@ -1092,7 +1137,7 @@ def run_components(ordered_components, components, broker):
         except BlacklistedSpec as bs:
             for x in get_registry_points(component):
                 BLACKLISTED_SPECS.append(str(x).split('.')[-1])
-            broker.add_exception(component, bs, traceback.format_exc())
+            broker.add_exception(component, bs, _format_exc_short())
         except MissingRequirements as mr:
             if log.isEnabledFor(logging.DEBUG):
                 name = get_name(component)
@@ -1102,12 +1147,12 @@ def run_components(ordered_components, components, broker):
         except SkipComponent as sc:
             if broker.store_skips:
                 log.debug(sc)
-                broker.add_exception(component, sc, traceback.format_exc())
+                broker.add_exception(component, sc, _format_exc_short())
             else:
                 pass
         except Exception as ex:
             log.debug(ex)
-            tb = traceback.format_exc()
+            tb = _format_exc_short()
             broker.add_exception(component, ex, tb)
             for reg_spec in get_registry_points(component):
                 broker.add_exception(reg_spec, ex, tb)

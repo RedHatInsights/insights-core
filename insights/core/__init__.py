@@ -26,6 +26,19 @@ try:
 except ImportError:  # pragma: no cover
     from yaml import SafeLoader
 
+# Remove '=' from implicit resolvers so it parses as a plain string, not a merge key.
+# Patching the class dict directly preserves the C constructor fast path.
+# Subclassing CSafeLoader (the previous approach) dropped the fast path and caused
+# per-token Python object allocations (~28k allocs per YAML file parsed).
+# See https://github.com/yaml/pyyaml/issues/89
+SafeLoader.yaml_implicit_resolvers = {
+    k: v for k, v in SafeLoader.yaml_implicit_resolvers.items() if k != "="
+}
+
+# Alias kept for test compatibility: tests//__init__.py swaps this to the pure-Python
+# SafeLoader so that yaml parsing works correctly under coverage instrumentation.
+_PatchedSafeLoader = SafeLoader
+
 # Import defusedxml.ElementTree firstly to avoid XML vulnerabilities,
 # if dependency not installed import xml.etree.ElementTree instead.
 try:
@@ -755,14 +768,6 @@ class XMLParser(LegacyItemAccess, Parser):
 
         real_element += element
         return self.dom.findall(real_element)
-
-
-class _PatchedSafeLoader(SafeLoader):
-    yaml_implicit_resolvers = SafeLoader.yaml_implicit_resolvers.copy()
-
-    # Patch the SafeLoader to allow ``=`` to be resolved as a normal str.
-    # See https://github.com/yaml/pyyaml/issues/89 for more info.
-    yaml_implicit_resolvers.pop("=", None)
 
 
 class YAMLParser(Parser, LegacyItemAccess):
