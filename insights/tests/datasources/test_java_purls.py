@@ -141,6 +141,26 @@ def test_manifest_fallback_requires_both_fields():
     assert ds._analyze("foo.jar", data=data) == []
 
 
+_TOMCAT_MF = (
+    "Manifest-Version: 1.0\n"
+    "Implementation-Title: Apache Tomcat\n"
+    "Implementation-Version: 9.0.71\n"
+    "\n"
+    "Name: javax/servlet/\n"
+    "Implementation-Title: javax.servlet\n"
+    "Implementation-Version: 4.0.FR\n"
+)
+
+
+def test_manifest_main_section_only_and_skips_product_name_title():
+    # Two guards on the MANIFEST fallback: (1) only the MAIN section is read, so a per-entry section's
+    # Implementation-Title (javax.servlet) cannot shadow the jar's own; (2) a main-section title that is a
+    # product name rather than an artifactId ("Apache Tomcat", has whitespace) is skipped -> a clean miss
+    # instead of a bogus coordinate. tomcat-embed-core is exactly this shape.
+    data = _make_jar({"META-INF/MANIFEST.MF": _TOMCAT_MF, "org/apache/catalina/Foo.class": b"x"})
+    assert ds._analyze("tomcat-embed-core-9.0.71.jar", data=data) == []
+
+
 def test_pom_properties_preferred_over_manifest():
     # When an authoritative pom.properties is present, the MANIFEST fallback does NOT fire.
     data = _make_jar({

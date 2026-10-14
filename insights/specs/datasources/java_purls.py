@@ -166,10 +166,14 @@ def _purls_from_sbom(zf, entry, name):
 
 
 def _manifest_fields(raw):
-    """Parse the MANIFEST.MF main section into a dict, joining 72-column continuation lines (which
-    begin with a single leading space) onto the preceding header's value."""
+    """Parse the MANIFEST.MF MAIN section (everything up to the first blank line) into a dict, joining
+    72-column continuation lines (which begin with a single leading space) onto the preceding header's
+    value. Per-entry sections (``Name:`` blocks after a blank line) are ignored, so a bundled package's
+    ``Implementation-Title`` cannot shadow the jar's own."""
     fields, key = {}, None
     for line in raw.decode("utf-8", "replace").splitlines():
+        if line == "":
+            break   # end of the main section; per-entry (Name:) sections follow
         if line[:1] in (" ", "\t") and key is not None:
             fields[key] += line.strip()
         elif ":" in line:
@@ -197,7 +201,9 @@ def _purls_from_manifest(zf, names, name):
     fields = _manifest_fields(raw)
     artifact = fields.get("Implementation-Title")
     version = fields.get("Implementation-Version")
-    if not artifact or not version:
+    # Implementation-Title must look like a Maven artifactId; a product-name title with whitespace
+    # (e.g. "Apache Tomcat") is not a coordinate and would never match the scope, so skip it.
+    if not artifact or not version or any(c.isspace() for c in artifact):
         return []
     purl = "pkg:maven/%s/%s@%s" % (MANIFEST_UNKNOWN_GROUP, _enc(artifact), _enc(version))
     return [{"purl": purl, "jar": name, "source": "manifest"}]
