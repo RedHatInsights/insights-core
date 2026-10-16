@@ -1206,6 +1206,52 @@ class LogFileOutput(TextFileOutput):
         """
         return {'raw_message': line}
 
+    def _parse_logstamp(self, logstamp, time_format):
+        """
+        Parse a timestamp string using the given time_format.
+
+        Subclasses can override this to handle special cases (e.g., Syslog
+        for Feb 29 with year injection). Returns parsed datetime or raises
+        ValueError if parsing fails.
+
+        Args:
+            logstamp (str): The timestamp string to parse
+            time_format (str): strptime format string
+
+        Returns:
+            datetime.datetime: Parsed datetime
+
+        Raises:
+            ValueError: If timestamp cannot be parsed
+        """
+        return datetime.datetime.strptime(logstamp, time_format)
+
+    def _replace_year(self, logstamp, timestamp, eleven_months):
+        """
+        Replace the year in logstamp when time_format lacks year component.
+
+        Handles December/January crossover by detecting when the log timestamp
+        is over eleven months ahead/behind the query timestamp. Subclasses can
+        override this to handle special cases (e.g., Syslog for Feb 29).
+
+        Args:
+            logstamp (datetime.datetime): Parsed timestamp with default/injected year
+            timestamp (datetime.datetime): Query timestamp with target year
+            eleven_months (datetime.timedelta): 330-day threshold for year adjustment
+
+        Returns:
+            datetime.datetime: logstamp with year adjusted to match timestamp year
+
+        Raises:
+            ValueError: If year replacement fails (e.g., Feb 29 in non-leap year)
+        """
+        logstamp = logstamp.replace(year=timestamp.year)
+        if logstamp - timestamp > eleven_months:
+            logstamp = logstamp.replace(year=timestamp.year - 1)
+        elif timestamp - logstamp > eleven_months:
+            logstamp = logstamp.replace(year=timestamp.year + 1)
+        return logstamp
+
     def get_after(self, timestamp, s=None):
         """
         Find all the (available) logs that are after the given time stamp.
@@ -1328,7 +1374,7 @@ class LogFileOutput(TextFileOutput):
 
             # Curry strptime with time_format string.
             def test_parser(logstamp):
-                return datetime.datetime.strptime(logstamp, time_format)
+                return self._parse_logstamp(logstamp, time_format)
 
             parse_fn = test_parser
         elif isinstance(time_format, list):
@@ -1342,10 +1388,10 @@ class LogFileOutput(TextFileOutput):
                 # strings that will match.
                 for tf in time_format:
                     try:
-                        ts = datetime.datetime.strptime(logstamp, tf)
+                        return self._parse_logstamp(logstamp, tf)
                     except ValueError:
                         pass
-                return ts
+                raise ValueError("No matching format found for {0}".format(logstamp))
 
             parse_fn = test_all_parsers
         else:
@@ -1372,18 +1418,16 @@ class LogFileOutput(TextFileOutput):
             # Otherwise, search all lines
             match = time_re.search(line)
             if match:
-                logstamp = parse_fn(match.group(0))
+                try:
+                    logstamp = parse_fn(match.group(0))
+                except ValueError:
+                    continue
                 if not logs_have_year:
-                    # Substitute timestamp year for logstamp year
-                    logstamp = logstamp.replace(year=timestamp.year)
-                    if logstamp - timestamp > eleven_months:
-                        # If timestamp in January and log in December, move
-                        # log to previous year
-                        logstamp = logstamp.replace(year=timestamp.year - 1)
-                    elif timestamp - logstamp > eleven_months:
-                        # If timestamp in December and log in January, move
-                        # log to next year
-                        logstamp = logstamp.replace(year=timestamp.year + 1)
+                    try:
+                        logstamp = self._replace_year(logstamp, timestamp, eleven_months)
+                    except ValueError:
+                        # Handle Feb 29 when target year is not a leap year
+                        continue
                 if logstamp >= timestamp:
                     # Later - include
                     including_lines = True
@@ -1446,6 +1490,30 @@ class Syslog(LogFileOutput):
     """
 
     time_format = '%b %d %H:%M:%S'
+    _LEAP_YEAR = 2000  # A leap year used to handle Feb 29 parsing when year is missing
+
+    def _parse_no_year_safe(self, logstamp, time_format):
+        """
+        Parse timestamp safely with year injection for no-year formats.
+
+        When time_format lacks %Y or %y, injects _LEAP_YEAR to handle Feb 29.
+        Returns parsed datetime or raises ValueError if parsing fails.
+
+        Args:
+            logstamp (str): The timestamp string to parse
+            time_format (str): strptime format string
+
+        Returns:
+            datetime.datetime: Parsed datetime with injected year
+
+        Raises:
+            ValueError: If timestamp cannot be parsed with injected year
+        """
+        logs_have_year = '%Y' in time_format or '%y' in time_format
+        if logs_have_year:
+            return datetime.datetime.strptime(logstamp, time_format)
+        else:
+            return datetime.datetime.strptime(str(self._LEAP_YEAR) + ' ' + logstamp, '%Y ' + time_format)
 
     def _parse_line(self, line):
         """
@@ -1466,13 +1534,25 @@ class Syslog(LogFileOutput):
             info_splits = info.rsplit(None, 2)
             if len(info_splits) == 3:
                 logstamp = info_splits[0]
-                try:
-                    datetime.datetime.strptime(logstamp, self.time_format)
-                except ValueError:
-                    return msg_info
-                msg_info['timestamp'] = logstamp
-                msg_info['hostname'] = info_splits[1]
-                msg_info['procname'] = info_splits[2]
+                # Handle both string and list time_format
+                if isinstance(self.time_format, list):
+                    for fmt in self.time_format:
+                        try:
+                            self._parse_no_year_safe(logstamp, fmt)
+                            msg_info['timestamp'] = logstamp
+                            msg_info['hostname'] = info_splits[1]
+                            msg_info['procname'] = info_splits[2]
+                            break
+                        except ValueError:
+                            continue
+                else:
+                    try:
+                        self._parse_no_year_safe(logstamp, self.time_format)
+                        msg_info['timestamp'] = logstamp
+                        msg_info['hostname'] = info_splits[1]
+                        msg_info['procname'] = info_splits[2]
+                    except ValueError:
+                        pass
         return msg_info
 
     def get_logs_by_procname(self, proc):
@@ -1488,6 +1568,50 @@ class Syslog(LogFileOutput):
             procid = l.get('procname', '')
             if proc == procid or proc == procid.split('[')[0]:
                 yield l
+
+    def _parse_logstamp(self, logstamp, time_format):
+        """
+        Parse timestamp safely with year injection for no-year formats.
+
+        When time_format lacks %Y or %y, injects _LEAP_YEAR to handle Feb 29.
+        Returns parsed datetime or raises ValueError if parsing fails.
+
+        Args:
+            logstamp (str): The timestamp string to parse
+            time_format (str): strptime format string
+
+        Returns:
+            datetime.datetime: Parsed datetime with injected year
+
+        Raises:
+            ValueError: If timestamp cannot be parsed with injected year
+        """
+        return self._parse_no_year_safe(logstamp, time_format)
+
+    def _replace_year(self, logstamp, timestamp, eleven_months):
+        """
+        Replace year in logstamp, handling Feb 29 in non-leap years.
+
+        Attempts to replace year and handle Dec/Jan crossover. If the date
+        is Feb 29 and target year is not a leap year, raises ValueError.
+
+        Args:
+            logstamp (datetime.datetime): Parsed timestamp with injected year
+            timestamp (datetime.datetime): Query timestamp with target year
+            eleven_months (datetime.timedelta): 330-day threshold for year adjustment
+
+        Returns:
+            datetime.datetime: logstamp with year adjusted to match timestamp year
+
+        Raises:
+            ValueError: If year replacement fails (e.g., Feb 29 in non-leap year)
+        """
+        logstamp = logstamp.replace(year=timestamp.year)
+        if logstamp - timestamp > eleven_months:
+            logstamp = logstamp.replace(year=timestamp.year - 1)
+        elif timestamp - logstamp > eleven_months:
+            logstamp = logstamp.replace(year=timestamp.year + 1)
+        return logstamp
 
 
 class IniConfigFile(ConfigParser):
