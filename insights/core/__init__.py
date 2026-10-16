@@ -1446,6 +1446,15 @@ class Syslog(LogFileOutput):
     """
 
     time_format = '%b %d %H:%M:%S'
+    _LEAP_YEAR = 2000  # A leap year used to handle Feb 29 parsing when year is missing
+
+    def _is_feb29(self, logstamp):
+        """Check if logstamp contains Feb 29 by attempting to parse with a leap year."""
+        try:
+            parsed = datetime.datetime.strptime(str(self._LEAP_YEAR) + ' ' + logstamp, '%Y ' + self.time_format)
+            return parsed.month == 2 and parsed.day == 29
+        except ValueError:
+            return False
 
     def _parse_line(self, line):
         """
@@ -1469,6 +1478,11 @@ class Syslog(LogFileOutput):
                 try:
                     datetime.datetime.strptime(logstamp, self.time_format)
                 except ValueError:
+                    # Check if it's a Feb 29 timestamp and inject leap year if so
+                    if self._is_feb29(logstamp):
+                        msg_info['timestamp'] = logstamp
+                        msg_info['hostname'] = info_splits[1]
+                        msg_info['procname'] = info_splits[2]
                     return msg_info
                 msg_info['timestamp'] = logstamp
                 msg_info['hostname'] = info_splits[1]
@@ -1488,6 +1502,111 @@ class Syslog(LogFileOutput):
             procid = l.get('procname', '')
             if proc == procid or proc == procid.split('[')[0]:
                 yield l
+
+    def get_after(self, timestamp, s=None):
+        """
+        Override of parent get_after() to handle Feb 29 timestamps.
+
+        When strptime fails on a timestamp (due to Feb 29 with no year),
+        this method checks if it's a Feb 29 date and injects year 2000 to parse.
+
+        See parent class LogFileOutput.get_after() for full documentation.
+        """
+        time_format = self.time_format
+        if time_format is None:
+            raise RuntimeError('Not applied when time_format does not exist')
+
+        format_conversion_for = {
+            'a': r'\w{3}',
+            'A': r'\w+',
+            'w': r'[0123456]',
+            'd': r'([0 ][123456789]|[12]\d|3[01])',
+            'b': r'\w{3}',
+            'B': r'\w+',
+            'm': r'([0 ]\d|1[012])',
+            'y': r'\d{2}',
+            'Y': r'\d{4}',
+            'H': r'([01 ]\d|2[0123])',
+            'I': r'([0 ]?\d|1[012])',
+            'p': r'\w{2}',
+            'M': r'([012345]\d)',
+            'S': r'([012345]\d|60)',
+            'f': r'\d{1,6}',
+        }
+
+        timefmt_re = re.compile(r'%(\w)')
+
+        def replacer(match):
+            if match.group(1) in format_conversion_for:
+                return format_conversion_for[match.group(1)]
+            else:
+                raise ParseException(
+                    "get_after does not understand strptime format '{c}'".format(c=match.group(0))
+                )
+
+        if isinstance(time_format, dict):
+            time_format = list(time_format.values())
+        if isinstance(time_format, str):
+            logs_have_year = '%Y' in time_format or '%y' in time_format
+            time_re = re.compile('(' + timefmt_re.sub(replacer, time_format) + ')')
+
+            def test_parser(logstamp):
+                try:
+                    return datetime.datetime.strptime(logstamp, time_format)
+                except ValueError:
+                    # Check if it's Feb 29 and inject leap year
+                    if self._is_feb29(logstamp) and not logs_have_year:
+                        return datetime.datetime.strptime(str(self._LEAP_YEAR) + ' ' + logstamp, '%Y ' + time_format)
+                    raise
+
+            parse_fn = test_parser
+        elif isinstance(time_format, list):
+            logs_have_year = all('%Y' in tf or '%y' in tf for tf in time_format)
+            time_re = re.compile(
+                '(' + '|'.join(timefmt_re.sub(replacer, tf) for tf in time_format) + ')'
+            )
+
+            def test_all_parsers(logstamp):
+                for tf in time_format:
+                    try:
+                        return datetime.datetime.strptime(logstamp, tf)
+                    except ValueError:
+                        if self._is_feb29(logstamp) and not logs_have_year:
+                            try:
+                                return datetime.datetime.strptime(str(self._LEAP_YEAR) + ' ' + logstamp, '%Y ' + tf)
+                            except ValueError:
+                                pass
+                raise ValueError("No matching format found for {0}".format(logstamp))
+
+            parse_fn = test_all_parsers
+        else:
+            raise ParseException(
+                "get_after does not recognise time formats of type {t}".format(t=type(time_format))
+            )
+
+        eleven_months = datetime.timedelta(days=330)
+        including_lines = False
+        search_by_expression = self._valid_search(s)
+        for line in self.lines:
+            if s and not search_by_expression(line):
+                continue
+            match = time_re.search(line)
+            if match:
+                logstamp = parse_fn(match.group(0))
+                if not logs_have_year:
+                    logstamp = logstamp.replace(year=timestamp.year)
+                    if logstamp - timestamp > eleven_months:
+                        logstamp = logstamp.replace(year=timestamp.year - 1)
+                    elif timestamp - logstamp > eleven_months:
+                        logstamp = logstamp.replace(year=timestamp.year + 1)
+                if logstamp >= timestamp:
+                    including_lines = True
+                    yield self._parse_line(line)
+                else:
+                    including_lines = False
+            else:
+                if including_lines:
+                    yield self._parse_line(line)
 
 
 class IniConfigFile(ConfigParser):

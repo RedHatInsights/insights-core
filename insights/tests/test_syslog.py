@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from insights.core import Syslog
 from insights.tests import context_wrap
 
@@ -36,3 +38,50 @@ def test_syslog():
     systemd_logs = list(msg_info.get_logs_by_procname('systemd'))
     assert len(systemd_logs) == 1
     assert systemd_logs[0]['timestamp'] == 'May  5 03:50:01'
+
+
+MSGINFO_FEB29 = """
+Feb 28 10:35:01 boy-bona CROND[27921]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1)
+Feb 29 10:37:32 boy-bona crontab[28951]: (root) LIST (root)
+Mar  1 10:40:01 boy-bona CROND[30677]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1)
+""".strip()
+
+
+def test_syslog_feb29_parsing():
+    """Test that Syslog._parse_line() handles Feb 29 timestamps via _is_feb29 check."""
+    msg_info = Syslog(context_wrap(MSGINFO_FEB29))
+    feb28_list = msg_info.get('Feb 28')
+    assert len(feb28_list) == 1
+    assert feb28_list[0].get('timestamp') == "Feb 28 10:35:01"
+
+    feb29_list = msg_info.get('Feb 29')
+    assert len(feb29_list) == 1
+    assert feb29_list[0].get('timestamp') == "Feb 29 10:37:32"
+    assert feb29_list[0].get('procname') == "crontab[28951]"
+
+    mar1_list = msg_info.get('Mar  1')
+    assert len(mar1_list) == 1
+    assert mar1_list[0].get('timestamp') == "Mar  1 10:40:01"
+
+
+def test_syslog_get_after_feb29():
+    """Test that Syslog.get_after() handles Feb 29 timestamps."""
+    msg_info = Syslog(context_wrap(MSGINFO_FEB29))
+
+    # Get lines after Feb 28 10:35:00 (includes Feb 28 10:35:01, Feb 29, and Mar 1)
+    after_feb28 = list(msg_info.get_after(datetime(2020, 2, 28, 10, 35, 0)))
+    assert len(after_feb28) == 3  # Feb 28, Feb 29 and Mar 1
+    assert after_feb28[0].get('timestamp') == "Feb 28 10:35:01"
+    assert after_feb28[1].get('timestamp') == "Feb 29 10:37:32"
+    assert after_feb28[2].get('timestamp') == "Mar  1 10:40:01"
+
+    # Get lines after Feb 29 10:37:32 (includes Feb 29 and Mar 1, because >= condition)
+    after_feb29 = list(msg_info.get_after(datetime(2020, 2, 29, 10, 37, 32)))
+    assert len(after_feb29) == 2
+    assert after_feb29[0].get('timestamp') == "Feb 29 10:37:32"
+    assert after_feb29[1].get('timestamp') == "Mar  1 10:40:01"
+
+    # Get lines after Mar 1 10:40:01 (includes Mar 1 due to >= condition)
+    after_mar1 = list(msg_info.get_after(datetime(2020, 3, 1, 10, 40, 1)))
+    assert len(after_mar1) == 1
+    assert after_mar1[0].get('timestamp') == "Mar  1 10:40:01"
