@@ -321,3 +321,48 @@ def test_logs_with_milliseconds():
     log = FakeTowerLog(ctx)
     assert len(log.lines) == 4
     assert len(list(log.get_after(datetime(2020, 5, 28, 19, 25, 46, 944)))) == 3
+
+
+MESSAGES_FEB29 = """
+Feb 28 10:35:01 message 1
+Feb 29 10:37:32 message 2
+Mar  1 10:40:01 message 3
+""".strip()
+
+
+class FakeMessagesClassNoYear(LogFileOutput):
+    time_format = '%b %d %H:%M:%S'
+
+
+def test_logfileoutput_feb29_parsing():
+    """Test that LogFileOutput._parse_logstamp() handles Feb 29 with year injection."""
+    ctx = context_wrap(MESSAGES_FEB29, path='/var/log/messages')
+    log = FakeMessagesClassNoYear(ctx)
+    assert len(log.lines) == 3
+
+    # Get lines after Feb 28 10:35:00 (includes Feb 28, Feb 29, and Mar 1)
+    after_feb28 = list(log.get_after(datetime(2020, 2, 28, 10, 35, 0)))
+    assert len(after_feb28) == 3
+    assert after_feb28[0]['raw_message'] == 'Feb 28 10:35:01 message 1'
+    assert after_feb28[1]['raw_message'] == 'Feb 29 10:37:32 message 2'
+    assert after_feb28[2]['raw_message'] == 'Mar  1 10:40:01 message 3'
+
+    # Get lines after Feb 29 10:37:32 (includes Feb 29 and Mar 1, due to >= condition)
+    after_feb29 = list(log.get_after(datetime(2020, 2, 29, 10, 37, 32)))
+    assert len(after_feb29) == 2
+    assert after_feb29[0]['raw_message'] == 'Feb 29 10:37:32 message 2'
+    assert after_feb29[1]['raw_message'] == 'Mar  1 10:40:01 message 3'
+
+
+def test_logfileoutput_feb29_non_leap_year():
+    """Test that Feb 29 logs are skipped when querying with non-leap year."""
+    ctx = context_wrap(MESSAGES_FEB29, path='/var/log/messages')
+    log = FakeMessagesClassNoYear(ctx)
+
+    # Query with non-leap year (2021) - Feb 29 line should be skipped
+    # because we can't represent Feb 29 in a non-leap year
+    after_feb28 = list(log.get_after(datetime(2021, 2, 28, 10, 35, 0)))
+    # Should only get Feb 28 and Mar 1, NOT Feb 29 (it's skipped due to ValueError)
+    assert len(after_feb28) == 2
+    assert after_feb28[0]['raw_message'] == 'Feb 28 10:35:01 message 1'
+    assert after_feb28[1]['raw_message'] == 'Mar  1 10:40:01 message 3'
