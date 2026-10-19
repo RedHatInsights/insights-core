@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# insights-core-3.7.9.1 (2026-10-19)
+
+- fix: Page the rule report in show_rule_report ([PR 4825](https://github.com/RedHatInsights/insights-core/pull/4825))
+- fix: set Host header on HTTPS proxy CONNECT (#4817) ([PR 4827](https://github.com/RedHatInsights/insights-core/pull/4827))
+
 # insights-core-3.7.8.1 (2026-07-27)
 
 - feat: New spec "podman ps --all --no-trunc --size --format=json" (#4786) ([PR 4792](https://github.com/RedHatInsights/insights-core/pull/4792))

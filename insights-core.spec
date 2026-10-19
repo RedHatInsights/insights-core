@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.8.1
+Version:        3.7.9.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,11 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Mon Oct 19 2026 Ping Qin <piqin@redhat.com> 3.7.9-1
+- fix: Page the rule report in show_rule_report (#4825)
+  (89797201+mufeso@users.noreply.github.com)
+- fix: set Host header on HTTPS proxy CONNECT (#4817) (#4827)
+  (90501899+zpetrace@users.noreply.github.com)
 * Mon Jul 27 2026 Ping Qin <piqin@redhat.com> 3.7.8-1
 - feat: New spec "podman ps --all --no-trunc --size --format=json" 
   (#4792) (qinpingli@users.noreply.github.com)
