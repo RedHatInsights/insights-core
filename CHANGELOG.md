@@ -3,6 +3,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.8.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.3) (2026-10-19)
+
+- fix: Page the rule report in show_rule_report ([PR 4825](https://github.com/RedHatInsights/insights-core/pull/4825))
+- fix: set Host header on HTTPS proxy CONNECT (#4817) ([PR 4827](https://github.com/RedHatInsights/insights-core/pull/4827))
+- fix(compliance): distinguish "already assigned" from "not found" on policy_link failure ([PR 4814](https://github.com/RedHatInsights/insights-core/pull/4814))
+- fix: Don't allow trailing newline in is_safe_username function ([PR 4822](https://github.com/RedHatInsights/insights-core/pull/4822))
+
 # [insights-core-3.8.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.2) (2026-09-24)
 
 - feat: Add kvdo deduplication_timeout_interval spec and parser ([PR 4820](https://github.com/RedHatInsights/insights-core/pull/4820))

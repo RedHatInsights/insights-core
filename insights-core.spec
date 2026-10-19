@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.8.2
+Version:        3.8.3
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -123,6 +123,16 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Mon Oct 19 2026 Ping Qin <piqin@redhat.com> 3.8.3-1
+- fix: Page the rule report in show_rule_report (#4825)
+  (89797201+mufeso@users.noreply.github.com)
+- fix: set Host header on HTTPS proxy CONNECT (#4817) (#4827)
+  (90501899+zpetrace@users.noreply.github.com)
+- fix(compliance): distinguish "already assigned" from "not found" on
+  policy_link failure (#4814) (1187051+romanblanco@users.noreply.github.com)
+- fix: Don't allow trailing newline in is_safe_username function
+  (fstavela@redhat.com)
+
 * Thu Sep 24 2026 Jan Holeček 3.8.2-1
 - feat: Add kvdo deduplication_timeout_interval spec and parser (#4820)
   (msunil.ssn@gmail.com)
