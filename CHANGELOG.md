@@ -3,6 +3,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+
+# [insights-core-3.8.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.4) (2026-10-20)
+
+- Revert "fix(compliance): distinguish "already assigned" from "not found" on policy_link failure
+
 # [insights-core-3.8.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.3) (2026-10-19)
 
 - fix: Page the rule report in show_rule_report ([PR 4825](https://github.com/RedHatInsights/insights-core/pull/4825))

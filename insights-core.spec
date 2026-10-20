@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.8.3
+Version:        3.8.4
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -123,6 +123,10 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Tue Oct 20 2026 Ping Qin <piqin@redhat.com> 3.8.4-1
+- Revert "fix(compliance): distinguish "already assigned" from "not found" on
+  policy_link failure (#4814)" (piqin@redhat.com)
+
 * Mon Oct 19 2026 Ping Qin <piqin@redhat.com> 3.8.3-1
 - fix: Page the rule report in show_rule_report (#4825)
   (89797201+mufeso@users.noreply.github.com)
