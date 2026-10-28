@@ -308,7 +308,7 @@ def test_exp_no_filters():
     assert exception_cnt == 1111111111
 
 
-@pytest.mark.parametrize("obfuscation_list", ['hostname', 'ipv4', 'ipv6', 'mac'], [])
+@pytest.mark.parametrize("obfuscation_list", ['hostname', 'ipv4', 'ipv6', 'mac'])
 @patch('insights.cleaner.Cleaner.generate_report', return_value=None)
 def test_specs_filters_collect(gen, obfuscation_list):
     add_filter(Stuff.many_glob_filter, " ")
