@@ -1,0 +1,475 @@
+"""
+Custom datasource: third-party Java library detection
+=====================================================
+
+Detects third-party Java libraries *loaded by running JVMs* on the host and emits their package
+URLs (purls) into the standard insights archive, so puptoo can map them into
+``system_profile.java_purls`` for downstream CVE matching.
+
+Runs as part of the DEFAULT collection (a normal ``insights-client`` run) and is applicability-gated:
+if no Java libraries are found it raises ``SkipComponent`` and contributes nothing.
+
+Detection (cheapest first):
+  * running JVMs -- jars held open via ``/proc/<pid>/fd`` (only Java processes are inspected). This
+    is the default and is cheap: hosts with no JVM skip instantly.
+  * OPTIONAL disk scan -- only when ``JAVA_PURLS_SCAN_DIRS`` is explicitly set (comma-separated dirs,
+    e.g. ``/opt``). There is no default disk scan: a recursive walk of distro dirs (``/usr/lib``,
+    ``/var/lib``) is expensive at fleet scale and those jars are already covered by ``installed_rpms``.
+  * inside each jar: ``META-INF/maven/**/pom.properties`` (authoritative g:a:v) and Spring-Boot
+    ``META-INF/sbom/*.cdx.json``; bounded recursion into fat/uber jar ``BOOT-INF/lib`` etc.
+
+Because this runs in default collection at fleet scale it enforces a safety envelope: JVM-only
+``/proc`` walk, caps on the number/size/nesting of jars analyzed, a soft wall-clock budget
+(``JAVA_PURLS_MAX_SECONDS``), streaming reads, and graceful partial results (never a crash) when a
+cap or the time budget is hit.
+
+Only authoritative purls resolved *locally* (pom.properties / SBOM) are emitted -- never a hash and
+never a network call. Shaded / no-pom jars that cannot be resolved on-box are simply omitted; server
+-side ``sha1 -> GAV`` resolution is a separate, future step and is intentionally not represented here.
+
+Output: JSONL -- one compact ``{purl, jar, source}`` object per line -- at
+``data/insights_datasources/java_purls.json`` (jar is a basename only; no path/pid/hash).
+"""
+import glob
+import io
+import json
+import logging
+import os
+import zipfile
+
+try:
+    from urllib.parse import quote
+except ImportError:  # pragma: no cover - py2 fallback
+    from urllib import quote
+
+try:
+    from time import monotonic as _monotonic
+except ImportError:  # pragma: no cover - py2 fallback (time.monotonic is py3.3+)
+    from time import time as _monotonic
+
+from insights.core.context import HostContext
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import datasource
+from insights.core.spec_factory import DatasourceProvider
+from insights.specs import Specs
+
+logger = logging.getLogger(__name__)
+
+NESTED_PREFIXES = ("BOOT-INF/lib/", "WEB-INF/lib/", "lib/")
+RELATIVE_PATH = "insights_datasources/java_purls.json"
+
+# Sentinel groupId for a purl recovered from MANIFEST.MF. A manifest carries the artifact and version
+# but NOT the Maven groupId, so the group is emitted as this sentinel (source="manifest"); a consumer
+# resolves the real group by artifact. See _purls_from_manifest.
+MANIFEST_UNKNOWN_GROUP = "unknown"
+
+# comm/exe basenames treated as a JVM. Bounded on purpose: this is a "loaded-library" inventory of
+# ordinary JVMs, not a claim to find every possible launcher. (jsvc = Commons Daemon, used by Tomcat.)
+JVM_NAMES = ("java", "jsvc")
+
+
+def _int_env(name, default):
+    """Read a positive int cap from the environment, falling back to the default on absent/garbage."""
+    try:
+        return int(os.environ[name])
+    except (KeyError, ValueError, TypeError):
+        return default
+
+
+# Fleet-scale safety caps (module constants, overridable via env). Hitting any cap stops the scan
+# cleanly and emits the partial results collected so far rather than crashing.
+MAX_JARS = _int_env("JAVA_PURLS_MAX_JARS", 2000)                 # total jars analyzed (incl. nested)
+MAX_JAR_BYTES = _int_env("JAVA_PURLS_MAX_JAR_BYTES", 64 * 1024 * 1024)  # skip jars larger than this
+MAX_NESTED_DEPTH = _int_env("JAVA_PURLS_MAX_NESTED_DEPTH", 2)    # fat-jar recursion depth
+# Wall-clock budget for the whole scan. The @datasource(timeout=) decorator does NOT bound in-process
+# Python work under the serial run strategy, so we enforce our own soft deadline (well under that
+# timeout) and return partial results when it is exceeded.
+MAX_SECONDS = _int_env("JAVA_PURLS_MAX_SECONDS", 90)
+
+
+def _expired(counter):
+    """True once the scan's wall-clock deadline has passed (soft timeout -> return partial results)."""
+    deadline = counter.get("deadline")
+    return deadline is not None and _monotonic() > deadline
+
+
+# Cap the UNCOMPRESSED size of a single entry we read into memory (pom.properties / SBOM). Guards
+# against a decompression bomb: a tiny jar can hold an entry that inflates to many GB, which
+# MAX_JAR_BYTES (compressed/whole-jar size) does not bound.
+MAX_ENTRY_BYTES = _int_env("JAVA_PURLS_MAX_ENTRY_BYTES", 5 * 1024 * 1024)
+
+# Cap the number of central-directory entries we iterate per jar. Defense-in-depth: a jar within
+# MAX_JAR_BYTES can still carry a pathologically large central directory, and scanning every entry is
+# wasted work. (The one-time central-directory parse in the ZipFile() constructor is bounded by
+# MAX_JAR_BYTES, not by this.) Skip such a jar rather than process every entry.
+MAX_JAR_ENTRIES = _int_env("JAVA_PURLS_MAX_JAR_ENTRIES", 65536)
+
+
+def _safe_read(zf, entry):
+    """Read a zip entry into memory only if its uncompressed size is within MAX_ENTRY_BYTES.
+    Returns the bytes, or None when the entry is oversized/unreadable (bomb guard)."""
+    try:
+        if zf.getinfo(entry).file_size > MAX_ENTRY_BYTES:
+            return None
+        return zf.read(entry)
+    except Exception as e:  # noqa: BLE001 - a bad entry must never crash the scan
+        logger.debug("java_purls: entry %s unreadable: %s", entry, e)
+        return None
+
+
+def _enc(component):
+    """Percent-encode one purl component per the purl spec (leaves unreserved chars alone)."""
+    return quote(component, safe="")
+
+
+def _parse_props(raw):
+    """Parse ``key=value`` lines (skipping blanks/comments) into a dict."""
+    props = {}
+    for line in raw.decode("utf-8", "replace").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, _, v = line.partition("=")
+        props[k.strip()] = v.strip()
+    return props
+
+
+def _pom(raw):
+    """Return the (groupId, artifactId, version) triple from a pom.properties body, or None."""
+    props = _parse_props(raw)
+    g, a, v = props.get("groupId"), props.get("artifactId"), props.get("version")
+    if g and a and v:
+        return g, a, v
+    return None
+
+
+def _purls_from_pom(zf, entry, name):
+    """Authoritative purl(s) from a ``META-INF/maven/**/pom.properties`` entry (may be empty)."""
+    raw = _safe_read(zf, entry)
+    if raw is None:
+        return []
+    gav = _pom(raw)
+    if not gav:
+        return []
+    g, a, v = gav
+    purl = "pkg:maven/%s/%s@%s" % (_enc(g), _enc(a), _enc(v))
+    return [{"purl": purl, "jar": name, "source": "pom.properties"}]
+
+
+def _purls_from_sbom(zf, entry, name):
+    """purl(s) from a Spring-Boot ``META-INF/sbom/*.cdx.json`` entry (best-effort, may be empty)."""
+    found = []
+    raw = _safe_read(zf, entry)
+    if raw is None:
+        return found
+    try:
+        for c in json.loads(raw).get("components", []):
+            if c.get("purl", "").startswith("pkg:maven/"):
+                found.append({"purl": c["purl"], "jar": name, "source": "spring-boot-sbom"})
+    except Exception as e:
+        logger.debug("java_purls: SBOM parse failed for %s in %s: %s", entry, name, e)
+    return found
+
+
+def _manifest_fields(raw):
+    """Parse the MANIFEST.MF MAIN section (everything up to the first blank line) into a dict, joining
+    72-column continuation lines (which begin with a single leading space) onto the preceding header's
+    value. Per-entry sections (``Name:`` blocks after a blank line) are ignored, so a bundled package's
+    ``Implementation-Title`` cannot shadow the jar's own."""
+    fields, key = {}, None
+    for line in raw.decode("utf-8", "replace").splitlines():
+        if line == "":
+            break   # end of the main section; per-entry (Name:) sections follow
+        if line[:1] in (" ", "\t") and key is not None:
+            fields[key] += line.strip()
+        elif ":" in line:
+            k, _, v = line.partition(":")
+            key = k.strip()
+            fields[key] = v.strip()
+        else:
+            key = None
+    return fields
+
+
+def _purls_from_manifest(zf, names, name):
+    """Lossy fallback purl from ``META-INF/MANIFEST.MF`` for a jar that carries NO authoritative
+    pom.properties/SBOM (e.g. Gradle-built jars such as the Spring ecosystem, which omit META-INF/maven
+    entirely). The manifest has the artifact (``Implementation-Title``) and ``Implementation-Version``
+    but not the Maven groupId, so the group is emitted as ``MANIFEST_UNKNOWN_GROUP`` and ``source`` is
+    ``"manifest"`` (a consumer resolves the real group by artifact). Emitted only when BOTH fields are
+    present, to keep speculative coordinates out of the output. (COLLECTION-SPEC.md: fall back to the
+    MANIFEST; this fallback is lossy by design.)"""
+    if "META-INF/MANIFEST.MF" not in names:
+        return []
+    raw = _safe_read(zf, "META-INF/MANIFEST.MF")
+    if raw is None:
+        return []
+    fields = _manifest_fields(raw)
+    artifact = fields.get("Implementation-Title")
+    version = fields.get("Implementation-Version")
+    # Implementation-Title must look like a Maven artifactId; a product-name title with whitespace
+    # (e.g. "Apache Tomcat") is not a coordinate and would never match the scope, so skip it.
+    if not artifact or not version or any(c.isspace() for c in artifact):
+        return []
+    purl = "pkg:maven/%s/%s@%s" % (MANIFEST_UNKNOWN_GROUP, _enc(artifact), _enc(version))
+    return [{"purl": purl, "jar": name, "source": "manifest"}]
+
+
+def _collect_purls(zf, names, name, out, counter=None):
+    """Append authoritative purls (pom.properties + Spring-Boot SBOM) found in one jar.
+    Honors the soft deadline so a single jar with a huge central directory cannot block past it."""
+    for n in names:
+        if counter is not None and _expired(counter):
+            break
+        if n.startswith("META-INF/maven/") and n.endswith("pom.properties"):
+            out.extend(_purls_from_pom(zf, n, name))
+        elif n.startswith("META-INF/sbom/") and n.endswith(".cdx.json"):
+            out.extend(_purls_from_sbom(zf, n, name))
+
+
+def _recurse_nested(zf, names, depth, out, counter):
+    """Recurse into fat/uber-jar nested jars (``BOOT-INF/lib`` etc.), respecting caps."""
+    for n in names:
+        if counter["n"] >= MAX_JARS or _expired(counter):
+            break
+        if not (n.endswith(".jar") and any(n.startswith(p) for p in NESTED_PREFIXES)):
+            continue
+        try:
+            # Skip oversized nested jars without reading them into memory.
+            if zf.getinfo(n).file_size > MAX_JAR_BYTES:
+                continue
+            _analyze(n.split("/")[-1], data=zf.read(n), depth=depth - 1,
+                     out=out, counter=counter)
+        except Exception as e:
+            logger.debug("java_purls: nested jar %s skipped: %s", n, e)
+            continue
+
+
+def _analyze(name, data=None, path=None, depth=MAX_NESTED_DEPTH, out=None, counter=None):
+    if out is None:
+        out = []
+    if counter is None:
+        counter = {"n": 0}
+    # Stop cleanly once the total-jars cap is reached (partial results, not a crash).
+    if counter["n"] >= MAX_JARS:
+        return out
+    counter["n"] += 1
+    try:
+        # Passing ``path`` (not raw bytes) lets zipfile read the central directory without slurping
+        # the whole jar into memory. Only nested jars are read as bytes (already bounded above).
+        # Context manager guarantees the handle is closed even if reading an entry raises.
+        with zipfile.ZipFile(io.BytesIO(data) if data is not None else path) as zf:
+            # Defense-in-depth: skip a jar whose central directory is absurdly large before iterating it
+            # (zf.filelist is already built by ZipFile.__init__; this bounds the per-entry work below).
+            if len(zf.filelist) > MAX_JAR_ENTRIES:
+                logger.debug("java_purls: %s has %d entries (> %d) -- skipped", name, len(zf.filelist), MAX_JAR_ENTRIES)
+                return out
+            names = zf.namelist()
+            before = len(out)
+            _collect_purls(zf, names, name, out, counter)
+            if len(out) == before:
+                # No authoritative pom.properties/SBOM in THIS jar -> lossy MANIFEST fallback.
+                out.extend(_purls_from_manifest(zf, names, name))
+            if depth > 0:
+                _recurse_nested(zf, names, depth, out, counter)
+    except Exception as e:
+        logger.debug("java_purls: could not analyze %s: %s", name, e)
+    return out
+
+
+def _is_jvm(pid, root):
+    """True only if /proc/<pid> is a JVM (comm or exe basename in ``JVM_NAMES``)."""
+    proc = os.path.join(root, "proc", str(pid))
+    try:
+        with open(os.path.join(proc, "comm")) as fh:
+            if fh.read().strip() in JVM_NAMES:
+                return True
+    except (PermissionError, FileNotFoundError, ProcessLookupError, OSError):
+        pass
+    try:
+        # Match on the exe-symlink BASENAME only (not a path substring like "/jdk"): a non-JVM binary
+        # shipped under an Oracle JDK bin dir -- e.g. .../jdk1.8.0_x/bin/unpack200 -- is not a JVM.
+        if os.path.basename(os.readlink(os.path.join(proc, "exe"))) in JVM_NAMES:
+            return True
+    except (PermissionError, FileNotFoundError, ProcessLookupError, OSError):
+        pass
+    return False
+
+
+def _under_root(root, tgt):
+    """Re-root an absolute host path under the collection root (``HostContext.root``).
+
+    A ``/proc/<pid>/fd`` symlink's target is the path as the host sees it, e.g. ``/opt/app/foo.jar``.
+    When ``root`` is not ``/`` (collection against a mounted/chrooted tree) the real file lives *under*
+    the root, so map it there before ``os.path.exists()``/opening it::
+
+        _under_root('/mnt/tree', '/opt/app/foo.jar') -> '/mnt/tree/opt/app/foo.jar'
+        _under_root('/',         '/opt/app/foo.jar') -> '/opt/app/foo.jar'   (identity, the normal run)
+
+    Same ``os.path.join(root, path.lstrip('/'))`` idiom the framework's file specs use (spec_factory.py).
+    """
+    if root in ("/", "", None):
+        return tgt
+    return os.path.join(root, tgt.lstrip("/"))
+
+
+def _jars_of_pid(fd_dir, root):
+    """``(open_path, jar_path)`` for each .jar held open by one process, via its ``/proc/<pid>/fd`` dir.
+
+    ``jar_path`` is the resolved on-disk path (used for the output jar name + de-dup). ``open_path`` is
+    what we actually open: on a live host (``root == '/'``) the ``/proc/<pid>/fd/<n>`` link itself, so we
+    read the exact file the JVM has open -- not whatever now sits at that pathname after a redeploy
+    swaps or removes it in the window between discovery and analysis (a TOCTOU). When collecting against a
+    mounted image (``root != '/'``) there is no live ``/proc``, so fall back to the resolved pathname.
+    """
+    jars = []
+    live = root in ("/", "", None)
+    try:
+        for fd in os.listdir(fd_dir):
+            link = os.path.join(fd_dir, fd)
+            try:
+                tgt = _under_root(root, os.readlink(link))
+            except OSError:
+                continue
+            if tgt.endswith(".jar") and os.path.exists(tgt):
+                jars.append((link if live else tgt, tgt))
+    except (PermissionError, FileNotFoundError, ProcessLookupError) as e:
+        logger.debug("java_purls: cannot read %s: %s", fd_dir, e)
+    return jars
+
+
+def _open_jars(root, counter=None):
+    """``{jar_path: open_path}`` for jars held open by running JVMs, via /proc/<pid>/fd. Only Java
+    processes are inspected. ``jar_path`` (resolved on-disk path) is the de-dup key + output name;
+    ``open_path`` is the handle to open (the fd link on a live host -- see _jars_of_pid). Honors the soft
+    deadline (when a counter is given) so DISCOVERY itself can't blow the budget."""
+    seen = {}
+    for fd_dir in glob.glob(os.path.join(root, "proc", "[0-9]*", "fd")):
+        if counter is not None and _expired(counter):
+            break
+        pid = os.path.basename(os.path.dirname(fd_dir))
+        # Restrict the /proc walk to JVMs: skip non-Java processes entirely.
+        if not _is_jvm(pid, root):
+            continue
+        for open_path, jar_path in _jars_of_pid(fd_dir, root):
+            seen.setdefault(jar_path, open_path)
+    return seen
+
+
+def _scanned_jars(root, counter=None):
+    """``{jar_path: None}`` for jars on disk under ``JAVA_PURLS_SCAN_DIRS`` (opt-in; empty by default).
+    The ``None`` value means "open the path itself" (see _scan_all).
+
+    There is deliberately no default: a recursive walk of distro dirs is expensive at fleet scale
+    and their jars are already reported by ``installed_rpms``. Operators with app jars outside a
+    running JVM's open FDs can opt in by setting the env var to a short, specific list (e.g. ``/opt``).
+    Under the default ``insights-client.timer`` run the datasource sees the *service* environment, so set
+    it via a systemd drop-in (``systemctl edit insights-client.service`` -> ``Environment=...``) or an
+    ``EnvironmentFile=`` -- a plain shell ``export`` does not reach the timer-triggered run.
+    Honors the soft deadline (when a counter is given) so a deep opt-in tree can't blow the budget.
+    """
+    raw = os.environ.get("JAVA_PURLS_SCAN_DIRS", "").strip()
+    if not raw:
+        return {}
+    found = {}
+    for d in raw.split(","):
+        if counter is not None and _expired(counter):
+            break
+        d = d.strip()
+        if not d:
+            continue
+        base = _under_root(root, d)
+        # Lazy iglob + a per-item deadline check so a single deep opt-in tree is bounded mid-walk, not
+        # only between comma-separated dirs. glob.glob() is eager: it would run the whole recursive walk
+        # (and the realpath loop) before the next deadline check.
+        for jar in glob.iglob(os.path.join(base, "**", "*.jar"), recursive=True):
+            if counter is not None and _expired(counter):
+                break
+            found.setdefault(os.path.realpath(jar), None)
+    return found
+
+
+def _scan_all(jars, findings, counter):
+    """Analyze each jar into ``findings``, respecting the total-jars and size caps.
+
+    ``jars`` is a ``{jar_path: open_path}`` mapping: ``jar_path`` is the resolved path (used for the
+    output jar name and for ordering); ``open_path`` is what we actually open -- a ``/proc/<pid>/fd`` link
+    for a running-JVM jar, or ``None`` to open ``jar_path`` itself. See _open_jars / _jars_of_pid.
+
+    Graceful degradation: if the soft time budget is exceeded (or any unexpected error fires)
+    mid-scan, return whatever purls were found so far rather than losing the whole run.
+    """
+    try:
+        # Sorted for deterministic output order (and stable duplicate-purl attribution) run-to-run;
+        # glob/readdir order is not stable, which would otherwise churn archive diffs.
+        for jar_path in sorted(jars):
+            if counter["n"] >= MAX_JARS or _expired(counter):
+                break
+            open_path = jars[jar_path] or jar_path
+            try:
+                # Skip oversized jars cheaply (stat, no read). getsize works on a /proc/<pid>/fd link too.
+                if os.path.getsize(open_path) > MAX_JAR_BYTES:
+                    continue
+            except OSError:
+                continue
+            try:
+                # Name the finding from the resolved jar_path (never the fd number); open open_path.
+                _analyze(os.path.basename(jar_path), path=open_path, out=findings, counter=counter)
+            except Exception as e:
+                logger.debug("java_purls: analyze failed for %s: %s", jar_path, e)
+                continue
+    except Exception as e:
+        logger.debug("java_purls: scan aborted early: %s", e)
+
+
+def _dedup(findings):
+    """De-duplicate resolved purls, preserving first-seen order."""
+    seen, uniq = set(), []
+    for f in findings:
+        key = f.get("purl")
+        if key and key not in seen:
+            seen.add(key)
+            uniq.append(f)
+    return uniq
+
+
+# Hard timeout must sit ABOVE the soft wall-clock budget (MAX_SECONDS) so the soft deadline fires first
+# and returns partial results; if an operator raises JAVA_PURLS_MAX_SECONDS past a fixed hard timeout the
+# SIGALRM would otherwise kill the scan and discard everything. +30s covers the final dedup/serialize.
+@datasource(HostContext, timeout=max(120, MAX_SECONDS + 30))
+def java_purls(broker):
+    """Detect Java libraries on the host and emit their purls (default collection, gated by presence)."""
+    root = broker[HostContext].root
+    # Start the deadline BEFORE discovery so walking /proc and the opt-in dirs counts against the soft
+    # budget too (not just the per-jar analysis) -- otherwise slow discovery could hit the hard
+    # @datasource timeout and lose all partial results.
+    counter = {"n": 0, "deadline": _monotonic() + MAX_SECONDS}
+    jvm_jars = _open_jars(root, counter)        # primary source: jars held open by running JVMs
+    disk_jars = _scanned_jars(root, counter)    # opt-in disk scan (empty unless JAVA_PURLS_SCAN_DIRS is set)
+
+    findings = []
+    # Analyze running-JVM jars FIRST, sharing the counter, so when the jar cap / time budget is hit it can
+    # only ever drop opt-in disk jars -- never a jar a live JVM has loaded (the high-value signal).
+    _scan_all(jvm_jars, findings, counter)
+    _scan_all({p: v for p, v in disk_jars.items() if p not in jvm_jars}, findings, counter)
+
+    uniq = _dedup(findings)
+    if not uniq:
+        raise SkipComponent("No Java libraries detected")
+
+    # Emit JSONL -- one compact JSON object per line -- NOT a single JSON array. Customer line-based
+    # redaction (applied at collection) drops whole matching lines; a one-line array is all-or-nothing, so a
+    # single incidental match would silently discard the entire inventory. One record per line bounds the
+    # blast radius to a single jar. Only jar basenames are emitted (no absolute paths/pid/sha1).
+    content = "\n".join(json.dumps(rec) for rec in uniq)
+    # Pass ds/ctx/cleaner so the collection-time Cleaner actually runs on the emitted lines: customer
+    # keyword/password/pattern redaction + the Specs.java_purls no_obfuscate rules (hostname/ip/mac) apply
+    # to the jar basenames and purls. Without this triple the JSONL line-based redaction the format was
+    # designed for never happens.
+    return DatasourceProvider(
+        content=content,
+        relative_path=RELATIVE_PATH,
+        ds=Specs.java_purls,
+        ctx=broker.get(HostContext),
+        cleaner=broker.get("cleaner"),
+    )
