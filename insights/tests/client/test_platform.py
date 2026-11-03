@@ -41,16 +41,6 @@ def mock_machine_id():
     return 'XXXXXXXX'
 
 
-class MockMagic():
-    def __init__(*args):
-        pass
-
-    def load(self):
-        return None
-
-    def file(self, *args):
-        return 'application/gzip'
-
 
 def test_config_conflicts():
     '''
@@ -110,7 +100,7 @@ def test_payload_upload(op, post, c, _legacy_upload_archive, rm_conf):
     _legacy_upload_archive.assert_not_called()
 
 
-@patch('insights.contrib.magic.open', MockMagic)
+@patch('insights.util.content_type.from_file', new=lambda name: 'application/gzip')
 @patch('insights.client.connection.generate_machine_id', mock_machine_id)
 @patch("insights.client.connection.get_canonical_facts", return_value={'test': 'facts'})
 @patch('insights.client.connection.InsightsConnection.post')

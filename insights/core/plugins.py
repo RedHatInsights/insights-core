@@ -48,6 +48,28 @@ from insights.core.exceptions import (
 log = logging.getLogger(__name__)
 
 
+def _format_exc_short():
+    """Return a condensed traceback: last frame + exception, without caret anchors.
+
+    Python 3.12's ``traceback.format_exc()`` calls ``ast.parse()`` to generate
+    caret anchors, allocating ~1 MB per traceback.  This helper avoids that by
+    using ``format_exception_only`` and manually formatting only the innermost
+    frame.
+    """
+    import sys
+    exc_type, exc_value, exc_tb = sys.exc_info()
+    try:
+        parts = traceback.format_exception_only(exc_type, exc_value)
+        if exc_tb is not None:
+            frames = traceback.extract_tb(exc_tb)
+            if frames:
+                last = frames[-1]
+                parts.insert(0, '  File "%s", line %d, in %s\n' % (last.filename, last.lineno, last.name))
+        return "".join(parts)
+    finally:
+        del exc_tb
+
+
 class PluginType(dr.ComponentType):
     """
     PluginType is the base class of plugin types like datasource, rule, etc.
@@ -69,11 +91,11 @@ class PluginType(dr.ComponentType):
             return super(PluginType, self).invoke(broker)
         except ContentException as ce:
             log.debug(ce)
-            broker.add_exception(self.component, ce, traceback.format_exc())
+            broker.add_exception(self.component, ce, _format_exc_short())
             raise SkipComponent()
         except CalledProcessError as cpe:
             log.debug(cpe)
-            broker.add_exception(self.component, cpe, traceback.format_exc())
+            broker.add_exception(self.component, cpe, _format_exc_short())
             raise SkipComponent()
 
 
@@ -112,19 +134,19 @@ class datasource(PluginType):
             return self.component(broker)
         except ContentException as ce:
             log.debug(ce)
-            ce_tb = traceback.format_exc()
+            ce_tb = _format_exc_short()
             for reg_spec in dr.get_registry_points(self.component):
                 broker.add_exception(reg_spec, ce, ce_tb)
             raise SkipComponent()
         except CalledProcessError as cpe:
             log.debug(cpe)
-            cpe_tb = traceback.format_exc()
+            cpe_tb = _format_exc_short()
             for reg_spec in dr.get_registry_points(self.component):
                 broker.add_exception(reg_spec, cpe, cpe_tb)
             raise SkipComponent()
         except TimeoutException as te:
             log.debug(te)
-            te_tb = traceback.format_exc()
+            te_tb = _format_exc_short()
             for reg_spec in dr.get_registry_points(self.component):
                 broker.add_exception(reg_spec, te, te_tb)
             raise SkipComponent()
@@ -166,11 +188,11 @@ class parser(PluginType):
                 return self.component(dep_value)
             except ContentException as ce:
                 log.debug(ce)
-                broker.add_exception(self.component, ce, traceback.format_exc())
+                broker.add_exception(self.component, ce, _format_exc_short())
                 exception = True
             except CalledProcessError as cpe:
                 log.debug(cpe)
-                broker.add_exception(self.component, cpe, traceback.format_exc())
+                broker.add_exception(self.component, cpe, _format_exc_short())
                 exception = True
 
         if exception:
@@ -184,24 +206,24 @@ class parser(PluginType):
                     results.append(r)
             except ContentException as ce:
                 log.debug(ce)
-                broker.add_exception(self.component, ce, traceback.format_exc())
+                broker.add_exception(self.component, ce, _format_exc_short())
                 if not self.continue_on_error:
                     exception = True
                     break
             except SkipComponent as sc:
                 if broker.store_skips:
                     log.warning(sc)
-                    broker.add_exception(component, sc, traceback.format_exc())
+                    broker.add_exception(component, sc, _format_exc_short())
                 else:
                     pass
             except CalledProcessError as cpe:
                 log.debug(cpe)
-                broker.add_exception(self.component, cpe, traceback.format_exc())
+                broker.add_exception(self.component, cpe, _format_exc_short())
                 if not self.continue_on_error:
                     exception = True
                     break
             except Exception as ex:
-                tb = traceback.format_exc()
+                tb = _format_exc_short()
                 log.warning(tb)
                 broker.add_exception(self.component, ex, tb)
                 if not self.continue_on_error:

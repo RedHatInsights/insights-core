@@ -1,47 +1,46 @@
-import shlex
-import subprocess
-from subprocess import PIPE
-from threading import Lock
+# libmagic (python-magic / file-magic) was removed from this module.
+#
+# Security rationale: libmagic is a C library that parses untrusted binary
+# content. When opened with MAGIC_CONTINUE it decompresses archives to inspect
+# inner layers, exposing a large C parser to attacker-controlled bytes on every
+# upload. This class of usage has led to multiple exploitable CVEs in libmagic:
+#   CVE-2019-18218  stack buffer overflow in cdf_read_property_info
+#   CVE-2022-48554  buffer overflow in file_copystr
+#   CVE-2017-1000249 stack buffer overflow
+#
+# For the purpose of selecting an extractor (zip vs. tar family), reading the
+# first few bytes of the file and comparing against known magic signatures is
+# both safer and sufficient. No decompression, no C library, no external process.
 
-try:
-    from insights.contrib import magic
-except Exception:
-    magic_loaded = False
-else:
-    # RHEL 6 does not have MAGIC_MIME_TYPE defined, but passing in the value
-    # found in RHEL 7 (16, base 10), seems to work.
-    mime_flag = magic.MAGIC_MIME_TYPE if hasattr(magic, "MAGIC_MIME_TYPE") else 16
-    _magic = magic.open(mime_flag | magic.CONTINUE)
-    _magic.load()
+# Signatures are checked in order; first match wins.
+# Offset is the byte position within the header where the signature must appear.
+_MAGIC_SIGNATURES = [
+    (b"PK\x03\x04",       0,   "application/zip"),
+    (b"PK\x05\x06",       0,   "application/zip"),   # empty archive
+    (b"PK\x07\x08",       0,   "application/zip"),   # spanned archive
+    (b"\x1f\x8b",         0,   "application/gzip"),
+    (b"\xfd7zXZ\x00",     0,   "application/x-xz"),
+    (b"BZh",              0,   "application/x-bzip2"),
+    (b"\x28\xb5\x2f\xfd", 0,   "application/zstd"),
+    (b"ustar",            257, "application/x-tar"),  # POSIX tar magic
+]
 
-    magic_loaded = True
+# 262 bytes reaches offset 257 + len("ustar") — covers all signatures above.
+_HEADER_BYTES = 262
 
 
-# libmagic is not thread safe so we must lock access to file
-magic_lock = Lock()
+def _detect(header):
+    for sig, offset, mime in _MAGIC_SIGNATURES:
+        end = offset + len(sig)
+        if len(header) >= end and header[offset:end] == sig:
+            return mime
+    return "application/octet-stream"
 
 
 def from_file(name):
-    if magic_loaded:
-        with magic_lock:
-            magic_fn = _magic.file(name)
-            if not isinstance(magic_fn, bytes):
-                # filename contain "\\012"
-                magic_fn = bytes(magic_fn, "utf-8")
-            return magic_fn.decode("unicode-escape").splitlines()[0].strip()
-    else:
-        cmd = "file --mime-type -b %s"
-        p = subprocess.Popen(shlex.split(cmd % name), stdout=subprocess.PIPE)
-        stdout, _ = p.communicate()
-        return stdout.strip().decode("utf-8")
+    with open(name, "rb") as f:
+        return _detect(f.read(_HEADER_BYTES))
 
 
 def from_buffer(b):
-    if magic_loaded:
-        with magic_lock:
-            return _magic.buffer(b)
-    else:
-        cmd = "file --mime-type -b -"
-        p = subprocess.Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE)
-        stdout, stderr = p.communicate(b)
-        return stdout.strip().decode("utf-8")
+    return _detect(b[:_HEADER_BYTES])
