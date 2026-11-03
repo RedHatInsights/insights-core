@@ -52,5 +52,6 @@ share/
 .vscode
 insights/filters.yaml
 .nox/
+.tox/
 .venv/
 

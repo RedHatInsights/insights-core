@@ -14,6 +14,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.14",
 ]
 license = {file = "LICENSE"}
 dynamic = ["version", "readme"]
@@ -86,3 +87,10 @@ readme = {file = ["README.rst"]}
 [tool.pytest.ini_options]
 addopts = "-rsxXfE --ignore=./build/"
 testpaths = ["insights"]
+python_files = [
+    "insights/tests/*",
+    "insights/parsr/tests/*",
+    "insights/parsr/examples/tests/*",
+    "insights/parsr/query/tests/*",
+    "insights/archive/test.py",
+]
