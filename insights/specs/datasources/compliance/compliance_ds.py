@@ -163,6 +163,8 @@ def compliance(broker):
         )
 
         # Preparations
+        # get_system_policies() returns full policy details (e.g. 'ref_id',
+        # 'os_minor_version'), which the scan loop below needs.
         policies = compliance.get_system_policies()
         if not policies:
             logger.error(
@@ -303,6 +305,10 @@ def compliance_advisor_rule_enabled(broker):
         compliance = ComplianceClient(
             os_version=broker[os_version], ssg_version=broker[package_check], config=insights_config
         )
+        # get_system_policies() returns full policy details: 'enabled_policies'
+        # below is reported with that detail (e.g. 'ref_id'), and
+        # fetch_tailoring_content() needs 'os_minor_version' to decide whether a
+        # tailoring file applies.
         policies = compliance.get_system_policies()
         if not policies:
             raise SkipComponent
