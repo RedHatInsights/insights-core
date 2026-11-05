@@ -232,7 +232,7 @@ class ComplianceClient:
         logger.debug("Fetching policies with: {0}".format(full_url))
         response = self.conn.session.get(full_url)
         logger.debug("Content of the response {0} - {1}".format(response, response.content))
-        assigned_policies = [item["id"] for item in self.get_system_policies()]
+        assigned_policies = self.get_system_policy_ids()
 
         if response.status_code == 200:
             policies = response.json().get('data', [])
@@ -273,7 +273,7 @@ class ComplianceClient:
         # Probe current assignments to tell an idempotent no-op from a genuine
         # failure.
         try:
-            system_policy_ids = [p['id'] for p in self.get_system_policies() if isinstance(p, dict)]
+            system_policy_ids = self.get_system_policy_ids()
         except Exception as err:
             logger.debug("Could not fetch system policies to diagnose the failure: {0}".format(err))
             system_policy_ids = []
@@ -303,18 +303,47 @@ class ComplianceClient:
         return constants.sig_kill_bad
 
     def get_system_policies(self):
+        """
+        Return the full policy details (e.g. `id`, `ref_id`, `os_minor_version`,
+        `title`) for every policy assigned to this system.
+
+        Use this when the caller needs more than just the policy `id` (e.g. to
+        run a scan or fetch a tailoring file). Callers that only need the `id`
+        (e.g. to check whether a policy is already assigned) should use the
+        lighter-weight `get_system_policy_ids()` instead.
+        """
+        return self._fetch_system_policies(ids_only=False)
+
+    def get_system_policy_ids(self):
+        """
+        Return only the `id` of every policy assigned to this system.
+
+        This is a lighter-weight alternative to `get_system_policies()` for
+        callers that only need to check policy membership (e.g.
+        `assignable_policies()`, `policy_link()`'s idempotency probe).
+        """
+        return [
+            p['id'] for p in self._fetch_system_policies(ids_only=True) if isinstance(p, dict)
+        ]
+
+    def _fetch_system_policies(self, ids_only):
         if self.inventory_id is None:
             # return empty directly when inventory_id cannot be found
             return []
         # The API caps `limit` at 100, so page through with `offset` until a short
-        # page signals the end. `ids_only=true` keeps each page to bare ids.
+        # page signals the end. `ids_only=true` keeps each page to bare ids and is
+        # only safe for callers that only need the policy `id`; callers that need
+        # the full policy details (e.g. `ref_id`, `os_minor_version`) must not
+        # set it.
         limit = 100
         offset = 0
         policies = []
         while True:
-            url = "{0}/compliance/v2/systems/{1}/policies?limit={2}&offset={3}&ids_only=true".format(
+            url = "{0}/compliance/v2/systems/{1}/policies?limit={2}&offset={3}".format(
                 self.conn.base_url, self.inventory_id, limit, offset
             )
+            if ids_only:
+                url += "&ids_only=true"
             logger.debug("Fetching policies with: {0}".format(url))
             response = self.conn.session.get(url)
             logger.debug("Content of the response {0} - {1}".format(response, response.content))

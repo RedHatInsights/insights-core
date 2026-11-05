@@ -45,10 +45,50 @@ def test_get_system_policies(legacy_upload, base_url, expected_url):
         return_value=Mock(status_code=200, json=Mock(return_value={'data': ['test']}))
     )
     assert compliance_client.get_system_policies() == ['test']
+    url = "https://{0}/compliance/v2/systems/{1}/policies?limit=100&offset=0".format(
+        expected_url, compliance_client.inventory_id
+    )
+    compliance_client.conn.session.get.assert_called_with(url)
+
+
+@mark.parametrize(
+    ("legacy_upload", "base_url", "expected_url"),
+    [
+        (True, "cert-api.access.redhat.com/app", "cert-api.access.redhat.com/app"),
+        (False, "cert-api.access.redhat.com/app", "cert-api.access.redhat.com/app"),
+        # Satellite
+        (True, "localhost/app", "localhost/app"),
+        (False, "localhost/app", "localhost/app"),
+    ],
+)
+def test_get_system_policy_ids(legacy_upload, base_url, expected_url):
+    config = InsightsConfig(legacy_upload=legacy_upload, base_url=base_url, systemid='', proxy=None)
+    compliance_client = ComplianceClient(config=config)
+    compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
+    compliance_client.conn.session.get = Mock(
+        return_value=Mock(
+            status_code=200, json=Mock(return_value={'data': [{'id': 'test-id'}]})
+        )
+    )
+    assert compliance_client.get_system_policy_ids() == ['test-id']
     url = "https://{0}/compliance/v2/systems/{1}/policies?limit=100&offset=0&ids_only=true".format(
         expected_url, compliance_client.inventory_id
     )
     compliance_client.conn.session.get.assert_called_with(url)
+
+
+def test_get_system_policy_ids_ignores_non_dict_entries():
+    # Defensive: tolerate malformed/non-dict entries in the response instead
+    # of raising a KeyError/TypeError.
+    config = InsightsConfig(base_url='localhost/app', systemid='', proxy=None)
+    compliance_client = ComplianceClient(config=config)
+    compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
+    compliance_client.conn.session.get = Mock(
+        return_value=Mock(
+            status_code=200, json=Mock(return_value={'data': [{'id': 'ok'}, 'not-a-dict']})
+        )
+    )
+    assert compliance_client.get_system_policy_ids() == ['ok']
 
 
 @mark.parametrize(
@@ -67,7 +107,7 @@ def test_get_system_policies_error(legacy_upload, base_url, expected_url):
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=500))
     assert compliance_client.get_system_policies() == []  # empty
-    url = "https://{0}/compliance/v2/systems/{1}/policies?limit=100&offset=0&ids_only=true".format(
+    url = "https://{0}/compliance/v2/systems/{1}/policies?limit=100&offset=0".format(
         expected_url, compliance_client.inventory_id
     )
     compliance_client.conn.session.get.assert_called_with(url)
@@ -91,8 +131,8 @@ def test_get_system_policies_paginates(config):
     base = "https://localhost/app/compliance/v2/systems/{0}/policies".format(
         compliance_client.inventory_id
     )
-    compliance_client.conn.session.get.assert_any_call(base + "?limit=100&offset=0&ids_only=true")
-    compliance_client.conn.session.get.assert_any_call(base + "?limit=100&offset=100&ids_only=true")
+    compliance_client.conn.session.get.assert_any_call(base + "?limit=100&offset=0")
+    compliance_client.conn.session.get.assert_any_call(base + "?limit=100&offset=100")
 
 
 @mark.parametrize("legacy_upload", [True, False])
@@ -376,7 +416,7 @@ def test_assignable_policies(config, log):
         return_value=Mock(status_code=200, json=Mock(return_value={'data': ['test']}))
     )
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
-    compliance_client.get_system_policies = lambda: []
+    compliance_client.get_system_policy_ids = lambda: []
     compliance_client.os_major = 9
     compliance_client.os_minor = 3
     compliance_client.conn.session.get = Mock(
@@ -399,7 +439,7 @@ def test_assignable_policies_failed_code(config, log):
         return_value=Mock(status_code=200, json=Mock(return_value={'data': ['test']}))
     )
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
-    compliance_client.get_system_policies = lambda: []
+    compliance_client.get_system_policy_ids = lambda: []
     compliance_client.os_major = 9
     compliance_client.os_minor = 3
     compliance_client.conn.session.get = Mock(
@@ -421,7 +461,7 @@ def test_assignable_policies_failed_empty(config, log):
         return_value=Mock(status_code=200, json=Mock(return_value={'data': ['test']}))
     )
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
-    compliance_client.get_system_policies = lambda: []
+    compliance_client.get_system_policy_ids = lambda: []
     compliance_client.os_major = 9
     compliance_client.os_minor = 3
     compliance_client.conn.session.get = Mock(
@@ -478,7 +518,7 @@ def test_policy_link_assign_invalid_policy_id(config, log):
     compliance_client.conn.session.patch = Mock(
         return_value=Mock(status_code=404, json=Mock(return_value={}))
     )
-    compliance_client.get_system_policies = Mock(return_value=[])
+    compliance_client.get_system_policy_ids = Mock(return_value=[])
     assert compliance_client.policy_link(policy_id, 'patch') == constants.sig_kill_bad
     url = "https://localhost/app/compliance/v2/policies/{0}/systems/{1}".format(
         policy_id, compliance_client.inventory_id
@@ -520,7 +560,7 @@ def test_policy_link_unassign_not_associated(config, log):
     )
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     policy_id = "________-ab56-420b-9e71-878795375af5"
-    compliance_client.get_system_policies = Mock(return_value=[])
+    compliance_client.get_system_policy_ids = Mock(return_value=[])
     assert compliance_client.policy_link(policy_id, 'delete') == 0
     url = "https://localhost/app/compliance/v2/policies/{0}/systems/{1}".format(
         policy_id, compliance_client.inventory_id
@@ -543,9 +583,7 @@ def test_policy_link_unassign_still_associated(config, log):
     )
     compliance_client._inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     policy_id = "d83ddbac-ab56-420b-9e71-878795375af5"
-    compliance_client.get_system_policies = Mock(
-        return_value=[{'id': policy_id, 'title': 'Still assigned policy'}]
-    )
+    compliance_client.get_system_policy_ids = Mock(return_value=[policy_id])
     assert compliance_client.policy_link(policy_id, 'delete') == constants.sig_kill_bad
     log.error.assert_called_with(
         "Policy {0} could not be unassigned and is still associated to this host. "
@@ -567,9 +605,7 @@ def test_policy_link_assign_already_assigned(config, log):
     compliance_client.conn.session.patch = Mock(
         return_value=Mock(status_code=404, json=Mock(return_value={}))
     )
-    compliance_client.get_system_policies = Mock(
-        return_value=[{'id': policy_id, 'title': 'Already assigned policy'}]
-    )
+    compliance_client.get_system_policy_ids = Mock(return_value=[policy_id])
     assert compliance_client.policy_link(policy_id, 'patch') == 0
     log.info.assert_called_with(
         "Policy (ID {0}) is already associated to this host; nothing to assign.\n".format(policy_id)
@@ -586,7 +622,7 @@ def test_policy_link_assign_lookup_failure(config, log):
     compliance_client.conn.session.patch = Mock(
         return_value=Mock(status_code=404, json=Mock(return_value={}))
     )
-    compliance_client.get_system_policies = Mock(side_effect=Exception("connection error"))
+    compliance_client.get_system_policy_ids = Mock(side_effect=Exception("connection error"))
     assert compliance_client.policy_link(policy_id, 'patch') == constants.sig_kill_bad
     log.error.assert_called_with(
         "Policy {0} does not exist or is not accessible. "
@@ -607,7 +643,7 @@ def test_policy_link_lookup_failure_logged_at_debug(config, log):
     compliance_client.conn.session.patch = Mock(
         return_value=Mock(status_code=404, json=Mock(return_value={}))
     )
-    compliance_client.get_system_policies = Mock(side_effect=Exception("connection error"))
+    compliance_client.get_system_policy_ids = Mock(side_effect=Exception("connection error"))
     assert compliance_client.policy_link(policy_id, 'patch') == constants.sig_kill_bad
     log.debug.assert_called_with(
         "Could not fetch system policies to diagnose the failure: connection error"
