@@ -3,6 +3,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.8.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.5) (2026-11-06)
+
+- fix(compliance): get_system_policies() must return full policy details by default ([PR 4830](https://github.com/RedHatInsights/insights-core/pull/4830))
+- chore(uname): Support RHEL 9.8 and RHEL 10.2 in Uname ([PR 4784](https://github.com/RedHatInsights/insights-core/pull/4784))
+- test: remove unused parametrize positional argument for pytest 9.2 ([PR 4834](https://github.com/RedHatInsights/insights-core/pull/4834))
+- fix(compliance): distinguish "already assigned" from "not found" on policy_link failure ([PR 4814](https://github.com/RedHatInsights/insights-core/pull/4814))
 
 # [insights-core-3.8.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.4) (2026-10-20)
 
