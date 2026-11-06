@@ -3,6 +3,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.8.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.6) (2026-11-06)
+
+- Revert "chore(uname): Support RHEL 9.8 and RHEL 10.2 in Uname (4784)"
+
 # [insights-core-3.8.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.5) (2026-11-06)
 
 - fix(compliance): get_system_policies() must return full policy details by default ([PR 4830](https://github.com/RedHatInsights/insights-core/pull/4830))
