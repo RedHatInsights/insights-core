@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.9.1
+Version:        3.7.10.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,13 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Nov 05 2026 Ping Qin <piqin@redhat.com> 3.7.10.1-1
+- fix(compliance): get_system_policies() must return full policy details by
+  default (#4830) (30404410+qinpingli@users.noreply.github.com)
+- test: remove unused parametrize positional argument for pytest 9.2 (#4834)
+  (amepatil@redhat.com)
+- fix(compliance): distinguish "already assigned" from "not found" on
+  policy_link failure (#4814) (1187051+romanblanco@users.noreply.github.com)
 * Mon Oct 19 2026 Ping Qin <piqin@redhat.com> 3.7.9-1
 - fix: Page the rule report in show_rule_report (#4825)
   (89797201+mufeso@users.noreply.github.com)

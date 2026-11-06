@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# insights-core-3.7.10.1 (2026-11-06)
+
+- fix(compliance): get_system_policies() must return full policy details by default ([PR 4830](https://github.com/RedHatInsights/insights-core/pull/4830))
+- test: remove unused parametrize positional argument for pytest 9.2 ([PR 4834](https://github.com/RedHatInsights/insights-core/pull/4834))
+- fix(compliance): distinguish "already assigned" from "not found" on policy_link failure ([PR 4814](https://github.com/RedHatInsights/insights-core/pull/4814))
+
 # insights-core-3.7.9.1 (2026-10-19)
 
 - fix: Page the rule report in show_rule_report ([PR 4825](https://github.com/RedHatInsights/insights-core/pull/4825))
