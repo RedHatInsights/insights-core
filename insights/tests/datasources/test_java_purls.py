@@ -291,9 +291,28 @@ def test_open_jars_end_to_end_fake_proc(tmp_path):
     _fake_proc(root, 111, comm="java", fds=["/opt/app.jar", "/tmp/socket", "/opt/app.jar"])
     _fake_proc(root, 222, comm="nginx", fds=["/opt/app.jar"])  # not a JVM -> ignored
     seen = ds._open_jars(root)
-    # Non-live root (fake /proc): open_path falls back to the resolved on-disk path; value == key here.
+    # Non-live root (fake /proc): open_path falls back to the resolved on-disk path (== jar_path). The two
+    # fds point at the SAME file -> inode de-dup collapses them to a single (jar_path, open_path) pair.
     jar = os.path.join(root, "opt", "app.jar")
-    assert seen == {jar: jar}
+    assert seen == [(jar, jar)]
+
+
+def test_open_jars_dedups_by_inode_not_path(tmp_path, monkeypatch):
+    # De-dup is by the opened file's inode, NOT the path string: a duplicate handle on the same file
+    # collapses, but two DIFFERENT files sharing a path string (two containers' /deployments/app.jar, or a
+    # deleted-but-mapped jar alongside its patched replacement) are BOTH kept -- so a still-running
+    # vulnerable jar is never silently dropped.
+    root = str(tmp_path)
+    f1 = tmp_path / "a.jar"
+    f1.write_bytes(_make_jar({"META-INF/maven/g/a/pom.properties": _pom_props("g", "a", "1")}))
+    f2 = tmp_path / "b.jar"
+    f2.write_bytes(_make_jar({"META-INF/maven/g/b/pom.properties": _pom_props("g", "b", "2")}))
+    _fake_proc(root, 10, comm="java")
+    pairs = [(str(f1), "/opt/app.jar"), (str(f1), "/opt/app.jar"), (str(f2), "/opt/app.jar")]
+    monkeypatch.setattr(ds, "_jars_of_pid", lambda fd_dir, r: pairs)
+    seen = ds._open_jars(root)
+    assert sorted(op for _, op in seen) == sorted([str(f1), str(f2)])  # dup collapsed, both inodes kept
+    assert {jp for jp, _ in seen} == {"/opt/app.jar"}
 
 
 def test_is_jvm_variants(tmp_path):
@@ -338,6 +357,59 @@ def test_jars_of_pid_returns_fd_link_and_resolved_path_when_live(tmp_path):
     os.symlink(str(jar), str(fd_dir / "7"))
     os.symlink("/tmp/not-a-jar.sock", str(fd_dir / "8"))  # non-.jar fd -> ignored
     assert ds._jars_of_pid(str(fd_dir), "/") == [(str(fd_dir / "7"), str(jar))]
+
+
+def test_jars_of_pid_keeps_containerized_jar_when_live(tmp_path):
+    # A containerized JVM's fd resolves to a path in the container's mount namespace that does NOT exist in
+    # our namespace. On a live host we open the fd link (which reaches the inode in any namespace), so the
+    # jar MUST be kept -- previously an os.path.exists() check in our namespace silently dropped exactly
+    # these containerized/loaded jars.
+    fd_dir = tmp_path / "fd"
+    fd_dir.mkdir()
+    container_path = "/__container_ns__/deployments/app.jar"  # not present in the test's namespace
+    os.symlink(container_path, str(fd_dir / "7"))
+    assert ds._jars_of_pid(str(fd_dir), "/") == [(str(fd_dir / "7"), container_path)]
+
+
+def test_jars_of_pid_keeps_deleted_but_mapped_jar(tmp_path):
+    # A jar upgraded or removed on disk while a JVM still holds it open reads back as "<path> (deleted)".
+    # The marker is stripped and the jar is kept (opening the fd still reads the in-use bytes) -- the
+    # "patched on disk, old vulnerable one still mapped in memory" case.
+    fd_dir = tmp_path / "fd"
+    fd_dir.mkdir()
+    os.symlink("/opt/old/vuln.jar (deleted)", str(fd_dir / "7"))
+    assert ds._jars_of_pid(str(fd_dir), "/") == [(str(fd_dir / "7"), "/opt/old/vuln.jar")]
+
+
+def test_jars_of_pid_requires_existence_when_not_live(tmp_path):
+    # Against a mounted image (root != "/") we open the resolved path, not an fd, so a target that does not
+    # exist under the root is skipped (the os.path.exists gate still applies off the live host).
+    root = str(tmp_path)
+    fd_dir = tmp_path / "proc" / "5" / "fd"
+    fd_dir.mkdir(parents=True)
+    os.symlink("/ghost/missing.jar", str(fd_dir / "7"))
+    assert ds._jars_of_pid(str(fd_dir), root) == []
+
+
+def test_jars_of_pid_marker_only_target_is_skipped(tmp_path):
+    # A target that is EXACTLY " (deleted)" strips to "" -> not a ".jar" -> skipped, no crash.
+    fd_dir = tmp_path / "fd"
+    fd_dir.mkdir()
+    os.symlink(" (deleted)", str(fd_dir / "7"))
+    assert ds._jars_of_pid(str(fd_dir), "/") == []
+
+
+def test_jars_of_pid_non_live_returns_resolved_path(tmp_path):
+    # Mounted-image collection (root != "/"): we open the resolved on-disk PATH (not an fd link), so
+    # open_path == jar_path and existence is required.
+    root = str(tmp_path)
+    (tmp_path / "opt").mkdir()
+    jar = tmp_path / "opt" / "x.jar"
+    jar.write_bytes(_make_jar({"META-INF/maven/g/a/pom.properties": _pom_props("g", "a", "1")}))
+    fd_dir = tmp_path / "fd"
+    fd_dir.mkdir()
+    os.symlink("/opt/x.jar", str(fd_dir / "7"))  # _under_root maps this under root -> the real file
+    assert ds._jars_of_pid(str(fd_dir), root) == [(str(jar), str(jar))]
 
 
 # ---------------------------------------------------------------------------

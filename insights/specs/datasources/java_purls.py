@@ -331,7 +331,20 @@ def _jars_of_pid(fd_dir, root):
                 tgt = _under_root(root, os.readlink(link))
             except OSError:
                 continue
-            if tgt.endswith(".jar") and os.path.exists(tgt):
+            # A file unlinked while still held open reads back as "<path> (deleted)". Strip the marker so
+            # the ".jar" test matches and the output name stays clean -- this is exactly the "jar upgraded
+            # on disk but the old, still-vulnerable one remains mapped in a running JVM" case, which we DO
+            # want to report (opening the fd below reads the in-use bytes, not whatever now sits at the path).
+            if tgt.endswith(" (deleted)"):
+                tgt = tgt[: -len(" (deleted)")]
+            if not tgt.endswith(".jar"):
+                continue
+            # On a live host we OPEN the fd link, which reaches the inode in ANY mount namespace, so we must
+            # NOT gate on os.path.exists(tgt): readlink gives the path as the JVM's namespace sees it, and a
+            # containerized JVM's jar (e.g. /deployments/app.jar) does not exist in our namespace -- gating
+            # here silently dropped precisely the containerized/loaded jars we most need to see. When
+            # collecting against a mounted image (not live) we open the path itself, so it must exist.
+            if live or os.path.exists(tgt):
                 jars.append((link if live else tgt, tgt))
     except (PermissionError, FileNotFoundError, ProcessLookupError) as e:
         logger.debug("java_purls: cannot read %s: %s", fd_dir, e)
@@ -339,11 +352,18 @@ def _jars_of_pid(fd_dir, root):
 
 
 def _open_jars(root, counter=None):
-    """``{jar_path: open_path}`` for jars held open by running JVMs, via /proc/<pid>/fd. Only Java
-    processes are inspected. ``jar_path`` (resolved on-disk path) is the de-dup key + output name;
-    ``open_path`` is the handle to open (the fd link on a live host -- see _jars_of_pid). Honors the soft
-    deadline (when a counter is given) so DISCOVERY itself can't blow the budget."""
-    seen = {}
+    """``[(jar_path, open_path), ...]`` for jars held open by running JVMs, via /proc/<pid>/fd. Only Java
+    processes are inspected. ``jar_path`` (the path as resolved from the fd) is the output name; ``open_path``
+    is the handle to open (the fd link on a live host -- see _jars_of_pid).
+
+    De-dup is by the opened file's INODE ``(st_dev, st_ino)``, NOT the path string: the same physical jar
+    held open by many JVMs collapses to one, while two *different* jars that merely share a path string
+    (e.g. ``/deployments/app.jar`` in two containers, or an upgraded jar whose old ``... (deleted)`` copy is
+    still mapped alongside its patched replacement at the same path) are kept as separate entries -- so we
+    never silently drop a still-running vulnerable jar. Returns a list (a dict keyed by path could not hold
+    both). Honors the soft deadline (when a counter is given) so DISCOVERY itself can't blow the budget."""
+    seen = {}       # inode key -> (jar_path, open_path)
+    jvm_seen = 0
     for fd_dir in glob.glob(os.path.join(root, "proc", "[0-9]*", "fd")):
         if counter is not None and _expired(counter):
             break
@@ -351,9 +371,23 @@ def _open_jars(root, counter=None):
         # Restrict the /proc walk to JVMs: skip non-Java processes entirely.
         if not _is_jvm(pid, root):
             continue
+        jvm_seen += 1
         for open_path, jar_path in _jars_of_pid(fd_dir, root):
-            seen.setdefault(jar_path, open_path)
-    return seen
+            try:
+                st = os.stat(open_path)          # follows the fd link to the real inode (works on deleted files)
+                key = (st.st_dev, st.st_ino)
+            except OSError:
+                key = ("path", jar_path)         # inode unavailable -> fall back to path-string de-dup
+            seen.setdefault(key, (jar_path, open_path))
+    # A blocked read (e.g. SELinux denying the confined client access to a container_t process's fd) is
+    # swallowed per-fd at debug and would otherwise look identical to "no Java". Surface the signal.
+    if jvm_seen and not seen:
+        logger.info(
+            "java_purls: %d JVM(s) found but no open jars readable "
+            "(possible SELinux/permission denial on /proc/<pid>/fd)",
+            jvm_seen,
+        )
+    return list(seen.values())
 
 
 def _scanned_jars(root, counter=None):
@@ -389,12 +423,20 @@ def _scanned_jars(root, counter=None):
     return found
 
 
+def _as_pairs(jars):
+    """Normalize to ``(jar_path, open_path)`` pairs: accept either a ``{jar_path: open_path}`` mapping
+    (``_scanned_jars``) or an iterable of pairs (``_open_jars`` returns a list of pairs so same-path /
+    different-inode jars can coexist)."""
+    return jars.items() if isinstance(jars, dict) else jars
+
+
 def _scan_all(jars, findings, counter):
     """Analyze each jar into ``findings``, respecting the total-jars and size caps.
 
-    ``jars`` is a ``{jar_path: open_path}`` mapping: ``jar_path`` is the resolved path (used for the
-    output jar name and for ordering); ``open_path`` is what we actually open -- a ``/proc/<pid>/fd`` link
-    for a running-JVM jar, or ``None`` to open ``jar_path`` itself. See _open_jars / _jars_of_pid.
+    ``jars`` is a ``{jar_path: open_path}`` mapping OR an iterable of ``(jar_path, open_path)`` pairs:
+    ``jar_path`` is the resolved path (used for the output jar name and for ordering); ``open_path`` is what
+    we actually open -- a ``/proc/<pid>/fd`` link for a running-JVM jar, or ``None`` to open ``jar_path``
+    itself. See _open_jars / _jars_of_pid.
 
     Graceful degradation: if the soft time budget is exceeded (or any unexpected error fires)
     mid-scan, return whatever purls were found so far rather than losing the whole run.
@@ -402,10 +444,10 @@ def _scan_all(jars, findings, counter):
     try:
         # Sorted for deterministic output order (and stable duplicate-purl attribution) run-to-run;
         # glob/readdir order is not stable, which would otherwise churn archive diffs.
-        for jar_path in sorted(jars):
+        for jar_path, open_path in sorted(_as_pairs(jars)):
             if counter["n"] >= MAX_JARS or _expired(counter):
                 break
-            open_path = jars[jar_path] or jar_path
+            open_path = open_path or jar_path
             try:
                 # Skip oversized jars cheaply (stat, no read). getsize works on a /proc/<pid>/fd link too.
                 if os.path.getsize(open_path) > MAX_JAR_BYTES:
@@ -444,14 +486,15 @@ def java_purls(broker):
     # budget too (not just the per-jar analysis) -- otherwise slow discovery could hit the hard
     # @datasource timeout and lose all partial results.
     counter = {"n": 0, "deadline": _monotonic() + MAX_SECONDS}
-    jvm_jars = _open_jars(root, counter)        # primary source: jars held open by running JVMs
-    disk_jars = _scanned_jars(root, counter)    # opt-in disk scan (empty unless JAVA_PURLS_SCAN_DIRS is set)
+    jvm_jars = _open_jars(root, counter)        # [(jar_path, open_path)] -- jars held open by running JVMs
+    disk_jars = _scanned_jars(root, counter)    # {realpath: None} -- opt-in disk scan (empty unless env set)
 
     findings = []
     # Analyze running-JVM jars FIRST, sharing the counter, so when the jar cap / time budget is hit it can
     # only ever drop opt-in disk jars -- never a jar a live JVM has loaded (the high-value signal).
     _scan_all(jvm_jars, findings, counter)
-    _scan_all({p: v for p, v in disk_jars.items() if p not in jvm_jars}, findings, counter)
+    jvm_paths = {jp for jp, _ in _as_pairs(jvm_jars)}
+    _scan_all([(p, v) for p, v in _as_pairs(disk_jars) if p not in jvm_paths], findings, counter)
 
     uniq = _dedup(findings)
     if not uniq:
