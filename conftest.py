@@ -1,8 +1,13 @@
+import doctest
 import logging
 import pytest
 import warnings
 from insights.tests import run_test
+from insights.tests.doctest_support import INSIGHTS_DOCTEST_OPTIONFLAGS, InsightsDocTestRunner
 warnings.simplefilter('always', DeprecationWarning)
+
+# testmod() constructs DocTestRunner internally; replace the class for all doctest.testmod() calls.
+doctest.DocTestRunner = InsightsDocTestRunner
 
 
 def pytest_addoption(parser):
@@ -14,6 +19,8 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     level = logging.DEBUG if config.getoption("--appdebug") else logging.ERROR
     logging.basicConfig(level=level)
+    optionflags = getattr(config.option, 'doctest_optionflags', 0)
+    config.option.doctest_optionflags = optionflags | INSIGHTS_DOCTEST_OPTIONFLAGS
 
 
 @pytest.fixture
