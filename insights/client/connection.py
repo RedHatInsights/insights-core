@@ -705,59 +705,6 @@ class InsightsConnection(object):
         systems = {'machine_id': generate_machine_id()}
         self.group_systems(group_id, systems)
 
-    # -LEGACY-
-    def _legacy_api_registration_check(self):
-        '''
-        Check registration status through API
-            True    system exists in inventory
-            False   connection or parsing response error
-            None    system is not yet registered
-            string system is unregistered
-        '''
-        logger.debug('Checking registration status...')
-        if not machine_id_exists():
-            return None
-        machine_id = generate_machine_id()
-        try:
-            url = self.api_url + '/v1/systems/' + machine_id
-            res = self.get(url)
-        except requests.ConnectionError:
-            # can't connect, run connection test
-            logger.error('Connection timed out. Running connection test...')
-            self.test_connection()
-            return False
-        # had to do a quick bugfix changing this around,
-        #   which makes the None-False-True dichotomy seem weird
-        #   TODO: reconsider what gets returned, probably this:
-        #       True for registered
-        #       False for unregistered
-        #       None for system 404
-        if res.status_code != 200:
-            self.handle_fail_rcs(res)
-        if res.status_code not in (200, 404):
-            # Network error returns False
-            return False
-        else:
-            try:
-                # check the 'unregistered_at' key of the response
-                unreg_status = json.loads(res.content).get('unregistered_at', 'undefined')
-                # set the global account number
-                self.config.account_number = json.loads(res.content).get('account_number', 'undefined')
-            except ValueError:
-                # bad response, no json object
-                return False
-            if unreg_status == 'undefined':
-                # key not found, machine not yet registered
-                return None
-            elif unreg_status is None:
-                # unregistered_at = null, means this machine IS registered
-                return True
-            else:
-                # machine has been unregistered, this is a timestamp
-                # This is done for legacy servers that responded with the timestamp of disconnection
-                # TODO: consider to remove this condition
-                return unreg_status
-
     def _fetch_system_by_machine_id(self):
         '''
         Get a system by machine ID
@@ -800,16 +747,22 @@ class InsightsConnection(object):
 
     def api_registration_check(self):
         '''
-            Reach out to the inventory API to check
-            whether a machine exists.
+            Check whether a machine is registered.
+
+            For legacy_upload, use local .registered markers. Do not GET
+            /v1/systems/<machine-id>: that route 404s on IoP and the client
+            then unregisters locally (CCT-2662 / SAT-46576).
+
+            Otherwise reach out to the inventory API.
 
             Returns
-                True    system exists in inventory
-                False   system does not exist in inventory
+                True    registered (local marker, or system exists in inventory)
+                False   not registered (no local marker, or not in inventory)
                 None    error connection or parsing response
         '''
         if self.config.legacy_upload:
-            return self._legacy_api_registration_check()
+            logger.debug('Checking registration status...')
+            return any(os.path.isfile(path) for path in constants.registered_files)
 
         logger.debug('Checking registration status...')
         results = self._fetch_system_by_machine_id()

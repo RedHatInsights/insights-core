@@ -169,12 +169,11 @@ def post_update(client, config):
             sys.exit(constants.sig_kill_bad)
 
         if config.status:
-            reg_check = client.get_registration_status()
-            for msg in reg_check['messages']:
-                logger.info(msg)
-            if reg_check['status']:
+            if client.get_registration_status():
+                logger.info('This host is registered.')
                 sys.exit(constants.sig_kill_ok)
             else:
+                logger.info('This host is unregistered.')
                 sys.exit(constants.sig_kill_bad)
 
         # put this first to avoid conflicts with register
