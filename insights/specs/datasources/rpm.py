@@ -20,16 +20,16 @@ def _make_rpm_formatter(fmt=None):
     """function: Returns function that will format output of rpm query command"""
     if fmt is None:
         fmt = [
-            '"name":"%{NAME}"',
-            '"epoch":"%{EPOCH}"',
-            '"version":"%{VERSION}"',
-            '"release":"%{RELEASE}"',
-            '"arch":"%{ARCH}"',
-            '"installtime":"%{INSTALLTIME:date}"',
-            '"buildtime":"%{BUILDTIME}"',
-            '"vendor":"%{VENDOR}"',
-            '"buildhost":"%{BUILDHOST}"',
-            '"sigpgp":"%{SIGPGP:pgpsig}"',
+            '"name":"%%{NAME}"',
+            '"epoch":"%%{EPOCH}"',
+            '"version":"%%{VERSION}"',
+            '"release":"%%{RELEASE}"',
+            '"arch":"%%{ARCH}"',
+            '"installtime":"%%{INSTALLTIME:date}"',
+            '"buildtime":"%%{BUILDTIME}"',
+            '"vendor":"%%{VENDOR}"',
+            '"buildhost":"%%{BUILDHOST}"',
+            '"sigpgp":"%%{SIGPGP:pgpsig}"',
         ]
     return r"\{" + ",".join(fmt) + r"\}\n"
 

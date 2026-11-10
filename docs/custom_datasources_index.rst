@@ -71,7 +71,7 @@ insights.specs.datasources.container.containers_inspect
 -------------------------------------------------------
 
 .. automodule:: insights.specs.datasources.container.containers_inspect
-    :members: running_rhel_containers_id, containers_inspect_data_datasource
+    :members: running_rhel_containers_id, containers_inspect_data_datasource, container_merged_dirs
     :show-inheritance:
     :undoc-members:
 
