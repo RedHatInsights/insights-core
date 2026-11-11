@@ -1,0 +1,23 @@
+[Unit]
+Description=Red Hat Advisor Collector
+After=network.target
+Documentation=https://github.com/RedHatInsights/insights-core
+
+# Only try to restart six times
+StartLimitIntervalSec=12h
+StartLimitBurst=6
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/rhc/rhc-collector run com.redhat.advisor
+Restart=on-failure
+RestartSec=1h
+
+# parameters from insighs-client.service
+CPUQuota=30%
+MemoryHigh=1G
+MemoryMax=2G
+TasksMax=300
+BlockIOWeight=100
+
+# other parameters in https://github.com/RedHatInsights/rhc/blob/main/data/systemd/rhc-collector-com.redhat.minimal.service

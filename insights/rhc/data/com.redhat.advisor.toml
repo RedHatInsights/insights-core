@@ -1,0 +1,9 @@
+[meta]
+name = "Red Hat Advisor Collector"
+feature = "analytics"
+type = "ingress"
+
+[ingress]
+user = "root"
+group = "root"
+content_type = "application/vnd.redhat.advisor.collection+tgz"
