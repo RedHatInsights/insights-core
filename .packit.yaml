@@ -183,7 +183,7 @@ jobs:
     use_internal_tf: true
     targets:
       rhel-9-x86_64:
-        distros: [RHEL-9.7-Nightly]
+        distros: [RHEL-9.7.0-Nightly]
     tf_extra_params:
       test:
         tmt:
