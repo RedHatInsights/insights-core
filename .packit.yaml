@@ -168,7 +168,7 @@ jobs:
     use_internal_tf: true
     targets:
       rhel-8-x86_64:
-        distros: [RHEL-8-LatestReleased]
+        distros: [RHEL-8.10.0-Nightly]
     tf_extra_params:
       test:
         tmt:
@@ -183,7 +183,7 @@ jobs:
     use_internal_tf: true
     targets:
       rhel-9-x86_64:
-        distros: [RHEL-9-LatestReleased]
+        distros: [RHEL-9.8.0-Nightly]
     tf_extra_params:
       test:
         tmt:
@@ -198,7 +198,7 @@ jobs:
     use_internal_tf: true
     targets:
       rhel-10-x86_64:
-        distros: [RHEL-10-LatestReleased]
+        distros: [RHEL-10.2-Nightly]
     tf_extra_params:
       test:
         tmt:
