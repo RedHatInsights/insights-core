@@ -177,11 +177,10 @@ def _legacy_handle_registration(config, pconn):
     '''
     logger.debug('Trying registration.')
 
-    # check registration with API
-    check = get_registration_status(config, pconn)
     machine_id_present = isfile(constants.machine_id_file)
+    check = get_registration_status(config, pconn)
 
-    if machine_id_present and check['status'] is False:
+    if machine_id_present and check is False:
         logger.info(
             "Machine-id found, insights-client can not be registered."
             " Please, unregister insights-client first: `insights-client --unregister`"
@@ -190,15 +189,11 @@ def _legacy_handle_registration(config, pconn):
 
     logger.debug('Machine-id: %s', generate_machine_id())
 
-    for m in check['messages']:
-        logger.debug(m)
-
-    if check['unreachable']:
+    if check is None:
         # Run connection test and exit
         return None
 
-    if check['status']:
-        # registered in API, resync files
+    if check:
         if config.register:
             logger.info('This host has already been registered.')
         write_registered_file()
@@ -223,24 +218,13 @@ def _legacy_handle_registration(config, pconn):
             logger.info(message)
         write_registered_file()
         return True
-    else:
-        # unregistered in API, resync files
-        write_unregistered_file(date=check['unreg_date'])
-        # print messaging and exit
-        if check['unreg_date']:
-            # registered and then unregistered
-            logger.info(
-                'This machine has been unregistered. '
-                'Use --register if you would like to '
-                're-register this machine.'
-            )
-        else:
-            # not yet registered
-            logger.info(
-                'This machine has not yet been registered. '
-                'Use --register to register this machine.'
-            )
-        return False
+
+    write_unregistered_file()
+    logger.info(
+        'This machine has not yet been registered. '
+        'Use --register to register this machine.'
+    )
+    return False
 
 
 def handle_registration(config, pconn):
@@ -277,17 +261,14 @@ def _legacy_handle_unregistration(config, pconn):
 
     check = get_registration_status(config, pconn)
 
-    for m in check['messages']:
-        logger.debug(m)
-
-    if check['unreachable']:
+    if check is None:
         # Run connection test and exit
         if config.force:
             __cleanup_local_files()
             return True
         return None
 
-    if check['status']:
+    if check:
         unreg = pconn.unregister()
     else:
         unreg = True

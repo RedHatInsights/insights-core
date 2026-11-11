@@ -21,63 +21,15 @@ APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
 
-def _legacy_registration_check(api_reg_status):
-    # check local registration record
-    unreg_date = None
-    unreachable = False
-    if os.path.isfile(constants.registered_files[0]):
-        local_record = 'System is registered locally via .registered file.'
-        with open(constants.registered_files[0]) as reg_file:
-            local_record += ' Registered at ' + reg_file.readline()
-    else:
-        local_record = 'System is NOT registered locally via .registered file.'
-    if os.path.isfile(constants.unregistered_files[0]):
-        with open(constants.unregistered_files[0]) as reg_file:
-            local_record += ' Unregistered at ' + reg_file.readline()
-
-    logger.debug('Registration status: %s', api_reg_status)
-    if type(api_reg_status) is bool:
-        if api_reg_status:
-            api_record = 'Insights API confirms registration.'
-        else:
-            api_record = 'Insights API could not be reached to confirm registration status.'
-            unreachable = True
-    elif api_reg_status is None:
-        api_record = 'Insights API says this machine is NOT registered.'
-        api_reg_status = False
-    else:
-        api_record = 'Insights API says this machine was unregistered at ' + api_reg_status
-        unreg_date = api_reg_status
-        api_reg_status = False
-
-    return {'messages': [local_record, api_record],
-            'status': api_reg_status,
-            'unreg_date': unreg_date,
-            'unreachable': unreachable}
-
-
 def registration_check(pconn):
     status = pconn.api_registration_check()
-    # Legacy code
-    if pconn.config.legacy_upload:
-        status = _legacy_registration_check(status)
-    if isinstance(status, dict):
-        reg_status = status['status']
-        if status['unreachable'] is True:
-            reg_status = None
-    # --- end legacy ---
-    else:
-        if not status and machine_id_exists() and os.path.exists(constants.registered_files[0]):
-            status = True
-        reg_status = status
-    if reg_status:
+    if not status and machine_id_exists() and os.path.exists(constants.registered_files[0]):
+        status = True
+    if status:
         write_registered_file()
-    elif reg_status is False:
+    elif status is False:
         write_unregistered_file()
         write_to_disk(constants.machine_id_file, delete=True)
-        if pconn.config.legacy_upload:
-            status['messages'].append("System unregistered locally via .unregistered file")
-
     return status
 
 
@@ -119,11 +71,7 @@ class InsightsSupport(object):
             pconn = InsightsConnection(self.config)
             reg_check = registration_check(pconn)
             cfg_block.append('Registration check:')
-            if pconn.config.legacy_upload:
-                for key in reg_check:
-                    cfg_block.append(key + ': ' + str(reg_check[key]))
-            else:
-                cfg_block.append("status: " + str(reg_check))
+            cfg_block.append("status: " + str(reg_check))
 
         lastupload = 'never'
         if os.path.isfile(constants.lastupload_file):

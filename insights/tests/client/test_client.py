@@ -166,7 +166,7 @@ def test_get_log_handler_by_client_version(get_version_info, mock_path_dirname):
 def test_register_legacy(utilities_write, delete_unregistered_file, generate_machine_id):
     config = InsightsConfig(register=True, legacy_upload=True)
     client = InsightsClient(config)
-    client.connection = _mock_InsightsConnection(registered=None)
+    client.connection = _mock_InsightsConnection(registered=False)
     client.connection.config = config
     client.session = True
     with _mock_no_register_files():
@@ -306,7 +306,7 @@ def test_reg_check_registered():
     client.session = True
 
     with _mock_registered_files():
-        assert client.get_registration_status()['status'] is True
+        assert client.get_registration_status() is True
         for r in constants.registered_files:
             assert os.path.isfile(r) is True
         for u in constants.unregistered_files:
@@ -331,7 +331,7 @@ def test_reg_check_unregistered():
 
     # test function and integration in .register()
     with _mock_no_register_files():
-        assert client.get_registration_status()['status'] is False
+        assert client.get_registration_status() is False
         for r in constants.registered_files:
             assert os.path.isfile(r) is False
         for u in constants.unregistered_files:
@@ -347,20 +347,19 @@ def test_reg_check_unregistered():
 @patch('insights.client.utilities.constants.machine_id_file',
        TEMP_TEST_REG_DIR + '/machine-id')
 def test_reg_check_registered_res_unreg_legacy():
-    # system is registered but receives the unregistration status
+    # Local files remain authoritative when the check returns None.
     config = InsightsConfig(legacy_upload=True)
     client = InsightsClient(config)
     client.connection = _mock_InsightsConnection(registered=None)
     client.connection.config = config
     client.session = True
 
-    # test function and integration in .register()
     with _mock_registered_files():
-        assert client.get_registration_status()['status'] is False
+        assert client.get_registration_status() is None
         for r in constants.registered_files:
-            assert os.path.isfile(r) is False
+            assert os.path.isfile(r) is True
         for u in constants.unregistered_files:
-            assert os.path.isfile(u) is True
+            assert os.path.isfile(u) is False
 
 
 @patch('insights.client.utilities.constants.registered_files',
@@ -404,11 +403,11 @@ def test_reg_check_registered_unreachable_legacy():
     client.session = True
 
     with _mock_registered_files():
-        assert client.get_registration_status()['unreachable'] is True
+        assert client.get_registration_status() is False
         for r in constants.registered_files:
-            assert os.path.isfile(r) is True
+            assert os.path.isfile(r) is False
         for u in constants.unregistered_files:
-            assert os.path.isfile(u) is False
+            assert os.path.isfile(u) is True
 
 
 @patch('insights.client.utilities.constants.registered_files',
@@ -474,7 +473,7 @@ def test_reg_check_unregistered_unreachable_legacy():
     client.session = True
 
     with _mock_no_register_files():
-        assert client.get_registration_status()['unreachable'] is True
+        assert client.get_registration_status() is False
         for r in constants.registered_files:
             assert os.path.isfile(r) is False
         for u in constants.unregistered_files:
