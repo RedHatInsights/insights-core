@@ -50,7 +50,7 @@ jobs:
     tf_extra_params:
       test:
         tmt:
-          plan_filter: 'name:rpm-test'
+          test_filter: 'tag:rpm'
 
   # RPM Test 2: RHEL 9.8.0 Nightly × x86_64
   - job: tests
@@ -65,7 +65,7 @@ jobs:
     tf_extra_params:
       test:
         tmt:
-          plan_filter: 'name:rpm-test'
+          test_filter: 'tag:rpm'
 
   # RPM Test 3: CentOS Stream 10 × x86_64
   - job: tests
@@ -80,7 +80,7 @@ jobs:
     tf_extra_params:
       test:
         tmt:
-          plan_filter: 'name:rpm-test'
+          test_filter: 'tag:rpm'
 
   # RPM Test 4: RHEL 10.2 Nightly × s390x
   - job: tests
@@ -95,7 +95,7 @@ jobs:
     tf_extra_params:
       test:
         tmt:
-          plan_filter: 'name:rpm-test'
+          test_filter: 'tag:rpm'
 
   # RPM Test 5: RHEL 9.8.0 Nightly × s390x
   - job: tests
@@ -110,7 +110,7 @@ jobs:
     tf_extra_params:
       test:
         tmt:
-          plan_filter: 'name:rpm-test'
+          test_filter: 'tag:rpm'
 
   # RPM Test 6: RHEL 10.2 Nightly × aarch64
   - job: tests
@@ -125,7 +125,7 @@ jobs:
     tf_extra_params:
       test:
         tmt:
-          plan_filter: 'name:rpm-test'
+          test_filter: 'tag:rpm'
 
   # RPM Test 7: RHEL 9.8.0 Nightly × aarch64
   - job: tests
@@ -140,7 +140,7 @@ jobs:
     tf_extra_params:
       test:
         tmt:
-          plan_filter: 'name:rpm-test'
+          test_filter: 'tag:rpm'
 
   # RPM Test 8: RHEL 10.2 Nightly × ppc64le
   - job: tests
@@ -155,7 +155,7 @@ jobs:
     tf_extra_params:
       test:
         tmt:
-          plan_filter: 'name:rpm-test'
+          test_filter: 'tag:rpm'
 
   # ===== EGG TESTS - 3 CONFIGURATIONS (RHEL 8/9/10 × x86_64) =====
 
@@ -172,7 +172,7 @@ jobs:
     tf_extra_params:
       test:
         tmt:
-          plan_filter: 'name:egg-test'
+          test_filter: 'tag:egg'
 
   # Egg Test 2: RHEL 9 × x86_64
   - job: tests
@@ -183,11 +183,11 @@ jobs:
     use_internal_tf: true
     targets:
       rhel-9-x86_64:
-        distros: [RHEL-9.8.0-Nightly]
+        distros: [RHEL-9.7.0]
     tf_extra_params:
       test:
         tmt:
-          plan_filter: 'name:egg-test'
+          test_filter: 'tag:egg'
 
   # Egg Test 3: RHEL 10 × x86_64
   - job: tests
@@ -198,8 +198,8 @@ jobs:
     use_internal_tf: true
     targets:
       rhel-10-x86_64:
-        distros: [RHEL-10.2-Nightly]
+        distros: [RHEL-10.0]
     tf_extra_params:
       test:
         tmt:
-          plan_filter: 'name:egg-test'
+          test_filter: 'tag:egg'
