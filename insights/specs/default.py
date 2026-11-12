@@ -74,6 +74,7 @@ from insights.specs.datasources import (
     pesign,
     podman,
     ps,
+    python_purls as python_purls_ds,
     rpm,
     sap,
     satellite,
@@ -718,6 +719,7 @@ class DefaultSpecs(Specs):
     pvs_noheadings = simple_command(
         "/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\""
     )
+    python_purls = python_purls_ds.python_purls
     rhsm_katello_default_ca_cert = simple_command(
         "/usr/bin/openssl x509 -in /etc/rhsm/ca/katello-default-ca.pem -noout -issuer"
     )
