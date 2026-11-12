@@ -157,15 +157,76 @@ jobs:
         tmt:
           test_filter: 'tag:rpm'
 
+  # ====================================================================== #
+  # ===== SELINUX TESTS - DISABLED (kept commented for later use) ======= #
+  # ====================================================================== #
+  # Mirrors the old Jenkins release pipelines (insights-core-rpm-RHEL9/10-
+  # test) which ran the selinux AVC suite on RHEL 9 and RHEL 10 only (no
+  # RHEL 8 - insights-core-selinux covers rhel9.7+ / rhel10.1+ only), per
+  # compose/SPEC_SET. The CentOS Stream 10 job below goes slightly beyond
+  # the old matrix - it is feasible because insights-core-selinux also
+  # ships in the CS10 AppStream repo. The tmt test node (tests/selinux-
+  # test, tag: selinux) is prepared in insights-core-test; uncomment the
+  # jobs below to enable selinux PR checks.
+  #
+  # Selinux Test 1: RHEL 10.2 Nightly × x86_64
+  #- job: tests
+  #  trigger: pull_request
+  #  identifier: "selinux-test-rhel10.2-x86_64"
+  #  fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
+  #  fmf_ref: "packit-migration"
+  #  use_internal_tf: true
+  #  targets:
+  #    rhel-10-x86_64:
+  #      distros: [RHEL-10.2-Nightly]
+  #  tf_extra_params:
+  #    test:
+  #      tmt:
+  #        test_filter: 'tag:selinux'
+  #
+  # Selinux Test 2: RHEL 9.8.0 Nightly × x86_64
+  #- job: tests
+  #  trigger: pull_request
+  #  identifier: "selinux-test-rhel9.8-x86_64"
+  #  fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
+  #  fmf_ref: "packit-migration"
+  #  use_internal_tf: true
+  #  targets:
+  #    rhel-9-x86_64:
+  #      distros: [RHEL-9.8.0-Nightly]
+  #  tf_extra_params:
+  #    test:
+  #      tmt:
+  #        test_filter: 'tag:selinux'
+  #
+  # Selinux Test 3: CentOS Stream 10 × x86_64
+  #- job: tests
+  #  trigger: pull_request
+  #  identifier: "selinux-test-centos10-x86_64"
+  #  fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
+  #  fmf_ref: "packit-migration"
+  #  use_internal_tf: true
+  #  targets:
+  #    centos-stream-10:
+  #      distros: [CentOS-Stream-10]
+  #  tf_extra_params:
+  #    test:
+  #      tmt:
+  #        test_filter: 'tag:selinux'
+
   # ===== EGG TESTS - 3 CONFIGURATIONS (RHEL 8/9/10 × x86_64) =====
 
   # Egg Test 1: RHEL 8 × x86_64
+  # No insights-core RPM exists on RHEL 8 (egg delivery only) and no Copr
+  # build is needed: the egg is built on the guest from the PR source
+  # (PACKIT_SOURCE_URL/PACKIT_SOURCE_SHA) by tests/egg-test/test.sh.
   - job: tests
     trigger: pull_request
     identifier: "egg-test-rhel8-x86_64"
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
+    skip_build: true
     targets:
       rhel-8-x86_64:
         distros: [RHEL-8.10.0-Nightly]
@@ -175,12 +236,16 @@ jobs:
           test_filter: 'tag:egg'
 
   # Egg Test 2: RHEL 9 × x86_64
+  # RHEL 9.7 predates the insights-core RPM (introduced in 9.8), so the
+  # suite runs against the egg built from the PR source - no Copr build
+  # and no RPM artifact on the guest.
   - job: tests
     trigger: pull_request
     identifier: "egg-test-rhel9-x86_64"
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
+    skip_build: true
     targets:
       rhel-9-x86_64:
         distros: [RHEL-9.7.0-Nightly]
@@ -190,12 +255,16 @@ jobs:
           test_filter: 'tag:egg'
 
   # Egg Test 3: RHEL 10 × x86_64
+  # RHEL 10.0 predates the insights-core RPM (introduced in 10.2), so the
+  # suite runs against the egg built from the PR source - no Copr build
+  # and no RPM artifact on the guest.
   - job: tests
     trigger: pull_request
     identifier: "egg-test-rhel10-x86_64"
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
+    skip_build: true
     targets:
       rhel-10-x86_64:
         distros: [RHEL-10.0-Nightly]
