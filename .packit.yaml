@@ -41,6 +41,11 @@ jobs:
   - job: tests
     trigger: pull_request
     identifier: "rpm-test-rhel10.2-x86_64"
+    status_name_template: "tf:rpm-test:rhel10:x86_64"
+    labels:
+      - rpm
+      - rpm-rhel10
+      - rpm-x86_64
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
@@ -56,6 +61,11 @@ jobs:
   - job: tests
     trigger: pull_request
     identifier: "rpm-test-rhel9.8-x86_64"
+    status_name_template: "tf:rpm-test:rhel9:x86_64"
+    labels:
+      - rpm
+      - rpm-rhel9
+      - rpm-x86_64
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
@@ -71,6 +81,11 @@ jobs:
   - job: tests
     trigger: pull_request
     identifier: "rpm-test-centos10-x86_64"
+    status_name_template: "tf:rpm-test:centos10:x86_64"
+    labels:
+      - rpm
+      - rpm-centos10
+      - rpm-x86_64
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
@@ -86,6 +101,11 @@ jobs:
   - job: tests
     trigger: pull_request
     identifier: "rpm-test-rhel10.2-s390x"
+    status_name_template: "tf:rpm-test:rhel10:s390x"
+    labels:
+      - rpm
+      - rpm-rhel10
+      - rpm-s390x
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
@@ -101,6 +121,11 @@ jobs:
   - job: tests
     trigger: pull_request
     identifier: "rpm-test-rhel9.8-s390x"
+    status_name_template: "tf:rpm-test:rhel9:s390x"
+    labels:
+      - rpm
+      - rpm-rhel9
+      - rpm-s390x
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
@@ -116,6 +141,11 @@ jobs:
   - job: tests
     trigger: pull_request
     identifier: "rpm-test-rhel10.2-aarch64"
+    status_name_template: "tf:rpm-test:rhel10:aarch64"
+    labels:
+      - rpm
+      - rpm-rhel10
+      - rpm-aarch64
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
@@ -131,6 +161,11 @@ jobs:
   - job: tests
     trigger: pull_request
     identifier: "rpm-test-rhel9.8-aarch64"
+    status_name_template: "tf:rpm-test:rhel9:aarch64"
+    labels:
+      - rpm
+      - rpm-rhel9
+      - rpm-aarch64
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
@@ -146,6 +181,11 @@ jobs:
   - job: tests
     trigger: pull_request
     identifier: "rpm-test-rhel10.2-ppc64le"
+    status_name_template: "tf:rpm-test:rhel10:ppc64le"
+    labels:
+      - rpm
+      - rpm-rhel10
+      - rpm-ppc64le
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
@@ -173,6 +213,11 @@ jobs:
   #- job: tests
   #  trigger: pull_request
   #  identifier: "selinux-test-rhel10.2-x86_64"
+  #  status_name_template: "tf:selinux-test:rhel10:x86_64"
+  #  labels:
+  #    - selinux
+  #    - selinux-rhel10
+  #    - selinux-x86_64
   #  fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
   #  fmf_ref: "packit-migration"
   #  use_internal_tf: true
@@ -188,6 +233,11 @@ jobs:
   #- job: tests
   #  trigger: pull_request
   #  identifier: "selinux-test-rhel9.8-x86_64"
+  #  status_name_template: "tf:selinux-test:rhel9:x86_64"
+  #  labels:
+  #    - selinux
+  #    - selinux-rhel9
+  #    - selinux-x86_64
   #  fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
   #  fmf_ref: "packit-migration"
   #  use_internal_tf: true
@@ -203,6 +253,11 @@ jobs:
   #- job: tests
   #  trigger: pull_request
   #  identifier: "selinux-test-centos10-x86_64"
+  #  status_name_template: "tf:selinux-test:centos10:x86_64"
+  #  labels:
+  #    - selinux
+  #    - selinux-centos10
+  #    - selinux-x86_64
   #  fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
   #  fmf_ref: "packit-migration"
   #  use_internal_tf: true
@@ -223,6 +278,11 @@ jobs:
   - job: tests
     trigger: pull_request
     identifier: "egg-test-rhel8-x86_64"
+    status_name_template: "tf:egg-test:rhel8:x86_64"
+    labels:
+      - egg
+      - egg-rhel8
+      - egg-x86_64
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
@@ -242,6 +302,11 @@ jobs:
   - job: tests
     trigger: pull_request
     identifier: "egg-test-rhel9-x86_64"
+    status_name_template: "tf:egg-test:rhel9:x86_64"
+    labels:
+      - egg
+      - egg-rhel9
+      - egg-x86_64
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
@@ -261,6 +326,11 @@ jobs:
   - job: tests
     trigger: pull_request
     identifier: "egg-test-rhel10-x86_64"
+    status_name_template: "tf:egg-test:rhel10:x86_64"
+    labels:
+      - egg
+      - egg-rhel10
+      - egg-x86_64
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
