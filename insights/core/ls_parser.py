@@ -163,7 +163,9 @@ class Directory(dict):
             perms = parts[0]
             typ = perms[0]
             entry = {"type": typ, "perms": perms[1:]}
-            if parts[1][0].isdigit():
+            # RHEL 6/7 ls -Z puts the context after the owner and group, with
+            # no link count. The owner may itself be a numeric UID.
+            if parts[1].isdigit() and ":" not in parts[3] and parts[3] != "?":
                 # We have to split the line again to see if this is a RHEL8
                 # selinux stanza. This assumes that the context section will
                 # always have at least two pieces separated by ':'.

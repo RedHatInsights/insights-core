@@ -541,6 +541,20 @@ def test_ls_laZ():
     assert dev_listings["boot.log-20220705"]['size'] == 22027
 
 
+def test_ls_laZ_with_numeric_owner():
+    content = """
+/etc:
+drwxr-x---. 2345 3456 system_u:object_r:etc_t:s0 directory
+-rw-------  2345 root ?                          unknown context
+"""
+    entries = LSlaZ(context_wrap(content)).listing_of('/etc')
+    assert entries['directory']['owner'] == '2345'
+    assert entries['directory']['group'] == '3456'
+    assert entries['directory']['se_type'] == 'etc_t'
+    assert entries['unknown context']['owner'] == '2345'
+    assert entries['unknown context']['se_user'] == '?'
+
+
 def test_ls_laZ_on_dev():
     ls = LSlaRZ(context_wrap(LS_LARZ_DEV_CONTENT1))
     assert '/dev' in ls
