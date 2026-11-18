@@ -148,6 +148,13 @@ def parse_rhel8_selinux(parts):
     return result
 
 
+# A '?' after the owner can be either a legacy SELinux context or the
+# group in a long listing. Only the latter is followed by a size and date.
+_LONG_LISTING_TAIL = re.compile(
+    r"(?:(?:\S+:\S+|\?)\s+)?\d+(?:,\s*\d+)?\s+\S+\s+\d{1,2}\s+(?:\d{1,2}:\d{2}|\d{4})\s"
+)
+
+
 class Directory(dict):
     def __init__(self, name, total, body):
         dirs = []
@@ -165,7 +172,11 @@ class Directory(dict):
             entry = {"type": typ, "perms": perms[1:]}
             # RHEL 6/7 ls -Z puts the context after the owner and group, with
             # no link count. The owner may itself be a numeric UID.
-            if parts[1].isdigit() and ":" not in parts[3] and parts[3] != "?":
+            if (
+                parts[1].isdigit()
+                and ":" not in parts[3]
+                and (parts[3] != "?" or _LONG_LISTING_TAIL.match(parts[4]))
+            ):
                 # We have to split the line again to see if this is a RHEL8
                 # selinux stanza. This assumes that the context section will
                 # always have at least two pieces separated by ':'.

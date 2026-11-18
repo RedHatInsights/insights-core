@@ -555,6 +555,24 @@ drwxr-x---. 2345 3456 system_u:object_r:etc_t:s0 directory
     assert entries['unknown context']['se_user'] == '?'
 
 
+def test_ls_laZ_with_unknown_group_in_long_listing():
+    content = """
+/etc:
+drwxr-x---. 2 2345 ? system_u:object_r:etc_t:s0 4096 Nov 12 23:55 directory
+-rw-------  1 2345 ? ? 128 Nov 12 23:55 file
+-rw-------  1 2345 ? 256 Nov 12 23:55 plain
+crw-------. 1 2345 ? system_u:object_r:device_t:s0 8, 1 Nov 12  2018 device
+"""
+    entries = LSlaZ(context_wrap(content)).listing_of('/etc')
+    for name, size in [('directory', 4096), ('file', 128), ('plain', 256)]:
+        assert entries[name]['group'] == '?'
+        assert entries[name]['owner'] == '2345'
+        assert entries[name]['size'] == size
+    assert entries['directory']['se_type'] == 'etc_t'
+    assert entries['file']['se_user'] == '?'
+    assert (entries['device']['major'], entries['device']['minor']) == (8, 1)
+
+
 def test_ls_laZ_on_dev():
     ls = LSlaRZ(context_wrap(LS_LARZ_DEV_CONTENT1))
     assert '/dev' in ls
