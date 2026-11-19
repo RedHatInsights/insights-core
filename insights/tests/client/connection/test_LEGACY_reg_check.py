@@ -1,27 +1,22 @@
 import requests
 import json
 from insights.client.connection import InsightsConnection
+from insights.client.constants import InsightsConstants as constants
 from unittest.mock import MagicMock, Mock, patch
 
 
-@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_registration_check_ok_reg(get_proxies, _init_session, _machine_id_exists, _generate_machine_id):
+def test_registration_check_ok_reg(get_proxies, _init_session):
     '''
-    Request completed OK, registered
-        Returns True
+    A local .registered marker means registered. Do not GET /v1/systems.
     '''
-    config = Mock(legacy_upload=True, base_url='example.com')
+    config = Mock(legacy_upload=True, base_url='satellite.example:443/redhat_access/r/insights')
     conn = InsightsConnection(config)
-
-    res = requests.Response()
-    res._content = json.dumps({'unregistered_at': None})
-    res.status_code = 200
-
-    conn.get = MagicMock(return_value=res)
-    assert conn.api_registration_check()
+    conn.get = MagicMock()
+    with patch("insights.client.connection.os.path.isfile", return_value=True):
+        assert conn.api_registration_check() is True
+    conn.get.assert_not_called()
 
 
 @patch("insights.client.connection.generate_machine_id", return_value="12345678-abcd-efgh-ijkl-mnopqstvwxyz")
@@ -227,24 +222,21 @@ def test_register_failed_reg_non_existing_group(mock_create_system, _get_proxies
     assert group_name == "my_testing_group_name"
 
 
-@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_registration_check_ok_reg_then_unreg(get_proxies, _init_session, _machine_id_exists, _generate_machine_id):
+def test_registration_check_legacy_marker_only(get_proxies, _init_session):
     '''
-    Request completed OK, was once registered but has been unregistered
-        Returns the date it was unregistered
+    Only /etc/insights-client/.registered counts. The older marker does not.
     '''
-    config = Mock(legacy_upload=True, base_url='example.com')
+    config = Mock(legacy_upload=True, base_url='satellite.example:443/redhat_access/r/insights')
     conn = InsightsConnection(config)
-
-    res = requests.Response()
-    res._content = json.dumps({'unregistered_at': '2019-04-10'})
-    res.status_code = 200
-
-    conn.get = MagicMock(return_value=res)
-    assert conn.api_registration_check() == '2019-04-10'
+    conn.get = MagicMock()
+    with patch(
+        "insights.client.connection.os.path.isfile",
+        side_effect=lambda path: path == constants.registered_files[1],
+    ):
+        assert conn.api_registration_check() is None
+    conn.get.assert_not_called()
 
 
 @patch("insights.client.connection.machine_id_exists", return_value=True)
@@ -252,54 +244,49 @@ def test_registration_check_ok_reg_then_unreg(get_proxies, _init_session, _machi
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 def test_registration_check_ok_unreg(get_proxies, _init_session, _machine_id_exists):
     '''
-    Request completed OK, has never been registered
-        Returns None
+    No local .registered marker means not registered, even if machine-id exists.
+    Do not GET /v1/systems (a 404 there used to clear registration on IoP).
     '''
-    config = Mock(legacy_upload=True, base_url='example.com')
+    config = Mock(legacy_upload=True, base_url='satellite.example:443/redhat_access/r/insights')
     conn = InsightsConnection(config)
-
-    res = requests.Response()
-    res._content = json.dumps({})
-    res.status_code = 404
-
-    conn.get = MagicMock(return_value=res)
-    assert conn.api_registration_check() is None
-
-
-@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
-@patch("insights.client.connection.InsightsConnection._init_session")
-@patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_registration_check_bad_res(get_proxies, _init_session, _machine_id_exists, _generate_machine_id):
-    '''
-    Can't parse response
-        Returns False
-    '''
-    config = Mock(legacy_upload=True, base_url='example.com')
-    conn = InsightsConnection(config)
-
-    res = requests.Response()
-    res._content = 'zSDFasfghsRGH'
-    res.status_code = 500
-
-    conn.get = MagicMock(return_value=res)
-    assert conn.api_registration_check() is False
-
-
-@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.machine_id_exists", return_value=True)
-@patch("insights.client.connection.InsightsConnection._init_session")
-@patch("insights.client.connection.InsightsConnection.get_proxies")
-@patch("insights.client.connection.InsightsConnection.test_connection")
-def test_registration_check_conn_error(test_connection, get_proxies, _init_session, _machine_id_exists, _generate_machine_id):
-    '''
-    Can't connect, run connection test
-        Returns False
-    '''
-    config = Mock(legacy_upload=True, base_url='example.com')
-    conn = InsightsConnection(config)
-
     conn.get = MagicMock()
-    conn.get.side_effect = requests.ConnectionError()
-    assert conn.api_registration_check() is False
-    test_connection.assert_called_once()
+    with patch("insights.client.connection.os.path.isfile", return_value=False):
+        assert conn.api_registration_check() is None
+    conn.get.assert_not_called()
+
+
+def _response(status, body):
+    res = requests.Response()
+    res.status_code = status
+    res.encoding = "utf-8"
+    res._content = body if isinstance(body, bytes) else body.encode("utf-8")
+    return res
+
+
+@patch("insights.client.connection.generate_machine_id", return_value="machine-id")
+@patch("insights.client.connection.machine_id_exists", return_value=True)
+@patch("insights.client.connection._get_rhsm_identity", return_value="subman-id")
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+def test_fetch_uses_subscription_id_when_insights_id_misses(
+        _get_proxies, _init_session, _rhsm, _machine_id_exists, _generate_machine_id):
+    '''
+    RHSM creates the Inventory host with a nil insights_id. host_exists on
+    the client machine-id 404s; the subscription_manager_id query finds it.
+    '''
+    config = Mock(legacy_upload=True, base_url="https://cert-api.example/r/insights")
+    conn = InsightsConnection(config)
+    miss = _response(404, '{"detail":"not found"}')
+    hit = _response(200, json.dumps({
+        "total": 1,
+        "results": [{
+            "id": "inventory-id",
+            "insights_id": "00000000-0000-0000-0000-000000000000",
+        }],
+    }))
+    conn.get = MagicMock(side_effect=[miss, hit])
+    host = conn._fetch_system_by_machine_id()
+    assert host["id"] == "inventory-id"
+    assert host["insights_id"] == "machine-id"
+    queried = conn.get.call_args_list[1][0][0]
+    assert "subscription_manager_id=subman-id" in queried

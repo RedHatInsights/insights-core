@@ -89,17 +89,23 @@ def test_get_diagnosis_offline():
 @patch('insights.client.connection.InsightsConnection._init_session', Mock())
 @patch('insights.client.connection.InsightsConnection.get_proxies', Mock())
 @patch('insights.client.utilities.constants.machine_id_file', '/tmp/machine-id')
-@patch("insights.client.connection.InsightsConnection._fetch_system_by_machine_id", return_value=True)
+@patch("insights.client.connection.InsightsConnection._fetch_system_by_machine_id",
+       return_value={"insights_id": "c1cfc5e5-9664-48ab-a65a-d9e941e38ad4"})
 @patch('insights.client.connection.InsightsConnection.get')
 def test_get_diagnosis_success(get, fetch_system_by_machine_id):
     '''
     Verify that fetching a diagnosis without an ID succeeds and
-    returns a dict when HTTP response is valid
+    returns a dict when HTTP response is valid. The request uses the
+    real insights_id stored on the Inventory host.
     '''
     conf = InsightsConfig()
     c = InsightsConnection(conf)
+    c.base_url = "https://example/r/insights/platform"
     get.return_value = MockResponse(status_code=200, text="OK", content="{\"test\": \"test\"}")
     assert c.get_diagnosis() == {"test": "test"}
+    get.assert_called_once_with(
+        "https://example/r/insights/platform/remediations/v1/diagnosis/"
+        "c1cfc5e5-9664-48ab-a65a-d9e941e38ad4")
 
 
 @patch('insights.client.connection.InsightsConnection._init_session', Mock())

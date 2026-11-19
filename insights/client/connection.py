@@ -50,6 +50,16 @@ URLLIB3_LOGGER.setLevel(logging.WARNING)
 
 REQUEST_FAILED_EXCEPTIONS = (requests.ConnectionError, requests.Timeout)
 
+# RHSM creates the Inventory host with this placeholder. It is not this
+# machine's insights id.
+_NIL_INSIGHTS_ID = "00000000-0000-0000-0000-000000000000"
+
+
+def _usable_insights_id(value):
+    if not value or value == _NIL_INSIGHTS_ID:
+        return None
+    return value
+
 
 class _ProxyHostHTTPSConnection(HTTPSConnection):
     """Add the destination authority to HTPS proxy CONNECT requests."""
@@ -712,9 +722,20 @@ class InsightsConnection(object):
             True    system exists in inventory
             False   connection or parsing response error
             None    system is not yet registered
-            string system is unregistered
+            string  system is unregistered
+
+        A present /etc/insights-client/.registered file means registered.
+        GET /v1/systems is skipped so a 404 cannot wipe that file.
+        Satellite/IoP with no marker returns not registered and does not GET.
+        Direct cert-api with no marker still uses the classic GET.
         '''
         logger.debug('Checking registration status...')
+        # A local marker is registered. GET /v1/systems 404s on Satellite/IoP
+        # and on current cert-api, and that 404 used to delete this file.
+        if os.path.isfile(constants.registered_files[0]):
+            return True
+        if 'redhat_access' in (self.base_url or ''):
+            return None
         if not machine_id_exists():
             return None
         machine_id = generate_machine_id()
@@ -768,7 +789,10 @@ class InsightsConnection(object):
         '''
 
         if not machine_id_exists():
-            return False
+            found = self._host_by_subscription_manager_id()
+            if found is None:
+                return None
+            return found or False
         machine_id = generate_machine_id()
         try:
             # [circus music]
@@ -794,9 +818,53 @@ class InsightsConnection(object):
                 logger.debug(res_json['detail'])
             except Exception as e:
                 logger.debug(e)
+            # RHSM creates the Inventory host before insights-client and
+            # leaves insights_id empty. Look the host up by subscription id.
+            found = self._host_by_subscription_manager_id()
+            if found is None:
+                return None
+            if found:
+                return found
             return False
 
         return res_json
+
+    def _inventory_hosts_url(self, query):
+        if self.config.legacy_upload:
+            return self.base_url + '/platform/inventory/v1/hosts?' + query
+        return self.inventory_url + '/hosts?' + query
+
+    def _host_by_subscription_manager_id(self):
+        '''
+        Inventory host for this subscription, if there is exactly one.
+            dict    one host
+            False   none or more than one
+            None    connection or parsing error
+        '''
+        subman_id = _get_rhsm_identity()
+        if not subman_id:
+            return False
+        try:
+            res = self.get(self._inventory_hosts_url(
+                'subscription_manager_id=' + subman_id))
+        except REQUEST_FAILED_EXCEPTIONS as e:
+            _api_request_failed(e)
+            return None
+        if res.status_code != 200:
+            return False
+        try:
+            body = json.loads(res.content)
+        except ValueError:
+            return None
+        results = body.get('results') or []
+        if len(results) != 1:
+            return False
+        host = results[0]
+        # Inventory will not replace a nil insights_id. Use the local
+        # machine-id, which is the id register and upload already send.
+        if _usable_insights_id(host.get('insights_id')) is None:
+            host['insights_id'] = generate_machine_id(new=False)
+        return host
 
     def api_registration_check(self):
         '''
@@ -1050,8 +1118,6 @@ class InsightsConnection(object):
                             display_name)
                 return True
             elif res.status_code == 404:
-                logger.error('System not found. '
-                             'Please run insights-client --register.')
                 return False
             else:
                 logger.error('Unable to set display name: %s %s',
@@ -1066,8 +1132,8 @@ class InsightsConnection(object):
         '''
         Set display name of a system independently of upload.
         '''
-        if self.config.legacy_upload:
-            return self._legacy_set_display_name(display_name)
+        if self.config.legacy_upload and self._legacy_set_display_name(display_name):
+            return True
 
         system = self._fetch_system_by_machine_id()
         if not system:
@@ -1120,20 +1186,23 @@ class InsightsConnection(object):
             Reach out to the platform and fetch a diagnosis.
             Spirtual successor to --to-json from the old client.
         '''
-        if not self._fetch_system_by_machine_id():
+        system = self._fetch_system_by_machine_id()
+        if not system:
             logger.error("Could not get diagnosis data.\n"
                          "This host is not registered. Use --register to register this host:\n"
                          "# insights-client --register")
             return False
 
-        # this uses machine id as identifier instead of inventory id
-        diag_url = self.base_url + '/remediations/v1/diagnosis/' + generate_machine_id()
+        # Diagnosis is keyed by this machine's insights id. The nil UUID
+        # Inventory stores for an RHSM-created host is not that id.
+        diag_id = _usable_insights_id(system.get('insights_id')) or generate_machine_id()
+        diag_url = self.base_url + '/remediations/v1/diagnosis/' + diag_id
         try:
             res = self.get(diag_url)
         except (requests.ConnectionError, requests.Timeout) as e:
             _api_request_failed(e)
             return False
-        if (self.handle_fail_rcs(res)):
+        if res.status_code != requests.codes.OK or self.handle_fail_rcs(res):
             logger.error('Unable to get diagnosis data: %s %s',
                          res.status_code, res.text)
             return None
@@ -1155,7 +1224,10 @@ class InsightsConnection(object):
 
         host_details = json.loads(res.content)
         if host_details["total"] < 1:
-            _host_not_found()
+            host = self._host_by_subscription_manager_id()
+            if not host:
+                _host_not_found()
+            host_details = {"total": 1, "results": [host]}
         if host_details["total"] > 1:
             raise Exception("Error: multiple hosts detected (insights_id = %s). "
                             "To fix this error, unregister this host first and then register again.\n"
@@ -1178,7 +1250,12 @@ class InsightsConnection(object):
             url = self.base_url + "/insights/v1/system/%s" % host_id
         res = self.get(url)
         if res.status_code not in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
-            return None
+            # The system document is missing until Advisor has seen an upload.
+            # The reports collection is still a valid empty result.
+            reports = self.get(url + '/reports/')
+            if reports.status_code not in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
+                return None
+            return json.loads(reports.content)
 
         return json.loads(res.content)
 
