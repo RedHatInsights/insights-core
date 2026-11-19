@@ -1,5 +1,6 @@
 import requests
 import json
+import pytest
 from insights.client.connection import InsightsConnection
 from unittest.mock import MagicMock, Mock, patch
 
@@ -247,10 +248,11 @@ def test_registration_check_ok_reg_then_unreg(get_proxies, _init_session, _machi
     assert conn.api_registration_check() == '2019-04-10'
 
 
+@patch("insights.client.connection.os.path.isfile", return_value=False)
 @patch("insights.client.connection.machine_id_exists", return_value=True)
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_registration_check_ok_unreg(get_proxies, _init_session, _machine_id_exists):
+def test_registration_check_ok_unreg(get_proxies, _init_session, _machine_id_exists, _isfile):
     '''
     Request completed OK, has never been registered
         Returns None
@@ -264,6 +266,57 @@ def test_registration_check_ok_unreg(get_proxies, _init_session, _machine_id_exi
 
     conn.get = MagicMock(return_value=res)
     assert conn.api_registration_check() is None
+    conn.get.assert_called_once()
+
+
+@patch("insights.client.connection.os.path.isfile", return_value=True)
+@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
+@patch("insights.client.connection.machine_id_exists", return_value=True)
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+def test_registration_check_404_keeps_local_marker(get_proxies, _init_session, _machine_id_exists, _generate_machine_id, _isfile):
+    '''
+    404 with no unregistered_at, and a local registration marker.
+    IoP does not implement GET /v1/systems. Keep the host registered.
+    The GET still happens, so a cert-api 200 is not skipped.
+    '''
+    config = Mock(legacy_upload=True, base_url='example.com')
+    conn = InsightsConnection(config)
+
+    res = requests.Response()
+    res._content = json.dumps({})
+    res.status_code = 404
+
+    conn.get = MagicMock(return_value=res)
+    assert conn.api_registration_check() is True
+    conn.get.assert_called_once()
+
+
+@patch("insights.client.connection.os.path.isfile", return_value=True)
+@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
+@patch("insights.client.connection.machine_id_exists", return_value=True)
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+@pytest.mark.parametrize("body,expected", [
+    ({}, None),
+    ({'unregistered_at': '2019-04-10'}, '2019-04-10'),
+])
+def test_registration_check_ok_response_ignores_marker(get_proxies, _init_session, _machine_id_exists,
+                                                       _generate_machine_id, _isfile, body, expected):
+    '''
+    A 200 keeps the old meaning even when a local marker is present: no
+    unregistered_at is "not registered", a timestamp is unregistered.
+    '''
+    config = Mock(legacy_upload=True, base_url='example.com')
+    conn = InsightsConnection(config)
+
+    res = requests.Response()
+    res._content = json.dumps(body)
+    res.status_code = 200
+
+    conn.get = MagicMock(return_value=res)
+    assert conn.api_registration_check() == expected
+    conn.get.assert_called_once()
 
 
 @patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')

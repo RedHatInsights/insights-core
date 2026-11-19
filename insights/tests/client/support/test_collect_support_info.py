@@ -102,6 +102,26 @@ def test_registration_check_registered(write_unregistered_file, write_registered
 
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
+@patch('insights.client.support.write_registered_file')
+@patch('insights.client.support.write_unregistered_file')
+@patch('insights.client.support.os.path.isfile', return_value=True)
+def test_registration_check_does_not_undo_unregister(_isfile, write_unregistered_file,
+                                                     write_registered_file, _, __):
+    '''
+    An unregister that finished while the check was in flight must not be
+    overwritten by the registration check.
+    '''
+    config = Mock(base_url=None, legacy_upload=False)
+    conn = InsightsConnection(config)
+    conn.api_registration_check = Mock(return_value=True)
+    assert registration_check(conn) is True
+    conn.api_registration_check.assert_called_once()
+    write_registered_file.assert_not_called()
+    write_unregistered_file.assert_not_called()
+
+
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
 def test_registration_check_registered_unreach(_, __):
     '''
     Ensure that connection function is called and files are written.
