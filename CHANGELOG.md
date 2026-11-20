@@ -3,6 +3,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.8.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.7) (2026-11-19)
+
+- fix(spec): skip symlink/hardlink files when collecting EAP runtime re… ([PR 4843](https://github.com/RedHatInsights/insights-core/pull/4843))
+- fix(datasource): avoid triggering automounts in podman_rootless_users ([PR 4833](https://github.com/RedHatInsights/insights-core/pull/4833))
+- fix(Syslog): Handle Feb 29 leap year parsing with safe year injection ([PR 4799](https://github.com/RedHatInsights/insights-core/pull/4799))
+- chore(uname): Support RHEL 9.8 and RHEL 10.2 in Uname ([PR 4784](https://github.com/RedHatInsights/insights-core/pull/4784))
+
 # [insights-core-3.8.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.6) (2026-11-06)
 
 - Revert "chore(uname): Support RHEL 9.8 and RHEL 10.2 in Uname (4784)"

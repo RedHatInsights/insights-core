@@ -13,7 +13,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.8.6
+Version:        3.8.7
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -123,6 +123,26 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Nov 19 2026 Ping Qin <piqin@redhat.com> 3.8.7-1
+- fix(spec): skip symlink/hardlink files when collecting EAP runtime re…
+  (#4843) (30404410+qinpingli@users.noreply.github.com)
+- fix(datasource): avoid triggering automounts in podman_rootless_users (#4833)
+  (amepatil@redhat.com)
+- fix(Syslog): Handle Feb 29 leap year parsing with safe year injection (#4799)
+  (139431044+ShreyasMahangade@users.noreply.github.com)
+- chore(uname): Support RHEL 9.8 and RHEL 10.2 in Uname (#4784)
+  (139431044+ShreyasMahangade@users.noreply.github.com)
+
+* Thu Nov 19 2026 Ping Qin <piqin@redhat.com>
+- fix(spec): skip symlink/hardlink files when collecting EAP runtime re…
+  (#4843) (30404410+qinpingli@users.noreply.github.com)
+- fix(datasource): avoid triggering automounts in podman_rootless_users (#4833)
+  (amepatil@redhat.com)
+- fix(Syslog): Handle Feb 29 leap year parsing with safe year injection (#4799)
+  (139431044+ShreyasMahangade@users.noreply.github.com)
+- chore(uname): Support RHEL 9.8 and RHEL 10.2 in Uname (#4784)
+  (139431044+ShreyasMahangade@users.noreply.github.com)
+
 * Fri Nov 06 2026 Ping Qin <piqin@redhat.com> 3.8.6-1
 - Revert "chore(uname): Support RHEL 9.8 and RHEL 10.2 in Uname (#4784)"
   (piqin@redhat.com)
