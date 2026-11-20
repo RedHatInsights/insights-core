@@ -71,6 +71,9 @@ plugins:
       enabled: true
     - name: insights.specs.datasources
       enabled: true
+    # eap_json_reports is not part of default collection.
+    - name: insights.specs.datasources.eap_reports
+      enabled: false
     # needed for specs that aren't given names before used in DefaultSpecs
     - name: insights.core.spec_factory
       enabled: true
