@@ -53,7 +53,6 @@ from insights.specs.datasources import (
     db2,
     dev,
     du,
-    eap_reports,
     env,
     ethernet,
     httpd,
@@ -291,7 +290,9 @@ class DefaultSpecs(Specs):
     dumpe2fs_h = foreach_execute(mount_ds.dumpdev_list, "/sbin/dumpe2fs -h %s")
     du_dirs = foreach_execute(du.du_dir_list, "/bin/du -s -k %s")  # empty filter
     duplicate_machine_id = machine_id.dup_machine_id_info
-    eap_json_reports = foreach_collect(eap_reports.eap_report_files, "%s")
+    # eap_json_reports is not collected. See the datasource disable in
+    # insights.specs.manifests.default_manifest. The parser still reads it
+    # from an sos archive.
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
