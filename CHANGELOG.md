@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# insights-core-3.7.11.1 (2026-11-19)
+
+- chore(spec): disable insights.specs.default.eap_json_reports for default data collection ([PR 4847](https://github.com/RedHatInsights/insights-core/pull/4847))
+- fix(spec): skip symlink/hardlink files when collecting EAP runtime re… ([PR 4843](https://github.com/RedHatInsights/insights-core/pull/4843))
+
 # insights-core-3.7.10.1 (2026-11-06)
 
 - fix(compliance): get_system_policies() must return full policy details by default ([PR 4830](https://github.com/RedHatInsights/insights-core/pull/4830))

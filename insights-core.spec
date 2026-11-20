@@ -11,7 +11,7 @@
 %endif
 
 Name:           insights-core
-Version:        3.7.10.1
+Version:        3.7.11.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -129,6 +129,12 @@ install -D -p -m 0644 %{name}-selinux-%{version}/%{modulename}.if %{buildroot}%{
 %endif
 
 %changelog
+* Thu Nov 19 2026 Ping Qin <piqin@redhat.com> 3.7.11.1-1
+- chore(spec): disable insights.specs.default.eap_json_reports for default
+  data collection (#4847) (30404410+qinpingli@users.noreply.github.com)
+- fix(spec): skip symlink/hardlink files when collecting EAP runtime re…
+  (#4843) (30404410+qinpingli@users.noreply.github.com)
+
 * Thu Nov 05 2026 Ping Qin <piqin@redhat.com> 3.7.10.1-1
 - fix(compliance): get_system_policies() must return full policy details by
   default (#4830) (30404410+qinpingli@users.noreply.github.com)
