@@ -748,6 +748,16 @@ class InsightsConnection(object):
                 return False
             if unreg_status == 'undefined':
                 # key not found, machine not yet registered
+                # IoP answers GET /v1/systems with 404, which used to
+                # delete a valid local registration (CCT-2662). Trust the
+                # marker only there; a 200 keeps the old path.
+                if res.status_code == 404 and os.path.isfile(
+                        constants.registered_files[0]):
+                    logger.debug(
+                        "Registration marker present; not treating a missing "
+                        "unregistered_at as unregistered."
+                    )
+                    return True
                 return None
             elif unreg_status is None:
                 # unregistered_at = null, means this machine IS registered
@@ -757,6 +767,58 @@ class InsightsConnection(object):
                 # This is done for legacy servers that responded with the timestamp of disconnection
                 # TODO: consider to remove this condition
                 return unreg_status
+
+    def _inventory_hosts_url(self, path=''):
+        '''
+        Inventory hosts endpoint for this environment: ``/hosts``,
+        ``/hosts/<id>`` or ``/hosts?<query>``. The classic root has no
+        inventory of its own, so it is served under ``/platform``.
+        '''
+        if self.config.legacy_upload:
+            url = self.base_url + '/platform/inventory/v1/hosts'
+        else:
+            url = self.inventory_url + '/hosts'
+        return url + path
+
+    def _host_by_subscription_manager_id(self):
+        '''
+        Inventory host for this subscription, if there is exactly one.
+        RHSM creates the host with a nil insights_id, so the lookup by
+        machine id misses until that is filled in (CCT-2662).
+
+            dict    one host
+            False   none, or more than one
+            None    connection, API or parsing error
+        '''
+        subman_id = _get_rhsm_identity()
+        if not subman_id:
+            return False
+        try:
+            res = self.get(self._inventory_hosts_url(
+                '?subscription_manager_id=' + subman_id))
+        except REQUEST_FAILED_EXCEPTIONS as e:
+            _api_request_failed(e)
+            return None
+        if res.status_code in (404, 409):
+            # no host for this subscription
+            return False
+        if res.status_code != 200:
+            # An error is not a missing host: callers delete the local
+            # registration on False (CCT-2662).
+            logger.debug('Inventory lookup by subscription failed: %s %s',
+                         res.status_code, res.text)
+            return None
+        try:
+            body = json.loads(res.content)
+        except ValueError:
+            return None
+        if not isinstance(body, dict):
+            logger.debug('Unexpected Inventory response body: %s', type(body).__name__)
+            return None
+        results = body.get('results') or []
+        if len(results) != 1:
+            return False
+        return results[0]
 
     def _fetch_system_by_machine_id(self):
         '''
@@ -780,22 +842,27 @@ class InsightsConnection(object):
         except REQUEST_FAILED_EXCEPTIONS as e:
             _api_request_failed(e)
             return None
-        try:
-            if (self.handle_fail_rcs(res)):
+        if (self.handle_fail_rcs(res)):
+            return None
+        if res.status_code in (404, 409):
+            # The insights id can still be the nil UUID, so a miss is not
+            # proof of unregistration: ask the subscription. A 404 body is
+            # not necessarily JSON, so nothing is parsed here.
+            try:
+                logger.debug(json.loads(res.content)['detail'])
+            except Exception as e:
+                logger.debug(e)
+            found = self._host_by_subscription_manager_id()
+            if found is None:
                 return None
+            return found or False
+        try:
             res_json = json.loads(res.content)
-            res_json['insights_id'] = machine_id
         except ValueError as e:
             logger.error(e)
             logger.error('Could not parse response body.')
             return None
-        if res.status_code == 404 or res.status_code == 409:
-            try:
-                logger.debug(res_json['detail'])
-            except Exception as e:
-                logger.debug(e)
-            return False
-
+        res_json['insights_id'] = machine_id
         return res_json
 
     def api_registration_check(self):
@@ -1035,6 +1102,13 @@ class InsightsConnection(object):
             url = self.api_url + '/v1/systems/' + machine_id
 
             res = self.get(url)
+            if res.status_code in (404, 409):
+                # Classic has no record of this machine id: the host only
+                # exists in Inventory (CCT-2662). Update it there instead
+                # of telling the user the host is not registered.
+                logger.debug('Classic system lookup missed; using Inventory.')
+                return self._set_inventory_field('display_name', display_name,
+                                                 'display name')
             old_display_name = json.loads(res.content).get('display_name', None)
             if display_name == old_display_name:
                 logger.debug('Display name unchanged: %s', old_display_name)
@@ -1062,82 +1136,97 @@ class InsightsConnection(object):
             # can't connect, run connection test
             return False
 
-    def set_display_name(self, display_name):
+    def _set_inventory_field(self, field, value, label):
         '''
-        Set display name of a system independently of upload.
-        '''
-        if self.config.legacy_upload:
-            return self._legacy_set_display_name(display_name)
+        Update one field of this host in Inventory.
 
+            True    updated
+            False   rejected, or the API could not be reached
+            None    the host is not in Inventory
+        '''
         system = self._fetch_system_by_machine_id()
         if not system:
             if machine_id_exists() or os.path.exists(constants.registered_files[0]):
-                logger.error("Could not update display name.\n"
+                logger.error("Could not update %s.\n"
                              "The system was not found in Inventory. Please, register the system again:\n"
-                             "# insights-client --register")
+                             "# insights-client --register", label)
             return system
-        inventory_id = system['id']
 
-        req_url = self.inventory_url + '/hosts/' + inventory_id
         try:
-            res = self.patch(req_url, json={'display_name': display_name})
+            res = self.patch(self._inventory_hosts_url('/' + system['id']),
+                             json={field: value})
         except REQUEST_FAILED_EXCEPTIONS as e:
             _api_request_failed(e)
             return False
         if (self.handle_fail_rcs(res)):
-            logger.error('Could not update display name.')
+            logger.error('Could not update %s.', label)
             return False
-        logger.info('Display name updated to ' + display_name + '.')
+        logger.info('%s updated to %s.', label[0].upper() + label[1:], value)
         return True
+
+    def set_display_name(self, display_name):
+        '''
+        Set display name of a system independently of upload.
+
+        Only a registered system can be renamed. Inventory holds the host
+        subscription-manager created before the first upload is processed
+        (CCT-2662), so a host that is missing from the classic API must not
+        have its name changed through the Inventory fallback unless the
+        client is registered locally.
+        '''
+        if not os.path.isfile(constants.registered_files[0]):
+            logger.error("This host is unregistered. "
+                         "Use --register to register this host.\n"
+                         "# insights-client --register")
+            return False
+        if self.config.legacy_upload:
+            return self._legacy_set_display_name(display_name)
+        return self._set_inventory_field('display_name', display_name,
+                                         'display name')
 
     def set_ansible_host(self, ansible_host):
         '''
         Set Ansible hostname of a system independently of upload.
         '''
-        system = self._fetch_system_by_machine_id()
-        if not system:
-            if machine_id_exists() or os.path.exists(constants.registered_files[0]):
-                logger.error("Could not update Ansible hostname.\n"
-                             "The system was not found in Inventory. Please, register the system again:\n"
-                             "# insights-client --register")
-            return system
-        inventory_id = system['id']
-
-        req_url = self.inventory_url + '/hosts/' + inventory_id
-        try:
-            res = self.patch(req_url, json={'ansible_host': ansible_host})
-        except REQUEST_FAILED_EXCEPTIONS as e:
-            _api_request_failed(e)
-            return False
-        if (self.handle_fail_rcs(res)):
-            logger.error('Could not update Ansible hostname.')
-            return False
-        logger.info('Ansible hostname updated to ' + ansible_host + '.')
-        return True
+        return self._set_inventory_field('ansible_host', ansible_host,
+                                         'Ansible hostname')
 
     def get_diagnosis(self):
         '''
             Reach out to the platform and fetch a diagnosis.
             Spirtual successor to --to-json from the old client.
         '''
-        if not self._fetch_system_by_machine_id():
+        system = self._fetch_system_by_machine_id()
+        if not system:
             logger.error("Could not get diagnosis data.\n"
                          "This host is not registered. Use --register to register this host:\n"
                          "# insights-client --register")
             return False
 
-        # this uses machine id as identifier instead of inventory id
-        diag_url = self.base_url + '/remediations/v1/diagnosis/' + generate_machine_id()
+        # Remediations keys this by the insights_id Inventory has stored.
+        # While that is still the nil UUID, the local machine-id 404s
+        # with an empty body.
+        diag_id = generate_machine_id()
+        if system.get('insights_id'):
+            diag_id = system['insights_id']
+        diag_url = self.base_url + '/remediations/v1/diagnosis/' + diag_id
         try:
             res = self.get(diag_url)
         except (requests.ConnectionError, requests.Timeout) as e:
             _api_request_failed(e)
             return False
-        if (self.handle_fail_rcs(res)):
-            logger.error('Unable to get diagnosis data: %s %s',
-                         res.status_code, res.text)
-            return None
-        return res.json()
+        # handle_fail_rcs still runs for 401 and 412. A non-200, including
+        # the empty IoP 404, is not parsed.
+        failed = self.handle_fail_rcs(res)
+        if res.status_code == requests.codes.OK and not failed:
+            try:
+                return res.json()
+            except ValueError:
+                # 200, but the body is not JSON
+                pass
+        logger.error('Unable to get diagnosis data: %s %s',
+                     res.status_code, res.text)
+        return None
 
     def get_advisor_report(self):
         '''
@@ -1148,14 +1237,22 @@ class InsightsConnection(object):
                             "This host is not registered. Use --register to register this host:\n"
                             "# insights-client --register")
 
-        url = self.inventory_url + "/hosts?insights_id=%s" % generate_machine_id()
+        url = self._inventory_hosts_url(
+            "?insights_id=%s" % generate_machine_id())
         res = self.get(url)
         if res.status_code not in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
             return None
 
         host_details = json.loads(res.content)
+        payload = res.content
         if host_details["total"] < 1:
-            _host_not_found()
+            host = self._host_by_subscription_manager_id()
+            if host is None:
+                return None
+            if not host:
+                _host_not_found()
+            host_details = {"total": 1, "results": [host]}
+            payload = json.dumps(host_details).encode("utf-8")
         if host_details["total"] > 1:
             raise Exception("Error: multiple hosts detected (insights_id = %s). "
                             "To fix this error, unregister this host first and then register again.\n"
@@ -1169,18 +1266,28 @@ class InsightsConnection(object):
 
         host_id = host_details["results"][0]["id"]
         with open("/var/lib/insights/host-details.json", mode="w+b") as f:
-            f.write(res.content)
+            f.write(payload)
             logger.debug("Wrote \"/var/lib/insights/host-details.json\"")
 
         if self.config.legacy_upload:
             url = self.base_url + "/v1/system/%s" % host_id
+            # legacy keeps the document and the reports under different roots
+            reports_url = self.base_url + "/platform/insights/v1/system/%s/reports/" % host_id
         else:
             url = self.base_url + "/insights/v1/system/%s" % host_id
+            reports_url = url + '/reports/'
         res = self.get(url)
-        if res.status_code not in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
-            return None
+        if res.status_code in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
+            return json.loads(res.content)
 
-        return json.loads(res.content)
+        # The system document 404s until Advisor has indexed the host.
+        # The reports collection is the result --check-results needs.
+        if res.status_code != requests.codes.NOT_FOUND:
+            return None
+        reports = self.get(reports_url)
+        if reports.status_code not in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
+            return None
+        return json.loads(reports.content)
 
     def get_latest_advisor_report(self):
         '''
