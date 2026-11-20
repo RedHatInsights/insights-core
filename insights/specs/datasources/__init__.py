@@ -10,6 +10,7 @@ template to ensure it is loaded.
 """
 
 import os
+import stat
 import time
 
 DEFAULT_SHELL_TIMEOUT = 10
@@ -56,7 +57,11 @@ def get_running_commands(ps, ctx, commands):
 
 def get_recent_files(target_path, last_modify_hours=24, latest_count=0):
     """
-    Get the recent updated or created files, limited to lastest_count files
+    Get the recent updated or created files, limited to lastest_count files.
+
+    Symbolic links and hard links are omitted. A file with more than one
+    name (``st_nlink > 1``) is a hard link. ``target_path`` itself is rejected
+    when it is a symbolic link or not a directory.
 
     Arguments:
         target_path (string): target path to search
@@ -67,13 +72,23 @@ def get_recent_files(target_path, last_modify_hours=24, latest_count=0):
         list: files that updated or creates just in last_modify_hours hours
     """
     latest_files = {}
-    if os.path.exists(target_path):
-        current_time = time.time()
-        for parent_path, _, report_files in os.walk(target_path):
-            for one_file in report_files:
-                t_full_file = os.path.join(parent_path, one_file)
-                file_time = os.path.getmtime(t_full_file)
-                if (current_time - file_time) // 3600 < last_modify_hours:
-                    latest_files[t_full_file] = file_time
+    try:
+        root_st = os.lstat(target_path)
+    except OSError:
+        return []
+    if stat.S_ISLNK(root_st.st_mode) or not stat.S_ISDIR(root_st.st_mode):
+        return []
+    current_time = time.time()
+    for parent_path, _, report_files in os.walk(target_path, followlinks=False):
+        for one_file in report_files:
+            t_full_file = os.path.join(parent_path, one_file)
+            try:
+                st = os.lstat(t_full_file)
+            except OSError:
+                continue
+            if stat.S_ISLNK(st.st_mode) or st.st_nlink > 1:
+                continue
+            if (current_time - st.st_mtime) // 3600 < last_modify_hours:
+                latest_files[t_full_file] = st.st_mtime
     result_files = sorted(latest_files, key=lambda x: latest_files[x], reverse=True)
     return result_files[:latest_count] if latest_count > 0 else result_files
