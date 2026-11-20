@@ -3,6 +3,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.8.8](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.8) (2026-11-20)
+
+- chore(spec): disable insights.specs.datasources for default data collection ([PR 4847](https://github.com/RedHatInsights/insights-core/pull/4847))
+
 # [insights-core-3.8.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.8.7) (2026-11-19)
 
 - fix(spec): skip symlink/hardlink files when collecting EAP runtime re… ([PR 4843](https://github.com/RedHatInsights/insights-core/pull/4843))
