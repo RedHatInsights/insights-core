@@ -365,7 +365,7 @@ jobs:
     trigger: pull_request
     manual_trigger: true
     identifier: "data-processing-compatibility-test"
-    status_name_template: "tf:data-processing-test:fedora"
+    status_name_template: "tf:data-processing-test:rhel9"
     labels:
       - data-processing
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
@@ -373,8 +373,8 @@ jobs:
     use_internal_tf: true
     skip_build: true
     targets:
-      fedora-rawhide:
-        distros: [Fedora-Rawhide]
+      rhel-9-x86_64:
+        distros: [RHEL-9.6.0-Nightly]
     tf_extra_params:
       test:
         tmt:
