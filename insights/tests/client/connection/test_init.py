@@ -12,9 +12,23 @@ def test_inventory_url_from_base_url(get_proxies, init_session):
     """
     Inventory URL is composed correctly from the given base URL.
     """
-    config = Mock(base_url="www.example.com")
+    config = Mock(base_url="www.example.com", legacy_upload=False)
     connection = InsightsConnection(config)
     assert connection.inventory_url == "https://www.example.com/inventory/v1"
+
+
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+def test_inventory_url_from_base_url_legacy(get_proxies, init_session):
+    """
+    Inventory is served under /platform for the classic root.
+    """
+    config = Mock(base_url="www.example.com/r/insights", legacy_upload=True)
+    connection = InsightsConnection(config)
+    assert (
+        connection.inventory_url
+        == "https://www.example.com/r/insights/platform/inventory/v1"
+    )
 
 
 @mark.parametrize(("config_kwargs",), (({"check_results": True},), ({"checkin": True},)))

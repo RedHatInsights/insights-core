@@ -71,7 +71,14 @@ def registration_check(pconn):
             status = True
         reg_status = status
     if reg_status:
-        write_registered_file()
+        if os.path.isfile(constants.unregistered_files[0]):
+            # An unregister finished while this check was in flight. Do not
+            # resurrect the marker it removed (CCT-2662 review).
+            logger.debug(
+                'Unregister detected during registration check; leaving '
+                'local registration state alone.')
+        else:
+            write_registered_file()
     elif reg_status is False:
         write_unregistered_file()
         write_to_disk(constants.machine_id_file, delete=True)
