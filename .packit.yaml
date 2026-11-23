@@ -368,6 +368,9 @@ jobs:
     status_name_template: "tf:data-processing-test:rhel9"
     labels:
       - data-processing
+    notifications:
+      failure_comment:
+        message: "data-processing-compatibility-test failed for commit {commit_sha}. @rajeshdulhani please check the Testing Farm log linked on this PR check."
     fmf_url: "https://gitlab.cee.redhat.com/insights-foundations/insights-core-test"
     fmf_ref: "packit-migration"
     use_internal_tf: true
