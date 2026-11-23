@@ -39,6 +39,7 @@ jobs:
 
   # RPM Test 1: RHEL 10.2 Nightly × x86_64
   - job: tests
+    trigger: pull_request
     manual_trigger: true
     identifier: "rpm-test-rhel10.2-x86_64"
     status_name_template: "tf:rpm-test:rhel10:x86_64"
@@ -59,6 +60,7 @@ jobs:
 
   # RPM Test 2: RHEL 9.8.0 Nightly × x86_64
   - job: tests
+    trigger: pull_request
     manual_trigger: true
     identifier: "rpm-test-rhel9.8-x86_64"
     status_name_template: "tf:rpm-test:rhel9:x86_64"
@@ -79,6 +81,7 @@ jobs:
 
   # RPM Test 3: CentOS Stream 10 × x86_64
   - job: tests
+    trigger: pull_request
     manual_trigger: true
     identifier: "rpm-test-centos10-x86_64"
     status_name_template: "tf:rpm-test:centos10:x86_64"
@@ -99,6 +102,7 @@ jobs:
 
   # RPM Test 4: RHEL 10.2 Nightly × s390x
   - job: tests
+    trigger: pull_request
     manual_trigger: true
     identifier: "rpm-test-rhel10.2-s390x"
     status_name_template: "tf:rpm-test:rhel10:s390x"
@@ -119,6 +123,7 @@ jobs:
 
   # RPM Test 5: RHEL 9.8.0 Nightly × s390x
   - job: tests
+    trigger: pull_request
     manual_trigger: true
     identifier: "rpm-test-rhel9.8-s390x"
     status_name_template: "tf:rpm-test:rhel9:s390x"
@@ -139,6 +144,7 @@ jobs:
 
   # RPM Test 6: RHEL 10.2 Nightly × aarch64
   - job: tests
+    trigger: pull_request
     manual_trigger: true
     identifier: "rpm-test-rhel10.2-aarch64"
     status_name_template: "tf:rpm-test:rhel10:aarch64"
@@ -159,6 +165,7 @@ jobs:
 
   # RPM Test 7: RHEL 9.8.0 Nightly × aarch64
   - job: tests
+    trigger: pull_request
     manual_trigger: true
     identifier: "rpm-test-rhel9.8-aarch64"
     status_name_template: "tf:rpm-test:rhel9:aarch64"
@@ -179,6 +186,7 @@ jobs:
 
   # RPM Test 8: RHEL 10.2 Nightly × ppc64le
   - job: tests
+    trigger: pull_request
     manual_trigger: true
     identifier: "rpm-test-rhel10.2-ppc64le"
     status_name_template: "tf:rpm-test:rhel10:ppc64le"
@@ -276,6 +284,7 @@ jobs:
   # build is needed: the egg is built on the guest from the PR source
   # (PACKIT_SOURCE_URL/PACKIT_SOURCE_SHA) by tests/egg-test/test.sh.
   - job: tests
+    trigger: pull_request
     manual_trigger: true
     identifier: "egg-test-rhel8-x86_64"
     status_name_template: "tf:egg-test:rhel8:x86_64"
@@ -300,6 +309,7 @@ jobs:
   # suite runs against the egg built from the PR source - no Copr build
   # and no RPM artifact on the guest.
   - job: tests
+    trigger: pull_request
     manual_trigger: true
     identifier: "egg-test-rhel9-x86_64"
     status_name_template: "tf:egg-test:rhel9:x86_64"
@@ -324,6 +334,7 @@ jobs:
   # suite runs against the egg built from the PR source - no Copr build
   # and no RPM artifact on the guest.
   - job: tests
+    trigger: pull_request
     manual_trigger: true
     identifier: "egg-test-rhel10-x86_64"
     status_name_template: "tf:egg-test:rhel10:x86_64"
@@ -351,6 +362,7 @@ jobs:
   # guest; the sub-suites run in parallel inside
   # tests/data-processing-test/test.sh.
   - job: tests
+    trigger: pull_request
     manual_trigger: true
     identifier: "data-processing-compatibility-test"
     status_name_template: "tf:data-processing-test:fedora"
