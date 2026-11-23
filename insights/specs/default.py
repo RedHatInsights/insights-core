@@ -511,6 +511,7 @@ class DefaultSpecs(Specs):
     lsof = simple_command("/usr/bin/lsof")
     lspci = simple_command("/sbin/lspci -k")
     lspci_vmmkn = simple_command("/sbin/lspci -vmmkn")
+    lsscsi = simple_command("/usr/bin/lsscsi")
     luksmeta = foreach_execute(
         block_devices_by_uuid, "/usr/bin/luksmeta show -d /dev/disk/by-uuid/%s", keep_rc=True
     )
