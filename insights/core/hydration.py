@@ -104,13 +104,21 @@ def _create_autodetected_context(path, all_files):
 
 
 def create_context(path, context=None):
-    all_files = list(get_all_files(path))
-
     if context:
+        # ClusterArchiveContext is detected via os.listdir only — no full recursive
+        # scan needed. Avoid the expensive get_all_files traversal for that path.
+        all_files = [] if context is ClusterArchiveContext else list(get_all_files(path))
         return _create_user_defined_context(path, context, all_files)
 
-    else:
-        return _create_autodetected_context(path, all_files)
+    # Try cluster archive first: uses only os.listdir, not a recursive file walk.
+    # For cluster archives (common OCP case) this avoids materialising the full
+    # file tree, which can be tens of thousands of path strings.
+    ctx = _create_cluster_archive_context(path)
+    if ctx:
+        return ctx
+
+    all_files = list(get_all_files(path))
+    return _create_autodetected_context(path, all_files)
 
 
 def initialize_broker(path, context=None, broker=None):
