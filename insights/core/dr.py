@@ -1093,6 +1093,9 @@ def run_components(ordered_components, components, broker):
             for x in get_registry_points(component):
                 BLACKLISTED_SPECS.append(str(x).split('.')[-1])
             broker.add_exception(component, bs, traceback.format_exc())
+            # CCXDEV-15098: Clear traceback to break circular reference.
+            # See the comment in the ``except Exception`` block below.
+            bs.__traceback__ = None
         except MissingRequirements as mr:
             if log.isEnabledFor(logging.DEBUG):
                 name = get_name(component)
@@ -1103,14 +1106,38 @@ def run_components(ordered_components, components, broker):
             if broker.store_skips:
                 log.debug(sc)
                 broker.add_exception(component, sc, traceback.format_exc())
-            else:
-                pass
+                # CCXDEV-15098: Clear traceback to break circular reference.
+                # See the comment in the ``except Exception`` block below.
+                sc.__traceback__ = None
         except Exception as ex:
             log.debug(ex)
             tb = traceback.format_exc()
             broker.add_exception(component, ex, tb)
             for reg_spec in get_registry_points(component):
                 broker.add_exception(reg_spec, ex, tb)
+            # CCXDEV-15098: Clear the traceback reference to break a circular
+            # reference chain that prevents the broker from being GC'd.
+            #
+            # When Python catches an exception, it attaches the live
+            # traceback object to ``ex.__traceback__``.  That traceback
+            # holds a reference to the stack frame, which in turn
+            # references all local variables — including ``broker``.
+            # This creates a circular reference chain:
+            #
+            #   broker.exceptions -> exception -> __traceback__ -> frame
+            #          -> local vars (including 'broker') -> broker
+            #
+            # CPython's reference-counting collector cannot break cycles,
+            # so the broker (with its ``instances`` dict containing ~500
+            # component results) stays alive until the cyclic GC runs —
+            # if it runs at all.  In long-running services this manifests
+            # as a steady memory leak (~8 MB/hr in production).
+            #
+            # The formatted traceback *string* is already captured above
+            # via ``traceback.format_exc()`` and stored in
+            # ``broker.tracebacks``, so clearing ``__traceback__`` loses
+            # no debugging information.
+            ex.__traceback__ = None
         finally:
             broker.exec_times[component] = time.time() - start
             broker.fire_observers(component)
