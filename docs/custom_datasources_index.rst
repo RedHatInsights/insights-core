@@ -139,6 +139,14 @@ insights.specs.datasources.ipcs
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.java_purls
+-------------------------------------
+
+.. automodule:: insights.specs.datasources.java_purls
+    :members: java_purls
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.kernel
 ---------------------------------
 
