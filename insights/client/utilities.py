@@ -224,19 +224,6 @@ def write_data_to_file(data, filepath):
     write_to_disk(filepath, content=data)
 
 
-def magic_plan_b(filename):
-    '''
-    Use this in instances where
-    python-magic is MIA and can't be installed
-    for whatever reason
-    '''
-    cmd = shlex.split('file --mime-type --mime-encoding ' + filename)
-    stdout, stderr = Popen(cmd, stdout=PIPE).communicate()
-    stdout = stdout.decode("utf-8")
-    mime_str = stdout.split(filename + ': ')[1].strip()
-    return mime_str
-
-
 def run_command_get_output(cmd):
     proc = Popen(shlex.split(cmd), stdout=PIPE, stderr=STDOUT)
     stdout, stderr = proc.communicate()

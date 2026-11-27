@@ -34,6 +34,7 @@ from .constants import InsightsConstants as constants
 from insights import cleaner, package_info
 from insights.client.collection_rules import InsightsUploadConf
 from insights.util.canonical_facts import get_canonical_facts
+from insights.util.content_type import from_file
 
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
@@ -926,16 +927,7 @@ class InsightsConnection(object):
         Do an HTTPS upload of the archive
         '''
         file_name = os.path.basename(data_collected)
-        try:
-            from insights.contrib import magic
-            m = magic.open(magic.MAGIC_MIME)
-            m.load()
-            mime_type = m.file(data_collected)
-        except ImportError:
-            magic = None
-            logger.debug('python-magic not installed, using backup function...')
-            from .utilities import magic_plan_b
-            mime_type = magic_plan_b(data_collected)
+        mime_type = from_file(data_collected)
 
         files = {
             'file': (file_name, open(data_collected, 'rb'), mime_type)}
